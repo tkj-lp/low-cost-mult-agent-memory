@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime, timezone
 from typing import Any, Literal, TypedDict
+
+from competition_agents.capabilities import build_capability_registry
 
 
 class Metrics(TypedDict):
@@ -24,6 +27,8 @@ class CompetitionState(TypedDict):
     execution_result: dict[str, Any]
     final_answer: str
     messages: list[dict[str, Any]]
+    capability_registry: dict[str, dict[str, Any]]
+    cognitive_gaps: list[dict[str, Any]]
     latent_states: dict[str, dict[str, Any]]
     memory: list[dict[str, Any]]
     memory_hits: list[dict[str, Any]]
@@ -41,6 +46,8 @@ def initial_state(task: str, mode: Literal["text", "protocol"], memory: list[dic
         "execution_result": {},
         "final_answer": "",
         "messages": [],
+        "capability_registry": build_capability_registry(),
+        "cognitive_gaps": [],
         "latent_states": {},
         "memory": memory or [],
         "memory_hits": [],
@@ -70,18 +77,31 @@ def put_latent_state(
     producer: str,
     topic: str,
     text: str,
+    consumers: list[str] | None = None,
+    scope: str = "task",
+    ttl: int = 3,
 ) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
     """创建非文本 latent state，并更新状态传递指标。"""
 
     vector = simple_embedding(text)
     state_id = f"state-{len(state['latent_states']) + 1:04d}"
+    checksum = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     latent_state = {
         "state_id": state_id,
-        "type": "embedding",
+        "type": "latent_state_ref",
+        "content_type": "latent.embedding",
         "producer": producer,
+        "consumers": consumers or [],
         "topic": topic,
+        "summary": text[:160],
+        "embedding_provider": "hash-v1",
         "shape": [len(vector)],
         "vector": vector,
+        "scope": scope,
+        "ttl": ttl,
+        "checksum": checksum,
+        "source_text_chars": len(text),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     metrics = dict(state["metrics"])
     # 简化估算：把向量按 32 位浮点数统计数据规模。
