@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from competition_agents.llm import get_llm_client
 from competition_agents.memory import add_memory
+from competition_agents.protocol import make_cognitive_gap
 from competition_agents.state import CompetitionState
 
 
@@ -24,4 +25,16 @@ def summarizer_agent(state: CompetitionState) -> dict:
         summary=summary,
         tags=["langgraph", "multi-agent", "protocol", state["mode"]],
     )
-    return {"final_answer": summary, "memory": memory}
+    cognitive_gap = make_cognitive_gap(
+        agent="summarizer",
+        known=["plan", "evidence", "execution_result", "latent_state_refs"],
+        unknown=[],
+        needed=[],
+        gap_type="closed",
+        confidence=0.9,
+    )
+    return {
+        "final_answer": summary,
+        "memory": memory,
+        "cognitive_gaps": [*state["cognitive_gaps"], cognitive_gap],
+    }
