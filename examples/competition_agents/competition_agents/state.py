@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Any, Literal, TypedDict
 
 from competition_agents.capabilities import build_capability_registry
+from competition_agents.embedding import embed_text, hash_embedding
 
 
 class Metrics(TypedDict):
@@ -27,9 +28,11 @@ class CompetitionState(TypedDict):
     execution_result: dict[str, Any]
     final_answer: str
     messages: list[dict[str, Any]]
+    agent_outputs: list[dict[str, Any]]
     capability_registry: dict[str, dict[str, Any]]
     cognitive_gaps: list[dict[str, Any]]
     latent_states: dict[str, dict[str, Any]]
+    state_refs: dict[str, str]
     memory: list[dict[str, Any]]
     memory_hits: list[dict[str, Any]]
     metrics: Metrics
@@ -46,9 +49,11 @@ def initial_state(task: str, mode: Literal["text", "protocol"], memory: list[dic
         "execution_result": {},
         "final_answer": "",
         "messages": [],
+        "agent_outputs": [],
         "capability_registry": build_capability_registry(),
         "cognitive_gaps": [],
         "latent_states": {},
+        "state_refs": {},
         "memory": memory or [],
         "memory_hits": [],
         "metrics": {
@@ -61,14 +66,8 @@ def initial_state(task: str, mode: Literal["text", "protocol"], memory: list[dic
 
 
 def simple_embedding(text: str, dimensions: int = 16) -> list[float]:
-    # 原型阶段使用轻量、确定性的 embedding。
-    # 环境准备好后，可替换成真实 embedding 模型或 API。
-    digest = hashlib.sha256(text.encode("utf-8")).digest()
-    values = []
-    for index in range(dimensions):
-        raw = digest[index % len(digest)]
-        values.append(round((raw / 255.0) * 2.0 - 1.0, 4))
-    return values
+    # 保留旧接口，避免历史实验脚本需要同步大改。
+    return hash_embedding(text, dimensions)
 
 
 def put_latent_state(
@@ -83,7 +82,8 @@ def put_latent_state(
 ) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
     """创建非文本 latent state，并更新状态传递指标。"""
 
-    vector = simple_embedding(text)
+    embedding = embed_text(text)
+    vector = embedding.vector
     state_id = f"state-{len(state['latent_states']) + 1:04d}"
     checksum = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     latent_state = {
@@ -94,7 +94,9 @@ def put_latent_state(
         "consumers": consumers or [],
         "topic": topic,
         "summary": text[:160],
-        "embedding_provider": "hash-v1",
+        "source_text": text,
+        "embedding_provider": embedding.provider,
+        "embedding_model": embedding.model,
         "shape": [len(vector)],
         "vector": vector,
         "scope": scope,

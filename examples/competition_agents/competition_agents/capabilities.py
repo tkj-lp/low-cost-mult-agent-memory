@@ -26,6 +26,17 @@ AGENT_CAPABILITIES: dict[str, dict[str, Any]] = {
         "input_schema": "protocol.intent",
         "output_schema": "evidence.refs",
     },
+    "reasoner": {
+        "agent": "reasoner",
+        "display_name": "ReasonerAgent",
+        "capabilities": [
+            "model_reasoning",
+            "answer_candidate_generation",
+            "limitation_reporting",
+        ],
+        "input_schema": "task.plan",
+        "output_schema": "answer.candidate",
+    },
     "executor": {
         "agent": "executor",
         "display_name": "ExecutorAgent",

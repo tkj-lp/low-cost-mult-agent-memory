@@ -2,6 +2,8 @@
 
 这份文档说明当前多智能体原型的代码结构，以及网页可视化同学、超图记忆同学应该如何和智能体部分对接。
 
+超图记忆同学请优先阅读 `HYPERGRAPH_MEMORY_ALIGNMENT.md`，那里说明了当前 `PlannerAgent -> ReasonerAgent -> SummarizerAgent` 主流程、稳定字段、`add_memory()` / `search_memory()` 替换点，以及后续如何把 `RetrieverAgent` 接回主流程。
+
 ## 当前范围
 
 代码位于 `examples/competition_agents`，没有修改 LangGraph 原本核心代码。
@@ -267,3 +269,79 @@ planner -> retriever -> executor -> summarizer
 openEuler 和完整 LangGraph 依赖环境可以在接口稳定后再整理。
 
 当前原型包含 fallback runner，所以即使本机 LangGraph 依赖暂时不完整，队友也可以先基于这些接口开发超图记忆和网页可视化模块。
+## Embedding provider 对接说明
+
+当前 latent collaboration 的入口在 `competition_agents.embedding.embed_text()`，由 `state.py` 里的 `put_latent_state()` 调用。所有 Agent 不直接关心具体 embedding 后端，只写入或读取 `state_ref`：
+
+```text
+PlannerAgent -> state["latent_states"][plan_ref] -> ReasonerAgent
+ReasonerAgent -> state["latent_states"][answer_ref] -> SummarizerAgent
+```
+
+第一版使用 Qwen / OpenAI-compatible embedding API：
+
+```env
+EMBEDDING_PROVIDER=openai_compatible
+EMBEDDING_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+EMBEDDING_MODEL=text-embedding-v4
+EMBEDDING_API_KEY=replace_with_your_api_key
+```
+
+`EMBEDDING_API_KEY` 是可选项。如果没有设置，embedding client 会复用 `LLM_API_KEY`。DashScope compatible endpoint 当前走 `/embeddings`，返回的向量会写入：
+
+```json
+{
+  "state_id": "state-0001",
+  "type": "latent_state_ref",
+  "content_type": "latent.embedding",
+  "producer": "planner",
+  "consumers": ["reasoner", "summarizer"],
+  "embedding_provider": "openai_compatible",
+  "embedding_model": "text-embedding-v4",
+  "shape": [1024],
+  "checksum": "..."
+}
+```
+
+第二版可以切换本地 embedding：
+
+```env
+EMBEDDING_PROVIDER=local
+LOCAL_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+LOCAL_EMBEDDING_CACHE_DIR=
+```
+
+使用前安装依赖：
+
+```powershell
+pip install sentence-transformers
+```
+
+`sentence-transformers/all-MiniLM-L6-v2` 是轻量英文模型，输出 384 维向量。它适合做离线、本地、低延迟的 embedding 对照实验；缺点是第一次运行需要下载模型，并且英文效果强于中文。
+
+`run_hotpot_samples.py` 会展示 latent state 元信息和通信指标：
+
+```text
+latent states:
+  state-0001: producer=planner, provider=local, model=sentence-transformers/all-MiniLM-L6-v2, shape=[384], checksum=...
+  state-0002: producer=reasoner, provider=local, model=sentence-transformers/all-MiniLM-L6-v2, shape=[384], checksum=...
+
+metrics: messages=2, text_chars=..., latent_transfers=2, latent_bytes=3072, memory_hits=0, elapsed_ms=...
+```
+
+这里的 `latent_bytes` 按 float32 估算。本地 `all-MiniLM-L6-v2` 每条 latent state 是 `384 * 4 = 1536` bytes；每个样例当前产生 `plan_ref` 和 `answer_ref` 两条 latent state，所以每个样例约 `3072` bytes。
+
+当前实现是 LangGraph 应用层集成：没有修改 LangGraph 内核，也没有新增内部 channel 或 checkpoint 类型。`StateGraph` 的节点函数仍然通过 `CompetitionState` 传递状态，只是在状态 schema 中新增了 `latent_states`、`state_refs` 和 `metrics` 字段，供网页控制台、超图记忆模块和实验脚本读取。
+# 当前实现状态
+
+当前主实验链路是：
+
+```text
+PlannerAgent -> ReasonerAgent -> SummarizerAgent
+```
+
+其中 `PlannerAgent` 和 `ReasonerAgent` 可以调用真实 Qwen / OpenAI-compatible API，`SummarizerAgent` 会生成最终答案并通过 `add_memory()` 写入共享记忆。当前 `RetrieverAgent` 没有接回 HotpotQA-style 主流程；超图记忆同学后续主要替换或增强 `add_memory()` / `search_memory()`，再让 `RetrieverAgent` 返回真实 `evidence`、`supporting_facts`、`memory_hits`、`reasoning_path`。
+
+当前 latent collaboration 是应用层 LangGraph state 集成：`PlannerAgent` 在 `protocol` 模式下写入 `plan_ref`，`ReasonerAgent` 写入 `answer_ref`，二者都保存在 `state["latent_states"]`。支持的 embedding provider 包括 `hash`、`openai_compatible` 和 `local`。
+
+OSC / CKM 当前不是完整自动计算模块，而是 `state["cognitive_gaps"]` 中的轻量 trace。后续如果要让 OSC 发挥调度作用，需要实现 `compute_cognitive_gap()`，并基于任务需求、证据覆盖率、记忆命中率、检索分数和答案置信度决定是否调用 Retriever 或扩展检索。
