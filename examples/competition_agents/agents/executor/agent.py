@@ -9,9 +9,11 @@ def executor_agent(state: CompetitionState) -> dict:
 
     # 当前用确定性统计结果占位，后续可替换成真实 CodeAct 沙箱。
     result = {
-        "message_count_so_far": state["metrics"]["message_count"],
+        "message_count_so_far": state["metrics"]["message_count"] + 1,
         "memory_hit_count": len(state.get("memory_hits", [])),
         "latent_state_count": len(state.get("latent_states", {})),
+        "execution_mode": "simulated_codeact_stats",
+        "sandbox_status": "not_implemented",
     }
     cognitive_gap = make_cognitive_gap(
         agent="executor",

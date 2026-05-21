@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from competition_agents.state import simple_embedding
+from competition_agents.embedding import embed_text
 
 
 def add_memory(
@@ -16,6 +16,7 @@ def add_memory(
     """向当前内存存储追加一条可复用记忆。"""
 
     # 元数据字段保持稳定，方便网页和超图模块对接。
+    embedding = embed_text(task_topic + " " + summary)
     record = {
         "memory_id": f"mem-{len(memory) + 1:04d}",
         "source_agent": source_agent,
@@ -23,7 +24,9 @@ def add_memory(
         "task_topic": task_topic,
         "summary": summary,
         "tags": tags,
-        "embedding": simple_embedding(task_topic + " " + summary),
+        "embedding": embedding.vector,
+        "embedding_provider": embedding.provider,
+        "embedding_model": embedding.model,
     }
     return [*memory, record]
 

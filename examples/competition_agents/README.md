@@ -109,3 +109,79 @@ START
 4. 将 `simple_embedding` 替换为真实 embedding API 或本地 embedding 模型。
 5. 修复完整 LangGraph 依赖环境，去掉 fallback runner。
 6. 在 openEuler 24.03-LTS-SP3 上验证同样命令可以运行。
+## Embedding 与 latent collaboration
+
+当前示例支持三种 embedding provider：
+
+```env
+EMBEDDING_PROVIDER=hash
+EMBEDDING_PROVIDER=openai_compatible
+EMBEDDING_PROVIDER=local
+```
+
+第一版推荐使用 Qwen / OpenAI-compatible embedding API：
+
+```env
+EMBEDDING_PROVIDER=openai_compatible
+EMBEDDING_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+EMBEDDING_MODEL=text-embedding-v4
+EMBEDDING_API_KEY=replace_with_your_api_key
+```
+
+如果没有单独设置 `EMBEDDING_API_KEY`，代码会复用 `LLM_API_KEY`。`protocol` 模式下，`PlannerAgent` 会把 plan 写入 `state["latent_states"]` 并向 `ReasonerAgent` 传递 `plan_ref`；`ReasonerAgent` 会把 answer / reasoning 写入 `state["latent_states"]` 并向 `SummarizerAgent` 传递 `answer_ref`。这就是当前的 embedding-based latent collaboration。
+
+运行 HotpotQA-style 对比实验：
+
+```powershell
+.\run_hotpot.ps1
+```
+
+输出会展示：
+
+```text
+latent states:
+  state-0001: producer=planner, provider=openai_compatible, model=text-embedding-v4, shape=[1024], checksum=...
+  state-0002: producer=reasoner, provider=openai_compatible, model=text-embedding-v4, shape=[1024], checksum=...
+
+metrics: messages=2, text_chars=..., latent_transfers=2, latent_bytes=8192, memory_hits=0, elapsed_ms=...
+```
+
+默认会同时跑 `text` 和 `protocol` 两组，并输出：
+
+```text
+=== protocol vs text ===
+text_chars_delta=...
+latent_transfer_delta=...
+latent_bytes_delta=...
+elapsed_ms_delta=...
+```
+
+第二版可以切换到本地轻量英文 embedding：
+
+```powershell
+pip install sentence-transformers
+$env:EMBEDDING_PROVIDER="local"
+$env:LOCAL_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+.\run_hotpot.ps1
+```
+
+`sentence-transformers/all-MiniLM-L6-v2` 会输出 384 维向量，适合作为本地离线 embedding 对照。第一次运行会下载模型，后续会复用本地缓存。也可以设置 `LOCAL_EMBEDDING_CACHE_DIR` 指定模型缓存目录。
+
+当前实现没有修改 LangGraph 框架内核，而是在 LangGraph-style `StateGraph` 的共享状态里扩展了 `latent_states`、`state_refs` 和 `metrics`。因此它属于应用层的非文本协作传输：Agent 节点通过结构化协议传 `state_ref`，再从共享 state 中读取 embedding latent state。
+# 当前实现状态
+
+以本节为准。当前 HotpotQA-style 主实验流程是：
+
+```text
+PlannerAgent -> ReasonerAgent -> SummarizerAgent
+```
+
+`RetrieverAgent` 和 `ExecutorAgent` 仍保留在代码与能力注册中，但当前 HotpotQA-style 主流程暂时没有接回它们。后续接入超图记忆后，目标流程会扩展为：
+
+```text
+PlannerAgent -> RetrieverAgent -> ReasonerAgent -> SummarizerAgent
+```
+
+当前已经实现 Qwen / OpenAI-compatible LLM 调用、OpenAI-compatible embedding API、本地 `sentence-transformers/all-MiniLM-L6-v2` embedding provider，以及 text/protocol 两种通信模式对比。`protocol` 模式会通过 `state_ref` 传递 `plan_ref` 和 `answer_ref`，并在 `state["latent_states"]` 中保存 embedding latent state。
+
+OSC / CKM 当前仍是轻量 `cognitive_gaps` trace，用于记录 `known`、`unknown`、`needed`、`gap_type` 和 `confidence`。它还没有成为自动路由或自动决策模块。

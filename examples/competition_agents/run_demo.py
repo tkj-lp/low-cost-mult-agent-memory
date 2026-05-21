@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 
 from competition_agents.graph import build_graph
+from competition_agents.llm.client import get_llm_provider
 from competition_agents.state import initial_state
 
 
@@ -116,6 +117,13 @@ def print_comparison(text_result: dict, protocol_result: dict) -> None:
 
 def main() -> None:
     # 两种模式运行同一批任务，保证对比公平。
+    print(
+        "LLM providers: "
+        f"default={get_llm_provider()}, "
+        f"planner={get_llm_provider('planner')}, "
+        f"reasoner={get_llm_provider('reasoner')}, "
+        f"summarizer={get_llm_provider('summarizer')}"
+    )
     text_result = run_mode("text")
     protocol_result = run_mode("protocol")
     print_comparison(text_result, protocol_result)

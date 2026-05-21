@@ -93,3 +93,27 @@
 ```
 
 这里没有声称已经实现真实 KV cache 传递，而是用 `state_ref`、embedding、摘要、校验值和消费方列表模拟“隐藏状态引用传递”。后续接真实 embedding 或超图记忆时，优先替换 `embedding_provider` 和 `vector` 来源，保持 `state_id`、`producer`、`consumers`、`checksum` 等字段稳定。
+# 当前实现状态
+
+当前协议版本仍是 `0.2`。HotpotQA-style 主实验中，`protocol` 模式的实际链路是：
+
+```text
+PlannerAgent -> ReasonerAgent -> SummarizerAgent
+```
+
+协议包会携带 `protocol_version`、`action`、`params`、`result`、`capability_required`、`sender_capability_ref`、`receiver_capability`、`cognitive_gap` 等字段。当前非文本协作传输通过 `state_refs` 实现：
+
+```text
+plan_ref: PlannerAgent 写入，ReasonerAgent 读取
+answer_ref: ReasonerAgent 写入，SummarizerAgent 读取
+```
+
+`latent_states` 的 embedding provider 不再固定为早期的 `hash-v1` 占位值，而是由环境变量 `EMBEDDING_PROVIDER` 决定：
+
+```text
+hash
+openai_compatible
+local
+```
+
+当前 Qwen / DashScope `text-embedding-v4` 输出 1024 维向量；本地 `sentence-transformers/all-MiniLM-L6-v2` 输出 384 维向量。当前实现没有声称传递真实 LLM hidden state 或 KV cache，而是实现 embedding-based latent state reference。
