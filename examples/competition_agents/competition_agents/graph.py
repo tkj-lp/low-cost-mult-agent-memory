@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from agents.planner import planner_agent
 from agents.reasoner import reasoner_agent
+from agents.retriever import retriever_agent
 from agents.summarizer import summarizer_agent
 from competition_agents.state import CompetitionState
 
@@ -11,7 +12,7 @@ class SequentialCompetitionGraph:
 
     def invoke(self, state: CompetitionState) -> CompetitionState:
         # 每个 Agent 读取共享状态，并返回自己负责的局部更新。
-        for agent in (planner_agent, reasoner_agent, summarizer_agent):
+        for agent in (planner_agent, retriever_agent, reasoner_agent, summarizer_agent):
             state = {**state, **agent(state)}
         return state
 
@@ -29,12 +30,14 @@ def build_graph():
     graph = StateGraph(CompetitionState)
     # 每个 Agent 注册成一个图节点。
     graph.add_node("planner", planner_agent)
+    graph.add_node("retriever", retriever_agent)
     graph.add_node("reasoner", reasoner_agent)
     graph.add_node("summarizer", summarizer_agent)
 
-    # 第一版先用固定流水线，后续可以升级成动态路由。
+    # 固定流水线：规划 -> 检索/状态写入 -> 推理 -> 总结/记忆沉淀。
     graph.add_edge(START, "planner")
-    graph.add_edge("planner", "reasoner")
+    graph.add_edge("planner", "retriever")
+    graph.add_edge("retriever", "reasoner")
     graph.add_edge("reasoner", "summarizer")
     graph.add_edge("summarizer", END)
     return graph.compile()
