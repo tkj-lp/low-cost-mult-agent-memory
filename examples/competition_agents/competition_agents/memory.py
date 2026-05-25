@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from competition_agents.embedding import embed_text
+from competition_agents.hypergraph_memory import build_hypergraph_view, search_hypergraph_memory
+from competition_agents.state import simple_embedding
 
 
 def add_memory(
@@ -16,7 +17,6 @@ def add_memory(
     """向当前内存存储追加一条可复用记忆。"""
 
     # 元数据字段保持稳定，方便网页和超图模块对接。
-    embedding = embed_text(task_topic + " " + summary)
     record = {
         "memory_id": f"mem-{len(memory) + 1:04d}",
         "source_agent": source_agent,
@@ -24,34 +24,28 @@ def add_memory(
         "task_topic": task_topic,
         "summary": summary,
         "tags": tags,
-        "embedding": embedding.vector,
-        "embedding_provider": embedding.provider,
-        "embedding_model": embedding.model,
+        "embedding": simple_embedding(task_topic + " " + summary),
+        "entities": [],
+        "supporting_facts": [],
+        "evidence": [],
+        "reasoning_path": [],
+        "state_refs": [],
+        "answer": summary,
+        "reuse_count": 0,
     }
+    record["hypergraph"] = build_hypergraph_view(record)
     return [*memory, record]
 
 
 def search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
-    """用简单的关键词和标签分数检索记忆。"""
+    """用最小超图索引检索记忆。
+
+    返回对象仍然是 memory record，保证 RetrieverAgent 不需要改。额外添加
+    hypergraph_score / matched_nodes / matched_hyperedges 字段，方便网页同学展示
+    “为什么命中这条记忆”。
+    """
 
     if not memory:
         return []
 
-    # 当前本地打分逻辑故意保持简单，后续会替换成超图检索。
-    query_tokens = set(query.lower().split())
-
-    def score(record: dict) -> tuple[int, int]:
-        haystack = " ".join(
-            [
-                record.get("task_topic", ""),
-                record.get("summary", ""),
-                " ".join(record.get("tags", [])),
-            ]
-        ).lower()
-        overlap = len(query_tokens.intersection(haystack.split()))
-        tag_bonus = sum(1 for tag in record.get("tags", []) if tag.lower() in query.lower())
-        return overlap + tag_bonus, len(record.get("summary", ""))
-
-    # 只返回正分结果，避免无关任务被计为命中。
-    ranked = sorted(memory, key=score, reverse=True)
-    return [record for record in ranked[:top_k] if score(record)[0] > 0]
+    return search_hypergraph_memory(memory, query, top_k=top_k)
