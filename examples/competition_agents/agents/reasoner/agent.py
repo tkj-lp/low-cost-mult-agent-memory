@@ -6,12 +6,14 @@ from competition_agents.state import CompetitionState, put_latent_state, record_
 
 
 def reasoner_agent(state: CompetitionState) -> dict:
-    """基于任务和 Planner 输出生成候选答案；当前不依赖检索证据。"""
+    """基于任务、计划、检索证据和记忆命中生成候选答案。"""
 
-    memory_hits: list[dict] = []
-    evidence: list[str] = []
+    # RetrieverAgent 会在前一节点写入 evidence 和 memory_hits。
+    memory_hits = state.get("memory_hits", [])
+    evidence = state.get("evidence", [])
     plan = state.get("plan", [])
     plan_ref = state.get("state_refs", {}).get("plan", "")
+    evidence_ref = state.get("state_refs", {}).get("evidence", "")
     if state["mode"] == "protocol" and plan_ref:
         plan_state = state.get("latent_states", {}).get(plan_ref, {})
         plan_text = str(plan_state.get("source_text") or plan_state.get("summary") or "")
@@ -28,11 +30,11 @@ def reasoner_agent(state: CompetitionState) -> dict:
     )
     cognitive_gap = make_cognitive_gap(
         agent="reasoner",
-        known=["task", "plan", "empty_memory", "no_retrieved_evidence"],
-        unknown=["external_supporting_facts", "hypergraph_memory"],
+        known=["task", "plan", "retrieved_evidence", "memory_hit_count"],
+        unknown=[] if memory_hits else ["reusable_memory"],
         needed=["summary_generation"],
-        gap_type="no_retrieval_context",
-        confidence=0.7,
+        gap_type="memory_grounded_reasoning" if memory_hits else "no_memory_hit",
+        confidence=0.82 if memory_hits else 0.7,
     )
     answer_ref = ""
     latent_states = state.get("latent_states", {})
@@ -41,6 +43,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
         answer_text = (
             f"answer_candidate: {result.get('answer_candidate', '')}\n"
             f"reasoning_summary: {result.get('reasoning_summary', '')}\n"
+            f"memory_hits: {[hit.get('memory_id') for hit in memory_hits]}\n"
             f"limitations: {result.get('limitations', [])}"
         )
         answer_ref, latent_states, metrics = put_latent_state(
@@ -53,9 +56,10 @@ def reasoner_agent(state: CompetitionState) -> dict:
 
     if state["mode"] == "text":
         payload = (
-            "ReasonerAgent received the task and planner steps, with memory_hits=0 "
-            "and no retrieved evidence. It generated an answer_candidate directly from "
-            f"the task and plan. Answer candidate: {result.get('answer_candidate', '')}"
+            f"ReasonerAgent received {len(evidence)} evidence items and "
+            f"{len(memory_hits)} memory hits from RetrieverAgent. "
+            f"It generated an answer_candidate from the task, plan, evidence, and memory. "
+            f"Answer candidate: {result.get('answer_candidate', '')}"
         )
     else:
         payload = make_packet(
@@ -65,19 +69,22 @@ def reasoner_agent(state: CompetitionState) -> dict:
             content_type="protocol.answer_candidate",
             schema_ref="competition.protocol.answer_candidate.v0.2",
             params={
-                "memory_hits": 0,
-                "evidence_refs": [],
+                "memory_hits": len(memory_hits),
+                "memory_refs": [hit.get("memory_id") for hit in memory_hits],
+                "evidence_ref": evidence_ref,
                 "plan_ref": plan_ref,
                 "answer_ref": answer_ref,
             },
             result={
                 "answer_ref": answer_ref,
+                "memory_hits": [hit.get("memory_id") for hit in memory_hits],
             },
-            state_refs=[ref for ref in [plan_ref, answer_ref] if ref],
+            state_refs=[ref for ref in [plan_ref, evidence_ref, answer_ref] if ref],
+            memory_refs=[hit.get("memory_id") for hit in memory_hits],
             capability_required=["summary_generation", "memory_write"],
             receiver_capability="summary_generation",
             cognitive_gap=cognitive_gap,
-            confidence=0.7,
+            confidence=0.82 if memory_hits else 0.7,
         )
 
     messages, metrics = record_message(
@@ -96,8 +103,9 @@ def reasoner_agent(state: CompetitionState) -> dict:
         "execution_result": {
             **result,
             "execution_mode": "model_reasoning",
-            "retrieval_mode": "skipped",
+            "retrieval_mode": "hypergraph_memory" if memory_hits else "retrieved_no_hit",
             "plan_ref": plan_ref,
+            "evidence_ref": evidence_ref,
             "answer_ref": answer_ref,
         },
         "messages": messages,
