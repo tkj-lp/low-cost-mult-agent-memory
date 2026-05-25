@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from competition_agents.llm import get_llm_client
-from competition_agents.protocol import make_cognitive_gap, make_packet
+from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_latent_state, record_message
 
 
@@ -54,17 +54,15 @@ def planner_agent(state: CompetitionState) -> dict:
         )
     else:
         # protocol 模式只传紧凑的动作参数，不传长段自然语言。
-        payload = make_packet(
+        payload = make_compact_packet(
             sender="planner",
-            receiver="reasoner",
-            action="reason",
-            content_type="protocol.state_ref",
-            schema_ref="competition.protocol.intent.v0.2",
-            params={"task": task, "retrieval": "skipped", "plan_ref": plan_ref},
-            result={"plan_ref": plan_ref},
+            receiver="retriever",
+            action="retrieve",
+            content_type="state_ref",
+            params={"plan": plan_ref},
+            result={"next": "retriever"},
             state_refs=[plan_ref],
-            capability_required=["model_reasoning"],
-            receiver_capability="model_reasoning",
+            capability_required=["retrieve"],
             cognitive_gap=cognitive_gap,
             confidence=0.72,
         )
@@ -73,8 +71,8 @@ def planner_agent(state: CompetitionState) -> dict:
     messages, metrics = record_message(
         state,
         sender="planner",
-        receiver="reasoner",
-        action="reason",
+        receiver="retriever",
+        action="retrieve",
         payload=payload,
         metrics=metrics,
     )

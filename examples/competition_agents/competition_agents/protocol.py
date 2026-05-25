@@ -74,3 +74,53 @@ def make_packet(
         if value not in (None, [], {}):
             packet[key] = value
     return packet
+
+
+
+def make_compact_packet(
+    *,
+    sender: str,
+    receiver: str,
+    action: str,
+    content_type: str,
+    params: dict[str, Any] | None = None,
+    result: dict[str, Any] | None = None,
+    state_refs: list[str] | None = None,
+    memory_refs: list[str] | None = None,
+    capability_required: list[str] | None = None,
+    cognitive_gap: dict[str, Any] | None = None,
+    confidence: float | None = None,
+) -> dict[str, Any]:
+    """????????????
+
+    ?? protocol ???????????????????state_ref ?
+    memory_ref????????? schema??? cognitive_gap ?????
+    state ????????????
+    """
+
+    packet: dict[str, Any] = {
+        "v": PROTOCOL_VERSION,
+        "id": f"m-{uuid4().hex[:6]}",
+        "from": sender,
+        "to": receiver,
+        "action": action,
+        "type": content_type,
+    }
+    optional_fields = {
+        "p": params,
+        "r": result,
+        "s": state_refs,
+        "m": memory_refs,
+        "cap": capability_required,
+        "conf": round(confidence, 2) if confidence is not None else None,
+    }
+    if cognitive_gap:
+        optional_fields["gap"] = {
+            "agent": cognitive_gap.get("agent"),
+            "type": cognitive_gap.get("gap_type"),
+            "conf": cognitive_gap.get("confidence"),
+        }
+    for key, value in optional_fields.items():
+        if value not in (None, [], {}):
+            packet[key] = value
+    return packet

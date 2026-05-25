@@ -27,6 +27,7 @@
 | `competition_10` | `run_demo.py` | 10 轮比赛主流程 | messages、text_chars、latent_transfers、latent_bytes、memory_hits、elapsed_ms |
 | `hotpot_5` | `run_hotpot_samples.py` | 5 个多跳问答样例 | final_answer、gold、exact_match、messages、text_chars、latent_transfers、memory_hits |
 | `hidden_demo` | `run_latent_hidden_demo.py` | 本地 LLM hidden state 机制验证 | hidden_state_refs、hidden shape、hidden bytes、pooled_similarity |
+| `hidden_hotpot_5` | `run_hidden_latent_samples.py` | 5 个多跳样例的 hidden-state 传递实验 | exact_match、hidden_state_refs、hidden_bytes、text_chars、elapsed_ms |
 
 ### 推荐组合
 
@@ -39,8 +40,9 @@
 | `api_embedding` | `competition_10` | 推荐 | API 生成文字 + 本地 embedding 状态传递 + 主流程指标 |
 | `api_embedding` | `hotpot_5` | 推荐 | API 生成文字 + 本地 embedding + exact_match |
 | `latent_hidden` | `hidden_demo` | 推荐 | 证明直接读取本地 LLM 最后一层 hidden state |
+| `latent_hidden` | `hidden_hotpot_5` | 推荐 | 5 个样例跑 hidden-state reference transfer |
 | `latent_hidden` | `competition_10` | 暂不支持 | hidden state 还没有接进 10 轮主流程 |
-| `latent_hidden` | `hotpot_5` | 暂不支持 | hidden state 还没有接进多跳问答主流程 |
+| `latent_hidden` | `hotpot_5` | 暂不支持 | 常规 Hotpot 脚本使用 embedding；hidden 版本请用 `hidden_hotpot_5` |
 
 ## 二、运行方式对应的前置配置
 
@@ -266,6 +268,34 @@ Reasoner 再生成自己的 hidden state
 
 它目前不跑 10 轮任务，也不跑超图记忆检索。
 
+### 数据集 4：`hidden_hotpot_5`
+
+实际脚本：`run_hidden_latent_samples.py`
+
+运行命令：
+
+```powershell
+python examples\competition_agents\run_hidden_latent_samples.py
+```
+
+它跑什么：
+
+```text
+5 个多跳样例
+Planner / Retriever / Reasoner 都提取本地 Qwen 最后一层 hidden state
+Agent 消息只传 hidden state_ref
+输出 exact_match、hidden_state_refs、hidden_bytes、text_chars、elapsed_ms
+```
+
+适合做什么：
+
+```text
+把 hidden latent 从单个 demo 扩展成多样例实验
+给页面展示 hidden-state reference transfer 指标
+```
+
+注意：当前答案由确定性 evidence extractor 生成，用来隔离 hidden-state 传递开销；完整 LLM 问答准确率仍由 `run_hotpot_samples.py` 验证。
+
 ## 四、可直接复制的常用组合
 
 ### 组合 1：`quick + competition_10`
@@ -351,6 +381,23 @@ python examples\competition_agents\run_latent_hidden_demo.py
 通过 state_ref 传递 hidden state 引用
 不调用 API
 不等同于 sentence-transformers embedding
+```
+
+### 组合 6：`latent_hidden + hidden_hotpot_5`
+
+先执行 `latent_hidden` 配置，然后运行：
+
+```powershell
+python examples\competition_agents\run_hidden_latent_samples.py
+```
+
+含义：
+
+```text
+5 个多跳样例
+Planner / Retriever / Reasoner 都提取 outputs.hidden_states[-1]
+消息只传 hidden state_ref
+统计 hidden_state_refs、hidden_bytes、text_chars、elapsed_ms
 ```
 
 ## 五、三种传输到底传的是什么

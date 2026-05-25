@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from competition_agents.memory import search_memory
-from competition_agents.protocol import make_cognitive_gap, make_packet
+from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_latent_state, record_message
 
 
@@ -96,22 +96,16 @@ def retriever_agent(state: CompetitionState) -> dict:
         )
     else:
         # protocol 模式通过 id 传证据和记忆引用，通信开销更低。
-        payload = make_packet(
+        payload = make_compact_packet(
             sender="retriever",
-            receiver="executor",
-            action="execute",
-            content_type="protocol.state_ref",
-            schema_ref="competition.protocol.state_ref.v0.2",
-            params={"tool": "codeact_stats", "evidence_count": len(evidence)},
-            result={
-                "evidence_refs": [latent_ref],
-                "memory_hits": [hit["memory_id"] for hit in hits],
-                "retrieval_mode": "keyword_tag_matching",
-            },
+            receiver="reasoner",
+            action="reason",
+            content_type="state_ref",
+            params={"tool": "codeact_stats", "n": len(evidence)},
+            result={"mode": "memory", "hits": len(hits)},
             state_refs=[latent_ref],
             memory_refs=[hit["memory_id"] for hit in hits],
-            capability_required=["tool_execution"],
-            receiver_capability="tool_execution",
+            capability_required=["reason"],
             cognitive_gap=cognitive_gap,
             confidence=0.78 if hits else 0.64,
         )
@@ -120,8 +114,8 @@ def retriever_agent(state: CompetitionState) -> dict:
     messages, metrics = record_message(
         state,
         sender="retriever",
-        receiver="executor",
-        action="execute",
+        receiver="reasoner",
+        action="reason",
         payload=payload,
         metrics=metrics,
     )
