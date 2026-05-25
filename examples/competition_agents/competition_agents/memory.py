@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from competition_agents.embedding import embed_text
 from competition_agents.hypergraph_memory import build_hypergraph_view, search_hypergraph_memory
-from competition_agents.state import simple_embedding
 
 
 def add_memory(
@@ -16,7 +16,8 @@ def add_memory(
 ) -> list[dict]:
     """向当前内存存储追加一条可复用记忆。"""
 
-    # 元数据字段保持稳定，方便网页和超图模块对接。
+    # 保留可插拔 embedding 元数据，同时补齐超图检索需要的结构字段。
+    embedding = embed_text(task_topic + " " + summary)
     record = {
         "memory_id": f"mem-{len(memory) + 1:04d}",
         "source_agent": source_agent,
@@ -24,7 +25,9 @@ def add_memory(
         "task_topic": task_topic,
         "summary": summary,
         "tags": tags,
-        "embedding": simple_embedding(task_topic + " " + summary),
+        "embedding": embedding.vector,
+        "embedding_provider": embedding.provider,
+        "embedding_model": embedding.model,
         "entities": [],
         "supporting_facts": [],
         "evidence": [],
@@ -33,17 +36,13 @@ def add_memory(
         "answer": summary,
         "reuse_count": 0,
     }
+    # hypergraph 字段用于解释检索命中路径，不改变 Agent 读取 memory record 的方式。
     record["hypergraph"] = build_hypergraph_view(record)
     return [*memory, record]
 
 
 def search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
-    """用最小超图索引检索记忆。
-
-    返回对象仍然是 memory record，保证 RetrieverAgent 不需要改。额外添加
-    hypergraph_score / matched_nodes / matched_hyperedges 字段，方便网页同学展示
-    “为什么命中这条记忆”。
-    """
+    """用超图索引检索记忆，并保持返回对象仍是 memory record。"""
 
     if not memory:
         return []
