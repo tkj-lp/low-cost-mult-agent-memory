@@ -52,6 +52,27 @@ def test_add_memory_adds_hypergraph_and_default_fields() -> None:
     assert record["reuse_count"] == 0
 
 
+def test_add_memory_keeps_optional_trace() -> None:
+    """add_memory 新增 trace 后仍应兼容旧调用，并在传入时保存 state 快照。"""
+
+    trace = {
+        "task_meta": {"task_id": "chain-001:turn-1"},
+        "messages": [{"from": "planner", "to": "retriever"}],
+        "memory_hits": [],
+        "metrics": {"message_count": 1},
+    }
+    memory = add_memory(
+        [],
+        source_agent="summarizer",
+        task_topic="Trace memory",
+        summary="Trace should be stored for hypergraph reconstruction.",
+        tags=["trace"],
+        trace=trace,
+    )
+
+    assert memory[0]["trace"] == trace
+
+
 def test_build_hypergraph_view_adds_nodes_and_event_hyperedge() -> None:
     """一条记忆应被映射成多个类型节点和一条 memory_event 超边。"""
 

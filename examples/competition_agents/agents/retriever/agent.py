@@ -123,6 +123,7 @@ def retriever_agent(state: CompetitionState) -> dict:
         "evidence": evidence,
         "memory_hits": hits,
         "latent_states": latent_states,
+        "state_refs": {**state.get("state_refs", {}), "evidence": latent_ref},
         "messages": messages,
         "metrics": metrics,
         "cognitive_gaps": [*state["cognitive_gaps"], cognitive_gap],

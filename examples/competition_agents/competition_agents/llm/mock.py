@@ -31,13 +31,17 @@ class MockLLMClient:
         evidence: list[str],
         memory_hits: int,
         mode: str,
+        memory_hit_details: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         return {
             "answer_candidate": (
                 "Mock ReasonerAgent placeholder. Configure LLM_REASONER_PROVIDER=openai_compatible "
                 "to get a real model-generated answer."
             ),
-            "reasoning_summary": "Mock reasoner did not perform real model reasoning.",
+            "reasoning_summary": (
+                "Mock reasoner did not perform real model reasoning. "
+                f"Received {len(memory_hit_details or [])} memory hit detail records."
+            ),
             "limitations": ["mock_reasoner"],
             "raw_model_output": "",
         }

@@ -121,6 +121,7 @@ class OpenAICompatibleClient:
         evidence: list[str],
         memory_hits: int,
         mode: str,
+        memory_hit_details: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         # Reasoner 是主答案生成者；没有检索证据时也必须直接回答任务。
         prompt = (
@@ -136,6 +137,7 @@ class OpenAICompatibleClient:
             f"Plan: {json.dumps(plan, ensure_ascii=False)}\n"
             f"Evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
             f"Memory hits: {memory_hits}\n"
+            f"Memory hit details: {json.dumps(memory_hit_details or [], ensure_ascii=False)}\n"
         )
         raw = self.generate(prompt)
         parsed = _loads_json_object(raw)

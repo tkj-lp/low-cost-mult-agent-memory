@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Any
 
 from competition_agents.embedding import embed_text
 from hypergraph_memory_method import build_hypergraph_view, search_hypergraph_memory
@@ -13,6 +14,7 @@ def add_memory(
     task_topic: str,
     summary: str,
     tags: list[str],
+    trace: dict[str, Any] | None = None,
 ) -> list[dict]:
     """向当前内存存储追加一条可复用记忆。"""
 
@@ -36,6 +38,15 @@ def add_memory(
         "answer": summary,
         "reuse_count": 0,
     }
+    if trace is not None:
+        record["trace"] = trace
+        state_refs = trace.get("state_refs", {})
+        if isinstance(state_refs, dict):
+            record["state_refs"] = [ref for ref in state_refs.values() if ref]
+        record["evidence"] = trace.get("evidence", [])
+        task_meta = trace.get("task_meta", {})
+        if isinstance(task_meta, dict):
+            record["supporting_facts"] = task_meta.get("supporting_facts", [])
     # hypergraph 字段用于解释检索命中路径，不改变 Agent 读取 memory record 的方式。
     record["hypergraph"] = build_hypergraph_view(record)
     return [*memory, record]

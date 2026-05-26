@@ -36,12 +36,26 @@ def summarizer_agent(state: CompetitionState) -> dict:
         mode=state["mode"],
     )
     # 这里是共享记忆写入路径，也是后续接超图存储的钩子。
+    trace = {
+        "task_meta": state.get("task_meta", {}),
+        "plan": state.get("plan", []),
+        "messages": state.get("messages", []),
+        "evidence": state.get("evidence", []),
+        "memory_hits": state.get("memory_hits", []),
+        "latent_states": state.get("latent_states", {}),
+        "state_refs": state.get("state_refs", {}),
+        "execution_result": state.get("execution_result", {}),
+        "cognitive_gaps": state.get("cognitive_gaps", []),
+        "agent_outputs": state.get("agent_outputs", []),
+        "metrics": state.get("metrics", {}),
+    }
     memory = add_memory(
         state["memory"],
         source_agent="summarizer",
         task_topic=state["task"],
         summary=summary,
         tags=["langgraph", "multi-agent", "protocol", state["mode"]],
+        trace=trace,
     )
     cognitive_gap = make_cognitive_gap(
         agent="summarizer",

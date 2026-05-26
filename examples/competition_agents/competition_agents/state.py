@@ -22,6 +22,7 @@ class CompetitionState(TypedDict):
     """在所有 LangGraph 节点之间传递的共享状态。"""
 
     task: str
+    task_meta: dict[str, Any]
     mode: Literal["text", "protocol"]
     plan: list[str]
     evidence: list[str]
@@ -38,11 +39,17 @@ class CompetitionState(TypedDict):
     metrics: Metrics
 
 
-def initial_state(task: str, mode: Literal["text", "protocol"], memory: list[dict] | None = None) -> CompetitionState:
+def initial_state(
+    task: str,
+    mode: Literal["text", "protocol"],
+    memory: list[dict] | None = None,
+    task_meta: dict[str, Any] | None = None,
+) -> CompetitionState:
     """创建单个任务状态，同时保留跨任务共享记忆。"""
 
     return {
         "task": task,
+        "task_meta": task_meta or {},
         "mode": mode,
         "plan": [],
         "evidence": [],

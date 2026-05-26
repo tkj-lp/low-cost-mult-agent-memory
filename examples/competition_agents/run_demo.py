@@ -141,7 +141,215 @@ def prediction_from_result(result: dict[str, Any]) -> str:
     return str(execution_result.get("answer_candidate") or result.get("final_answer", ""))
 
 
-def run_mode(mode: str, tasks: list[dict[str, Any]], *, dataset_type: str) -> dict[str, Any]:
+def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
+    """从数据集条目中提取稳定任务元信息，写入 state 和记忆 trace。"""
+
+    return {
+        key: task_item.get(key)
+        for key in [
+            "task_id",
+            "group_id",
+            "turn_id",
+            "dataset_type",
+            "expected_reuse",
+            "question",
+            "supporting_facts",
+        ]
+        if key in task_item
+    }
+
+
+def _shorten(value: Any, limit: int = 240) -> str:
+    """把展示字段压短，避免 trace 输出太长。"""
+
+    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False, default=str)
+    return text if len(text) <= limit else text[:limit] + "..."
+
+
+def _payload_refs(payload: Any) -> tuple[list[str], list[str]]:
+    """从结构化 payload 中提取 state_refs 和 memory_refs。"""
+
+    if not isinstance(payload, dict):
+        return [], []
+    state_refs = payload.get("state_refs") or payload.get("refs") or payload.get("s") or []
+    memory_refs = payload.get("memory_refs") or payload.get("m") or []
+    return list(state_refs), list(memory_refs)
+
+
+def _format_list(values: list[Any], limit: int = 12) -> str:
+    """限制列表展示长度，避免超图节点过多时刷屏。"""
+
+    shown = values[:limit]
+    suffix = f" ... (+{len(values) - limit} more)" if len(values) > limit else ""
+    return f"{shown}{suffix}"
+
+
+def _format_json(value: Any, limit: int = 700) -> str:
+    """把结构化字段压成单行 JSON，便于在终端里检查 state 内容。"""
+
+    return _shorten(json.dumps(value, ensure_ascii=False, default=str, separators=(",", ":")), limit)
+
+
+def print_agent_trace(result: dict[str, Any]) -> None:
+    """展示每个 Agent 的主要输出，方便调试协作链路。"""
+
+    print("agent outputs:")
+    if result.get("plan"):
+        print("  PlannerAgent:")
+        for index, step in enumerate(result["plan"], start=1):
+            print(f"    {index}. {_shorten(step, 120)}")
+    if result.get("evidence"):
+        print("  RetrieverAgent evidence:")
+        for item in result["evidence"][:5]:
+            print(f"    - {_shorten(item, 160)}")
+    if result.get("execution_result"):
+        print("  ReasonerAgent execution_result:")
+        for key in ["answer_candidate", "reasoning_summary", "retrieval_mode", "plan_ref", "evidence_ref", "answer_ref"]:
+            if key in result["execution_result"]:
+                print(f"    {key}: {_shorten(result['execution_result'][key], 180)}")
+    if result.get("final_answer"):
+        print(f"  SummarizerAgent final_answer: {_shorten(result['final_answer'], 240)}")
+    for output in result.get("agent_outputs", []):
+        agent = output.get("agent", "unknown")
+        raw_output = output.get("raw_output", "")
+        print(f"  raw {agent}: {_shorten(raw_output, 180)}")
+
+
+def print_memory_trace(result: dict[str, Any]) -> None:
+    """展示超图记忆命中、分数和可解释路径。"""
+
+    print("memory retrieval trace:")
+    hits = result.get("memory_hits", [])
+    if not hits:
+        print("  no memory hits")
+        return
+    for index, hit in enumerate(hits, start=1):
+        print(f"  hit {index}:")
+        print(f"    memory_id: {hit.get('memory_id')}")
+        print(f"    summary: {_shorten(hit.get('summary', ''), 220)}")
+        print(f"    tags: {hit.get('tags', [])}")
+        print(f"    retrieval_score: {hit.get('retrieval_score', '<none>')}")
+        print(f"    hypergraph_score: {hit.get('hypergraph_score', '<none>')}")
+        print(f"    embedding_score: {hit.get('embedding_score', '<none>')}")
+        print(f"    matched_nodes: {_format_list(hit.get('matched_nodes', []))}")
+        print(f"    matched_hyperedges: {_format_list(hit.get('matched_hyperedges', []))}")
+        reasoning_path = hit.get("reasoning_path", [])
+        if reasoning_path:
+            print("    reasoning_path:")
+            for path in reasoning_path[:5]:
+                print(
+                    "      "
+                    f"{path.get('query_node')} -> {path.get('hyperedge_id')} -> {path.get('memory_id')}"
+                )
+
+
+def print_latent_trace(result: dict[str, Any]) -> None:
+    """展示状态引用和 latent state 元数据。"""
+
+    print("message refs:")
+    for message in result.get("messages", []):
+        state_refs, memory_refs = _payload_refs(message.get("payload"))
+        if state_refs or memory_refs:
+            print(
+                f"  {message['from']} -> {message['to']} "
+                f"action={message['action']} state_refs={state_refs} memory_refs={memory_refs}"
+            )
+
+    print("latent states:")
+    latent_states = result.get("latent_states", {})
+    if not latent_states:
+        print("  no latent states")
+        return
+    for state_id, state in latent_states.items():
+        print(
+            f"  {state_id}: producer={state.get('producer')}, "
+            f"content_type={state.get('content_type')}, "
+            f"provider={state.get('embedding_provider', state.get('model', '<none>'))}, "
+            f"shape={state.get('shape')}, checksum={state.get('checksum')}"
+        )
+
+
+def print_state_trace(task_item: dict[str, Any], result: dict[str, Any]) -> None:
+    """展示超图建图需要的 state 快照字段，不改变任何记忆写入逻辑。"""
+
+    print("state snapshot trace:")
+    task_meta = task_meta_from_item(task_item)
+    print(f"  task_meta_from_runner: {_format_json(task_meta, 900)}")
+    print(f"  task_meta_from_state: {_format_json(result.get('task_meta', {}), 900)}")
+    print(f"  top_level_state_refs: {_format_json(result.get('state_refs', {}), 500)}")
+
+    print("  message payloads:")
+    for index, message in enumerate(result.get("messages", []), start=1):
+        print(
+            f"    {index}. {message.get('from')} -> {message.get('to')} "
+            f"action={message.get('action')} chars={message.get('char_cost')}"
+        )
+        print(f"       payload={_format_json(message.get('payload'), 900)}")
+
+    print("  cognitive_gaps:")
+    gaps = result.get("cognitive_gaps", [])
+    if not gaps:
+        print("    []")
+    for index, gap in enumerate(gaps, start=1):
+        print(f"    {index}. {_format_json(gap, 700)}")
+
+    print("  execution_result:")
+    print(f"    {_format_json(result.get('execution_result', {}), 900)}")
+
+    print("  metrics:")
+    print(f"    {_format_json(result.get('metrics', {}), 500)}")
+
+    latest_memory = result.get("memory", [])[-1] if result.get("memory") else {}
+    print("  latest_memory_write:")
+    if not latest_memory:
+        print("    <none>")
+        return
+    print(
+        "    "
+        + _format_json(
+            {
+                "memory_id": latest_memory.get("memory_id"),
+                "source_agent": latest_memory.get("source_agent"),
+                "task_topic": _shorten(latest_memory.get("task_topic", ""), 160),
+                "summary": _shorten(latest_memory.get("summary", ""), 180),
+                "tags": latest_memory.get("tags"),
+                "state_refs": latest_memory.get("state_refs"),
+                "has_trace": "trace" in latest_memory,
+                "trace_keys": list(latest_memory.get("trace", {}).keys()),
+            },
+            1000,
+        )
+    )
+    trace = latest_memory.get("trace", {})
+    if not trace:
+        print("    trace: <not stored by current add_memory call>")
+    else:
+        print(
+            "    trace_counts: "
+            + _format_json(
+                {
+                    "messages": len(trace.get("messages", [])),
+                    "evidence": len(trace.get("evidence", [])),
+                    "memory_hits": len(trace.get("memory_hits", [])),
+                    "latent_states": len(trace.get("latent_states", {})),
+                    "cognitive_gaps": len(trace.get("cognitive_gaps", [])),
+                    "agent_outputs": len(trace.get("agent_outputs", [])),
+                },
+                500,
+            )
+        )
+
+
+def run_mode(
+    mode: str,
+    tasks: list[dict[str, Any]],
+    *,
+    dataset_type: str,
+    show_agents: bool = False,
+    show_memory: bool = False,
+    show_latent: bool = False,
+    show_state: bool = False,
+) -> dict[str, Any]:
     """运行一种协作模式，并汇总该模式的指标。"""
 
     graph = build_graph()
@@ -163,7 +371,9 @@ def run_mode(mode: str, tasks: list[dict[str, Any]], *, dataset_type: str) -> di
         group_id = task_item.get("group_id", "default")
         memory = group_memory.get(group_id, []) if dataset_type == "continuous" else global_memory
         started = time.perf_counter()
-        result = graph.invoke(initial_state(task_item["task"], mode, memory))
+        result = graph.invoke(
+            initial_state(task_item["task"], mode, memory, task_meta=task_meta_from_item(task_item))
+        )
         elapsed = time.perf_counter() - started
         total_elapsed += elapsed
 
@@ -210,6 +420,14 @@ def run_mode(mode: str, tasks: list[dict[str, Any]], *, dataset_type: str) -> di
             f"memory_hits={memory_hits}, "
             f"elapsed_ms={elapsed * 1000:.2f}"
         )
+        if show_agents:
+            print_agent_trace(result)
+        if show_memory:
+            print_memory_trace(result)
+        if show_latent:
+            print_latent_trace(result)
+        if show_state:
+            print_state_trace(task_item, result)
 
     memory_hit_rate = total_memory_hits / len(tasks) if tasks else 0.0
     exact_match_rate = correct / comparable if comparable else None
@@ -282,6 +500,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset-file", default="", help="Path to multihop or continuous JSON data.")
     parser.add_argument("--limit", type=int, default=0, help="Limit samples or continuous groups. 0 means no limit.")
     parser.add_argument("--modes", default="text,protocol", help="Comma-separated modes: text,protocol")
+    parser.add_argument("--show-agents", action="store_true", help="Print Planner/Retriever/Reasoner/Summarizer outputs.")
+    parser.add_argument("--show-memory", action="store_true", help="Print hypergraph memory hits and reasoning paths.")
+    parser.add_argument("--show-latent", action="store_true", help="Print state refs and latent state metadata.")
+    parser.add_argument("--show-state", action="store_true", help="Print state snapshot fields needed by hypergraph tracing.")
     return parser.parse_args()
 
 
@@ -303,7 +525,18 @@ def main() -> None:
         f"tasks={len(tasks)}, "
         f"modes={','.join(modes)}"
     )
-    results = [run_mode(mode, tasks, dataset_type=args.dataset_type) for mode in modes]
+    results = [
+        run_mode(
+            mode,
+            tasks,
+            dataset_type=args.dataset_type,
+            show_agents=args.show_agents,
+            show_memory=args.show_memory,
+            show_latent=args.show_latent,
+            show_state=args.show_state,
+        )
+        for mode in modes
+    ]
     print_comparison(results)
 
 

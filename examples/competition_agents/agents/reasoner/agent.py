@@ -5,11 +5,30 @@ from competition_agents.protocol import make_cognitive_gap, make_compact_packet,
 from competition_agents.state import CompetitionState, put_latent_state, record_message
 
 
+def _memory_hit_details(memory_hits: list[dict]) -> list[dict]:
+    """提取传给 Reasoner 的记忆命中明细，避免模型只看到命中数量。"""
+
+    return [
+        {
+            "memory_id": hit.get("memory_id"),
+            "summary": hit.get("summary"),
+            "evidence": hit.get("evidence", []),
+            "reasoning_path": hit.get("reasoning_path", []),
+            "matched_nodes": hit.get("matched_nodes", [])[:12],
+            "matched_hyperedges": hit.get("matched_hyperedges", []),
+            "retrieval_score": hit.get("retrieval_score"),
+            "hypergraph_score": hit.get("hypergraph_score"),
+        }
+        for hit in memory_hits
+    ]
+
+
 def reasoner_agent(state: CompetitionState) -> dict:
     """基于任务、计划、检索证据和记忆命中生成候选答案。"""
 
     # RetrieverAgent 会在前一节点写入 evidence 和 memory_hits。
     memory_hits = state.get("memory_hits", [])
+    memory_details = _memory_hit_details(memory_hits)
     evidence = state.get("evidence", [])
     plan = state.get("plan", [])
     plan_ref = state.get("state_refs", {}).get("plan", "")
@@ -26,6 +45,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
         plan=plan,
         evidence=evidence,
         memory_hits=len(memory_hits),
+        memory_hit_details=memory_details,
         mode=state["mode"],
     )
     cognitive_gap = make_cognitive_gap(
@@ -43,7 +63,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
         answer_text = (
             f"answer_candidate: {result.get('answer_candidate', '')}\n"
             f"reasoning_summary: {result.get('reasoning_summary', '')}\n"
-            f"memory_hits: {[hit.get('memory_id') for hit in memory_hits]}\n"
+            f"memory_hits: {memory_details}\n"
             f"limitations: {result.get('limitations', [])}"
         )
         answer_ref, latent_states, metrics = put_latent_state(
@@ -93,6 +113,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             **result,
             "execution_mode": "model_reasoning",
             "retrieval_mode": "hypergraph_memory" if memory_hits else "retrieved_no_hit",
+            "memory_hit_details": memory_details,
             "plan_ref": plan_ref,
             "evidence_ref": evidence_ref,
             "answer_ref": answer_ref,
