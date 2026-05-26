@@ -1,0 +1,734 @@
+[
+  {
+    "group_id": "chain-001",
+    "source_sample_id": "hotpot-001",
+    "topic": "Kiss and Tell (1945 film) -> Shirley Temple",
+    "context": [
+      {
+        "title": "Meet Corliss Archer",
+        "sentences": [
+          "Meet Corliss Archer, a program from radio's Golden Age, ran from January 7, 1943 to September 30, 1956.",
+          "Although it was CBS's answer to NBC's popular \"A Date with Judy\", it was also broadcast by NBC in 1948 as a summer replacement for \"The Bob Hope Show\".",
+          "From October 3, 1952 to June 26, 1953, it aired on ABC, finally returning to CBS.",
+          "Despite the program's long run, fewer than 24 episodes are known to exist."
+        ]
+      },
+      {
+        "title": "Shirley Temple",
+        "sentences": [
+          "Shirley Temple Black (April 23, 1928 – February 10, 2014) was an American actress, singer, dancer, businesswoman, and diplomat who was Hollywood's number one box-office draw as a child actress from 1935 to 1938.",
+          "As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States."
+        ]
+      },
+      {
+        "title": "Janet Waldo",
+        "sentences": [
+          "Janet Marie Waldo (February 4, 1920 – June 12, 2016) was an American radio and voice actress.",
+          "She is best known in animation for voicing Judy Jetson, Nancy in \"Shazzan\", Penelope Pitstop, and Josie in \"Josie and the Pussycats\", and on radio as the title character in \"Meet Corliss Archer\"."
+        ]
+      },
+      {
+        "title": "Meet Corliss Archer (TV series)",
+        "sentences": [
+          "Meet Corliss Archer is an American television sitcom that aired on CBS (July 13, 1951 - August 10, 1951) and in syndication via the Ziv Company from April to December 1954.",
+          "The program was an adaptation of the radio series of the same name, which was based on a series of short stories by F. Hugh Herbert."
+        ]
+      },
+      {
+        "title": "Lord High Treasurer",
+        "sentences": [
+          "The post of Lord High Treasurer or Lord Treasurer was an English government position and has been a British government position since the Acts of Union of 1707.",
+          "A holder of the post would be the third-highest-ranked Great Officer of State, below the Lord High Steward and the Lord High Chancellor."
+        ]
+      },
+      {
+        "title": "A Kiss for Corliss",
+        "sentences": [
+          "A Kiss for Corliss is a 1949 American comedy film directed by Richard Wallace and written by Howard Dimsdale.",
+          "It stars Shirley Temple in her final starring role as well as her final film appearance.",
+          "It is a sequel to the 1945 film \"Kiss and Tell\".",
+          "\"A Kiss for Corliss\" was retitled \"Almost a Bride\" before release and this title appears in the title sequence.",
+          "The film was released on November 25, 1949, by United Artists."
+        ]
+      },
+      {
+        "title": "Kiss and Tell (1945 film)",
+        "sentences": [
+          "Kiss and Tell is a 1945 American comedy film starring then 17-year-old Shirley Temple as Corliss Archer.",
+          "In the film, two teenage girls cause their respective parents much concern when they start to become interested in boys.",
+          "The parents' bickering about which girl is the worse influence causes more problems than it solves."
+        ]
+      },
+      {
+        "title": "Secretary of State for Constitutional Affairs",
+        "sentences": [
+          "The office of Secretary of State for Constitutional Affairs was a British Government position, created in 2003.",
+          "Certain functions of the Lord Chancellor which related to the Lord Chancellor's Department were transferred to the Secretary of State.",
+          "At a later date further functions were also transferred to the Secretary of State for Constitutional Affairs from the First Secretary of State, a position within the government held by the Deputy Prime Minister."
+        ]
+      },
+      {
+        "title": "Village accountant",
+        "sentences": [
+          "The Village Accountant (variously known as \"Patwari\", \"Talati\", \"Patel\", \"Karnam\", \"Adhikari\", \"Shanbogaru\",\"Patnaik\" etc.) is an administrative government position found in rural parts of the Indian sub-continent.",
+          "The office and the officeholder are called the \"patwari\" in Telangana, Bengal, North India and in Pakistan while in Sindh it is called \"tapedar\".",
+          "The position is known as the \"karnam\" in Andhra Pradesh, \"patnaik\" in Orissa or \"adhikari\" in Tamil Nadu, while it is commonly known as the \"talati\" in Karnataka, Gujarat and Maharashtra.",
+          "The position was known as the \"kulkarni\" in Northern Karnataka and Maharashtra.",
+          "The position was known as the \"shanbogaru\" in South Karnataka."
+        ]
+      },
+      {
+        "title": "Charles Craft",
+        "sentences": [
+          "Charles Craft (May 9, 1902 – September 19, 1968) was an English-born American film and television editor.",
+          "Born in the county of Hampshire in England on May 9, 1902, Craft would enter the film industry in Hollywood in 1927.",
+          "The first film he edited was the Universal Pictures silent film, \"Painting the Town\".",
+          "Over the next 25 years, Craft would edit 90 feature-length films.",
+          "In the early 1950s he would switch his focus to the small screen, his first show being \"Racket Squad\", from 1951–53, for which he was the main editor, editing 93 of the 98 episodes.",
+          "He would work on several other series during the 1950s, including \"Meet Corliss Archer\" (1954), \"Science Fiction Theatre\" (1955–56), and \"Highway Patrol\" (1955–57).",
+          "In the late 1950s and early 1960s he was one of the main editors on \"Sea Hunt\", starring Lloyd Bridges, editing over half of the episodes.",
+          "His final film work would be editing \"Flipper's New Adventure\" (1964, the sequel to 1963's \"Flipper\".",
+          "When the film was made into a television series, Craft would begin the editing duties on that show, editing the first 28 episodes before he retired in 1966.",
+          "Craft died on September 19, 1968 in Los Angeles, California."
+        ]
+      }
+    ],
+    "answer": "Chief of Protocol",
+    "supporting_facts": [
+      [
+        "Kiss and Tell (1945 film)",
+        "Kiss and Tell is a 1945 American comedy film starring then 17-year-old Shirley Temple as Corliss Archer."
+      ],
+      [
+        "Shirley Temple",
+        "Shirley Temple Black (April 23, 1928 – February 10, 2014) was an American actress, singer, dancer, businesswoman, and diplomat who was Hollywood's number one box-office draw as a child actress from 1935 to 1938."
+      ],
+      [
+        "Shirley Temple",
+        "As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "task_type": "original_multihop_qa",
+        "question": "What government position was held by the woman who portrayed Corliss Archer in the film Kiss and Tell?",
+        "expected_reuse": [],
+        "expected_answer": "Chief of Protocol"
+      },
+      {
+        "turn_id": "turn-2",
+        "task_type": "memory_reuse_followup",
+        "question": "Reuse the previous evidence chain. Which answer was supported by the facts about Kiss and Tell (1945 film) -> Shirley Temple?",
+        "expected_reuse": [
+          "turn-1.answer",
+          "turn-1.supporting_facts"
+        ],
+        "expected_answer": "Chief of Protocol"
+      },
+      {
+        "turn_id": "turn-3",
+        "task_type": "evidence_chain_summary",
+        "question": "Summarize the evidence chain that supports the answer and store it as reusable memory. Evidence: Kiss and Tell (1945 film): Kiss and Tell is a 1945 American comedy film starring then 17-year-old Shirley Temple as Corliss Archer. Shirley Temple: Shirley Temple Black (April 23, 1928 – February 10, 2014) was an American actress, singer, dancer, businesswoman, and diplomat who was Hollywood's number one box-office draw as a child actress from 1935 to 1938. Shirley Temple: As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States.",
+        "expected_reuse": [
+          "turn-1.supporting_facts",
+          "turn-2.answer"
+        ],
+        "expected_answer": "Evidence chain supports: Chief of Protocol"
+      }
+    ]
+  },
+  {
+    "group_id": "chain-002",
+    "source_sample_id": "hotpot-002",
+    "topic": "The Hork-Bajir Chronicles -> Animorphs",
+    "context": [
+      {
+        "title": "Andre Norton Award",
+        "sentences": [
+          "The Andre Norton Award for Young Adult Science Fiction and Fantasy is an annual award presented by the Science Fiction and Fantasy Writers of America (SFWA) to the author of the best young adult or middle grade science fiction or fantasy book published in the United States in the preceding year.",
+          "It is named to honor prolific science fiction and fantasy author Andre Norton (1912–2005), and it was established by then SFWA president Catherine Asaro and the SFWA Young Adult Fiction committee and announced on February 20, 2005.",
+          "Any published young adult or middle grade science fiction or fantasy novel is eligible for the prize, including graphic novels.",
+          "There is no limit on word count.",
+          "The award is presented along with the Nebula Awards and follows the same rules for nominations and voting; as the awards are separate, works may be simultaneously nominated for both the Andre Norton award and a Nebula Award."
+        ]
+      },
+      {
+        "title": "Victoria Hanley",
+        "sentences": [
+          "Victoria Hanley is an American young adult fantasy novelist.",
+          "Her first three books, \"The Seer And The Sword\", \"The Healer's Keep\" and \"The Light Of The Oracle\" are companion books to one another.",
+          "Her newest book (released March 2012) is the sequel of a series, called \"Indigo Magic\", published by Egmont USA.",
+          "She's also published two non-fiction books through Cotton Wood Press; called \"Seize the Story: A Handbook For Teens Who Like To Write\", and \"Wild Ink: A Grownups Guide To Writing Fiction For Teens\"."
+        ]
+      },
+      {
+        "title": "The Hork-Bajir Chronicles",
+        "sentences": [
+          "The Hork-Bajir Chronicles is the second companion book to the \"Animorphs\" series, written by K. A. Applegate.",
+          "With respect to continuity within the series, it takes place before book #23, \"The Pretender\", although the events told in the story occur between the time of \"The Ellimist Chronicles\" and \"The Andalite Chronicles\".",
+          "The book is introduced by Tobias, who flies to the valley of the free Hork-Bajir, where Jara Hamee tells him the story of how the Yeerks enslaved the Hork-Bajir, and how Aldrea, an Andalite, and her companion, Dak Hamee, a Hork-Bajir, tried to save their world from the invasion.",
+          "Jara Hamee's story is narrated from the points of view of Aldrea, Dak Hamee, and Esplin 9466, alternating in similar fashion to the \"Megamorphs\" books."
+        ]
+      },
+      {
+        "title": "Shadowshaper",
+        "sentences": [
+          "Shadowshaper is a 2015 American urban fantasy young adult novel written by Daniel José Older.",
+          "It follows Sierra Santiago, an Afro-Boricua teenager living in Brooklyn.",
+          "She is the granddaughter of a \"shadowshaper\", or a person who infuses art with ancestral spirits.",
+          "As forces of gentrification invade their community and a mysterious being who appropriates their magic begins to hunt the aging shadowshapers, Sierra must learn about her artistic and spiritual heritage to foil the killer."
+        ]
+      },
+      {
+        "title": "Left Behind: The Kids",
+        "sentences": [
+          "\"Left Behind: The Kids (stylized as LEFT BEHIND >THE KIDS<)\" is a series written by Jerry B. Jenkins, Tim LaHaye, and Chris Fabry.",
+          "The series consists of 40 short novels aimed primarily at the young adult market based on the adult series Left Behind also written by Jerry B. Jenkins.",
+          "It follows a core group of teenagers as they experience the rapture and tribulation, based on scriptures found in the Bible, and background plots introduced in the adult novels.",
+          "Like the adult series, the books were published by Tyndale House Publishing, and released over the 7 year period of 1997-2004.",
+          "The series has sold over 11 million copies worldwide."
+        ]
+      },
+      {
+        "title": "List of Square Enix companion books",
+        "sentences": [
+          "Dozens of Square Enix companion books have been produced since 1998, when video game developer Square began to produce books that focused on artwork, developer interviews, and background information on the fictional worlds and characters in its games rather than on gameplay details.",
+          "The first series of these books was the \"Perfect Works\" series, written and published by Square subsidiary DigiCube.",
+          "They produced three books between 1998 and 1999 before the line was stopped in favor of the \"Ultimania\" (アルティマニア , Arutimania ) series, a portmanteau of ultimate and mania.",
+          "This series of books is written by Studio BentStuff, which had previously written game guides for Square for \"Final Fantasy VII\".",
+          "They were published by DigiCube until the company was dissolved in 2003.",
+          "Square merged with video game publisher Enix on April 1, 2003 to form Square Enix, which resumed publication of the companion books."
+        ]
+      },
+      {
+        "title": "The Divide trilogy",
+        "sentences": [
+          "The Divide trilogy is a fantasy young adult novel trilogy by Elizabeth Kay, which takes place in an alternate universe.",
+          "The three books are \"The Divide\" (2002), \"Back to The Divide\" (2005), and \"Jinx on The Divide\" (2006).",
+          "The first novel was originally published by the small press publisher Chicken House (now a division of Scholastic), with subsequent volumes published by Scholastic, which also reprinted the first novel.",
+          "The books have been translated into French, German, Spanish, Finnish, Chinese, Japanese, Portuguese, Italian, Romanian and Dutch.",
+          "Interior illustrations are by Ted Dewan."
+        ]
+      },
+      {
+        "title": "Science Fantasy (magazine)",
+        "sentences": [
+          "Science Fantasy, which also appeared under the titles Impulse and SF Impulse, was a British fantasy and science fiction magazine, launched in 1950 by Nova Publications as a companion to Nova's \"New Worlds\".",
+          "Walter Gillings was editor for the first two issues, and was then replaced by John Carnell, the editor of \"New Worlds\", as a cost-saving measure.",
+          "Carnell edited both magazines until Nova went out of business in early 1964.",
+          "The titles were acquired by Roberts & Vinter, who hired Kyril Bonfiglioli to edit \"Science Fantasy\"; Bonfiglioli changed the title to \"Impulse\" in early 1966, but the new title led to confusion with the distributors and sales fell, though the magazine remained profitable.",
+          "The title was changed again to \"SF Impulse\" for the last few issues.",
+          "\"Science Fantasy\" ceased publication the following year, when Roberts & Vinter came under financial pressure after their printer went bankrupt."
+        ]
+      },
+      {
+        "title": "Animorphs",
+        "sentences": [
+          "Animorphs is a science fantasy series of young adult books written by Katherine Applegate and her husband Michael Grant, writing together under the name K. A. Applegate, and published by Scholastic.",
+          "It is told in first person, with all six main characters taking turns narrating the books through their own perspectives.",
+          "Horror, war, dehumanization, sanity, morality, innocence, leadership, freedom and growing up are the core themes of the series."
+        ]
+      },
+      {
+        "title": "Etiquette &amp; Espionage",
+        "sentences": [
+          "Etiquette & Espionage is a young adult steampunk novel by Gail Carriger.",
+          "It is her first young adult novel, and is set in the same universe as her bestselling Parasol Protectorate adult series."
+        ]
+      }
+    ],
+    "answer": "Animorphs",
+    "supporting_facts": [
+      [
+        "The Hork-Bajir Chronicles",
+        "The Hork-Bajir Chronicles is the second companion book to the \"Animorphs\" series, written by K. A. Applegate."
+      ],
+      [
+        "The Hork-Bajir Chronicles",
+        "With respect to continuity within the series, it takes place before book #23, \"The Pretender\", although the events told in the story occur between the time of \"The Ellimist Chronicles\" and \"The Andalite Chronicles\"."
+      ],
+      [
+        "The Hork-Bajir Chronicles",
+        "The book is introduced by Tobias, who flies to the valley of the free Hork-Bajir, where Jara Hamee tells him the story of how the Yeerks enslaved the Hork-Bajir, and how Aldrea, an Andalite, and her companion, Dak Hamee, a Hork-Bajir, tried to save their world from the invasion."
+      ],
+      [
+        "Animorphs",
+        "Animorphs is a science fantasy series of young adult books written by Katherine Applegate and her husband Michael Grant, writing together under the name K. A. Applegate, and published by Scholastic."
+      ],
+      [
+        "Animorphs",
+        "It is told in first person, with all six main characters taking turns narrating the books through their own perspectives."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "task_type": "original_multihop_qa",
+        "question": "What science fantasy young adult series, told in first person, has a set of companion books narrating the stories of enslaved worlds and alien species?",
+        "expected_reuse": [],
+        "expected_answer": "Animorphs"
+      },
+      {
+        "turn_id": "turn-2",
+        "task_type": "memory_reuse_followup",
+        "question": "Reuse the previous evidence chain. Which answer was supported by the facts about The Hork-Bajir Chronicles -> Animorphs?",
+        "expected_reuse": [
+          "turn-1.answer",
+          "turn-1.supporting_facts"
+        ],
+        "expected_answer": "Animorphs"
+      },
+      {
+        "turn_id": "turn-3",
+        "task_type": "evidence_chain_summary",
+        "question": "Summarize the evidence chain that supports the answer and store it as reusable memory. Evidence: The Hork-Bajir Chronicles: The Hork-Bajir Chronicles is the second companion book to the \"Animorphs\" series, written by K. A. Applegate. The Hork-Bajir Chronicles: With respect to continuity within the series, it takes place before book #23, \"The Pretender\", although the events told in the story occur between the time of \"The Ellimist Chronicles\" and \"The Andalite Chronicles\". The Hork-Bajir Chronicles: The book is introduced by Tobias, who flies to the valley of the free Hork-Bajir, where Jara Hamee tells him the story of how the Yeerks enslaved the Hork-Bajir, and how Aldrea, an Andalite, and her companion, Dak Hamee, a Hork-Bajir, tried to save their world from the invasion. Animorphs: Animorphs is a science fantasy series of young adult books written by Katherine Applegate and her husband Michael Grant, writing together under the name K. A. Applegate, and published by Scholastic. Animorphs: It is told in first person, with all six main characters taking turns narrating the books through their own perspectives.",
+        "expected_reuse": [
+          "turn-1.supporting_facts",
+          "turn-2.answer"
+        ],
+        "expected_answer": "Evidence chain supports: Animorphs"
+      }
+    ]
+  },
+  {
+    "group_id": "chain-003",
+    "source_sample_id": "hotpot-003",
+    "topic": "Big Stone Gap (film) -> Adriana Trigiani",
+    "context": [
+      {
+        "title": "Just Another Romantic Wrestling Comedy",
+        "sentences": [
+          "Just Another Romantic Wrestling Comedy is a 2006 film starring April Hunter and Joanie Laurer.",
+          "This Romantic comedy film was premiered at New Jersey and New York City on December 1, 2006 and was released on DVD in the United States and the United Kingdom on April 17, 2007.",
+          "After the film's DVD release \"Just Another Romantic Wrestling Comedy\" won an \"Honorable Mention\" award at the New Jersey International Festival awards.",
+          "The release is being handled by \"Victory Multimedia\"."
+        ]
+      },
+      {
+        "title": "Kingston Morning",
+        "sentences": [
+          "Kingston Morning is Dave Eggar's 4th solo release recorded in Brooklyn, New York; Kingston, Jamaica; and Big Stone Gap, Virginia; and released by Domo Records.",
+          "\"Itsbynne Reel\" was nominated at the 53rd Grammy Awards for \"Best Instrumental Arrangement\"."
+        ]
+      },
+      {
+        "title": "Nola (film)",
+        "sentences": [
+          "Nola is a 2003 American romantic comedy film written and directed by Alan Hruska.",
+          "It depicts the struggle of a young woman trying to survive in New York City while looking for her birth father.",
+          "It premiered in New York City on July 23, 2004."
+        ]
+      },
+      {
+        "title": "Adriana Trigiani",
+        "sentences": [
+          "Adriana Trigiani is an Italian American best-selling author of sixteen books, television writer, film director, and entrepreneur based in Greenwich Village, New York City.",
+          "Trigiani has published a novel a year since 2000."
+        ]
+      },
+      {
+        "title": "Great Eastern Conventions",
+        "sentences": [
+          "Great Eastern Conventions, Inc. was an entertainment company which produced comic book conventions, most actively during the years 1987-1996.",
+          "In New York City, the Great Eastern shows filled the gap between the mid-1980s demise of the annual Comic Art Convention and Creation Conventions, and the establishment of promoter Michael Carbonaro's annual Big Apple Comic Con in 1996.",
+          "From 1993–1995, Great Eastern hosted two New York City shows annually at the Jacob K. Javits Convention Center.",
+          "Great Eastern also ran shows in New Jersey, Pennsylvania, Massachusetts, Oregon, Minnesota, and Texas."
+        ]
+      },
+      {
+        "title": "New York Society of Model Engineers",
+        "sentences": [
+          "The New York Society of Model Engineers (NYSME) was originally incorporated in 1926 in New York City.",
+          "There are published records that show the Society existed as early as 1905.",
+          "In its early years, the organization moved to and from various locations throughout Manhattan.",
+          "AT that time it was basically a gentlemen's club of members who were interested in all types of model building.",
+          "In 1926 the Society was formalized and incorporated under the laws of the State of New York.",
+          "This was done so that the Society could obtain a permit to use a lake in New York City's Central Park for model motor boat races.",
+          "It was also at this time that the Society began construction of its first Model Railroad \" The Union Connecting\".",
+          "Over the next twenty years, the Society moved from its original location to two other locations.",
+          "Each move doubling the size of the previous location and of course doubling the size of the model train layout.",
+          "During WW2 many Society members were called to service in the Armed Forces.",
+          "Regrettably, the largest of the layouts had to be dismantled.",
+          "The location of the layout in the basement of the Astor Building was requested for the war effort.",
+          "The dismantling was done with care, with salvaged usable materials going into scrap drives for the War effort.",
+          "As members returned after the War a new location was searched for.",
+          "This led to an invitation from the Lackawanna Railroad to move into their Passenger Terminal in Hoboken,NJ.",
+          "They had the space for what would become the largest model railroad in the world at that time.",
+          "The space?",
+          "Only the ornate waiting room for the recently discontinued ferry boats to 23rd Street in New York City.",
+          "Here the layout was built.",
+          "It was based on the Lackawanna Railroad from Hoboken to Scranton, Pa.",
+          "It was magnificent; from the scale model of the Hoboken Terminal to the soaring Delaware Water Gap.",
+          "During the early-1950s the organization moved to its current location in Carlstadt, New Jersey."
+        ]
+      },
+      {
+        "title": "Clinton, Minnesota",
+        "sentences": [
+          "Clinton is a city in Big Stone County, Minnesota, United States.",
+          "The city was named for New York Governor DeWitt Clinton.",
+          "The population was 449 at the 2010 census."
+        ]
+      },
+      {
+        "title": "Hamish and Andy's Gap Year",
+        "sentences": [
+          "Hamish & Andy's Gap Year is a Logie Award winning comedy series following Hamish Blake and Andy Lee, a pair of Australian comedians, on their trips to various international locations.",
+          "The first season saw the boys visiting America for ten episodes and broadcast their show weekly from New York City.",
+          "In its second season in 2012, the show was titled \"Hamish & Andy's Euro Gap Year\" and seven episodes were broadcast from The Lord Stanley, a disused pub in East London, England.",
+          "The third season known as \"Hamish and Andy's Gap Year Asia\" in 2013 was broadcast from a bar in Bangkok, Thailand, called 'The Raintree'."
+        ]
+      },
+      {
+        "title": "I Love NY (2015 film)",
+        "sentences": [
+          "I Love NY, also known as I Love New Year, is an Indian romantic comedy film directed by Radhika Rao and Vinay Sapru starring Sunny Deol and Kangana Ranaut in lead roles.",
+          "The film is produced by Bhushan Kumar and Krishan Kumar under the banner of Super Cassettes Industries Ltd.",
+          "The film was extensively shot in Mumbai, New York City and Bangkok.",
+          "The main plot was taken from the Russian romantic comedy \"The Irony of Fate\" (1976).",
+          "After numerous delays, the film released on 10 July 2015."
+        ]
+      },
+      {
+        "title": "Big Stone Gap (film)",
+        "sentences": [
+          "Big Stone Gap is a 2014 American drama romantic comedy film written and directed by Adriana Trigiani and produced by Donna Gigliotti for Altar Identity Studios, a subsidiary of Media Society.",
+          "Based on Trigiani's 2000 best-selling novel of the same name, the story is set in the actual Virginia town of Big Stone Gap circa 1970s.",
+          "The film had its world premiere at the Virginia Film Festival on November 6, 2014."
+        ]
+      }
+    ],
+    "answer": "Greenwich Village, New York City",
+    "supporting_facts": [
+      [
+        "Big Stone Gap (film)",
+        "Big Stone Gap is a 2014 American drama romantic comedy film written and directed by Adriana Trigiani and produced by Donna Gigliotti for Altar Identity Studios, a subsidiary of Media Society."
+      ],
+      [
+        "Adriana Trigiani",
+        "Adriana Trigiani is an Italian American best-selling author of sixteen books, television writer, film director, and entrepreneur based in Greenwich Village, New York City."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "task_type": "original_multihop_qa",
+        "question": "The director of the romantic comedy \"Big Stone Gap\" is based in what New York city?",
+        "expected_reuse": [],
+        "expected_answer": "Greenwich Village, New York City"
+      },
+      {
+        "turn_id": "turn-2",
+        "task_type": "memory_reuse_followup",
+        "question": "Reuse the previous evidence chain. Which answer was supported by the facts about Big Stone Gap (film) -> Adriana Trigiani?",
+        "expected_reuse": [
+          "turn-1.answer",
+          "turn-1.supporting_facts"
+        ],
+        "expected_answer": "Greenwich Village, New York City"
+      },
+      {
+        "turn_id": "turn-3",
+        "task_type": "evidence_chain_summary",
+        "question": "Summarize the evidence chain that supports the answer and store it as reusable memory. Evidence: Big Stone Gap (film): Big Stone Gap is a 2014 American drama romantic comedy film written and directed by Adriana Trigiani and produced by Donna Gigliotti for Altar Identity Studios, a subsidiary of Media Society. Adriana Trigiani: Adriana Trigiani is an Italian American best-selling author of sixteen books, television writer, film director, and entrepreneur based in Greenwich Village, New York City.",
+        "expected_reuse": [
+          "turn-1.supporting_facts",
+          "turn-2.answer"
+        ],
+        "expected_answer": "Evidence chain supports: Greenwich Village, New York City"
+      }
+    ]
+  },
+  {
+    "group_id": "chain-004",
+    "source_sample_id": "hotpot-004",
+    "topic": "2014 S/S -> Winner (band)",
+    "context": [
+      {
+        "title": "List of awards and nominations received by Shinee",
+        "sentences": [
+          "South Korean boy group Shinee have received several awards and nominations for their music work.",
+          "The group was formed by S.M. Entertainment in 2008 and released their first full-length album, \"The Shinee World\", on August 28, 2008, which won the Newcomer Album of the Year at the 23rd Golden Disk Awards.",
+          "The first single released from the album was \"Sanso Gateun Neo (Love Like Oxygen)\" and won first place on \"M Countdown\" on September 18, 2008 making it the group's first win on Korean music shows since debut.",
+          "Their second album \"Lucifer\" (2010) produced two singles, \"Lucifer\" and \"Hello\".",
+          "For their outstanding choreography the group was nominated for the Best Dance Performance Award at the Mnet Asian Music Awards in 2010. \"",
+          "Lucifer\" also won the Disk Bonsang Award at the 25th Golden Disk Awards as well as the Popularity Award.",
+          "On March 21, 2012 the group released their fourth EP \"Sherlock\" for which the group was awarded another Disk Bonsang Award at the 27th Golden Disc Awards and the Bonsang Award at the 22nd Seoul Music Award.",
+          "Also following the success of the lead single it was also nominated for Song of the Year at the 2012 Mnet Asian Music Awards."
+        ]
+      },
+      {
+        "title": "Cho Kyuhyun",
+        "sentences": [
+          "Cho Kyu-hyun (born February 3, 1988), better known mononymously as Kyuhyun, is a South Korean singer and musical theatre actor.",
+          "He is best known as a member of South Korean boy group Super Junior, its sub-groups Super Junior-K.R.Y., Super Junior-M and a former member of the South Korean ballad group S.M. the Ballad.",
+          "He is one of the first four Korean artists to appear on Chinese postage stamps."
+        ]
+      },
+      {
+        "title": "2014 S/S",
+        "sentences": [
+          "2014 S/S is the debut album of South Korean group WINNER.",
+          "It was released on August 12, 2014 by the group's record label, YG Entertainment.",
+          "The members were credited for writing the lyrics and composing the majority of the album's songs."
+        ]
+      },
+      {
+        "title": "History (band)",
+        "sentences": [
+          "History (Korean: 히스토리 ) was a South Korean boy group formed by LOEN Entertainment in 2013.",
+          "They debuted on April 26, 2013 with \"Dreamer\", featuring the narration of their labelmate IU.",
+          "They were LOEN Entertainment's first boy group.",
+          "They officially disbanded on May 12, 2017."
+        ]
+      },
+      {
+        "title": "Winner (band)",
+        "sentences": [
+          "Winner (Hangul: 위너), often stylized as WINNER, is a South Korean boy group formed in 2013 by YG Entertainment and debuted in 2014.",
+          "It currently consists of four members, Jinwoo, Seunghoon, Mino and Seungyoon.",
+          "Originally a five-piece group with Taehyun, who later departed from the group in November 2016."
+        ]
+      },
+      {
+        "title": "Madtown",
+        "sentences": [
+          "Madtown (Hangul: 매드타운 ), often stylized as MADTOWN, is a South Korean boy group formed in 2014 by J. Tune Camp.",
+          "The group consists of Moos, Daewon, Lee Geon, Jota, Heo Jun, Buffy and H.O.",
+          "Their debut album, \"Mad Town\", was released on October 6, 2014.",
+          "Two of the members, Moos and Buffy, originally debuted as the hip hop duo \"Pro C\" in 2013.",
+          "Madtown's official fan-base name is Mad-people.",
+          "Starting December 22, 2016, MADTOWN's contract was sold to GNI Entertainment after J. Tune Camp closed."
+        ]
+      },
+      {
+        "title": "List of songs written by Ravi",
+        "sentences": [
+          "Ravi is a South Korean rapper, songwriter and producer, signed under Jellyfish Entertainment.",
+          "He began his career as a rapper in 2012 in the South Korean boy group VIXX, and later formed VIXX's first sub-unit VIXX LR with band mate Leo in 2015.",
+          "Ravi's songwriting career began with his participation in co-writing VIXX's debut single \"Super Hero\".",
+          "As of November 2016 with the release of \"VIXX 2016 Conception Ker\", Ravi has contributed to the writing and composing of over 46 songs recorded by VIXX.",
+          "Ravi is widely known for his participation of composing and songwriting rap portions for the group as well as lyrics and music."
+        ]
+      },
+      {
+        "title": "SF9 (band)",
+        "sentences": [
+          "SF9 (Korean: 에스에프나인 ; shortened from Sensational Feeling 9) is a South Korean boy group formed by FNC Entertainment.",
+          "SF9 is the company's first dance boy group to ever debut.",
+          "SF9 debuted on October 5, 2016 with the release of their first single album \"Feeling Sensation\"."
+        ]
+      },
+      {
+        "title": "Seventeen discography",
+        "sentences": [
+          "This is the discography of South Korean boy group Seventeen.",
+          "Seventeen (Hangul: 세븐틴), also stylized as SEVENTEEN or SVT, is a South Korean boy group formed by Pledis Entertainment in 2015.",
+          "They have released one album and four EPs."
+        ]
+      },
+      {
+        "title": "BTS discography",
+        "sentences": [
+          "The following is the discography of South Korean boy group BTS.",
+          "The group debuted in South Korea on June 2013 with single album, \"2 Cool 4 Skool\", at number 5 on South Korean Week 31 Gaon Weekly Chart.",
+          "They made a comeback on September 2013 with an extended play, \"O!RUL8,2?",
+          "\", which peaked at number 4 on Week 38 Gaon Weekly Chart.",
+          "BTS then released their second extended play, \"Skool Luv Affair\", in February 2014, where it charted at number 1 on Week 18 Gaon Weekly Chart.",
+          "This also marked the first time their album charted on international charts, Billboard World Albums and Japan's Oricon Chart, specifically.",
+          "A repackaged version of the album, \"Skool Luv Affair Special Addition\" which was released in May 2014, also peaked at number 1 on Week 21 Gaon Weekly Chart."
+        ]
+      }
+    ],
+    "answer": "YG Entertainment",
+    "supporting_facts": [
+      [
+        "2014 S/S",
+        "2014 S/S is the debut album of South Korean group WINNER."
+      ],
+      [
+        "Winner (band)",
+        "Winner (Hangul: 위너), often stylized as WINNER, is a South Korean boy group formed in 2013 by YG Entertainment and debuted in 2014."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "task_type": "original_multihop_qa",
+        "question": "2014 S/S is the debut album of a South Korean boy group that was formed by who?",
+        "expected_reuse": [],
+        "expected_answer": "YG Entertainment"
+      },
+      {
+        "turn_id": "turn-2",
+        "task_type": "memory_reuse_followup",
+        "question": "Reuse the previous evidence chain. Which answer was supported by the facts about 2014 S/S -> Winner (band)?",
+        "expected_reuse": [
+          "turn-1.answer",
+          "turn-1.supporting_facts"
+        ],
+        "expected_answer": "YG Entertainment"
+      },
+      {
+        "turn_id": "turn-3",
+        "task_type": "evidence_chain_summary",
+        "question": "Summarize the evidence chain that supports the answer and store it as reusable memory. Evidence: 2014 S/S: 2014 S/S is the debut album of South Korean group WINNER. Winner (band): Winner (Hangul: 위너), often stylized as WINNER, is a South Korean boy group formed in 2013 by YG Entertainment and debuted in 2014.",
+        "expected_reuse": [
+          "turn-1.supporting_facts",
+          "turn-2.answer"
+        ],
+        "expected_answer": "Evidence chain supports: YG Entertainment"
+      }
+    ]
+  },
+  {
+    "group_id": "chain-005",
+    "source_sample_id": "hotpot-005",
+    "topic": "Eenasul Fateh -> Management consulting",
+    "context": [
+      {
+        "title": "James P. Comer",
+        "sentences": [
+          "James P. Comer (born James Pierpont Comer, September 25, 1934 in East Chicago, Indiana) is currently the Maurice Falk Professor of Child Psychiatry at the Yale Child Study Center and has been since 1976.",
+          "He is also an associate dean at the Yale School of Medicine.",
+          "As one of the world's leading child psychiatrists, he is best known for his efforts to improve the scholastic performance of children from lower-income and minority backgrounds which led to the founding of the Comer School Development Program in 1968.",
+          "His program has been used in more than 600 schools in eighty-two school districts.",
+          "He is the author of ten books, including the autobiographical \"Maggie’s American Dream: The Life and Times of a Black Family\", 1988; \"Leave No Child Behind: Preparing Today's Youth for Tomorrow's World\", 2004; and his most recent book, \"What I Learned in School: Reflections on Race, Child Development, and School Reform\", 2009.",
+          "He has also written more than 150 articles for Parents (magazine) and more than 300 articles on children's health and development and race relations.",
+          "Dr. Comer has also served as a consultant to the Children's Television Workshop (Sesame Workshop) which produces Sesame Street and The Electric Company (1971 TV series).",
+          "He is a co-founder and past president of the Black Psychiatrists of America and has served on the board of several universities, foundations, and corporations.",
+          "He has also lectured and consulted widely not only across the United States at different universities, medical schools, and scientific associations, but also around the world in places such as London, Paris, Tokyo, Dakar, Senegal and Sydney, Australia.",
+          "For his work and scholarship, Dr. Comer has been awarded 47 honorary degrees and has been recognized by numerous organizations."
+        ]
+      },
+      {
+        "title": "Method Man",
+        "sentences": [
+          "Clifford Smith (born April 1, 1971), better known by his stage name Method Man, is an American rapper, record producer, and actor.",
+          "He is known as a member of the East Coast hip hop collective Wu-Tang Clan.",
+          "He is also one half of the hip hop duo Method Man & Redman.",
+          "He took his stage name from the 1979 film \"Method Man\".",
+          "In 1996, he won a Grammy Award for Best Rap Performance by a Duo or Group, for \"I'll Be There for You/You're All I Need to Get By\", with American R&B singer-songwriter Mary J. Blige."
+        ]
+      },
+      {
+        "title": "Indriati Iskak",
+        "sentences": [
+          "Indriati Gerald Bernardina (born 9 June 1942), also known by her stage name Indriati Iskak and after marriage as Indri Makki, is an Indonesian actress turned psychologist and marketer.",
+          "Born in Surabaya, she entered the Indonesian film industry and soared to popularity with Usmar Ismail's commercially successful \"Tiga Dara\" (1957).",
+          "She appeared in eight further films and established her own girl group before retiring from cinema in 1963.",
+          "She graduated from the University of Indonesia with a degree in psychology in 1968, and has taught the subject at the .",
+          "For twenty-six years she worked with Unilever, and since 1994 she has been a marketing consultant with Makki Makki."
+        ]
+      },
+      {
+        "title": "Eenasul Fateh",
+        "sentences": [
+          "Eenasul Fateh (Bengali: ঈনাসুল ফাতেহ ; born 3 April 1959), also known by his stage name Aladin, is a Bangladeshi-British cultural practitioner, magician, live artist and former international management consultant."
+        ]
+      },
+      {
+        "title": "Mick (DJ)",
+        "sentences": [
+          "Mick Batyske (known by his stage name Mick, sometimes styled as MICK, and formerly Mick Boogie) is an American DJ and entrepreneur.",
+          "He is an A-list DJ and spun private parties for celebrities including Kanye West, LeBron James, Jay-Z and Will Smith.",
+          "In addition to his mix tape releases, he has performed in venues internationally, including New York City, Dubai, Tokyo, Las Vegas, and Los Angeles.",
+          "As an entrepreneur, he has invested in various start-up companies including Localeur, in which he is also an advisor and consultant."
+        ]
+      },
+      {
+        "title": "Criss Angel",
+        "sentences": [
+          "Christopher Nicholas Sarantakos (born December 19, 1967), known by the stage name Criss Angel, is an American magician, illusionist and musician.",
+          "Angel began his career in New York City, before moving his base of operations to the Las Vegas Valley.",
+          "He is known for starring in the television and stage show \"Criss Angel Mindfreak\" and his previous live performance illusion show \"Criss Angel Believe\" in collaboration with \"Cirque du Soleil\" at the Luxor casino in Las Vegas.",
+          "The show generated $150 million in tourist revenue to Las Vegas in 2010, but has since been replaced by \"Mindfreak LIVE\" on 11 May 2016 (the show is partly produced by Cirque, however the directive rights are entirely with Criss Angel).",
+          "He also starred in the television series \"Criss Angel BeLIEve\" on Spike TV, the reality-competition television show \"Phenomenon\" on NBC, and the 2014 stage show \"Criss Angel Magicjam\"."
+        ]
+      },
+      {
+        "title": "ELDee",
+        "sentences": [
+          "Lanre Dabiri (born May 23, 1977), better known by his stage name Eldee, stylized as eLDee, is a former Nigerian-American rapper, singer, and record producer but now an IT Consultant based in the United_States \"Lanre\" is a diminutive for the Yoruba name \"Olanrewaju\" (which translates to \"\"Wealth is moving forward\"\").",
+          "eLDee has a masters degree in Architecture from the University of Lagos, Nigeria.",
+          "He is an original member of the band Trybesmen, which was started in 1998 with rappers KB and Freestyle.",
+          "He hails from Lagos Island in Lagos State of Nigeria."
+        ]
+      },
+      {
+        "title": "Management consulting",
+        "sentences": [
+          "Management consulting is the practice of helping organizations to improve their performance, operating primarily through the analysis of existing organizational problems and the development of plans for improvement.",
+          "Organizations may draw upon the services of management consultants for a number of reasons, including gaining external (and presumably objective) advice and access to the consultants' specialized expertise."
+        ]
+      },
+      {
+        "title": "Lil Ru",
+        "sentences": [
+          "Sylvester Samuels better known by his stage name Lil Ru, is an American rapper from Ridgeway, South Carolina currently signed to Def Jam Recordings.",
+          "His debut album, 21 & Up was released on August 25, 2009.",
+          "The Ridgeway native was 16 when he made his professional foray into the music business.",
+          "Inspired by New Orleans’ innovative Cash Money Crew, Ru began making a name for himself on his local music scene, doing live shows and pressing up his own CDs.",
+          "His hard-hitting lyrics and entrepreneurial spirit caught the attention of fellow South Carolinian Angie Stone.",
+          "Shortly after the neo-soul songstress helped him secure a deal with Elektra Records, Ru found himself unsigned again, among the artists lost in the shuffle after the label merged with Atlantic Records.",
+          "Music fans first heard him on his 2001 debut single Will Destroy.",
+          "He then released his 2002 follow up, Shawty What You Doin’.",
+          "Both songs reached the Billboard R&B/Hip-Hop charts and helped land him at his next label home, Capitol Records."
+        ]
+      },
+      {
+        "title": "Amaruk Kayshapanta",
+        "sentences": [
+          "Amaruk Caizapanta Anchapacxi (Quito, January 30, 1970), whose stage name is Amaruk Kayshapanta.",
+          "Is an Ecuadorian multidisciplinary artist, known in Spain and Ecuador for his artistic and humanistic trajectory in favor of the Human Rights of Immigration in Spain.",
+          "Named as the \"Chasqui de Oro\" (In the VI Race and hike \"El Chasqui-NY).",
+          "Received the award as \"Cultural Ambassador of the Andes-Mushuk Nina 2014 (Third Edition)\", for rescuing the traditions and culture of the Andes for the Indigenous Organizations of Peru, Bolivia based in Ecuador.",
+          "He obtained the prize \"100 Latinos Madrid\", by the Community of Madrid, in recognition of their non-profit altruistic and cultural work for the benefit of foreign immigrants in Spain.",
+          "Known for his role in the TV series \"Hospital Central\" in which he gave life to the character \"Edgar\".",
+          "His Philosophy \"Amawtica Amarukiana Desestructuration\" brings to the contemporary world the Philosophical study of the Andean Worldview, a spiritual legacy of transformation and balance for the awakening of a collective conscience."
+        ]
+      }
+    ],
+    "answer": "Eenasul Fateh",
+    "supporting_facts": [
+      [
+        "Eenasul Fateh",
+        "Eenasul Fateh (Bengali: ঈনাসুল ফাতেহ ; born 3 April 1959), also known by his stage name Aladin, is a Bangladeshi-British cultural practitioner, magician, live artist and former international management consultant."
+      ],
+      [
+        "Management consulting",
+        "Management consulting is the practice of helping organizations to improve their performance, operating primarily through the analysis of existing organizational problems and the development of plans for improvement."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "task_type": "original_multihop_qa",
+        "question": "Who was known by his stage name Aladin and helped organizations improve their performance as a consultant?",
+        "expected_reuse": [],
+        "expected_answer": "Eenasul Fateh"
+      },
+      {
+        "turn_id": "turn-2",
+        "task_type": "memory_reuse_followup",
+        "question": "Reuse the previous evidence chain. Which answer was supported by the facts about Eenasul Fateh -> Management consulting?",
+        "expected_reuse": [
+          "turn-1.answer",
+          "turn-1.supporting_facts"
+        ],
+        "expected_answer": "Eenasul Fateh"
+      },
+      {
+        "turn_id": "turn-3",
+        "task_type": "evidence_chain_summary",
+        "question": "Summarize the evidence chain that supports the answer and store it as reusable memory. Evidence: Eenasul Fateh: Eenasul Fateh (Bengali: ঈনাসুল ফাতেহ ; born 3 April 1959), also known by his stage name Aladin, is a Bangladeshi-British cultural practitioner, magician, live artist and former international management consultant. Management consulting: Management consulting is the practice of helping organizations to improve their performance, operating primarily through the analysis of existing organizational problems and the development of plans for improvement.",
+        "expected_reuse": [
+          "turn-1.supporting_facts",
+          "turn-2.answer"
+        ],
+        "expected_answer": "Evidence chain supports: Eenasul Fateh"
+      }
+    ]
+  }
+]

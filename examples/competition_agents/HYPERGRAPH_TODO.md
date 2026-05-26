@@ -184,3 +184,89 @@ latent_bytes=...
 python examples\competition_agents\run_hotpot_samples.py
 ```
 
+## 新增任务：记忆生命周期管理
+
+超图记忆需要支持同一个 `MemoryUnit` 下的两类记忆，不要拆成两套存储：
+
+```text
+episodic memory：连续任务中的短期记忆，scope=当前 group_id，ttl=session
+experience memory：任务结束后蒸馏出的长期经验，scope=global，ttl=persistent
+```
+
+### 需要新增或兼容的字段
+
+每条记忆记录建议补充：
+
+```json
+{
+  "memory_type": "episodic",
+  "scope": "chain-001",
+  "status": "active",
+  "ttl": "session",
+  "strategy": "...",
+  "experience": "...",
+  "source_memory_ids": []
+}
+```
+
+字段要求：
+
+- `memory_type` 只能是 `episodic` 或 `experience`。
+- `scope` 对短期记忆是连续任务组 id，例如 `chain-001`；对长期经验是 `global`。
+- `status` 默认是 `active`；任务结束后可改成 `archived`。
+- `source_memory_ids` 用于记录长期经验是从哪些短期记忆蒸馏来的。
+
+### 需要实现的能力
+
+第一阶段先做兼容字段和检索过滤：
+
+```python
+search_memory(memory, query, top_k, scope=None, memory_type=None, include_global=True)
+```
+
+如果暂时不改函数签名，也可以在内部默认执行：
+
+```text
+连续任务：优先查当前 scope 的 episodic，再查 global 的 experience
+普通任务：优先查 global 的 experience
+```
+
+第二阶段再补生命周期函数：
+
+```python
+archive_scope(memory, scope) -> list[dict]
+distill_experience(memory, scope) -> list[dict]
+```
+
+`archive_scope()` 负责把当前 scope 下的 episodic memory 从 `active` 改成 `archived`，不要直接删除，方便页面回放和实验复现。
+
+`distill_experience()` 负责从一个 scope 下的多条 episodic memory 里生成一条或多条 `memory_type=experience`、`scope=global` 的长期经验记忆。
+
+### 超图建模建议
+
+新增节点：
+
+```text
+MemoryType: episodic / experience
+Scope: chain-001 / global
+Status: active / archived
+Strategy: 策略片段
+Experience: 经验片段
+```
+
+新增超边：
+
+```text
+scope_membership: Memory + Scope + MemoryType
+experience_distillation: Experience + source episodic memories
+```
+
+### 验证标准
+
+完成后至少能证明：
+
+- 连续任务第 2、3 轮能命中同一 `scope` 下的 episodic memory。
+- 任务结束后 episodic memory 可以被标记为 `archived`。
+- 可以从 archived episodic memory 生成 `scope=global` 的 experience memory。
+- 新任务可以命中 `memory_type=experience` 的长期经验。
+- `memory_hits` 中保留 `memory_type/scope/status`，页面可以直接展示。

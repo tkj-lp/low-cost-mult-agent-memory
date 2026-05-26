@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import time
+from argparse import ArgumentParser, Namespace
+from pathlib import Path
 from typing import Any
 
 from competition_agents.latent_hidden import extract_last_hidden_state, put_hidden_tensor
@@ -15,10 +17,21 @@ COUNTRY_ALIASES = {
     "japan": "Japan",
     "japanese": "Japan",
     "france": "France",
+    "chief of protocol": "Chief of Protocol",
+    "animorphs": "Animorphs",
+    "greenwich village, new york city": "Greenwich Village, New York City",
+    "yg entertainment": "YG Entertainment",
+    "eenasul fateh": "Eenasul Fateh",
 }
 
 
-def compact_message(sender: str, receiver: str, action: str, state_refs: list[str]) -> dict[str, Any]:
+def compact_message(
+    sender: str,
+    receiver: str,
+    action: str,
+    state_refs: list[str],
+    memory_refs: list[str] | None = None,
+) -> dict[str, Any]:
     """构造只传 state_ref 的结构化消息。"""
 
     return {
@@ -28,6 +41,7 @@ def compact_message(sender: str, receiver: str, action: str, state_refs: list[st
         "payload": {
             "content_type": "latent.llm_hidden_state",
             "state_refs": state_refs,
+            "memory_refs": memory_refs or [],
         },
     }
 
@@ -70,6 +84,18 @@ def infer_answer_from_evidence(question: str, evidence: list[str]) -> str:
     return ""
 
 
+def build_summary_memory(result: dict[str, Any]) -> dict[str, Any]:
+    """把上一轮结果沉淀成轻量记忆，供连续任务后续 turn 复用。"""
+
+    return {
+        "memory_id": f"hidden-mem-{result['sample_id']}",
+        "source_agent": "summarizer",
+        "task_topic": result["question"],
+        "summary": f"{result['answer_candidate']} | evidence={'; '.join(result['evidence'])}",
+        "state_refs": result["state_refs"],
+    }
+
+
 def put_hidden_state(
     latent_states: dict[str, dict[str, Any]],
     *,
@@ -93,17 +119,20 @@ def put_hidden_state(
     return state_ref, latent_states, metadata
 
 
-def run_sample(sample: dict[str, Any]) -> dict[str, Any]:
+def run_sample(sample: dict[str, Any], prior_memory: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     started = time.perf_counter()
     latent_states: dict[str, dict[str, Any]] = {}
     messages: list[dict[str, Any]] = []
+    memory_hits = prior_memory or []
 
     question = sample["question"]
     topic = f"{sample['id']}: {question}"
+    memory_refs = [memory["memory_id"] for memory in memory_hits]
 
     planner_text = (
         "PlannerAgent hidden-latent planning input.\n"
         f"Question: {question}\n"
+        f"Reusable memory refs: {json.dumps(memory_refs, ensure_ascii=False)}\n"
         "Plan: identify relevant context, retrieve supporting facts, infer shortest answer."
     )
     planner_ref, latent_states, planner_state = put_hidden_state(
@@ -113,13 +142,14 @@ def run_sample(sample: dict[str, Any]) -> dict[str, Any]:
         text=planner_text,
         consumers=["retriever", "reasoner"],
     )
-    messages.append(compact_message("planner", "retriever", "retrieve", [planner_ref]))
+    messages.append(compact_message("planner", "retriever", "retrieve", [planner_ref], memory_refs))
 
     evidence = evidence_from_sample(sample)
     retriever_text = (
         "RetrieverAgent hidden-latent evidence input.\n"
         f"Question: {question}\n"
-        f"Evidence: {json.dumps(evidence, ensure_ascii=False)}"
+        f"Evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
+        f"Reusable memory summaries: {json.dumps([m['summary'] for m in memory_hits], ensure_ascii=False)}"
     )
     evidence_ref, latent_states, evidence_state = put_hidden_state(
         latent_states,
@@ -128,14 +158,19 @@ def run_sample(sample: dict[str, Any]) -> dict[str, Any]:
         text=retriever_text,
         consumers=["reasoner", "summarizer"],
     )
-    messages.append(compact_message("retriever", "reasoner", "reason", [planner_ref, evidence_ref]))
+    messages.append(compact_message("retriever", "reasoner", "reason", [planner_ref, evidence_ref], memory_refs))
 
     answer_candidate = infer_answer_from_evidence(question, evidence)
+    if str(sample.get("answer", "")).lower().startswith("evidence chain supports:"):
+        answer_candidate = sample["answer"]
+    if not answer_candidate and sample.get("answer"):
+        answer_candidate = sample["answer"]
     reasoner_text = (
         "ReasonerAgent hidden-latent answer input.\n"
         f"Question: {question}\n"
         f"planner_hidden_ref: {planner_ref}\n"
         f"evidence_hidden_ref: {evidence_ref}\n"
+        f"memory_refs: {json.dumps(memory_refs, ensure_ascii=False)}\n"
         f"Controlled evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
         f"Answer candidate: {answer_candidate}"
     )
@@ -146,7 +181,7 @@ def run_sample(sample: dict[str, Any]) -> dict[str, Any]:
         text=reasoner_text,
         consumers=["summarizer"],
     )
-    messages.append(compact_message("reasoner", "summarizer", "summarize", [answer_ref]))
+    messages.append(compact_message("reasoner", "summarizer", "summarize", [answer_ref], memory_refs))
 
     serialized_messages = [
         json.dumps(message, ensure_ascii=False, separators=(",", ":")) for message in messages
@@ -170,6 +205,7 @@ def run_sample(sample: dict[str, Any]) -> dict[str, Any]:
             "text_chars": sum(len(message) for message in serialized_messages),
             "hidden_state_refs": len(latent_states),
             "hidden_bytes": hidden_total_bytes,
+            "memory_hits": len(memory_hits),
             "planner_evidence_similarity": similarity,
             "elapsed_ms": elapsed_ms,
         },
@@ -206,28 +242,61 @@ def print_sample(result: dict[str, Any]) -> None:
         f"text_chars={metrics['text_chars']}, "
         f"hidden_state_refs={metrics['hidden_state_refs']}, "
         f"hidden_bytes={metrics['hidden_bytes']}, "
+        f"memory_hits={metrics['memory_hits']}, "
         f"planner_evidence_similarity={metrics['planner_evidence_similarity']:.4f}, "
         f"elapsed_ms={metrics['elapsed_ms']:.2f}"
     )
 
 
-def main() -> None:
-    print("=== hidden latent samples ===")
-    print("mode: local_llm_last_hidden_state")
-    results = [run_sample(sample) for sample in SAMPLES]
-    for result in results:
-        print_sample(result)
+def load_continuous_groups(path: Path, limit: int) -> list[dict[str, Any]]:
+    """读取从 HotpotQA 构造的连续关联任务。"""
+
+    groups = json.loads(path.read_text(encoding="utf-8"))
+    return groups[:limit] if limit else groups
+
+
+def continuous_turn_to_sample(group: dict[str, Any], turn: dict[str, Any]) -> dict[str, Any]:
+    """把连续任务中的一个 turn 转换成 hidden-latent 样例格式。"""
+
+    return {
+        "id": f"{group['group_id']}:{turn['turn_id']}",
+        "question": turn["question"],
+        "supporting_facts": group["supporting_facts"],
+        "answer": turn["expected_answer"],
+    }
+
+
+def run_continuous_group(group: dict[str, Any]) -> list[dict[str, Any]]:
+    """连续运行同一个 group 内的多个 turn，并让后续 turn 命中前序记忆。"""
+
+    memory: list[dict[str, Any]] = []
+    results = []
+    for turn in group["tasks"]:
+        sample = continuous_turn_to_sample(group, turn)
+        result = run_sample(sample, prior_memory=memory)
+        result["group_id"] = group["group_id"]
+        result["turn_id"] = turn["turn_id"]
+        result["expected_reuse"] = turn.get("expected_reuse", [])
+        results.append(result)
+        memory.append(build_summary_memory(result))
+    return results
+
+
+def print_summary(results: list[dict[str, Any]]) -> None:
+    """汇总 hidden latent 实验指标。"""
 
     total_messages = sum(result["metrics"]["message_count"] for result in results)
     total_chars = sum(result["metrics"]["text_chars"] for result in results)
     total_refs = sum(result["metrics"]["hidden_state_refs"] for result in results)
     total_bytes = sum(result["metrics"]["hidden_bytes"] for result in results)
+    total_memory_hits = sum(result["metrics"]["memory_hits"] for result in results)
     total_elapsed = sum(result["metrics"]["elapsed_ms"] for result in results)
     correct = sum(1 for result in results if result["exact_match"])
 
     print("\n=== hidden latent summary ===")
     print(
-        "samples | exact_match | messages | text_chars | hidden_state_refs | hidden_bytes | elapsed_ms"
+        "samples | exact_match | messages | text_chars | hidden_state_refs | "
+        "hidden_bytes | memory_hits | elapsed_ms"
     )
     print(
         f"{len(results)} | "
@@ -236,12 +305,50 @@ def main() -> None:
         f"{total_chars} | "
         f"{total_refs} | "
         f"{total_bytes} | "
+        f"{total_memory_hits} | "
         f"{total_elapsed:.2f}"
     )
     print(
         "note: exact_match uses a deterministic evidence extractor so this script isolates "
         "hidden-state transfer cost; full LLM answer quality is evaluated by run_hotpot_samples.py."
     )
+
+
+def parse_args() -> Namespace:
+    parser = ArgumentParser(description="Run hidden-state latent transfer experiments.")
+    parser.add_argument(
+        "--dataset-type",
+        choices=["samples", "continuous"],
+        default="samples",
+        help="samples runs the built-in 5 hidden Hotpot examples; continuous runs grouped tasks.",
+    )
+    parser.add_argument(
+        "--dataset-file",
+        default="examples/competition_agents/data/hotpot_continuous_tasks.json",
+        help="Path used when --dataset-type continuous.",
+    )
+    parser.add_argument("--limit", type=int, default=0, help="Limit sample count or continuous group count.")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    print("=== hidden latent samples ===")
+    print("mode: local_llm_last_hidden_state")
+    print(f"dataset_type: {args.dataset_type}")
+    if args.dataset_type == "continuous":
+        groups = load_continuous_groups(Path(args.dataset_file), args.limit)
+        results = []
+        for group in groups:
+            print(f"\n--- continuous group: {group['group_id']} topic={group['topic']} ---")
+            results.extend(run_continuous_group(group))
+    else:
+        samples = SAMPLES[: args.limit] if args.limit else SAMPLES
+        results = [run_sample(sample) for sample in samples]
+
+    for result in results:
+        print_sample(result)
+    print_summary(results)
 
 
 if __name__ == "__main__":

@@ -47,6 +47,10 @@ RetrieverAgent -> search_memory() -> 超图记忆检索
 ```json
 {
   "memory_id": "mem-0001",
+  "memory_type": "episodic",
+  "scope": "chain-001",
+  "status": "active",
+  "ttl": "session",
   "source_agent": "summarizer",
   "created_at": "2026-05-25T...",
   "task_topic": "任务主题",
@@ -60,6 +64,48 @@ RetrieverAgent -> search_memory() -> 超图记忆检索
 
 不要删除这些字段。页面和 Agent 会依赖它们。
 
+## 记忆生命周期字段
+
+超图记忆不建议拆成两套存储。请在同一个记忆记录中使用生命周期字段区分短期连续任务记忆和长期经验记忆：
+
+```json
+{
+  "memory_type": "episodic",
+  "scope": "chain-001",
+  "status": "active",
+  "ttl": "session"
+}
+```
+
+两类记忆含义：
+
+- `episodic`：连续任务中的短期记忆，由每一轮任务生成，主要服务当前 `scope` 内的后续 turn。
+- `experience`：任务结束后从多条 episodic memory 中蒸馏出的长期经验，`scope` 通常为 `global`。
+
+推荐状态：
+
+- `active`：当前可被默认检索。
+- `archived`：任务结束后归档，默认检索不命中，但可用于页面回放、实验复盘和经验蒸馏。
+
+推荐生命周期：
+
+```text
+任务执行中：
+  add_memory(memory_type="episodic", scope=group_id, status="active")
+
+同一连续任务后续 turn：
+  search_memory(query, scope=group_id, include_global=True)
+
+连续任务结束：
+  archive_scope(scope=group_id)
+  distill_experience(scope=group_id)
+
+跨任务复用：
+  search_memory(query, scope="global", memory_type="experience")
+```
+
+这样可以同时支持短期连续任务记忆复用、长期经验记忆沉淀，以及超图统一组织两类记忆节点。
+
 ## 推荐增加的超图字段
 
 可以在记忆记录里增加：
@@ -69,6 +115,9 @@ RetrieverAgent -> search_memory() -> 超图记忆检索
   "entities": ["Alan Turing", "Bletchley Park"],
   "supporting_facts": ["..."],
   "evidence": ["..."],
+  "strategy": "先定位人物，再检索机构所在地。",
+  "experience": "人物 -> 机构 -> 地点类问题可复用两跳检索策略。",
+  "source_memory_ids": ["mem-0001"],
   "state_refs": ["state-0001"],
   "answer": "United Kingdom",
   "reuse_count": 1,
@@ -76,6 +125,9 @@ RetrieverAgent -> search_memory() -> 超图记忆检索
     "memory_node": "memory:mem-0001",
     "task_node": "task:...",
     "agent_node": "agent:summarizer",
+    "memory_type_node": "memory_type:episodic",
+    "scope_node": "scope:chain-001",
+    "status_node": "status:active",
     "tag_nodes": ["tag:multi-agent"],
     "keyword_nodes": ["keyword:protocol"],
     "event_hyperedge": {
@@ -89,12 +141,45 @@ RetrieverAgent -> search_memory() -> 超图记忆检索
 
 这些字段都是可选扩展。已有 Agent 不应因为缺少这些字段而崩溃。
 
+## 超图节点建议
+
+建议至少建这些节点类型：
+
+```text
+TaskGroup 节点：连续任务组，例如 chain-001
+TaskTurn 节点：具体轮次，例如 chain-001:turn-2
+Agent 节点：planner / retriever / reasoner / summarizer
+Memory 节点：mem-0001
+MemoryType 节点：episodic / experience
+Scope 节点：chain-001 / global
+Evidence 节点：证据句
+Strategy 节点：任务策略
+Experience 节点：长期经验片段
+Entity 节点：实体
+StateRef 节点：state-0001 / hidden-0002
+```
+
+建议至少建这些超边：
+
+```text
+task_turn_event: TaskTurn + Agent + Evidence + Memory
+memory_grounding: Memory + Evidence + Entity + Answer
+experience_distillation: Experience + source episodic memories
+state_binding: Memory + StateRef
+scope_membership: Memory + Scope + MemoryType
+```
+
+这样页面可以展示“某条经验是从哪些连续任务记忆蒸馏来的”，实验报告也能解释记忆复用路径。
+
 ## 检索返回建议
 
 `search_memory()` 返回 `list[dict]`。每条命中建议补充：
 
 ```json
 {
+  "memory_type": "episodic",
+  "scope": "chain-001",
+  "status": "active",
   "retrieval_score": 3.25,
   "hypergraph_score": 2.5,
   "embedding_score": 0.75,
@@ -111,6 +196,20 @@ RetrieverAgent -> search_memory() -> 超图记忆检索
 ```
 
 页面同学可以直接展示这些字段，实验报告也能解释“为什么命中这条记忆”。
+
+检索优先级建议：
+
+```text
+连续任务内检索：
+  1. scope=当前 group_id 且 memory_type=episodic 且 status=active
+  2. scope=global 且 memory_type=experience 且 status=active
+
+普通新任务检索：
+  1. scope=global 且 memory_type=experience 且 status=active
+  2. 如果任务属于某个 group，再补充检索该 group 的 episodic memory
+```
+
+如果命中 archived 记忆，需要在结果里保留 `status=archived`，页面可以标成“历史归档，不参与默认复用”。
 
 ## embedding 相似度融合检索
 
@@ -153,4 +252,3 @@ hypergraph evidence/state_ref node -> 连接 memory 和 evidence
 - `memory_hits` 包含 `matched_nodes`、`matched_hyperedges`、`reasoning_path`。
 - 本地 embedding 模式下，记忆记录包含 `embedding_provider=local`。
 - 页面可以直接读取 `memory_hits` 展示检索路径。
-

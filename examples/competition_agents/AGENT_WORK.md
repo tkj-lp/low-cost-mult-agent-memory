@@ -327,3 +327,100 @@ search_memory(...)
 - `final_answer`
 
 后续新增 hidden state、KV cache、CodeAct 结果，都尽量作为新增字段，而不是改旧字段。
+
+
+## run_demo.py 统一入口
+
+当前建议把 `run_demo.py` 作为主实验入口，避免页面同学需要记多个主流程脚本。
+
+支持的数据类型：
+
+```text
+--dataset-type builtin      内置 10 轮比赛主流程
+--dataset-type multihop     HotpotQA 抽样多跳问答
+--dataset-type continuous   HotpotQA 构造的连续关联任务
+```
+
+支持的稳定参数：
+
+```text
+--dataset-file  指定 JSON 数据文件
+--limit         限制样例数量；continuous 模式下限制 group 数
+--modes         text、protocol 或 text,protocol
+```
+
+这个改动不改变对外状态接口，页面和超图同学仍然读取：
+
+```text
+messages
+metrics
+memory
+memory_hits
+latent_states
+final_answer
+```
+
+hidden state 仍然保留为独立实验入口：`run_latent_hidden_demo.py` 和 `run_hidden_latent_samples.py`。当前阶段不把 hidden state 强行并入 10 轮主流程，避免影响页面和超图同学已经对接的接口。
+
+`run_hidden_latent_samples.py` 现在支持两类 hidden latent 数据：
+
+```text
+默认模式：hidden_hotpot_5，多跳问答样例的 hidden-state reference transfer
+--dataset-type continuous：hidden_continuous，连续关联任务的 hidden-state reference transfer + memory_hits
+```
+
+## 共享记忆生命周期设计
+
+后续共享记忆不要拆成“连续任务记忆一套、经验记忆一套”两个系统。推荐统一使用 `MemoryUnit`，再用字段区分生命周期：
+
+```json
+{
+  "memory_id": "mem-0001",
+  "memory_type": "episodic",
+  "scope": "chain-001",
+  "status": "active",
+  "ttl": "session",
+  "task_topic": "Kiss and Tell -> Shirley Temple",
+  "summary": "本轮任务得到答案 Chief of Protocol。",
+  "evidence": ["..."],
+  "strategy": "先定位作品中的人物，再检索人物履历属性。",
+  "experience": "作品 -> 人物 -> 职位类问题可复用两跳检索策略。",
+  "source_agent": "summarizer",
+  "created_at": "...",
+  "tags": ["hotpot", "multi-hop"],
+  "state_refs": ["state-0001", "hidden-0002"]
+}
+```
+
+字段含义：
+
+- `memory_type=episodic`：短期连续任务记忆，由每一轮任务生成，优先在当前 `scope` 内复用。
+- `memory_type=experience`：长期经验记忆，由一组连续任务结束后蒸馏得到，用于跨任务复用。
+- `scope`：记忆作用域，连续任务使用 `chain-001` 这类 group id，长期经验使用 `global`。
+- `status`：`active` 表示可检索，`archived` 表示已归档但仍可用于复盘。
+- `ttl`：`session` 表示短期，`persistent` 表示长期。
+
+智能体侧后续建议增加一个轻量生命周期流程：
+
+```text
+1. 每轮任务结束：SummarizerAgent 写入 memory_type=episodic、scope=当前 group_id 的记忆。
+2. 同一 group 后续任务：RetrieverAgent 优先检索 scope=当前 group_id、status=active 的 episodic memory。
+3. 当前连续任务结束：把该 scope 下的 episodic memory 标记为 archived。
+4. 任务结束后蒸馏：从 archived episodic memory 中提炼 memory_type=experience、scope=global 的长期经验。
+5. 新任务开始：RetrieverAgent 可以检索 scope=global 的 experience memory。
+```
+
+智能体侧要保证：
+
+- 不删除原有 `memory_id/source_agent/created_at/task_topic/summary/tags` 字段。
+- 只新增生命周期字段，不破坏 `memory_hits` 和 `latent_states` 的类型。
+- `memory_hits` 可以同时返回 episodic 和 experience，但需要保留 `memory_type`，方便页面和报告区分。
+
+推荐新增但不强制立刻实现的函数：
+
+```python
+archive_scope(memory, scope) -> list[dict]
+distill_experience(memory, scope) -> list[dict]
+```
+
+第一阶段可以先在实验报告里说明该生命周期设计；第二阶段再把 `archive_scope()` 和 `distill_experience()` 接入连续任务结束逻辑。
