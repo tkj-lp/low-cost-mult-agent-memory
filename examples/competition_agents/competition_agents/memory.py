@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from competition_agents.embedding import embed_text
-from competition_agents.hypergraph_memory import build_hypergraph_view, search_hypergraph_memory
+from hypergraph_memory_method import build_hypergraph_view, search_hypergraph_memory
 
 
 def add_memory(
