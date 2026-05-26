@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from competition_agents.llm import get_llm_client
-from competition_agents.protocol import make_cognitive_gap, make_packet
+from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_latent_state, record_message
 
 
@@ -62,27 +62,16 @@ def reasoner_agent(state: CompetitionState) -> dict:
             f"Answer candidate: {result.get('answer_candidate', '')}"
         )
     else:
-        payload = make_packet(
+        payload = make_compact_packet(
             sender="reasoner",
             receiver="summarizer",
             action="summarize",
-            content_type="protocol.answer_candidate",
-            schema_ref="competition.protocol.answer_candidate.v0.2",
-            params={
-                "memory_hits": len(memory_hits),
-                "memory_refs": [hit.get("memory_id") for hit in memory_hits],
-                "evidence_ref": evidence_ref,
-                "plan_ref": plan_ref,
-                "answer_ref": answer_ref,
-            },
-            result={
-                "answer_ref": answer_ref,
-                "memory_hits": [hit.get("memory_id") for hit in memory_hits],
-            },
+            content_type="answer_ref",
+            params={"hits": len(memory_hits)},
+            result={"answer": answer_ref},
             state_refs=[ref for ref in [plan_ref, evidence_ref, answer_ref] if ref],
             memory_refs=[hit.get("memory_id") for hit in memory_hits],
-            capability_required=["summary_generation", "memory_write"],
-            receiver_capability="summary_generation",
+            capability_required=["summarize", "memory_write"],
             cognitive_gap=cognitive_gap,
             confidence=0.82 if memory_hits else 0.7,
         )

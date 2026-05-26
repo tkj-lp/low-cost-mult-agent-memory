@@ -67,18 +67,7 @@ python examples/competition_agents/run_demo.py
 
 ## 给超图记忆同学
 
-看examples\competition_agents\HYPERGRAPH_CONTRACT.md和examples\competition_agents\HYPERGRAPH_TODO.md，建议超图记忆相关代码单独放在一个子包里，不要直接散落到 Agent 文件中。推荐结构：
-
-```text
-examples/competition_agents/competition_agents/hypergraph/
-  __init__.py
-  index.py
-  schema.py
-  search.py
-  scoring.py
-```
-
-如果当前已经有 `hypergraph_memory.py`，也可以先保留，但后续功能变多后建议迁移到 `hypergraph/` 子包。
+看examples\competition_agents\HYPERGRAPH_CONTRACT.md和examples\competition_agents\HYPERGRAPH_TODO.md，建议超图记忆相关代码单独放在一个子包里，不要直接散落到 Agent 文件中。
 
 超图模块应尽量只对外暴露两个稳定入口：
 
