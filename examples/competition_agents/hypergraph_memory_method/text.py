@@ -24,9 +24,16 @@ STOPWORDS = {
     "with",
 }
 
+NOISY_TOKENS = {
+    "context",
+    "question",
+    "sentences",
+    "title",
+}
+
 
 def normalize_text(text: str) -> str:
-    return text.lower().replace("_", "-").strip()
+    return str(text).lower().replace("_", "-").strip()
 
 
 def slug(text: str) -> str:
@@ -35,17 +42,32 @@ def slug(text: str) -> str:
 
 
 def stable_id(text: str, *, length: int = 12) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:length]
+    return hashlib.sha256(str(text).encode("utf-8")).hexdigest()[:length]
 
 
 def tokenize(text: str) -> list[str]:
-    """把任务和总结文本转成可复用的关键词节点。"""
+    """Convert text into stable keyword tokens for graph nodes."""
 
     tokens = re.findall(r"[a-zA-Z0-9][a-zA-Z0-9-]*", normalize_text(text))
-    return sorted({token for token in tokens if len(token) > 1 and token not in STOPWORDS})
+    return sorted(
+        {
+            token
+            for token in tokens
+            if len(token) > 1
+            and token not in STOPWORDS
+            and token not in NOISY_TOKENS
+            and not any(char.isdigit() for char in token)
+        }
+    )
+
+
+def limited_tokens(text: str, *, limit: int = 32) -> list[str]:
+    """Return a bounded token list so long contexts cannot dominate retrieval."""
+
+    return tokenize(text)[:limit]
 
 
 def node_id(kind: str, value: str) -> str:
-    """统一节点 id 格式，避免 tag 和 keyword 的同名值混在一起。"""
+    """Build a typed node id so equal values in different namespaces stay apart."""
 
     return f"{kind}:{normalize_text(value)}"

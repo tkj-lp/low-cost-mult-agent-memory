@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from competition_agents.hypergraph_memory import build_hypergraph_view, search_hypergraph_memory
 from competition_agents.memory import add_memory
+from hypergraph_memory_method.distill import distill_experience
 
 
 def _record(
@@ -73,6 +74,101 @@ def test_add_memory_keeps_optional_trace() -> None:
     assert memory[0]["trace"] == trace
 
 
+def test_trace_memory_builds_structured_hyperedges() -> None:
+    """trace 写入后应生成 task/message/state/gap/evidence 等结构化超边。"""
+
+    trace = {
+        "task_meta": {
+            "task_id": "chain-001:turn-2",
+            "group_id": "chain-001",
+            "turn_id": "turn-2",
+            "dataset_type": "continuous",
+            "expected_reuse": ["turn-1.answer", "turn-1.supporting_facts"],
+            "question": "Reuse the previous evidence chain answer.",
+            "supporting_facts": [["Kiss and Tell (1945 film)", "Shirley Temple played Corliss Archer."]],
+        },
+        "messages": [
+            {
+                "from": "retriever",
+                "to": "reasoner",
+                "action": "reason",
+                "payload": {"s": ["state-0002"], "m": ["mem-0001"], "cap": ["reason"]},
+            }
+        ],
+        "memory_hits": [{"memory_id": "mem-0001"}],
+        "state_refs": {"plan": "state-0001", "evidence": "state-0002", "answer": "state-0003"},
+        "evidence": ["Reusable evidence chain is available."],
+        "cognitive_gaps": [{"agent": "reasoner", "gap_type": "memory_grounded_reasoning"}],
+        "metrics": {"message_count": 1, "text_chars": 42},
+        "execution_result": {"retrieval_mode": "hypergraph_memory", "answer_ref": "state-0003"},
+    }
+    memory = add_memory(
+        [],
+        source_agent="summarizer",
+        task_topic="Continuous task with long Context: 1928 1945 17-year-old",
+        summary="Answer uses state refs and evidence.",
+        tags=["protocol"],
+        trace=trace,
+    )
+
+    hypergraph = memory[0]["hypergraph"]
+    edge_types = {edge["type"] for edge in hypergraph["hyperedges"]}
+
+    assert "memory_event" in edge_types
+    assert "task_context" in edge_types
+    assert "agent_message" in edge_types
+    assert "state_flow" in edge_types
+    assert "memory_reuse" in edge_types
+    assert "cognitive_gap" in edge_types
+    assert "supporting_fact" in edge_types
+    assert "strategy" in edge_types
+    assert "experience" in edge_types
+    assert "reuse_benefit" in edge_types
+    assert "archive_scope" in edge_types
+    assert "keyword:1928" not in hypergraph["keyword_nodes"]
+    assert "keyword:1945" not in hypergraph["keyword_nodes"]
+    assert hypergraph["distilled_experience"]["archive_scope"] == "cross-turn-reuse"
+    assert "state-ref-passing" in hypergraph["distilled_experience"]["strategies"]
+    assert "memory-grounded-reasoning" in hypergraph["distilled_experience"]["experiences"]
+
+
+def test_distill_experience_extracts_strategy_and_reuse_benefit() -> None:
+    """缁忛獙钂搁搴斾粠 trace 鎻愬彇绛栫暐銆佺粡楠屽拰澶嶇敤鏀剁泭銆?"""
+
+    record = {
+        "memory_id": "mem-0001",
+        "summary": "Reusable answer.",
+        "trace": {
+            "task_meta": {
+                "group_id": "chain-001",
+                "expected_reuse": ["turn-1.answer", "turn-1.supporting_facts"],
+                "supporting_facts": [["A", "B"]],
+            },
+            "messages": [
+                {
+                    "from": "retriever",
+                    "to": "reasoner",
+                    "action": "reason",
+                    "payload": {"s": ["state-0002"], "m": ["mem-0001"]},
+                }
+            ],
+            "memory_hits": [{"memory_id": "mem-0001"}],
+            "state_refs": {"evidence": "state-0002", "answer": "state-0003"},
+            "metrics": {"latent_transfer_count": 3, "text_chars": 120},
+            "execution_result": {"retrieval_mode": "hypergraph_memory"},
+        },
+    }
+
+    distilled = distill_experience(record)
+
+    assert distilled["archive_scope"] == "cross-turn-reuse"
+    assert distilled["lifecycle_stage"] == "promoted-candidate"
+    assert "memory-ref-passing" in distilled["strategies"]
+    assert "supporting-fact-chain" in distilled["experiences"]
+    assert "expected-reuse:answer" in distilled["reuse_benefits"]
+    assert "memory-hit-count:1" in distilled["reuse_benefits"]
+
+
 def test_build_hypergraph_view_adds_nodes_and_event_hyperedge() -> None:
     """一条记忆应被映射成多个类型节点和一条 memory_event 超边。"""
 
@@ -107,6 +203,100 @@ def test_search_hypergraph_memory_hits_related_memory() -> None:
 
     # 返回对象仍然是 memory record，Agent 侧继续读取 memory_id / summary 即可。
     assert [hit["memory_id"] for hit in hits] == ["mem-0001"]
+
+
+def test_trace_search_prefers_structured_nodes_over_numeric_keywords() -> None:
+    """连续任务复用时，解释应优先来自结构化节点而不是年份等噪声 keyword。"""
+
+    trace = {
+        "task_meta": {
+            "task_id": "chain-001:turn-1",
+            "group_id": "chain-001",
+            "turn_id": "turn-1",
+            "dataset_type": "continuous",
+            "question": "What government position was held by the woman in Kiss and Tell?",
+            "supporting_facts": [
+                ["Kiss and Tell (1945 film)", "Kiss and Tell stars Shirley Temple."],
+                ["Shirley Temple", "She served as Chief of Protocol of the United States."],
+            ],
+        },
+        "messages": [
+            {
+                "from": "reasoner",
+                "to": "summarizer",
+                "action": "summarize",
+                "payload": {"s": ["state-0001", "state-0003"], "m": ["mem-0001"]},
+            }
+        ],
+        "state_refs": {"plan": "state-0001", "answer": "state-0003"},
+        "evidence": ["Kiss and Tell -> Shirley Temple -> Chief of Protocol."],
+        "cognitive_gaps": [{"agent": "reasoner", "gap_type": "memory_grounded_reasoning"}],
+        "metrics": {"message_count": 3},
+    }
+    memory = add_memory(
+        [],
+        source_agent="summarizer",
+        task_topic="Question: What government position was held? Context: 1928 1945 1938",
+        summary="Chief of Protocol was supported by the evidence chain.",
+        tags=["protocol"],
+        trace=trace,
+    )
+
+    hits = search_hypergraph_memory(
+        memory,
+        "Reuse the previous evidence chain. Which answer was supported by Kiss and Tell 1945 and Shirley Temple?",
+        top_k=1,
+    )
+
+    assert hits
+    assert hits[0]["matched_nodes"][0].startswith("artifact:")
+    assert not any(node.startswith("keyword:1945") for node in hits[0]["matched_nodes"])
+    assert hits[0]["evidence_score"] > 0
+    assert hits[0]["state_ref_score"] > 0
+
+
+def test_experience_nodes_can_drive_search() -> None:
+    """妫€绱㈠彲浠ラ€氳繃缁忛獙鍜岀瓥鐣ヨ妭鐐瑰懡涓紝鑰屼笉渚濊禆鏅€?keyword銆?"""
+
+    trace = {
+        "task_meta": {
+            "task_id": "chain-001:turn-2",
+            "group_id": "chain-001",
+            "turn_id": "turn-2",
+            "dataset_type": "continuous",
+            "expected_reuse": ["turn-1.supporting_facts"],
+            "question": "Reuse prior evidence.",
+            "supporting_facts": [["Shirley Temple", "Chief of Protocol"]],
+        },
+        "messages": [
+            {
+                "from": "retriever",
+                "to": "reasoner",
+                "action": "reason",
+                "payload": {"s": ["state-0002"], "m": ["mem-0001"]},
+            }
+        ],
+        "memory_hits": [{"memory_id": "mem-0001"}],
+        "state_refs": {"evidence": "state-0002", "answer": "state-0003"},
+        "evidence": ["Prior supporting facts were reused."],
+        "metrics": {"latent_transfer_count": 3},
+        "execution_result": {"retrieval_mode": "hypergraph_memory"},
+    }
+    memory = add_memory(
+        [],
+        source_agent="summarizer",
+        task_topic="Prior evidence reuse",
+        summary="Evidence was reused through memory-grounded reasoning.",
+        tags=["protocol"],
+        trace=trace,
+    )
+
+    hits = search_hypergraph_memory(memory, "experience distill insight for previous evidence reuse", top_k=1)
+
+    assert hits
+    assert any(node.startswith("experience:") for node in hits[0]["matched_nodes"])
+    assert hits[0]["experience_score"] > 0
+    assert hits[0]["strategy_score"] > 0
 
 
 def test_search_hypergraph_memory_ignores_unrelated_query() -> None:
@@ -167,6 +357,8 @@ def test_search_result_contains_explanation_fields() -> None:
     # retrieval_score 预留给未来融合模型分数，hypergraph_score 表示结构检索分。
     assert "retrieval_score" in hit
     assert "hypergraph_score" in hit
+    assert "embedding_score" in hit
+    assert hit["retrieval_score"] >= hit["hypergraph_score"]
     # matched_* 和 reasoning_path 说明 query 是怎么走到这条 memory 的。
     assert "matched_nodes" in hit
     assert "matched_hyperedges" in hit
@@ -174,6 +366,23 @@ def test_search_result_contains_explanation_fields() -> None:
     assert isinstance(hit["reasoning_path"], list)
     assert hit["reasoning_path"]
     assert {"query_node", "hyperedge_id", "memory_id"} <= set(hit["reasoning_path"][0])
+
+
+def test_embedding_score_is_fused_into_retrieval_score() -> None:
+    """embedding_score 搴斿弬涓庢渶缁堟绱㈠垎锛岃€屼笉鍙槸灞曠ず瀛楁銆?"""
+
+    memory = add_memory(
+        [],
+        source_agent="summarizer",
+        task_topic="Protocol memory for openEuler deployment",
+        summary="Protocol memory helps openEuler deployment.",
+        tags=["protocol", "memory", "openeuler"],
+    )
+
+    hit = search_hypergraph_memory(memory, "protocol memory openeuler", top_k=1)[0]
+
+    assert hit["embedding_score"] > 0
+    assert hit["retrieval_score"] > hit["hypergraph_score"]
 
 
 def test_top_k_and_score_order_are_stable() -> None:
