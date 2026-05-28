@@ -1,163 +1,191 @@
 # 运行手册
 
-这份文档只回答一个问题：不同实验应该怎么跑。页面同学可以把实验配置理解成两个选择框：
+本文档回答两个问题：
+
+1. 不同实验模式应该怎么跑。
+2. 页面上的收益统计应该怎么和基线结果对齐。
+
+当前正式实验入口采用两层选择：
 
 ```text
-运行方式：quick / api / api_embedding / latent_hidden
-数据集：competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous
+experiment_mode：baseline_text / protocol_api / protocol_api_embedding / latent_hidden
+dataset：competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous
 ```
 
-当前推荐的统一入口是 `run_demo.py`。它可以跑三类数据：内置 10 轮比赛主流程、多跳问答样例、连续关联任务。`latent_hidden` 使用单独脚本，因为它验证的是本地 LLM 最后一层 hidden state 的引用传递机制。
+`mock` 只用于终端自测流程是否跑通，不作为页面正式运行方式。
 
-## 1. 四种运行方式
+## 1. 正式实验模式
 
-| 运行方式 | 含义 | 是否调用 API | 是否生成 embedding | 是否读取 LLM hidden state |
-| --- | --- | --- | --- | --- |
-| `quick` | 全部 Agent 使用 mock，最快最稳定，适合先验证流程和页面 | 否 | 默认 hash 或按环境变量决定 | 否 |
-| `api` | Planner / Reasoner / Summarizer 使用真实 API 生成文字 | 是 | 否 | 否 |
-| `api_embedding` | API 负责生成文字，本地 embedding 把中间文本压成向量并通过 `state_ref` 传递 | 是 | 是 | 否 |
-| `latent_hidden` | 本地 Qwen 前向推理后直接读取 `outputs.hidden_states[-1]`，消息里只传 `hidden_state_ref` | 否 | 否 | 是 |
+| experiment_mode | 含义 | 入口 |
+| --- | --- | --- |
+| `baseline_text` | 纯文本协作基线。真实 API 生成文字，Agent 间用自然语言长文本通信。 | `run_demo.py` |
+| `protocol_api` | 结构化协议协作。真实 API 生成文字，Agent 间用结构化协议包通信，embedding 使用 hash 占位。 | `run_demo.py` |
+| `protocol_api_embedding` | 协议 + API embedding。真实 API 生成文字，并用 OpenAI-compatible embedding 生成 `state_ref`。 | `run_demo.py` |
+| `latent_hidden` | 本地 LLM hidden state 引用传递。消息里只传 `hidden_state_ref`。 | `run_hidden_latent_samples.py` |
 
-注意：`api_embedding` 不是直接传 LLM hidden state，它是“文本 -> embedding 向量 -> state_ref”。`latent_hidden` 才是读取本地 LLM 最后一层 hidden state。
+`run_demo.py` 在设置 `--experiment-mode` 时会自动读取：
 
-## 2. 统一数据集入口
-
-`run_demo.py` 现在支持命令行选择数据：
-
-```powershell
-python examples\competition_agents\run_demo.py --dataset-type builtin
-python examples\competition_agents\run_demo.py --dataset-type multihop --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json
-python examples\competition_agents\run_demo.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json
+```text
+examples/competition_agents/.env.local
 ```
 
-常用参数：
+并把 Planner / Reasoner / Summarizer 设置为真实 API：
 
-| 参数 | 作用 |
+```text
+LLM_PROVIDER=openai_compatible
+LLM_PLANNER_PROVIDER=openai_compatible
+LLM_REASONER_PROVIDER=openai_compatible
+LLM_SUMMARIZER_PROVIDER=openai_compatible
+LLM_REQUIRE_REAL=1
+```
+
+因此正式实验前需要保证 `.env.local` 至少包含：
+
+```text
+LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=你的模型名
+LLM_API_KEY=你的 key
+```
+
+如果运行 `protocol_api_embedding`，还会使用：
+
+```text
+EMBEDDING_PROVIDER=openai_compatible
+EMBEDDING_MODEL=text-embedding-v4
+```
+
+如果没有单独设置 `EMBEDDING_API_KEY`，embedding 会复用 `LLM_API_KEY`。
+
+## 2. 数据集
+
+| dataset | run_demo.py 参数 | 含义 |
+| --- | --- | --- |
+| `competition_10` | `--dataset-type builtin` | 内置 10 轮比赛主流程。 |
+| `hotpot_multihop` | `--dataset-type multihop --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json` | HotpotQA 抽样多跳问答。 |
+| `hotpot_continuous` | `--dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 连续关联任务，用于验证跨轮记忆复用。 |
+| `hidden_hotpot_5` | `run_hidden_latent_samples.py` 默认 | 5 条 hidden-state reference transfer 样例。 |
+| `hidden_continuous` | `run_hidden_latent_samples.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 连续任务上的 hidden-state reference transfer + memory reuse。 |
+
+## 3. 可用组合
+
+| experiment_mode | 可用 dataset |
 | --- | --- |
-| `--dataset-type builtin` | 跑内置 10 轮比赛主流程，默认值 |
-| `--dataset-type multihop` | 跑 HotpotQA 抽样多跳问答 |
-| `--dataset-type continuous` | 跑从 HotpotQA 构造的连续关联任务，用于验证记忆复用 |
-| `--dataset-file` | 指定 JSON 数据文件，`multihop` 和 `continuous` 必填 |
-| `--limit` | 限制样例数；连续任务中表示限制 group 数 |
-| `--modes` | 指定 `text`、`protocol` 或 `text,protocol` |
+| `baseline_text` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
+| `protocol_api` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
+| `protocol_api_embedding` | `competition_10`, `hotpot_continuous` |
+| `latent_hidden` | `hidden_hotpot_5`, `hidden_continuous` |
 
-## 3. quick：快速测试
+不建议组合：
 
-用途：不调用 API，不下载大模型，先确认多 Agent 流程、结构化协议和指标输出可以跑通。
-
-```powershell
-cd D:\qq\low-cost-memory-integrate
-.\.venv\Scripts\Activate.ps1
-$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-
-$env:LLM_PROVIDER="mock"
-$env:LLM_PLANNER_PROVIDER="mock"
-$env:LLM_REASONER_PROVIDER="mock"
-$env:LLM_SUMMARIZER_PROVIDER="mock"
-$env:EMBEDDING_PROVIDER="hash"
+```text
+latent_hidden + competition_10
+latent_hidden + hotpot_multihop
+baseline_text + hidden_*
+protocol_api + hidden_*
+protocol_api_embedding + hidden_*
 ```
 
-跑 10 轮比赛主流程：
+原因：`latent_hidden` 当前使用独立脚本，验证的是本地 LLM hidden state 引用传递，不接入 `run_demo.py` 的 10 轮主流程。
 
-```powershell
-python examples\competition_agents\run_demo.py --dataset-type builtin
-```
+## 4. baseline_text
 
-跑 1 组连续关联任务，适合快速看记忆命中：
+10 轮主流程：
 
 ```powershell
 python examples\competition_agents\run_demo.py `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
-  --limit 1 `
-  --modes protocol
+  --experiment-mode baseline_text `
+  --dataset-type builtin
 ```
 
-## 4. api：真实 API 生成文字
-
-用途：让 Planner / Reasoner / Summarizer 使用真实大模型 API，验证输出质量。API 返回的是文字，不是 hidden state。
-
-```powershell
-cd D:\qq\low-cost-memory-integrate
-.\.venv\Scripts\Activate.ps1
-$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-
-$env:LLM_PROVIDER="mock"
-$env:LLM_PLANNER_PROVIDER="openai_compatible"
-$env:LLM_REASONER_PROVIDER="openai_compatible"
-$env:LLM_SUMMARIZER_PROVIDER="openai_compatible"
-
-$env:LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
-$env:LLM_MODEL="qwen-plus-2025-07-28"
-$env:LLM_API_KEY="your_api_key"
-$env:EMBEDDING_PROVIDER="hash"
-```
-
-跑多跳问答，并输出 `gold` 和 `exact_match`：
+多跳问答：
 
 ```powershell
 python examples\competition_agents\run_demo.py `
+  --experiment-mode baseline_text `
   --dataset-type multihop `
   --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
   --limit 5
 ```
 
-## 5. api_embedding：真实 API + 本地 embedding
-
-用途：API 负责生成计划、推理和总结文字；本地 embedding 模型把中间文本压成 384 维向量，存入 latent state，Agent 消息中传 `state_ref`。
-
-第一次运行前安装：
-
-```powershell
-pip install sentence-transformers
-```
-
-配置：
-
-```powershell
-$env:LLM_PROVIDER="mock"
-$env:LLM_PLANNER_PROVIDER="openai_compatible"
-$env:LLM_REASONER_PROVIDER="openai_compatible"
-$env:LLM_SUMMARIZER_PROVIDER="openai_compatible"
-
-$env:LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
-$env:LLM_MODEL="qwen-plus-2025-07-28"
-$env:LLM_API_KEY="your_api_key"
-
-$env:EMBEDDING_PROVIDER="local"
-$env:LOCAL_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
-```
-
-跑 10 轮比赛主流程：
-
-```powershell
-python examples\competition_agents\run_demo.py --dataset-type builtin
-```
-
-跑连续任务：
+连续任务：
 
 ```powershell
 python examples\competition_agents\run_demo.py `
+  --experiment-mode baseline_text `
   --dataset-type continuous `
   --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
+  --limit 1
+```
+
+`baseline_text` 是页面收益统计的统一参照项。前端需要保存同一 dataset 下的 baseline 结果，用于和其他实验模式计算收益。
+
+## 5. protocol_api
+
+10 轮主流程：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --experiment-mode protocol_api `
+  --dataset-type builtin
+```
+
+多跳问答：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --experiment-mode protocol_api `
+  --dataset-type multihop `
+  --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
   --limit 5
 ```
 
-## 6. latent_hidden：本地 LLM hidden state 引用传递
-
-用途：验证“非文本状态传递”中更接近模型内部状态的一种实现。它会读取本地 Qwen 的最后一层 hidden state，把完整 tensor 放进进程内共享 latent memory，Agent 消息中只传 `hidden-0001` 这样的引用。
-
-第一次运行前安装：
+连续任务，带超图/latent 展示：
 
 ```powershell
-pip install torch transformers
+python examples\competition_agents\run_demo.py `
+  --experiment-mode protocol_api `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
+  --limit 1 `
+  --show-memory `
+  --show-latent `
+  --show-state
 ```
 
-配置：
+## 6. protocol_api_embedding
+
+10 轮主流程：
 
 ```powershell
-$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+python examples\competition_agents\run_demo.py `
+  --experiment-mode protocol_api_embedding `
+  --dataset-type builtin
 ```
+
+连续任务：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --experiment-mode protocol_api_embedding `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
+  --limit 1 `
+  --show-memory `
+  --show-latent `
+  --show-state
+```
+
+该模式重点展示：
+
+```text
+latent_transfer_count
+latent_bytes
+latent_states.*.embedding_provider
+latent_states.*.embedding_model
+state_refs
+```
+
+## 7. latent_hidden
 
 单条机制验证：
 
@@ -165,13 +193,13 @@ $env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
 python examples\competition_agents\run_latent_hidden_demo.py
 ```
 
-5 条 HotpotQA 样例的 hidden-state reference transfer 实验：
+5 条 hidden Hotpot 样例：
 
 ```powershell
 python examples\competition_agents\run_hidden_latent_samples.py
 ```
 
-连续关联任务的 hidden-state reference transfer + 记忆复用实验：
+连续任务：
 
 ```powershell
 python examples\competition_agents\run_hidden_latent_samples.py `
@@ -180,21 +208,170 @@ python examples\competition_agents\run_hidden_latent_samples.py `
   --limit 1
 ```
 
-重要说明：当前 hidden state 只作为“非文本消息传递对象”和“状态引用机制”使用，不声明 Reasoner 已经完全依赖 hidden state 直接推理。答案质量仍由 API/mock/evidence 文本链路验证。
+`latent_hidden` 输出中的 `exact_match` 使用确定性 evidence extractor，用于隔离 hidden-state 传递机制的开销；完整 LLM 问答质量由 `baseline_text` / `protocol_api` / `protocol_api_embedding` 路径验证。
 
-## 7. 页面同学推荐接入组合
+## 8. 终端自测模式
 
-| 页面选择：运行方式 | 页面选择：数据集 | 推荐命令 |
-| --- | --- | --- |
-| `quick` | `competition_10` | `python examples\competition_agents\run_demo.py --dataset-type builtin` |
-| `quick` | `hotpot_continuous` | `python examples\competition_agents\run_demo.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json --limit 1 --modes protocol` |
-| `api` | `hotpot_multihop` | `python examples\competition_agents\run_demo.py --dataset-type multihop --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json --limit 5` |
-| `api_embedding` | `competition_10` | `python examples\competition_agents\run_demo.py --dataset-type builtin` |
-| `api_embedding` | `hotpot_continuous` | `python examples\competition_agents\run_demo.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json --limit 5` |
-| `latent_hidden` | `hidden_hotpot_5` | `python examples\competition_agents\run_hidden_latent_samples.py` |
-| `latent_hidden` | `hidden_continuous` | `python examples\competition_agents\run_hidden_latent_samples.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json --limit 1` |
+mock 只用于确认流程能跑通，不进入页面正式选项。
 
-## 8. 输出字段
+```powershell
+$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
+$env:LLM_PROVIDER="mock"
+$env:LLM_PLANNER_PROVIDER="mock"
+$env:LLM_REASONER_PROVIDER="mock"
+$env:LLM_SUMMARIZER_PROVIDER="mock"
+$env:EMBEDDING_PROVIDER="hash"
+
+python examples\competition_agents\run_demo.py `
+  --dataset-type builtin `
+  --modes text,protocol
+```
+
+快速看连续任务记忆命中：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
+  --limit 1 `
+  --modes protocol `
+  --show-memory `
+  --show-latent `
+  --show-state
+```
+
+## 9. 页面收益统计怎么显示
+
+右下角“收益统计”建议永远显示 **当前实验模式相对同数据集 `baseline_text` 的收益**。
+
+也就是说，前端需要先拿到：
+
+```text
+baseline = experiment_mode=baseline_text + 当前 dataset 的运行结果
+current = 当前 experiment_mode + 当前 dataset 的运行结果
+```
+
+然后按下面公式计算。
+
+### 9.1 字符节省
+
+```text
+字符节省率 = (baseline.metrics.text_chars - current.metrics.text_chars)
+           / baseline.metrics.text_chars
+```
+
+展示建议：
+
+```text
+字符节省
+42%
+较 baseline_text
+```
+
+如果结果为负数，显示为：
+
+```text
+字符增加
+12%
+较 baseline_text
+```
+
+### 9.2 耗时降低
+
+```text
+耗时降低率 = (baseline.elapsed_ms - current.elapsed_ms)
+           / baseline.elapsed_ms
+```
+
+展示建议：
+
+```text
+耗时降低
+31%
+较 baseline_text
+```
+
+如果结果为负数，说明当前方式更慢，显示为：
+
+```text
+耗时增加
+8%
+较 baseline_text
+```
+
+注意：真实 API 耗时受网络波动影响很大，报告里建议重复跑多次取平均值；页面实时展示可以直接显示本次结果。
+
+### 9.3 memory hit rate
+
+这里建议展示当前实验的绝对命中率，并在小字里显示相对 baseline 的变化。
+
+```text
+current_memory_hit_rate = current.memory_hit_rate
+delta = current.memory_hit_rate - baseline.memory_hit_rate
+```
+
+展示建议：
+
+```text
+memory hit rate
+0.83
+较 baseline_text +0.12
+```
+
+如果没有 baseline，就只显示：
+
+```text
+memory hit rate
+0.83
+```
+
+### 9.4 exact match
+
+这里建议展示当前实验的准确率，并在小字里显示相对 baseline 的变化。
+
+```text
+current_exact_match = current.exact_match
+delta = current.exact_match - baseline.exact_match
+```
+
+展示建议：
+
+```text
+exact match
+0.67
+较 baseline_text -0.03
+```
+
+如果任务没有 gold，`exact_match` 为 `None`，页面显示：
+
+```text
+exact match
+N/A
+无 gold
+```
+
+### 9.5 latent_hidden 的收益统计
+
+`latent_hidden` 不完全等价于 `run_demo.py` 的 API 问答流程，因此右下角建议这样显示：
+
+| 卡片 | 显示内容 |
+| --- | --- |
+| 字符节省 | 如果存在同 dataset 的 `baseline_text`，按 `text_chars` 公式计算；否则显示 N/A。 |
+| 耗时降低 | 如果存在同 dataset 的 `baseline_text`，按 `elapsed_ms` 公式计算；否则显示 N/A。 |
+| memory hit rate | 显示 `latent_hidden` 当前命中率。 |
+| exact match | 显示 `latent_hidden` 当前 exact_match，并注明 deterministic extractor。 |
+
+同时在 hidden 专属区域额外展示：
+
+```text
+hidden_state_refs
+hidden_bytes
+pooled_similarity
+```
+
+不要把 `hidden_bytes` 当作通信文本开销，它表示共享 latent memory 中保存的 hidden tensor 规模。
+
+## 10. 输出字段
 
 页面和实验报告优先读取这些字段：
 
@@ -210,8 +387,31 @@ metrics.latent_bytes
 memory_hits
 memory_hit_rate
 latent_states
+state_refs
 elapsed_ms
 exact_match
 ```
 
-`payload` 内部结构后续可能继续压缩优化，页面不要强依赖 payload 的具体子字段。稳定字段是 `from`、`to`、`action`、`char_cost`、`metrics`、`memory_hits`、`latent_states`。
+`payload` 内部结构后续可能继续压缩优化，页面不要强依赖 payload 的具体子字段。
+
+## 11. 常用验证命令
+
+Python 语法检查：
+
+```powershell
+python -m py_compile examples\competition_agents\run_demo.py
+```
+
+超图记忆测试：
+
+```powershell
+python -m pytest -p no:cacheprovider examples\competition_agents\tests\test_hypergraph_memory.py
+```
+
+前端构建：
+
+```powershell
+cd examples\competition_agents\frontend
+npm.cmd install
+npm.cmd run build
+```

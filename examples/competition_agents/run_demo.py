@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import time
 from pathlib import Path
@@ -126,6 +127,44 @@ def load_tasks(args: argparse.Namespace) -> list[dict[str, Any]]:
     if args.dataset_type == "continuous":
         return load_continuous_tasks(path, args.limit)
     raise ValueError(f"Unsupported dataset type: {args.dataset_type}")
+
+
+def load_env_file(path: Path) -> None:
+    """加载 PowerShell/Unix 通用的 KEY=VALUE 环境变量文件。"""
+
+    if not path.exists():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        os.environ[name.strip()] = value.strip().strip('"').strip("'")
+
+
+def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
+    """把正式实验模式映射为底层协作模式和 provider 配置。"""
+
+    if not args.experiment_mode:
+        return parse_modes(args.modes)
+
+    load_env_file(Path(args.env_file))
+    os.environ["LLM_PROVIDER"] = "openai_compatible"
+    os.environ["LLM_PLANNER_PROVIDER"] = "openai_compatible"
+    os.environ["LLM_REASONER_PROVIDER"] = "openai_compatible"
+    os.environ["LLM_SUMMARIZER_PROVIDER"] = "openai_compatible"
+    os.environ["LLM_REQUIRE_REAL"] = "1"
+
+    if args.experiment_mode == "baseline_text":
+        os.environ["EMBEDDING_PROVIDER"] = "hash"
+        return ["text"]
+    if args.experiment_mode == "protocol_api":
+        os.environ["EMBEDDING_PROVIDER"] = "hash"
+        return ["protocol"]
+    if args.experiment_mode == "protocol_api_embedding":
+        os.environ["EMBEDDING_PROVIDER"] = "openai_compatible"
+        return ["protocol"]
+    raise ValueError(f"Unsupported experiment mode: {args.experiment_mode}")
 
 
 def parse_modes(raw_modes: str) -> list[str]:
@@ -345,6 +384,9 @@ def run_mode(
     tasks: list[dict[str, Any]],
     *,
     dataset_type: str,
+    dataset_file: str = "",
+    limit: int = 0,
+    experiment_mode: str | None = None,
     show_agents: bool = False,
     show_memory: bool = False,
     show_latent: bool = False,
@@ -447,14 +489,28 @@ def run_mode(
         summary += f", exact_match={exact_match_rate:.2%}"
     print(summary)
 
-    return {
-        "mode": mode,
-        "dataset_type": dataset_type,
-        "tasks": len(tasks),
-        "metrics": total_metrics,
+    elapsed_ms = total_elapsed * 1000
+    aggregate_metrics = {
+        **total_metrics,
         "memory_hits": total_memory_hits,
         "memory_hit_rate": memory_hit_rate,
-        "elapsed_ms": total_elapsed * 1000,
+        "elapsed_ms": elapsed_ms,
+        "exact_match": exact_match_rate,
+        "task_count": len(tasks),
+    }
+
+    return {
+        "mode": mode,
+        "experiment_mode": experiment_mode or mode,
+        "dataset_type": dataset_type,
+        "dataset_file": dataset_file,
+        "limit": limit,
+        "tasks": len(tasks),
+        "task_count": len(tasks),
+        "metrics": aggregate_metrics,
+        "memory_hits": total_memory_hits,
+        "memory_hit_rate": memory_hit_rate,
+        "elapsed_ms": elapsed_ms,
         "exact_match": exact_match_rate,
     }
 
@@ -489,8 +545,39 @@ def print_comparison(results: list[dict[str, Any]]) -> None:
         print(f"protocol exact match: {protocol_result['exact_match']:.2%}")
 
 
+def print_run_result_json(args: argparse.Namespace, tasks: list[dict[str, Any]], results: list[dict[str, Any]]) -> None:
+    """输出前端可直接解析的汇总 JSON，避免页面从终端文本里猜字段。"""
+
+    payload = {
+        "schema_version": 1,
+        "experiment_mode": args.experiment_mode or "<developer-modes>",
+        "dataset_type": args.dataset_type,
+        "dataset_file": args.dataset_file,
+        "limit": args.limit,
+        "task_count": len(tasks),
+        "runs": results,
+    }
+    print("\n=== run_result_json ===")
+    print(json.dumps(payload, ensure_ascii=False, default=str, separators=(",", ":")))
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run competition multi-agent experiments.")
+    parser.add_argument(
+        "--experiment-mode",
+        choices=["baseline_text", "protocol_api", "protocol_api_embedding"],
+        default="",
+        help=(
+            "Formal experiment mode for dashboards. "
+            "baseline_text uses text collaboration; protocol_api uses structured protocol; "
+            "protocol_api_embedding additionally uses configured embedding API."
+        ),
+    )
+    parser.add_argument(
+        "--env-file",
+        default="examples/competition_agents/.env.local",
+        help="Environment file loaded only when --experiment-mode is set.",
+    )
     parser.add_argument(
         "--dataset-type",
         choices=["builtin", "multihop", "continuous"],
@@ -499,7 +586,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--dataset-file", default="", help="Path to multihop or continuous JSON data.")
     parser.add_argument("--limit", type=int, default=0, help="Limit samples or continuous groups. 0 means no limit.")
-    parser.add_argument("--modes", default="text,protocol", help="Comma-separated modes: text,protocol")
+    parser.add_argument(
+        "--modes",
+        default="text,protocol",
+        help="Developer/self-test only. Comma-separated modes: text,protocol. Ignored when --experiment-mode is set.",
+    )
     parser.add_argument("--show-agents", action="store_true", help="Print Planner/Retriever/Reasoner/Summarizer outputs.")
     parser.add_argument("--show-memory", action="store_true", help="Print hypergraph memory hits and reasoning paths.")
     parser.add_argument("--show-latent", action="store_true", help="Print state refs and latent state metadata.")
@@ -509,8 +600,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    modes = configure_experiment_mode(args)
     tasks = load_tasks(args)
-    modes = parse_modes(args.modes)
     print(
         "LLM providers: "
         f"default={get_llm_provider()}, "
@@ -520,6 +611,7 @@ def main() -> None:
     )
     print(
         "dataset: "
+        f"experiment_mode={args.experiment_mode or '<developer-modes>'}, "
         f"type={args.dataset_type}, "
         f"file={args.dataset_file or '<builtin>'}, "
         f"tasks={len(tasks)}, "
@@ -530,6 +622,9 @@ def main() -> None:
             mode,
             tasks,
             dataset_type=args.dataset_type,
+            dataset_file=args.dataset_file,
+            limit=args.limit,
+            experiment_mode=args.experiment_mode or None,
             show_agents=args.show_agents,
             show_memory=args.show_memory,
             show_latent=args.show_latent,
@@ -538,6 +633,7 @@ def main() -> None:
         for mode in modes
     ]
     print_comparison(results)
+    print_run_result_json(args, tasks, results)
 
 
 if __name__ == "__main__":

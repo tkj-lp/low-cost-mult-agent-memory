@@ -314,6 +314,67 @@ def print_summary(results: list[dict[str, Any]]) -> None:
     )
 
 
+def hidden_dataset_key(args: Namespace) -> str:
+    """把 hidden 脚本的数据集参数映射成页面使用的数据集键。"""
+
+    return "hidden_continuous" if args.dataset_type == "continuous" else "hidden_hotpot_5"
+
+
+def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[str, Any]:
+    """生成和 run_demo.py 一致的前端汇总结构。"""
+
+    total_messages = sum(result["metrics"]["message_count"] for result in results)
+    total_chars = sum(result["metrics"]["text_chars"] for result in results)
+    total_refs = sum(result["metrics"]["hidden_state_refs"] for result in results)
+    total_bytes = sum(result["metrics"]["hidden_bytes"] for result in results)
+    total_memory_hits = sum(result["metrics"]["memory_hits"] for result in results)
+    total_elapsed = sum(result["metrics"]["elapsed_ms"] for result in results)
+    exact_match = sum(1 for result in results if result["exact_match"]) / len(results) if results else None
+    memory_hit_rate = total_memory_hits / len(results) if results else 0.0
+    metrics = {
+        "message_count": total_messages,
+        "text_chars": total_chars,
+        "hidden_state_refs": total_refs,
+        "hidden_bytes": total_bytes,
+        "memory_hits": total_memory_hits,
+        "memory_hit_rate": memory_hit_rate,
+        "elapsed_ms": total_elapsed,
+        "exact_match": exact_match,
+        "task_count": len(results),
+    }
+    return {
+        "mode": "latent_hidden",
+        "experiment_mode": "latent_hidden",
+        "dataset_type": hidden_dataset_key(args),
+        "dataset_file": args.dataset_file if args.dataset_type == "continuous" else "",
+        "limit": args.limit,
+        "tasks": len(results),
+        "task_count": len(results),
+        "metrics": metrics,
+        "memory_hits": total_memory_hits,
+        "memory_hit_rate": memory_hit_rate,
+        "elapsed_ms": total_elapsed,
+        "exact_match": exact_match,
+    }
+
+
+def print_run_result_json(args: Namespace, results: list[dict[str, Any]]) -> None:
+    """输出前端可直接解析的 hidden latent 汇总 JSON。"""
+
+    dataset_type = hidden_dataset_key(args)
+    payload = {
+        "schema_version": 1,
+        "experiment_mode": "latent_hidden",
+        "dataset_type": dataset_type,
+        "dataset_file": args.dataset_file if args.dataset_type == "continuous" else "",
+        "limit": args.limit,
+        "task_count": len(results),
+        "runs": [aggregate_results(args, results)],
+    }
+    print("\n=== run_result_json ===")
+    print(json.dumps(payload, ensure_ascii=False, default=str, separators=(",", ":")))
+
+
 def parse_args() -> Namespace:
     parser = ArgumentParser(description="Run hidden-state latent transfer experiments.")
     parser.add_argument(
@@ -349,6 +410,7 @@ def main() -> None:
     for result in results:
         print_sample(result)
     print_summary(results)
+    print_run_result_json(args, results)
 
 
 if __name__ == "__main__":
