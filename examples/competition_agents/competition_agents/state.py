@@ -36,6 +36,7 @@ class CompetitionState(TypedDict):
     state_refs: dict[str, str]
     memory: list[dict[str, Any]]
     memory_hits: list[dict[str, Any]]
+    memory_context: list[dict[str, Any]]
     metrics: Metrics
 
 
@@ -63,6 +64,7 @@ def initial_state(
         "state_refs": {},
         "memory": memory or [],
         "memory_hits": [],
+        "memory_context": [],
         "metrics": {
             "message_count": 0,
             "text_chars": 0,

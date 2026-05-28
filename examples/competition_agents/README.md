@@ -67,7 +67,7 @@ python examples/competition_agents/run_demo.py
 
 ## 给超图记忆同学
 
-看examples\competition_agents\HYPERGRAPH_CONTRACT.md和examples\competition_agents\HYPERGRAPH_TODO.md，建议超图记忆相关代码单独放在一个子包里，不要直接散落到 Agent 文件中。
+看 `examples\competition_agents\HYPERGRAPH_CONTRACT.md`。这是给超图记忆同学的唯一最新版文档，旧的 alignment/update/todo 文档已经删除，避免多个版本互相冲突。
 
 超图模块应尽量只对外暴露两个稳定入口：
 
@@ -75,8 +75,6 @@ python examples/competition_agents/run_demo.py
 build_hypergraph_view(record: dict) -> dict
 search_hypergraph_memory(memory: list[dict], query: str, top_k: int) -> list[dict]
 ```
-
-请优先阅读 `HYPERGRAPH_TODO.md`，里面写了超图同学接下来要做的具体任务和边界。
 
 ## 当前完成情况
 

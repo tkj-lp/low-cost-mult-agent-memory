@@ -394,7 +394,85 @@ exact_match
 
 `payload` 内部结构后续可能继续压缩优化，页面不要强依赖 payload 的具体子字段。
 
-## 11. 常用验证命令
+## 11. 超图记忆裁剪口径
+
+超图记忆检索可以保留两类输出：
+
+```text
+memory_hits：完整检索命中，用于 trace、离线分析、超图调试和完整展示。
+memory_context：裁剪后的在线推理上下文，用于 RetrieverAgent 传给 ReasonerAgent。
+```
+
+`memory_context` 的目标不是把检索结果再压成向量，而是保留 Reasoner 能正常推理所需的最小可解释信息。当前推荐 schema：
+
+```json
+[
+  {
+    "memory_id": "mem-0001",
+    "summary": "一句话说明这条记忆支持什么结论",
+    "evidence": ["最多 1-2 条关键证据句"],
+    "reasoning_path": [
+      {
+        "query_node": "artifact:evidence",
+        "hyperedge_id": "hyperedge:mem-0001:evidence",
+        "memory_id": "mem-0001"
+      }
+    ],
+    "matched_nodes": ["artifact:evidence", "state:evidence", "tag:protocol"],
+    "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
+    "retrieval_score": 75.5,
+    "hypergraph_score": 65.75,
+    "embedding_score": 0.59
+  }
+]
+```
+
+裁剪规则建议：
+
+```text
+top_k：2 或 3
+summary：最多 200-300 字符
+evidence：最多 2 条，每条最多 150-200 字符
+reasoning_path：最多 3 条
+matched_nodes：最多 8-12 个
+matched_hyperedges：最多 6-8 个
+score：全部保留
+```
+
+字段作用：
+
+```text
+memory_id：后续 Agent 引用完整记忆，不直接传完整正文。
+summary：告诉 Reasoner 这条记忆支持什么结论。
+evidence：告诉 Reasoner 这条记忆凭什么可信。
+reasoning_path：告诉 Reasoner 和页面为什么命中这条记忆。
+matched_nodes / matched_hyperedges：用于超图局部视图高亮命中路径。
+retrieval_score / hypergraph_score / embedding_score：用于排序、置信度和收益解释。
+```
+
+不要把 `memory_context` 裁成纯向量：
+
+```json
+{"memory_id": "mem-0001", "vector": [0.12, 0.33]}
+```
+
+Reasoner 无法直接解释向量，还需要额外解码或解释层。
+
+也不要把完整 record、完整 trace、完整 messages 直接塞进 `memory_context`，否则会重新拉高通信开销。完整信息继续放在 `memory_hits` 和 trace 里即可。
+
+当前在线链路是：
+
+```text
+HyperGraphMemory.search()
+-> RetrieverAgent 得到完整 memory_hits
+-> RetrieverAgent 裁剪成 memory_context
+-> RetrieverAgent 传 memory_refs + memory_context + evidence_ref
+-> ReasonerAgent 使用 memory_context 推理
+```
+
+注意：RetrieverAgent 只把本轮 `evidence` 写入 latent state；`memory_context` 不再参与 evidence latent embedding。
+
+## 12. 常用验证命令
 
 Python 语法检查：
 

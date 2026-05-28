@@ -42,6 +42,7 @@ def summarizer_agent(state: CompetitionState) -> dict:
         "messages": state.get("messages", []),
         "evidence": state.get("evidence", []),
         "memory_hits": state.get("memory_hits", []),
+        "memory_context": state.get("memory_context", []),
         "latent_states": state.get("latent_states", {}),
         "state_refs": state.get("state_refs", {}),
         "execution_result": state.get("execution_result", {}),

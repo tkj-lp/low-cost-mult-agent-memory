@@ -5,6 +5,34 @@ from competition_agents.protocol import make_cognitive_gap, make_compact_packet,
 from competition_agents.state import CompetitionState, put_latent_state, record_message
 
 
+def _shorten(value: object, limit: int = 220) -> str:
+    """压缩检索上下文中的长文本，避免 protocol 消息重新膨胀成全文传递。"""
+
+    text = str(value or "")
+    return text if len(text) <= limit else text[:limit] + "..."
+
+
+def _compact_memory_context(hits: list[dict]) -> list[dict]:
+    """把超图检索结果裁剪成 Reasoner 可读、可解释的轻量上下文。"""
+
+    context = []
+    for hit in hits:
+        context.append(
+            {
+                "memory_id": hit.get("memory_id"),
+                "summary": _shorten(hit.get("summary", ""), 220),
+                "evidence": [_shorten(item, 180) for item in hit.get("evidence", [])[:2]],
+                "reasoning_path": hit.get("reasoning_path", [])[:3],
+                "matched_nodes": hit.get("matched_nodes", [])[:8],
+                "matched_hyperedges": hit.get("matched_hyperedges", [])[:6],
+                "retrieval_score": hit.get("retrieval_score"),
+                "hypergraph_score": hit.get("hypergraph_score"),
+                "embedding_score": hit.get("embedding_score"),
+            }
+        )
+    return context
+
+
 def _task_specific_evidence(task: str) -> list[str]:
     """根据任务主题补充具体证据，避免 Summarizer 只复述运行状态。"""
 
@@ -53,6 +81,7 @@ def retriever_agent(state: CompetitionState) -> dict:
 
     # 这里是后续接入超图记忆模块的主要接口。
     hits = search_memory(state["memory"], state["task"], top_k=2)
+    memory_context = _compact_memory_context(hits)
     evidence = [
         "LangGraph StateGraph can organize stateful agent nodes.",
         "Shared state can carry protocol packets, memory ids, and vector references.",
@@ -67,22 +96,25 @@ def retriever_agent(state: CompetitionState) -> dict:
         gap_type="missing_memory" if not hits else "partial_context",
         confidence=0.78 if hits else 0.64,
     )
-    # latent state 只存一次语义信息，后续 Agent 之间只传 state_id。
+    # evidence 单独写入 latent state；记忆命中不再重新 embedding，只以 compact context 和 memory_ref 转发。
     latent_ref, latent_states, metrics = put_latent_state(
         state,
         producer="retriever",
         topic=state["task"],
-        text=" ".join(evidence + [hit["summary"] for hit in hits]),
+        text=" ".join(evidence),
         consumers=["executor", "summarizer"],
     )
 
     if state["mode"] == "text":
         # text 模式把证据和检索理由都序列化成长文本，作为 baseline。
+        memory_summaries = " | ".join(item["summary"] for item in memory_context)
         payload = (
             "RetrieverAgent found evidence: "
             + " | ".join(evidence)
             + ". Memory hits: "
             + " | ".join(hit["memory_id"] for hit in hits)
+            + ". Memory summaries: "
+            + memory_summaries
             + f". It forwards latent semantic content as {latent_ref}. "
             + "Because this is text-mode collaboration, the retriever serializes the evidence, "
             + "memory summaries, retrieval rationale, and downstream execution instruction as "
@@ -102,7 +134,7 @@ def retriever_agent(state: CompetitionState) -> dict:
             action="reason",
             content_type="state_ref",
             params={"tool": "codeact_stats", "n": len(evidence)},
-            result={"mode": "memory", "hits": len(hits)},
+            result={"mode": "memory", "hits": len(hits), "memory_context": memory_context},
             state_refs=[latent_ref],
             memory_refs=[hit["memory_id"] for hit in hits],
             capability_required=["reason"],
@@ -122,6 +154,7 @@ def retriever_agent(state: CompetitionState) -> dict:
     return {
         "evidence": evidence,
         "memory_hits": hits,
+        "memory_context": memory_context,
         "latent_states": latent_states,
         "state_refs": {**state.get("state_refs", {}), "evidence": latent_ref},
         "messages": messages,

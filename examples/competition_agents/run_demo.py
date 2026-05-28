@@ -335,6 +335,9 @@ def print_state_trace(task_item: dict[str, Any], result: dict[str, Any]) -> None
     print("  execution_result:")
     print(f"    {_format_json(result.get('execution_result', {}), 900)}")
 
+    print("  memory_context:")
+    print(f"    {_format_json(result.get('memory_context', []), 900)}")
+
     print("  metrics:")
     print(f"    {_format_json(result.get('metrics', {}), 500)}")
 

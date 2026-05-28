@@ -2,7 +2,7 @@
 
 这份文档说明当前多智能体原型的代码结构，以及网页可视化同学、超图记忆同学应该如何和智能体部分对接。
 
-超图记忆同学请优先阅读 `HYPERGRAPH_MEMORY_ALIGNMENT.md`，那里说明了当前 `PlannerAgent -> ReasonerAgent -> SummarizerAgent` 主流程、稳定字段、`add_memory()` / `search_memory()` 替换点，以及后续如何把 `RetrieverAgent` 接回主流程。
+超图记忆同学请优先阅读 `HYPERGRAPH_CONTRACT.md`。这是当前唯一保留的超图对接文档，说明最新 `PlannerAgent -> RetrieverAgent -> ReasonerAgent -> SummarizerAgent` 主流程、`add_memory(..., trace=trace)`、`search_memory()`、`memory_hits` 和 `memory_context` 裁剪口径。
 
 ## 当前范围
 

@@ -199,6 +199,7 @@ metrics.memory_hits
 metrics.memory_hit_rate
 metrics.elapsed_ms
 metrics.exact_match
+memory_context
 latent_states
 state_refs
 ```
@@ -343,7 +344,54 @@ exact match：0.67，较 baseline_text +0.00
 
 页面可以展示记忆卡片、命中数量、命中分数、节点/超边和推理路径。
 
-## 11. latent_states 字段
+## 11. memory_context 字段
+
+`memory_context` 是 RetrieverAgent 给 ReasonerAgent 的轻量上下文，不是新的 embedding。它由超图检索结果裁剪得到，目的是让 Reasoner 看到可解释的记忆摘要和检索路径，同时避免把完整 memory record 或命中正文再次压缩成向量传递。
+
+为控制通信开销，`summary`、`evidence`、`reasoning_path`、`matched_nodes` 和 `matched_hyperedges` 都会被截断到展示和推理够用的长度。完整原始命中仍保留在 `memory_hits` 和 trace 中，供超图同学离线分析。
+
+格式示例：
+
+```json
+[
+  {
+    "memory_id": "mem-0001",
+    "summary": "Chief of Protocol was supported by the evidence chain.",
+    "evidence": ["Kiss and Tell -> Shirley Temple -> Chief of Protocol."],
+    "reasoning_path": [
+      {
+        "query_node": "artifact:evidence",
+        "hyperedge_id": "hyperedge:mem-0001:evidence",
+        "memory_id": "mem-0001"
+      }
+    ],
+    "matched_nodes": ["artifact:evidence", "state:evidence"],
+    "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
+    "retrieval_score": 75.5,
+    "hypergraph_score": 65.75,
+    "embedding_score": 0.59
+  }
+]
+```
+
+页面用途：
+
+- 记忆检索解释面板优先展示 `memory_context`。
+- 超图局部视图可以用 `matched_nodes`、`matched_hyperedges`、`reasoning_path` 高亮命中路径。
+- Agent 通信图仍使用消息里的 `memory_refs` 和 `state_refs` 展示低开销引用传递。
+
+当前协议链路是：
+
+```text
+HyperGraphMemory.search()
+-> RetrieverAgent 裁剪成 memory_context
+-> RetrieverAgent 传 memory_refs + memory_context + evidence_ref
+-> ReasonerAgent 使用 memory_context 推理
+```
+
+注意：RetrieverAgent 只把本轮 `evidence` 写入 latent state；`memory_context` 不再参与 evidence latent embedding。
+
+## 12. latent_states 字段
 
 embedding 状态示例：
 
@@ -381,7 +429,7 @@ hidden state 示例：
 
 页面只展示元数据，不展示完整向量或完整 tensor。
 
-## 12. hidden_continuous 展示建议
+## 13. hidden_continuous 展示建议
 
 `hidden_continuous` 最适合展示 hidden-state reference transfer。核心趋势：
 

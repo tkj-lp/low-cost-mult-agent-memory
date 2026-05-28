@@ -1,254 +1,355 @@
-# 超图记忆同学工作文档
+# 超图记忆对接文档
 
-本文档说明超图记忆模块需要对接的稳定接口。目标是让超图同学可以独立实现超图记忆和 embedding 相似度融合检索，而不需要改 Agent 主流程。
+本文档是给超图记忆同学看的唯一最新版。旧的 `HYPERGRAPH_MEMORY_ALIGNMENT.md`、`HYPERGRAPH_MEMORY_UPDATE.md`、`HYPERGRAPH_TODO.md` 已废弃，避免多个版本互相冲突。
 
-## 工作边界
+当前目标不是让超图模块绕过智能体主流程，而是让超图记忆给 `RetrieverAgent` 提供可解释、可裁剪、可复用的记忆命中结果。
 
-超图同学主要负责：
-
-- 记忆单元的超图组织。
-- 任务、Agent、工具、证据、记忆、标签等节点建模。
-- 超边构建和可解释检索路径。
-- 关键词、标签、超图路径和 embedding 相似度融合打分。
-- 返回 `memory_hits`，供 Agent 和页面复用。
-
-不建议直接修改：
-
-- `agents/planner/agent.py`
-- `agents/retriever/agent.py`
-- `agents/reasoner/agent.py`
-- `agents/summarizer/agent.py`
-- `competition_agents/graph.py`
-
-如果确实需要新增字段，优先在 `memory.py` 返回的记忆记录里做兼容扩展。
-
-## 稳定入口
-
-Agent 侧只依赖 `competition_agents/memory.py` 中的两个函数：
-
-```python
-add_memory(memory, source_agent, task_topic, summary, tags) -> list[dict]
-search_memory(memory, query, top_k) -> list[dict]
-```
-
-推荐结构：
+## 1. 当前主链路
 
 ```text
-SummarizerAgent -> add_memory() -> 超图记忆写入
-RetrieverAgent -> search_memory() -> 超图记忆检索
+PlannerAgent
+-> RetrieverAgent
+-> ReasonerAgent
+-> SummarizerAgent
 ```
 
-只要这两个函数的输入输出保持兼容，超图内部怎么实现都不会影响其他同学。
+职责划分：
 
-## 记忆记录基础字段
+```text
+PlannerAgent：生成计划，并写入 plan_ref。
+RetrieverAgent：调用超图记忆检索，生成 evidence_ref，裁剪 memory_context。
+ReasonerAgent：读取 plan、evidence、memory_context，生成 answer_ref。
+SummarizerAgent：输出 final_answer，并通过 add_memory(..., trace=trace) 写入共享记忆。
+```
+
+## 2. 超图模块边界
+
+超图同学主要维护：
+
+```text
+examples/competition_agents/hypergraph_memory_method/
+```
+
+多智能体主流程通过下面两个稳定入口接入超图记忆：
+
+```python
+add_memory(memory, *, source_agent, task_topic, summary, tags, trace=None) -> list[dict]
+search_memory(memory, query, *, top_k) -> list[dict]
+```
+
+不要直接改这些 Agent 文件，除非和智能体同学确认：
+
+```text
+agents/planner/agent.py
+agents/retriever/agent.py
+agents/reasoner/agent.py
+agents/summarizer/agent.py
+competition_agents/graph.py
+```
+
+如果需要给 Agent 或页面增加信息，优先在 `search_memory()` 返回的 `memory_hits` 中追加兼容字段。
+
+## 3. add_memory 写入内容
+
+每轮任务结束时，`SummarizerAgent` 会调用：
+
+```python
+add_memory(
+    memory,
+    source_agent="summarizer",
+    task_topic=state["task"],
+    summary=summary,
+    tags=[...],
+    trace=trace,
+)
+```
+
+`trace` 当前包含：
+
+```text
+task_meta
+plan
+messages
+evidence
+memory_hits
+memory_context
+latent_states
+state_refs
+execution_result
+cognitive_gaps
+agent_outputs
+metrics
+```
+
+这意味着一条 memory 不只是答案文本，而是一条完整协作经验记录。超图可以从 trace 中建：
+
+```text
+task-agent-message-evidence-state_ref-memory_ref-outcome
+```
+
+## 4. memory record 基础字段
 
 每条记忆至少保留：
 
 ```json
 {
   "memory_id": "mem-0001",
-  "memory_type": "episodic",
-  "scope": "chain-001",
-  "status": "active",
-  "ttl": "session",
   "source_agent": "summarizer",
-  "created_at": "2026-05-25T...",
-  "task_topic": "任务主题",
-  "summary": "摘要描述",
-  "tags": ["langgraph", "multi-agent"],
+  "created_at": "2026-05-28T...",
+  "task_topic": "任务文本",
+  "summary": "最终总结或可复用经验摘要",
+  "tags": ["langgraph", "multi-agent", "protocol"],
   "embedding": [0.1, -0.2],
-  "embedding_provider": "local",
-  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+  "embedding_provider": "hash",
+  "embedding_model": "hash-v1"
 }
 ```
 
-不要删除这些字段。页面和 Agent 会依赖它们。
-
-## 记忆生命周期字段
-
-超图记忆不建议拆成两套存储。请在同一个记忆记录中使用生命周期字段区分短期连续任务记忆和长期经验记忆：
+可选但推荐保留：
 
 ```json
 {
-  "memory_type": "episodic",
-  "scope": "chain-001",
-  "status": "active",
-  "ttl": "session"
+  "entities": [],
+  "supporting_facts": [],
+  "evidence": [],
+  "reasoning_path": [],
+  "state_refs": ["state-0001", "state-0002"],
+  "answer": "answer text",
+  "reuse_count": 0,
+  "trace": {},
+  "hypergraph": {}
 }
 ```
 
-两类记忆含义：
+## 5. search_memory 返回内容
 
-- `episodic`：连续任务中的短期记忆，由每一轮任务生成，主要服务当前 `scope` 内的后续 turn。
-- `experience`：任务结束后从多条 episodic memory 中蒸馏出的长期经验，`scope` 通常为 `global`。
+`RetrieverAgent` 调用：
 
-推荐状态：
-
-- `active`：当前可被默认检索。
-- `archived`：任务结束后归档，默认检索不命中，但可用于页面回放、实验复盘和经验蒸馏。
-
-推荐生命周期：
-
-```text
-任务执行中：
-  add_memory(memory_type="episodic", scope=group_id, status="active")
-
-同一连续任务后续 turn：
-  search_memory(query, scope=group_id, include_global=True)
-
-连续任务结束：
-  archive_scope(scope=group_id)
-  distill_experience(scope=group_id)
-
-跨任务复用：
-  search_memory(query, scope="global", memory_type="experience")
+```python
+hits = search_memory(state["memory"], state["task"], top_k=2)
 ```
 
-这样可以同时支持短期连续任务记忆复用、长期经验记忆沉淀，以及超图统一组织两类记忆节点。
-
-## 推荐增加的超图字段
-
-可以在记忆记录里增加：
+返回值保持 `list[dict]`。每个 hit 是完整 memory record 的兼容扩展，建议包含：
 
 ```json
 {
-  "entities": ["Alan Turing", "Bletchley Park"],
-  "supporting_facts": ["..."],
-  "evidence": ["..."],
-  "strategy": "先定位人物，再检索机构所在地。",
-  "experience": "人物 -> 机构 -> 地点类问题可复用两跳检索策略。",
-  "source_memory_ids": ["mem-0001"],
-  "state_refs": ["state-0001"],
-  "answer": "United Kingdom",
-  "reuse_count": 1,
-  "hypergraph": {
-    "memory_node": "memory:mem-0001",
-    "task_node": "task:...",
-    "agent_node": "agent:summarizer",
-    "memory_type_node": "memory_type:episodic",
-    "scope_node": "scope:chain-001",
-    "status_node": "status:active",
-    "tag_nodes": ["tag:multi-agent"],
-    "keyword_nodes": ["keyword:protocol"],
-    "event_hyperedge": {
-      "hyperedge_id": "hyperedge:mem-0001",
-      "type": "memory_event",
-      "nodes": []
-    }
-  }
-}
-```
-
-这些字段都是可选扩展。已有 Agent 不应因为缺少这些字段而崩溃。
-
-## 超图节点建议
-
-建议至少建这些节点类型：
-
-```text
-TaskGroup 节点：连续任务组，例如 chain-001
-TaskTurn 节点：具体轮次，例如 chain-001:turn-2
-Agent 节点：planner / retriever / reasoner / summarizer
-Memory 节点：mem-0001
-MemoryType 节点：episodic / experience
-Scope 节点：chain-001 / global
-Evidence 节点：证据句
-Strategy 节点：任务策略
-Experience 节点：长期经验片段
-Entity 节点：实体
-StateRef 节点：state-0001 / hidden-0002
-```
-
-建议至少建这些超边：
-
-```text
-task_turn_event: TaskTurn + Agent + Evidence + Memory
-memory_grounding: Memory + Evidence + Entity + Answer
-experience_distillation: Experience + source episodic memories
-state_binding: Memory + StateRef
-scope_membership: Memory + Scope + MemoryType
-```
-
-这样页面可以展示“某条经验是从哪些连续任务记忆蒸馏来的”，实验报告也能解释记忆复用路径。
-
-## 检索返回建议
-
-`search_memory()` 返回 `list[dict]`。每条命中建议补充：
-
-```json
-{
-  "memory_type": "episodic",
-  "scope": "chain-001",
-  "status": "active",
-  "retrieval_score": 3.25,
-  "hypergraph_score": 2.5,
-  "embedding_score": 0.75,
-  "matched_nodes": ["tag:protocol", "keyword:memory"],
-  "matched_hyperedges": ["hyperedge:mem-0001"],
+  "memory_id": "mem-0001",
+  "summary": "历史记忆摘要",
+  "evidence": ["关键证据"],
+  "state_refs": ["state-0002"],
+  "retrieval_score": 75.5,
+  "hypergraph_score": 65.75,
+  "embedding_score": 0.59,
+  "matched_nodes": ["artifact:evidence", "state:evidence"],
+  "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
   "reasoning_path": [
     {
-      "query_node": "keyword:protocol",
-      "hyperedge_id": "hyperedge:mem-0001",
+      "query_node": "artifact:evidence",
+      "hyperedge_id": "hyperedge:mem-0001:evidence",
       "memory_id": "mem-0001"
     }
   ]
 }
 ```
 
-页面同学可以直接展示这些字段，实验报告也能解释“为什么命中这条记忆”。
-
-检索优先级建议：
+字段作用：
 
 ```text
-连续任务内检索：
-  1. scope=当前 group_id 且 memory_type=episodic 且 status=active
-  2. scope=global 且 memory_type=experience 且 status=active
-
-普通新任务检索：
-  1. scope=global 且 memory_type=experience 且 status=active
-  2. 如果任务属于某个 group，再补充检索该 group 的 episodic memory
+retrieval_score：最终排序分。
+hypergraph_score：超图结构命中分。
+embedding_score：query 与 memory embedding 的相似分。
+matched_nodes：命中的结构节点，用于解释和页面高亮。
+matched_hyperedges：命中的超边，用于解释和页面高亮。
+reasoning_path：query 如何走到该 memory 的路径。
 ```
 
-如果命中 archived 记忆，需要在结果里保留 `status=archived`，页面可以标成“历史归档，不参与默认复用”。
+## 6. memory_hits 和 memory_context 的区别
 
-## embedding 相似度融合检索
-
-建议检索打分分三部分：
+现在在线链路同时保留两类数据：
 
 ```text
-final_score = 0.5 * hypergraph_score + 0.3 * embedding_score + 0.2 * tag_score
+memory_hits：完整检索命中，用于 trace、离线分析、超图调试和完整展示。
+memory_context：裁剪后的在线推理上下文，用于 RetrieverAgent 传给 ReasonerAgent。
 ```
 
-推荐流程：
+`memory_hits` 可以较完整；`memory_context` 必须短、稳定、可解释。
 
-1. `add_memory()` 写入记忆时保存 `embedding`。
-2. `search_memory()` 收到 query 后调用 `embed_text(query)` 生成 query embedding。
-3. 对 query embedding 和 memory embedding 计算 cosine similarity。
-4. 结合超图路径命中、标签命中、关键词命中得到最终分数。
-5. 返回 top-k 命中结果和解释路径。
-
-权重可以调整，但要在实验报告中说明。
-
-## 和 latent_states 的关系
-
-`latent_states` 是当前任务内的非文本状态。超图记忆是跨任务长期记忆。
-
-推荐关联方式：
+当前链路：
 
 ```text
-latent_states[state_id] -> 当前任务证据或 hidden state
-memory[memory_id].state_refs -> 指向相关 state_id
-hypergraph evidence/state_ref node -> 连接 memory 和 evidence
+HyperGraphMemory.search()
+-> RetrieverAgent 得到完整 memory_hits
+-> RetrieverAgent 裁剪成 memory_context
+-> RetrieverAgent 传 memory_refs + memory_context + evidence_ref
+-> ReasonerAgent 使用 memory_context 推理
 ```
 
-后续如果智能体侧新增 hidden latent，不需要改超图接口，只要把新的 `state_id` 放入 `state_refs` 即可。
+注意：`RetrieverAgent` 只把本轮 `evidence` 写入 latent state；`memory_context` 不再参与 evidence latent embedding。
 
-## 验证标准
+## 7. memory_context 推荐 schema
 
-超图模块完成后，至少验证：
+`memory_context` 的目标不是把检索结果再压成向量，而是保留 Reasoner 正常推理需要的最小可解释信息：
 
-- 连续任务中 `memory_hits` 大于 0。
-- `memory_hits` 包含 `retrieval_score` 或类似分数字段。
-- `memory_hits` 包含 `matched_nodes`、`matched_hyperedges`、`reasoning_path`。
-- 本地 embedding 模式下，记忆记录包含 `embedding_provider=local`。
-- 页面可以直接读取 `memory_hits` 展示检索路径。
+```json
+[
+  {
+    "memory_id": "mem-0001",
+    "summary": "一句话说明这条记忆支持什么结论",
+    "evidence": ["最多 1-2 条关键证据句"],
+    "reasoning_path": [
+      {
+        "query_node": "artifact:evidence",
+        "hyperedge_id": "hyperedge:mem-0001:evidence",
+        "memory_id": "mem-0001"
+      }
+    ],
+    "matched_nodes": ["artifact:evidence", "state:evidence", "tag:protocol"],
+    "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
+    "retrieval_score": 75.5,
+    "hypergraph_score": 65.75,
+    "embedding_score": 0.59
+  }
+]
+```
+
+裁剪规则建议：
+
+```text
+top_k：2 或 3
+summary：最多 200-300 字符
+evidence：最多 2 条，每条最多 150-200 字符
+reasoning_path：最多 3 条
+matched_nodes：最多 8-12 个
+matched_hyperedges：最多 6-8 个
+score：全部保留
+```
+
+为什么保留这些字段：
+
+```text
+memory_id：后续 Agent 引用完整记忆，不直接传完整正文。
+summary：告诉 Reasoner 这条记忆支持什么结论。
+evidence：告诉 Reasoner 这条记忆凭什么可信。
+reasoning_path：告诉 Reasoner 和页面为什么命中这条记忆。
+matched_nodes / matched_hyperedges：用于超图局部视图高亮命中路径。
+score：用于排序、置信度和收益解释。
+```
+
+不要把 `memory_context` 裁成纯向量：
+
+```json
+{"memory_id": "mem-0001", "vector": [0.12, 0.33]}
+```
+
+Reasoner 无法直接解释向量，还需要额外解码或解释层。
+
+也不要把完整 record、完整 trace、完整 messages 放进 `memory_context`，否则会重新拉高通信开销。完整信息继续放在 `memory_hits` 和 trace 里。
+
+## 8. 检索打分建议
+
+当前检索应优先体现结构命中，再融合 embedding 分：
+
+```text
+retrieval_score =
+  hypergraph_score
+  + structured_bonus
+  + embedding_score * weight
+```
+
+建议超图召回优先使用：
+
+```text
+task_meta
+expected_reuse
+supporting_facts
+state_refs
+memory_refs
+evidence
+strategy / experience
+```
+
+关键词和 embedding 可以作为补充，但不要让无关关键词或纯向量相似度覆盖结构信号。
+
+## 9. 页面和实验展示字段
+
+页面可以直接读取：
+
+```text
+memory_hits
+memory_context
+state_refs
+latent_states
+messages
+metrics
+```
+
+其中：
+
+```text
+memory_hits：展示完整命中详情。
+memory_context：展示在线推理实际使用的裁剪上下文。
+matched_nodes / matched_hyperedges：画超图局部高亮。
+reasoning_path：解释 query 到 memory 的命中路径。
+```
+
+## 10. 验证命令
+
+Windows PowerShell：
+
+```powershell
+cd D:\qq\low-cost-memory-integrate
+$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
+$env:LLM_PROVIDER="mock"
+$env:LLM_PLANNER_PROVIDER="mock"
+$env:LLM_REASONER_PROVIDER="mock"
+$env:LLM_SUMMARIZER_PROVIDER="mock"
+$env:EMBEDDING_PROVIDER="hash"
+
+python examples\competition_agents\run_demo.py `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
+  --limit 1 `
+  --modes protocol `
+  --show-memory `
+  --show-latent `
+  --show-state
+```
+
+重点看：
+
+```text
+turn-1: memory_hits=0
+turn-2: memory_hits=1
+turn-3: memory_hits=2
+top_level_state_refs.evidence = state-xxxx
+execution_result.memory_context 非空
+retriever -> reasoner message 中有 memory_refs 和 memory_context
+```
+
+测试：
+
+```powershell
+$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
+python -m pytest -p no:cacheprovider `
+  examples\competition_agents\tests\test_hypergraph_memory.py `
+  examples\competition_agents\tests\test_retriever_memory_context.py
+```
+
+## 11. 当前结论
+
+最新对接口径：
+
+```text
+超图记忆负责返回完整、可解释的 memory_hits。
+RetrieverAgent 负责把 memory_hits 裁剪成 memory_context。
+ReasonerAgent 使用 memory_context 推理。
+完整 trace 继续写入 memory，供超图离线建图和页面展示。
+```
+
+这个设计兼顾三件事：
+
+```text
+1. Reasoner 有足够信息推理，不只看到 memory_id。
+2. 在线消息不传完整 trace，不把检索结果重新 embedding。
+3. 超图仍保留完整 memory_hits 和 trace，方便可视化和离线分析。
+```
