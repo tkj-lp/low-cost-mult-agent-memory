@@ -214,6 +214,17 @@ run_result_json.runs[].dataset_file
 run_result_json.runs[].task_count
 run_result_json.runs[].metrics
 run_result_json.runs[].task_results[]
+run_result_json.runs[].task_results[].task_id
+run_result_json.runs[].task_results[].question
+run_result_json.runs[].task_results[].final_answer
+run_result_json.runs[].task_results[].gold
+run_result_json.runs[].task_results[].exact_match
+run_result_json.runs[].task_results[].messages
+run_result_json.runs[].task_results[].metrics
+run_result_json.runs[].task_results[].memory_hits
+run_result_json.runs[].task_results[].memory_context
+run_result_json.runs[].task_results[].latent_states
+run_result_json.runs[].task_results[].state_refs
 run_result_json.runs[].task_results[].execution_result
 run_result_json.runs[].task_results[].trace
 messages[].from
@@ -243,6 +254,16 @@ state_refs
 ```
 
 前端建议优先解析 `=== run_result_json ===` 后面的 JSON 行，不要从 `summary:`、`hidden latent summary` 或 `codeact summary` 文本里反向解析指标。
+
+`task_results[]` 现在是三个入口的统一单任务明细：
+
+```text
+run_demo.py：baseline_text / protocol_api / protocol_api_embedding / codeact graph 路径都会返回。
+run_hidden_latent_samples.py：hidden_hotpot_5 / hidden_continuous 会返回。
+run_codeact_samples.py：独立 restricted Python CodeAct 路径会返回。
+```
+
+前端页面如果要画任务时间线、Agent 通信图、记忆命中解释、latent 状态表和 CodeAct 执行详情，优先读取 `runs[].task_results[]`，不要只读 `runs[].metrics` 汇总字段。
 
 ## 7. messages 字段
 

@@ -274,6 +274,117 @@ def _format_json(value: Any, limit: int = 700) -> str:
     return _shorten(json.dumps(value, ensure_ascii=False, default=str, separators=(",", ":")), limit)
 
 
+FRONTEND_OMIT_KEYS = {"embedding", "hypergraph", "pooled_vector", "source_text", "tensor", "vector"}
+
+
+def _frontend_safe(value: Any, *, max_string: int = 3000) -> Any:
+    """清理前端 JSON 中不需要的向量和超长文本，保留可解释字段。"""
+
+    if isinstance(value, dict):
+        return {
+            str(key): _frontend_safe(item, max_string=max_string)
+            for key, item in value.items()
+            if str(key) not in FRONTEND_OMIT_KEYS
+        }
+    if isinstance(value, list):
+        return [_frontend_safe(item, max_string=max_string) for item in value]
+    if isinstance(value, tuple):
+        return [_frontend_safe(item, max_string=max_string) for item in value]
+    if isinstance(value, str) and len(value) > max_string:
+        return value[:max_string] + "..."
+    return value
+
+
+def _frontend_memory_hits(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """给页面展示的检索命中，去掉完整 trace 和 embedding。"""
+
+    compact_hits = []
+    for hit in hits:
+        compact_hits.append(
+            {
+                key: _frontend_safe(value)
+                for key, value in hit.items()
+                if key not in {"embedding", "hypergraph", "trace", "vector"}
+            }
+        )
+    return compact_hits
+
+
+def build_task_result(
+    *,
+    task_index: int,
+    task_item: dict[str, Any],
+    result: dict[str, Any],
+    elapsed_ms: float,
+    exact_match: bool | None,
+    prediction: str,
+) -> dict[str, Any]:
+    """构造前端可直接读取的单任务明细。"""
+
+    metrics = result.get("metrics", {})
+    memory_hits = result.get("memory_hits", [])
+    latest_memory = result.get("memory", [])[-1] if result.get("memory") else {}
+    execution_result = result.get("execution_result", {})
+    task_metrics = {
+        **metrics,
+        "memory_hits": len(memory_hits),
+        "memory_hit_rate": 1.0 if memory_hits else 0.0,
+        "elapsed_ms": elapsed_ms,
+        "exact_match": exact_match,
+    }
+    task_result = {
+        "task_index": task_index,
+        "task_id": task_item.get("task_id"),
+        "group_id": task_item.get("group_id"),
+        "turn_id": task_item.get("turn_id"),
+        "dataset_type": task_item.get("dataset_type"),
+        "task_type": task_item.get("task_type"),
+        "task": task_item.get("task"),
+        "question": task_item.get("question", ""),
+        "expected_answer": task_item.get("expected_answer"),
+        "gold": task_item.get("expected_answer"),
+        "expected": task_item.get("expected"),
+        "expected_reuse": task_item.get("expected_reuse", []),
+        "prediction": prediction,
+        "final_answer": result.get("final_answer", ""),
+        "exact_match": exact_match,
+        "messages": _frontend_safe(result.get("messages", [])),
+        "metrics": _frontend_safe(task_metrics),
+        "memory_hits": _frontend_memory_hits(memory_hits),
+        "memory_hit_count": len(memory_hits),
+        "memory_context": _frontend_safe(result.get("memory_context", [])),
+        "latent_states": _frontend_safe(result.get("latent_states", {})),
+        "state_refs": _frontend_safe(result.get("state_refs", {})),
+        "evidence": _frontend_safe(result.get("evidence", [])),
+        "execution_result": _frontend_safe(execution_result),
+        "cognitive_gaps": _frontend_safe(result.get("cognitive_gaps", [])),
+        "agent_outputs": _frontend_safe(result.get("agent_outputs", []), max_string=1200),
+        "latest_memory_write": _frontend_safe(
+            {
+                "memory_id": latest_memory.get("memory_id"),
+                "source_agent": latest_memory.get("source_agent"),
+                "summary": latest_memory.get("summary"),
+                "tags": latest_memory.get("tags"),
+                "state_refs": latest_memory.get("state_refs"),
+                "has_trace": "trace" in latest_memory,
+            }
+        ),
+        "trace": _frontend_safe(latest_memory.get("trace", {}), max_string=1800),
+    }
+    if task_item.get("dataset_type") == "codeact":
+        task_result.update(
+            {
+                "inputs": _frontend_safe(task_item.get("inputs", {})),
+                "allowed_imports": task_item.get("allowed_imports", []),
+                "tags": task_item.get("tags", []),
+                "expected_result": task_item.get("expected"),
+                "actual_result": execution_result.get("result"),
+                "sandbox_status": execution_result.get("sandbox_status"),
+            }
+        )
+    return task_result
+
+
 def print_agent_trace(result: dict[str, Any]) -> None:
     """展示每个 Agent 的主要输出，方便调试协作链路。"""
 
@@ -532,29 +643,16 @@ def run_mode(
         if show_state:
             print_state_trace(task_item, result)
 
-        if dataset_type == "codeact":
-            latest_memory = result.get("memory", [])[-1] if result.get("memory") else {}
-            task_results.append(
-                {
-                    "task_id": task_item.get("task_id"),
-                    "task": task_item.get("task"),
-                    "task_type": task_item.get("task_type"),
-                    "expected": task_item.get("expected"),
-                    "exact_match": exact_match,
-                    "messages": result.get("messages", []),
-                    "memory_hits": result.get("memory_hits", []),
-                    "memory_hit_count": memory_hits,
-                    "memory_context": result.get("memory_context", []),
-                    "metrics": {
-                        **metrics,
-                        "memory_hits": memory_hits,
-                        "elapsed_ms": elapsed * 1000,
-                        "exact_match": exact_match,
-                    },
-                    "execution_result": result.get("execution_result", {}),
-                    "trace": latest_memory.get("trace", {}),
-                }
+        task_results.append(
+            build_task_result(
+                task_index=index,
+                task_item=task_item,
+                result=result,
+                elapsed_ms=elapsed * 1000,
+                exact_match=exact_match,
+                prediction=prediction,
             )
+        )
 
     memory_hit_rate = total_memory_hits / len(tasks) if tasks else 0.0
     exact_match_rate = correct / comparable if comparable else None
@@ -597,9 +695,8 @@ def run_mode(
         "memory_hit_rate": memory_hit_rate,
         "elapsed_ms": elapsed_ms,
         "exact_match": exact_match_rate,
+        "task_results": task_results,
     }
-    if dataset_type == "codeact":
-        run_result["task_results"] = task_results
     return run_result
 
 

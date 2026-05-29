@@ -25,6 +25,27 @@ COUNTRY_ALIASES = {
 }
 
 
+FRONTEND_OMIT_KEYS = {"pooled_vector", "tensor", "vector"}
+
+
+def frontend_safe(value: Any, *, max_string: int = 3000) -> Any:
+    """清理前端 JSON 中不需要展示的向量内容。"""
+
+    if isinstance(value, dict):
+        return {
+            str(key): frontend_safe(item, max_string=max_string)
+            for key, item in value.items()
+            if str(key) not in FRONTEND_OMIT_KEYS
+        }
+    if isinstance(value, list):
+        return [frontend_safe(item, max_string=max_string) for item in value]
+    if isinstance(value, tuple):
+        return [frontend_safe(item, max_string=max_string) for item in value]
+    if isinstance(value, str) and len(value) > max_string:
+        return value[:max_string] + "..."
+    return value
+
+
 def compact_message(
     sender: str,
     receiver: str,
@@ -355,6 +376,35 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
         "memory_hit_rate": memory_hit_rate,
         "elapsed_ms": total_elapsed,
         "exact_match": exact_match,
+        "task_results": [
+            {
+                "task_index": index,
+                "task_id": result.get("sample_id"),
+                "sample_id": result.get("sample_id"),
+                "group_id": result.get("group_id"),
+                "turn_id": result.get("turn_id"),
+                "dataset_type": hidden_dataset_key(args),
+                "question": result.get("question"),
+                "evidence": frontend_safe(result.get("evidence", [])),
+                "final_answer": result.get("answer_candidate"),
+                "answer_candidate": result.get("answer_candidate"),
+                "gold": result.get("gold"),
+                "exact_match": result.get("exact_match"),
+                "expected_reuse": result.get("expected_reuse", []),
+                "messages": frontend_safe(result.get("messages", [])),
+                "metrics": {
+                    **frontend_safe(result.get("metrics", {})),
+                    "memory_hit_rate": 1.0 if result.get("metrics", {}).get("memory_hits", 0) else 0.0,
+                    "exact_match": result.get("exact_match"),
+                },
+                "memory_hits": [],
+                "memory_hit_count": result.get("metrics", {}).get("memory_hits", 0),
+                "memory_context": [],
+                "latent_states": frontend_safe(result.get("latent_states", {})),
+                "state_refs": frontend_safe(result.get("state_refs", {})),
+            }
+            for index, result in enumerate(results, start=1)
+        ],
     }
 
 

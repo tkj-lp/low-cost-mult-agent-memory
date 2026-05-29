@@ -8,6 +8,68 @@ from typing import Any
 from competition_agents.restricted_python_codeact import run_restricted_python
 
 
+def frontend_safe(value: Any, *, max_string: int = 3000) -> Any:
+    """清理前端 JSON 中可能过长的字符串。"""
+
+    if isinstance(value, dict):
+        return {str(key): frontend_safe(item, max_string=max_string) for key, item in value.items()}
+    if isinstance(value, list):
+        return [frontend_safe(item, max_string=max_string) for item in value]
+    if isinstance(value, tuple):
+        return [frontend_safe(item, max_string=max_string) for item in value]
+    if isinstance(value, str) and len(value) > max_string:
+        return value[:max_string] + "..."
+    return value
+
+
+def frontend_task_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """生成和 run_demo.py 一致的单任务前端明细。"""
+
+    task_results = []
+    for index, result in enumerate(results, start=1):
+        execution = result["execution_result"]
+        memory_hit_count = int(bool(result.get("memory_hit")))
+        metrics = {
+            "message_count": 1,
+            "text_chars": len(result.get("task", "")),
+            "latent_transfer_count": 0,
+            "latent_bytes": 0,
+            "tool_execution_count": 1,
+            "memory_hits": memory_hit_count,
+            "memory_hit_rate": 1.0 if memory_hit_count else 0.0,
+            "elapsed_ms": execution.get("elapsed_ms", 0.0),
+            "exact_match": result.get("exact_match"),
+        }
+        task_results.append(
+            {
+                "task_index": index,
+                "task_id": result.get("id"),
+                "group_id": "codeact",
+                "turn_id": result.get("id"),
+                "dataset_type": "codeact",
+                "task_type": "codeact",
+                "task": result.get("task"),
+                "question": result.get("task"),
+                "expected": frontend_safe(result.get("expected")),
+                "expected_result": frontend_safe(result.get("expected")),
+                "actual_result": frontend_safe(execution.get("result")),
+                "final_answer": json.dumps(execution.get("result"), ensure_ascii=False, sort_keys=True),
+                "exact_match": result.get("exact_match"),
+                "messages": [],
+                "metrics": metrics,
+                "memory_hits": [],
+                "memory_hit_count": memory_hit_count,
+                "memory_context": [],
+                "latent_states": {},
+                "state_refs": {},
+                "execution_result": frontend_safe(execution),
+                "sandbox_status": execution.get("sandbox_status"),
+                "tags": result.get("tags", []),
+            }
+        )
+    return task_results
+
+
 def run_task(task: dict[str, Any], memory: dict[str, dict[str, Any]]) -> dict[str, Any]:
     """执行一条受限 Python CodeAct 任务。"""
 
@@ -113,6 +175,7 @@ def print_summary(results: list[dict[str, Any]], dataset_file: str, limit: int) 
                 "memory_hit_rate": metrics["memory_hit_rate"],
                 "elapsed_ms": total_elapsed,
                 "exact_match": metrics["exact_match"],
+                "task_results": frontend_task_results(results),
             }
         ],
     }
