@@ -318,9 +318,10 @@ python examples\competition_agents\run_demo.py `
 重点看：
 
 ```text
+chain-001 共 10 个 turn
 turn-1: memory_hits=0
-turn-2: memory_hits=1
-turn-3: memory_hits=2
+turn-2: memory_hits>=1
+turn-3 到 turn-10: memory_hits 持续命中前序记忆
 top_level_state_refs.evidence = state-xxxx
 execution_result.memory_context 非空
 retriever -> reasoner message 中有 memory_refs 和 memory_context

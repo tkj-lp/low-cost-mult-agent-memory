@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from agents.executor import executor_agent
 from agents.planner import planner_agent
 from agents.reasoner import reasoner_agent
 from agents.retriever import retriever_agent
@@ -7,14 +8,30 @@ from agents.summarizer import summarizer_agent
 from competition_agents.state import CompetitionState
 
 
+def should_execute_codeact(state: CompetitionState) -> bool:
+    """只有 CodeAct 数据集且 Reasoner 生成执行请求时才进入 ExecutorAgent。"""
+
+    return (
+        state.get("task_meta", {}).get("dataset_type") == "codeact"
+        and state.get("execution_result", {}).get("execution_request") is not None
+    )
+
+
 class SequentialCompetitionGraph:
     """在 LangGraph 依赖未就绪时使用的简易顺序运行器。"""
 
     def invoke(self, state: CompetitionState) -> CompetitionState:
         # 每个 Agent 读取共享状态，并返回自己负责的局部更新。
-        for agent in (planner_agent, retriever_agent, reasoner_agent, summarizer_agent):
+        for agent in (planner_agent, retriever_agent, reasoner_agent):
             state = {**state, **agent(state)}
+        if should_execute_codeact(state):
+            state = {**state, **executor_agent(state)}
+        state = {**state, **summarizer_agent(state)}
         return state
+
+
+def _route_after_reasoner(state: CompetitionState) -> str:
+    return "executor" if should_execute_codeact(state) else "summarizer"
 
 
 def build_graph():
@@ -32,12 +49,19 @@ def build_graph():
     graph.add_node("planner", planner_agent)
     graph.add_node("retriever", retriever_agent)
     graph.add_node("reasoner", reasoner_agent)
+    graph.add_node("executor", executor_agent)
     graph.add_node("summarizer", summarizer_agent)
 
-    # 固定流水线：规划 -> 检索/状态写入 -> 推理 -> 总结/记忆沉淀。
+    # 固定前半段：规划 -> 检索/状态写入 -> 推理。
+    # CodeAct 任务在推理后进入 Executor，普通任务直接进入 Summarizer。
     graph.add_edge(START, "planner")
     graph.add_edge("planner", "retriever")
     graph.add_edge("retriever", "reasoner")
-    graph.add_edge("reasoner", "summarizer")
+    graph.add_conditional_edges(
+        "reasoner",
+        _route_after_reasoner,
+        {"executor": "executor", "summarizer": "summarizer"},
+    )
+    graph.add_edge("executor", "summarizer")
     graph.add_edge("summarizer", END)
     return graph.compile()

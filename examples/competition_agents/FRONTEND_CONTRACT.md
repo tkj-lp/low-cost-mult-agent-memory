@@ -7,8 +7,8 @@
 页面建议保留两层选择：
 
 ```text
-experiment_mode: baseline_text / protocol_api / protocol_api_embedding / latent_hidden
-dataset: competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous
+experiment_mode: baseline_text / protocol_api / protocol_api_embedding / latent_hidden / codeact_tools
+dataset: competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous / codeact_20
 ```
 
 ### experiment_mode
@@ -19,6 +19,7 @@ dataset: competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 
 | `protocol_api` | 结构化协议协作 | 真实 API 生成文字，Agent 间用结构化协议包通信，embedding 使用轻量 hash，占位且稳定。 |
 | `protocol_api_embedding` | 协议 + API embedding | 真实 API 生成文字，Agent 间用结构化协议通信，并用 OpenAI-compatible embedding 生成 `state_ref`。 |
 | `latent_hidden` | Hidden state 引用传递 | 本地 Qwen 读取最后一层 hidden state，消息中只传 `hidden_state_ref`。 |
+| `codeact_tools` | 受限工具执行 | 受限 Python CodeAct 执行，展示统计、表格、字符串、日期、证据链和记忆复用任务。 |
 
 ### dataset
 
@@ -26,9 +27,10 @@ dataset: competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 
 | --- | --- | --- |
 | `competition_10` | 10 轮主流程 | 内置 10 个比赛主流程任务，适合看通信开销、记忆复用和总耗时。 |
 | `hotpot_multihop` | HotpotQA 多跳问答 | 抽样多跳问答，适合看 `gold` 和 `exact_match`。 |
-| `hotpot_continuous` | 连续关联任务 | 从 HotpotQA 构造的连续任务，适合看跨轮记忆复用。 |
+| `hotpot_continuous` | 连续关联任务 | 从 `hotpot_dev_distractor_v1.json` 固定抽样构造，当前为 2 个 chain，每个 chain 10 turn，共 20 turn，适合看跨轮记忆复用。 |
 | `hidden_hotpot_5` | Hidden Hotpot 样例 | 5 条 hidden-state reference transfer 样例。 |
-| `hidden_continuous` | Hidden 连续任务 | 连续任务上的 hidden-state reference transfer + memory reuse。 |
+| `hidden_continuous` | Hidden 连续任务 | 同一连续任务数据集上的 hidden-state reference transfer + memory reuse。 |
+| `codeact_20` | CodeAct 20 题 | 自制 20 条安全工具执行任务，用于展示 Executor / CodeAct-style execution。 |
 
 ## 2. 可用组合
 
@@ -38,6 +40,7 @@ dataset: competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 
 | `protocol_api` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
 | `protocol_api_embedding` | `competition_10`, `hotpot_continuous` |
 | `latent_hidden` | `hidden_hotpot_5`, `hidden_continuous` |
+| `codeact_tools` | `codeact_20` |
 
 不建议组合：
 
@@ -47,6 +50,7 @@ latent_hidden + hotpot_multihop
 baseline_text + hidden_*
 protocol_api + hidden_*
 protocol_api_embedding + hidden_*
+codeact_tools + non-codeact datasets
 ```
 
 原因：`latent_hidden` 当前使用独立入口 `run_hidden_latent_samples.py`，验证的是本地 LLM hidden state 引用传递，不接入 `run_demo.py` 的 10 轮主流程。
@@ -144,6 +148,27 @@ python examples\competition_agents\run_hidden_latent_samples.py `
   --limit 1
 ```
 
+### codeact_tools
+
+```powershell
+python examples\competition_agents\run_codeact_samples.py `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json
+```
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --dataset-type codeact `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 20 `
+  --modes protocol
+```
+
+```powershell
+python examples\competition_agents\run_codeact_samples.py `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 5
+```
+
 ## 4. 开发自测命令
 
 以下命令只用于开发者确认流程能不能跑通，不进入页面正式选项：
@@ -169,6 +194,7 @@ python examples\competition_agents\run_demo.py --dataset-type builtin --modes te
 - latent 状态面板：读取 `latent_states` 和 `state_refs`。
 - 问答结果表：读取 `final_answer`、`gold`、`exact_match`。
 - hidden 实验面板：读取 `hidden_state_refs`、`hidden_bytes`、`pooled_similarity`、`memory_hits`。
+- CodeAct 面板：读取 `execution_result.execution_mode`、`sandbox_status`、`allowed_imports`、`code_source`、`code`、`result`、`elapsed_ms`、`safety_checks`。
 
 ## 6. 稳定输出字段
 
@@ -187,6 +213,9 @@ run_result_json.runs[].dataset_type
 run_result_json.runs[].dataset_file
 run_result_json.runs[].task_count
 run_result_json.runs[].metrics
+run_result_json.runs[].task_results[]
+run_result_json.runs[].task_results[].execution_result
+run_result_json.runs[].task_results[].trace
 messages[].from
 messages[].to
 messages[].action
@@ -206,14 +235,14 @@ state_refs
 
 不要强依赖 `payload` 内部结构。`payload` 未来可能继续压缩，但 `from`、`to`、`action`、`char_cost`、`metrics`、`memory_hits`、`latent_states` 会保持稳定。
 
-正式运行脚本会在最后输出一个机器可读区块。`run_demo.py` 和 `run_hidden_latent_samples.py` 都遵循这个格式：
+正式运行脚本会在最后输出一个机器可读区块。`run_demo.py`、`run_hidden_latent_samples.py` 和 `run_codeact_samples.py` 都遵循这个格式：
 
 ```text
 === run_result_json ===
-{"schema_version":1,"experiment_mode":"protocol_api","dataset_type":"continuous","dataset_file":"examples/competition_agents/data/hotpot_continuous_tasks.json","limit":1,"task_count":3,"runs":[...]}
+{"schema_version":1,"experiment_mode":"protocol_api","dataset_type":"continuous","dataset_file":"examples/competition_agents/data/hotpot_continuous_tasks.json","limit":1,"task_count":10,"runs":[...]}
 ```
 
-前端建议优先解析 `=== run_result_json ===` 后面的 JSON 行，不要从 `summary:` 或 `hidden latent summary` 文本里反向解析指标。
+前端建议优先解析 `=== run_result_json ===` 后面的 JSON 行，不要从 `summary:`、`hidden latent summary` 或 `codeact summary` 文本里反向解析指标。
 
 ## 7. messages 字段
 
@@ -434,7 +463,7 @@ hidden state 示例：
 `hidden_continuous` 最适合展示 hidden-state reference transfer。核心趋势：
 
 ```text
-memory_hits: 0 -> 1 -> 2
+chain-001 memory_hits: 0 -> 1 -> 2 -> ... -> 9
 ```
 
 每个 case 的链路固定为：

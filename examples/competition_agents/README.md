@@ -83,6 +83,8 @@ search_hypergraph_memory(memory: list[dict], query: str, top_k: int) -> list[dic
 - 多 Agent 原型流程。
 - text / protocol 两种通信模式。
 - 消息次数、字符开销、latent 传递次数、latent 字节数、记忆命中等指标统计。
+- 从 HotpotQA dev distractor 固定抽样构造的 2 组连续任务，每组 10 turn，共 20 turn。
+- 自制 20 条受限 CodeAct-style 工具执行任务，覆盖统计、表格、字符串、日期、证据链和记忆复用。
 - OpenAI-compatible LLM API 适配。
 - 本地 embedding provider。
 - `state_ref` 形式的非文本 latent state 传递。
@@ -91,7 +93,7 @@ search_hypergraph_memory(memory: list[dict], query: str, top_k: int) -> list[dic
 
 - 超图记忆和 embedding 相似度融合检索。
 - 更清晰的 protocol 模式压缩策略，提升字符节省率。
-- 更真实的 CodeAct 沙箱执行。
+- 更真实的任意 Python CodeAct 沙箱执行。
 - openEuler 24.03-LTS-SP3 上的部署验证。
 - 网页控制台读取 `messages`、`metrics`、`memory_hits`、`latent_states` 并可视化。
 

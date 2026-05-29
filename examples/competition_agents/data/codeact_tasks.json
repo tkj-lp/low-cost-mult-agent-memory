@@ -1,0 +1,243 @@
+[
+  {
+    "id": "codeact-001",
+    "task": "统计下面列表的平均数、中位数和最大值：[12, 7, 9, 21, 15]",
+    "task_type": "stats_summary",
+    "inputs": {"values": [12, 7, 9, 21, 15]},
+    "expected": {"mean": 12.8, "median": 12, "max": 21},
+    "allowed_imports": ["statistics"],
+    "reference_code": "import statistics\nvalues = inputs['values']\nresult = {\n    'mean': sum(values) / len(values),\n    'median': statistics.median(values),\n    'max': max(values),\n}",
+    "tags": ["statistics", "safe_python"]
+  },
+  {
+    "id": "codeact-002",
+    "task": "计算下面列表的总体方差和标准差：[3, 5, 7, 9, 11]",
+    "task_type": "population_variance",
+    "inputs": {"values": [3, 5, 7, 9, 11]},
+    "expected": {"variance": 8.0, "stddev": 2.828427},
+    "allowed_imports": ["math", "statistics"],
+    "reference_code": "import math\nimport statistics\nvalues = inputs['values']\nvariance = statistics.pvariance(values)\nresult = {\n    'variance': variance,\n    'stddev': round(math.sqrt(variance), 6),\n}",
+    "tags": ["statistics", "safe_python"]
+  },
+  {
+    "id": "codeact-003",
+    "task": "计算 baseline=30000、current=9000 时的字符节省率。",
+    "task_type": "saving_rate",
+    "inputs": {"baseline": 30000, "current": 9000},
+    "expected": {"saving_rate": 0.7},
+    "allowed_imports": ["math"],
+    "reference_code": "baseline = inputs['baseline']\ncurrent = inputs['current']\nresult = {'saving_rate': (baseline - current) / baseline}",
+    "tags": ["metrics", "safe_python"]
+  },
+  {
+    "id": "codeact-004",
+    "task": "计算 old=125、new=175 的增长率。",
+    "task_type": "growth_rate",
+    "inputs": {"old": 125, "new": 175},
+    "expected": {"growth_rate": 0.4},
+    "allowed_imports": ["math"],
+    "reference_code": "old = inputs['old']\nnew = inputs['new']\nresult = {'growth_rate': (new - old) / old}",
+    "tags": ["math", "safe_python"]
+  },
+  {
+    "id": "codeact-005",
+    "task": "按部门汇总销售额。",
+    "task_type": "group_sum",
+    "inputs": {
+      "rows": [
+        {"dept": "A", "sales": 120},
+        {"dept": "B", "sales": 80},
+        {"dept": "A", "sales": 95},
+        {"dept": "C", "sales": 40},
+        {"dept": "B", "sales": 70}
+      ],
+      "group_key": "dept",
+      "value_key": "sales"
+    },
+    "expected": {"A": 215, "B": 150, "C": 40},
+    "allowed_imports": ["collections"],
+    "reference_code": "from collections import defaultdict\nrows = inputs['rows']\ngroup_key = inputs['group_key']\nvalue_key = inputs['value_key']\ntotals = defaultdict(int)\nfor row in rows:\n    totals[row[group_key]] += row[value_key]\nresult = dict(sorted(totals.items()))",
+    "tags": ["table", "aggregation", "safe_python"]
+  },
+  {
+    "id": "codeact-006",
+    "task": "筛选分数不低于 90 的学生，并按分数降序排序。",
+    "task_type": "filter_sort",
+    "inputs": {
+      "rows": [
+        {"name": "Li", "score": 86},
+        {"name": "Wang", "score": 93},
+        {"name": "Zhao", "score": 91},
+        {"name": "Chen", "score": 78}
+      ],
+      "field": "score",
+      "threshold": 90,
+      "name_key": "name"
+    },
+    "expected": ["Wang", "Zhao"],
+    "allowed_imports": [],
+    "reference_code": "rows = inputs['rows']\nfield = inputs['field']\nthreshold = inputs['threshold']\nname_key = inputs['name_key']\npairs = []\nfor row in rows:\n    if row[field] >= threshold:\n        pairs.append((-row[field], row[name_key]))\npairs.sort()\nresult = [name for score, name in pairs]",
+    "tags": ["table", "sorting", "safe_python"]
+  },
+  {
+    "id": "codeact-007",
+    "task": "统计文本中每个词出现的次数。",
+    "task_type": "word_count",
+    "inputs": {"text": "memory protocol memory agent protocol memory"},
+    "expected": {"memory": 3, "protocol": 2, "agent": 1},
+    "allowed_imports": ["collections", "re"],
+    "reference_code": "from collections import Counter\nimport re\nwords = re.findall(r'\\w+', inputs['text'].lower())\nresult = dict(Counter(words))",
+    "tags": ["string", "safe_python"]
+  },
+  {
+    "id": "codeact-008",
+    "task": "提取出现次数最高的 2 个关键词。",
+    "task_type": "top_keywords",
+    "inputs": {"text": "agent memory memory protocol graph graph graph memory", "top_k": 2},
+    "expected": ["memory", "graph"],
+    "allowed_imports": ["collections", "re"],
+    "reference_code": "from collections import Counter\nimport re\nwords = re.findall(r'\\w+', inputs['text'].lower())\ncounts = Counter(words)\nfirst_seen = {}\nfor index, word in enumerate(words):\n    if word not in first_seen:\n        first_seen[word] = index\nranked = []\nfor word, count in counts.items():\n    ranked.append((-count, first_seen[word], word))\nranked.sort()\nresult = [word for count, index, word in ranked[:inputs['top_k']]]",
+    "tags": ["string", "keyword", "safe_python"]
+  },
+  {
+    "id": "codeact-009",
+    "task": "计算 2026-05-01 到 2026-05-28 间隔多少天。",
+    "task_type": "days_between",
+    "inputs": {"start": "2026-05-01", "end": "2026-05-28"},
+    "expected": {"days": 27},
+    "allowed_imports": ["datetime"],
+    "reference_code": "from datetime import date\nstart = date.fromisoformat(inputs['start'])\nend = date.fromisoformat(inputs['end'])\nresult = {'days': (end - start).days}",
+    "tags": ["date", "safe_python"]
+  },
+  {
+    "id": "codeact-010",
+    "task": "判断 2026-05-28 是星期几。",
+    "task_type": "weekday",
+    "inputs": {"date": "2026-05-28"},
+    "expected": {"weekday": "Thursday"},
+    "allowed_imports": ["datetime"],
+    "reference_code": "from datetime import date\nvalue = date.fromisoformat(inputs['date'])\nresult = {'weekday': value.strftime('%A')}",
+    "tags": ["date", "safe_python"]
+  },
+  {
+    "id": "codeact-011",
+    "task": "从 evidence list 中找出最终答案。",
+    "task_type": "evidence_answer",
+    "inputs": {
+      "evidence": [
+        "Kiss and Tell stars Shirley Temple as Corliss Archer.",
+        "Shirley Temple served as Chief of Protocol of the United States."
+      ],
+      "answer_key": "served as"
+    },
+    "expected": {"answer": "Chief of Protocol"},
+    "allowed_imports": ["re"],
+    "reference_code": "import re\nanswer = ''\nfor item in inputs['evidence']:\n    match = re.search(r'served as (?:the )?(.+?)(?: of the United States)?\\.?$', item)\n    if match:\n        answer = match.group(1)\nresult = {'answer': answer}",
+    "tags": ["evidence", "safe_python"]
+  },
+  {
+    "id": "codeact-012",
+    "task": "从 evidence list 中找出被支持的系列名称。",
+    "task_type": "evidence_answer",
+    "inputs": {
+      "evidence": [
+        "The Hork-Bajir Chronicles is the second companion book to the Animorphs series.",
+        "Animorphs is told in first person by its main characters."
+      ],
+      "answer_key": "series"
+    },
+    "expected": {"answer": "Animorphs"},
+    "allowed_imports": ["re"],
+    "reference_code": "import re\nanswer = ''\nfor item in inputs['evidence']:\n    match = re.search(r'to the (.+?) series', item)\n    if match:\n        answer = match.group(1)\nresult = {'answer': answer}",
+    "tags": ["evidence", "safe_python"]
+  },
+  {
+    "id": "codeact-013",
+    "task": "计算消息字符数列表的总和和平均值。",
+    "task_type": "sum_average",
+    "inputs": {"values": [264, 1496, 330, 264, 2693, 341]},
+    "expected": {"sum": 5388, "average": 898.0},
+    "allowed_imports": ["statistics"],
+    "reference_code": "import statistics\nvalues = inputs['values']\nresult = {'sum': sum(values), 'average': statistics.mean(values)}",
+    "tags": ["metrics", "safe_python"]
+  },
+  {
+    "id": "codeact-014",
+    "task": "计算 memory_hits 序列的命中率，命中定义为每轮命中数大于 0。",
+    "task_type": "hit_rate",
+    "inputs": {"hits": [0, 1, 2, 2, 2, 0, 1, 2]},
+    "expected": {"hit_rate": 0.75},
+    "allowed_imports": ["math"],
+    "reference_code": "hits = inputs['hits']\nresult = {'hit_rate': sum(1 for hit in hits if hit > 0) / len(hits)}",
+    "tags": ["memory_reuse", "safe_python"]
+  },
+  {
+    "id": "codeact-015",
+    "task": "验证连续任务的 memory_hits 是否呈现从 0 到非 0 的复用趋势。",
+    "task_type": "reuse_trend",
+    "inputs": {"hits": [0, 1, 2, 2, 2]},
+    "expected": {"starts_without_memory": true, "later_reuses_memory": true},
+    "allowed_imports": [],
+    "reference_code": "hits = inputs['hits']\nresult = {\n    'starts_without_memory': hits[0] == 0,\n    'later_reuses_memory': any(hit > 0 for hit in hits[1:]),\n}",
+    "tags": ["memory_reuse", "safe_python"]
+  },
+  {
+    "id": "codeact-016",
+    "task": "把文本中的数字提取出来并求和。",
+    "task_type": "extract_numbers_sum",
+    "inputs": {"text": "planner 3 messages, retriever 5 messages, reasoner 4 messages"},
+    "expected": {"numbers": [3, 5, 4], "sum": 12},
+    "allowed_imports": ["re"],
+    "reference_code": "import re\nnumbers = [int(value) for value in re.findall(r'\\d+', inputs['text'])]\nresult = {'numbers': numbers, 'sum': sum(numbers)}",
+    "tags": ["string", "metrics", "safe_python"]
+  },
+  {
+    "id": "codeact-017",
+    "task": "从表格中找出耗时最高的 Agent。",
+    "task_type": "max_row",
+    "inputs": {
+      "rows": [
+        {"agent": "planner", "elapsed_ms": 12.5},
+        {"agent": "retriever", "elapsed_ms": 28.1},
+        {"agent": "reasoner", "elapsed_ms": 45.6},
+        {"agent": "summarizer", "elapsed_ms": 20.4}
+      ],
+      "value_key": "elapsed_ms",
+      "return_key": "agent"
+    },
+    "expected": {"agent": "reasoner", "elapsed_ms": 45.6},
+    "allowed_imports": [],
+    "reference_code": "rows = inputs['rows']\nvalue_key = inputs['value_key']\nreturn_key = inputs['return_key']\nbest = rows[0]\nfor row in rows[1:]:\n    if row[value_key] > best[value_key]:\n        best = row\nresult = {return_key: best[return_key], value_key: best[value_key]}",
+    "tags": ["table", "metrics", "safe_python"]
+  },
+  {
+    "id": "codeact-018",
+    "task": "计算 latent bytes 从 3840 降到 1920 的降低率。",
+    "task_type": "saving_rate",
+    "inputs": {"baseline": 3840, "current": 1920},
+    "expected": {"saving_rate": 0.5},
+    "allowed_imports": ["math"],
+    "reference_code": "baseline = inputs['baseline']\ncurrent = inputs['current']\nresult = {'saving_rate': (baseline - current) / baseline}",
+    "tags": ["latent_state", "metrics", "safe_python"]
+  },
+  {
+    "id": "codeact-019",
+    "task": "复用 codeact-003 的 saving_rate，换算成百分比。",
+    "task_type": "reuse_previous_result",
+    "inputs": {"source_id": "codeact-003", "field": "saving_rate", "scale": 100},
+    "expected": {"reused_value": 70.0},
+    "allowed_imports": ["math"],
+    "reference_code": "source = memory[inputs['source_id']]['result']\nvalue = source[inputs['field']]\nresult = {'reused_value': value * inputs['scale']}",
+    "tags": ["memory_reuse", "safe_python"]
+  },
+  {
+    "id": "codeact-020",
+    "task": "复用 codeact-014 的 hit_rate，判断命中率是否达到 0.7。",
+    "task_type": "reuse_threshold_check",
+    "inputs": {"source_id": "codeact-014", "field": "hit_rate", "threshold": 0.7},
+    "expected": {"reused_value": 0.75, "passes": true},
+    "allowed_imports": ["math"],
+    "reference_code": "source = memory[inputs['source_id']]['result']\nvalue = source[inputs['field']]\nresult = {'reused_value': value, 'passes': value >= inputs['threshold']}",
+    "tags": ["memory_reuse", "safe_python"]
+  }
+]

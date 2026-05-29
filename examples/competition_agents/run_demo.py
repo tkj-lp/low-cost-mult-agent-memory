@@ -116,16 +116,46 @@ def load_continuous_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]
     return tasks
 
 
+def load_codeact_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]:
+    """读取 CodeAct 数据集，并保留主图 Executor 所需的 task_meta 字段。"""
+
+    samples = json.loads(path.read_text(encoding="utf-8"))
+    if limit:
+        samples = samples[:limit]
+    return [
+        {
+            "task_id": sample["id"],
+            "group_id": "codeact",
+            "turn_id": sample["id"],
+            "task": sample["task"],
+            "task_type": sample.get("task_type", ""),
+            "inputs": sample.get("inputs", {}),
+            "expected": sample.get("expected"),
+            "expected_answer": None,
+            "allowed_imports": sample.get("allowed_imports", []),
+            "reference_code": sample.get("reference_code", ""),
+            "timeout_ms": sample.get("timeout_ms", 3000),
+            "tags": sample.get("tags", []),
+            "dataset_type": "codeact",
+        }
+        for sample in samples
+    ]
+
+
 def load_tasks(args: argparse.Namespace) -> list[dict[str, Any]]:
     if args.dataset_type == "builtin":
         return load_builtin_tasks(args.limit)
+    if args.dataset_type == "codeact" and not args.dataset_file:
+        args.dataset_file = "examples/competition_agents/data/codeact_tasks.json"
     if not args.dataset_file:
-        raise ValueError("--dataset-file is required when dataset type is multihop or continuous")
+        raise ValueError("--dataset-file is required when dataset type is multihop, continuous, or codeact")
     path = Path(args.dataset_file)
     if args.dataset_type == "multihop":
         return load_multihop_tasks(path, args.limit)
     if args.dataset_type == "continuous":
         return load_continuous_tasks(path, args.limit)
+    if args.dataset_type == "codeact":
+        return load_codeact_tasks(path, args.limit)
     raise ValueError(f"Unsupported dataset type: {args.dataset_type}")
 
 
@@ -147,6 +177,14 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
 
     if not args.experiment_mode:
         return parse_modes(args.modes)
+
+    if args.experiment_mode == "codeact_tools":
+        os.environ["LLM_PROVIDER"] = "mock"
+        os.environ["LLM_PLANNER_PROVIDER"] = "mock"
+        os.environ["LLM_REASONER_PROVIDER"] = "mock"
+        os.environ["LLM_SUMMARIZER_PROVIDER"] = "mock"
+        os.environ["EMBEDDING_PROVIDER"] = "hash"
+        return ["protocol"]
 
     load_env_file(Path(args.env_file))
     os.environ["LLM_PROVIDER"] = "openai_compatible"
@@ -193,6 +231,13 @@ def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
             "expected_reuse",
             "question",
             "supporting_facts",
+            "task_type",
+            "inputs",
+            "expected",
+            "allowed_imports",
+            "reference_code",
+            "timeout_ms",
+            "tags",
         ]
         if key in task_item
     }
@@ -404,6 +449,7 @@ def run_mode(
     total_memory_hits = 0
     correct = 0
     comparable = 0
+    task_results: list[dict[str, Any]] = []
     total_metrics = {
         "message_count": 0,
         "text_chars": 0,
@@ -436,7 +482,13 @@ def run_mode(
         expected_answer = task_item.get("expected_answer")
         prediction = prediction_from_result(result)
         exact_match = None
-        if expected_answer:
+        if dataset_type == "codeact":
+            comparable += 1
+            expected_result = task_item.get("expected")
+            actual_result = result.get("execution_result", {}).get("result")
+            exact_match = actual_result == expected_result
+            correct += int(exact_match)
+        elif expected_answer:
             comparable += 1
             exact_match = normalize_answer(prediction) == normalize_answer(str(expected_answer))
             correct += int(exact_match)
@@ -447,6 +499,12 @@ def run_mode(
         print(f"answer: {result['final_answer']}")
         if expected_answer:
             print(f"gold: {expected_answer}")
+            print(f"exact_match: {exact_match}")
+        if dataset_type == "codeact":
+            execution_result = result.get("execution_result", {})
+            print(f"expected_result: {json.dumps(task_item.get('expected'), ensure_ascii=False, sort_keys=True)}")
+            print(f"actual_result: {json.dumps(execution_result.get('result'), ensure_ascii=False, sort_keys=True)}")
+            print(f"sandbox_status: {execution_result.get('sandbox_status')}")
             print(f"exact_match: {exact_match}")
         if task_item.get("expected_reuse"):
             print(f"expected_reuse: {', '.join(task_item['expected_reuse'])}")
@@ -473,6 +531,30 @@ def run_mode(
             print_latent_trace(result)
         if show_state:
             print_state_trace(task_item, result)
+
+        if dataset_type == "codeact":
+            latest_memory = result.get("memory", [])[-1] if result.get("memory") else {}
+            task_results.append(
+                {
+                    "task_id": task_item.get("task_id"),
+                    "task": task_item.get("task"),
+                    "task_type": task_item.get("task_type"),
+                    "expected": task_item.get("expected"),
+                    "exact_match": exact_match,
+                    "messages": result.get("messages", []),
+                    "memory_hits": result.get("memory_hits", []),
+                    "memory_hit_count": memory_hits,
+                    "memory_context": result.get("memory_context", []),
+                    "metrics": {
+                        **metrics,
+                        "memory_hits": memory_hits,
+                        "elapsed_ms": elapsed * 1000,
+                        "exact_match": exact_match,
+                    },
+                    "execution_result": result.get("execution_result", {}),
+                    "trace": latest_memory.get("trace", {}),
+                }
+            )
 
     memory_hit_rate = total_memory_hits / len(tasks) if tasks else 0.0
     exact_match_rate = correct / comparable if comparable else None
@@ -502,7 +584,7 @@ def run_mode(
         "task_count": len(tasks),
     }
 
-    return {
+    run_result = {
         "mode": mode,
         "experiment_mode": experiment_mode or mode,
         "dataset_type": dataset_type,
@@ -516,6 +598,9 @@ def run_mode(
         "elapsed_ms": elapsed_ms,
         "exact_match": exact_match_rate,
     }
+    if dataset_type == "codeact":
+        run_result["task_results"] = task_results
+    return run_result
 
 
 def print_comparison(results: list[dict[str, Any]]) -> None:
@@ -568,7 +653,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run competition multi-agent experiments.")
     parser.add_argument(
         "--experiment-mode",
-        choices=["baseline_text", "protocol_api", "protocol_api_embedding"],
+        choices=["baseline_text", "protocol_api", "protocol_api_embedding", "codeact_tools"],
         default="",
         help=(
             "Formal experiment mode for dashboards. "
@@ -583,7 +668,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--dataset-type",
-        choices=["builtin", "multihop", "continuous"],
+        choices=["builtin", "multihop", "continuous", "codeact"],
         default="builtin",
         help="Dataset type. Default keeps the original 10 competition tasks.",
     )

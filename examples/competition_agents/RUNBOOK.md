@@ -8,8 +8,8 @@
 当前正式实验入口采用两层选择：
 
 ```text
-experiment_mode：baseline_text / protocol_api / protocol_api_embedding / latent_hidden
-dataset：competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous
+experiment_mode：baseline_text / protocol_api / protocol_api_embedding / latent_hidden / codeact_tools
+dataset：competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous / codeact_20
 ```
 
 `mock` 只用于终端自测流程是否跑通，不作为页面正式运行方式。
@@ -22,6 +22,7 @@ dataset：competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5
 | `protocol_api` | 结构化协议协作。真实 API 生成文字，Agent 间用结构化协议包通信，embedding 使用 hash 占位。 | `run_demo.py` |
 | `protocol_api_embedding` | 协议 + API embedding。真实 API 生成文字，并用 OpenAI-compatible embedding 生成 `state_ref`。 | `run_demo.py` |
 | `latent_hidden` | 本地 LLM hidden state 引用传递。消息里只传 `hidden_state_ref`。 | `run_hidden_latent_samples.py` |
+| `codeact_tools` | 受限 Python CodeAct 执行。使用 `reference_code` 或后续 LLM 生成代码，经 AST 安全检查和临时目录子进程执行后返回结构化结果。 | `run_codeact_samples.py` |
 
 `run_demo.py` 在设置 `--experiment-mode` 时会自动读取：
 
@@ -62,9 +63,27 @@ EMBEDDING_MODEL=text-embedding-v4
 | --- | --- | --- |
 | `competition_10` | `--dataset-type builtin` | 内置 10 轮比赛主流程。 |
 | `hotpot_multihop` | `--dataset-type multihop --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json` | HotpotQA 抽样多跳问答。 |
-| `hotpot_continuous` | `--dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 连续关联任务，用于验证跨轮记忆复用。 |
+| `hotpot_continuous` | `--dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 从 `hotpot_dev_distractor_v1.json` 固定抽样构造的连续关联任务，当前为 2 个 chain，每个 chain 10 turn，共 20 turn。 |
 | `hidden_hotpot_5` | `run_hidden_latent_samples.py` 默认 | 5 条 hidden-state reference transfer 样例。 |
-| `hidden_continuous` | `run_hidden_latent_samples.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 连续任务上的 hidden-state reference transfer + memory reuse。 |
+| `hidden_continuous` | `run_hidden_latent_samples.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 同一连续任务数据集上的 hidden-state reference transfer + memory reuse。 |
+| `codeact_20` | `run_codeact_samples.py --dataset-file examples\competition_agents\data\codeact_tasks.json` | 自制 20 条安全工具执行任务，覆盖统计、表格、字符串、日期、证据链处理和记忆复用。 |
+
+`hotpot_continuous_tasks.json` 由脚本从 HotpotQA dev distractor 原始数据集中固定抽样生成，不手写事实：
+
+```powershell
+python examples\competition_agents\build_hotpot_continuous_tasks.py `
+  --source examples\competition_agents\data\hotpot_dev_distractor_v1.json `
+  --output examples\competition_agents\data\hotpot_continuous_tasks.json
+```
+
+当前固定样本：
+
+```text
+chain-001: 5a8c7595554299585d9e36b6, Kiss and Tell (1945 film) -> Shirley Temple, 10 turn
+chain-002: 5a85ea095542994775f606a8, The Hork-Bajir Chronicles -> Animorphs, 10 turn
+```
+
+运行时 `--limit 1` 表示只跑 `chain-001` 的 10 turn；不加 `--limit` 会跑 2 个 chain，共 20 turn。
 
 ## 3. 可用组合
 
@@ -74,6 +93,7 @@ EMBEDDING_MODEL=text-embedding-v4
 | `protocol_api` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
 | `protocol_api_embedding` | `competition_10`, `hotpot_continuous` |
 | `latent_hidden` | `hidden_hotpot_5`, `hidden_continuous` |
+| `codeact_tools` | `codeact_20` |
 
 不建议组合：
 
@@ -83,6 +103,7 @@ latent_hidden + hotpot_multihop
 baseline_text + hidden_*
 protocol_api + hidden_*
 protocol_api_embedding + hidden_*
+codeact_tools + non-codeact datasets
 ```
 
 原因：`latent_hidden` 当前使用独立脚本，验证的是本地 LLM hidden state 引用传递，不接入 `run_demo.py` 的 10 轮主流程。
@@ -116,6 +137,8 @@ python examples\competition_agents\run_demo.py `
   --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
   --limit 1
 ```
+
+这里 `--limit 1` 会运行 1 个连续任务组，也就是 `chain-001` 的 10 个 turn。
 
 `baseline_text` 是页面收益统计的统一参照项。前端需要保存同一 dataset 下的 baseline 结果，用于和其他实验模式计算收益。
 
@@ -152,6 +175,8 @@ python examples\competition_agents\run_demo.py `
   --show-state
 ```
 
+这里 `--limit 1` 会运行 10 个连续 turn，适合比赛页面和报告展示“单条连续链不少于 10 轮”。
+
 ## 6. protocol_api_embedding
 
 10 轮主流程：
@@ -174,6 +199,8 @@ python examples\competition_agents\run_demo.py `
   --show-latent `
   --show-state
 ```
+
+这里 `--limit 1` 同样会运行 `chain-001` 的 10 个 turn。
 
 该模式重点展示：
 
@@ -208,9 +235,89 @@ python examples\competition_agents\run_hidden_latent_samples.py `
   --limit 1
 ```
 
+这里 `--limit 1` 会在 hidden-state reference transfer 实验中运行 `chain-001` 的 10 个 turn。
+
 `latent_hidden` 输出中的 `exact_match` 使用确定性 evidence extractor，用于隔离 hidden-state 传递机制的开销；完整 LLM 问答质量由 `baseline_text` / `protocol_api` / `protocol_api_embedding` 路径验证。
 
-## 8. 终端自测模式
+## 8. codeact_tools
+
+CodeAct 工具执行当前有两层验证：独立入口 `run_codeact_samples.py` 用于 20 题可复现实验；主图中的 `ExecutorAgent` 也已复用同一套受限 Python CodeAct 沙箱，用于验证 `Planner -> Retriever -> Reasoner -> Executor -> Summarizer` 四角色闭环。数据集位置：
+
+```text
+examples/competition_agents/data/codeact_tasks.json
+```
+
+运行 20 条任务：
+
+```powershell
+python examples\competition_agents\run_codeact_samples.py `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json
+```
+
+通过多智能体主图运行 20 条任务：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --dataset-type codeact `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 20 `
+  --modes protocol
+```
+
+快速运行前 5 条：
+
+```powershell
+python examples\competition_agents\run_codeact_samples.py `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 5
+```
+
+通过主图快速运行前 5 条：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --dataset-type codeact `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 5 `
+  --modes protocol
+```
+
+任务覆盖：
+
+```text
+数学计算：平均数、方差、比例、增长率
+表格处理：筛选、排序、聚合
+字符串处理：词频、关键词、数字提取
+日期计算：间隔天数、星期判断
+证据链处理：从 evidence list 找最终答案
+记忆复用：复用上一轮工具执行结果
+```
+
+输出会包含：
+
+```text
+execution_result.execution_mode = restricted_python_codeact
+execution_result.sandbox_status = ok / error
+execution_result.allowed_imports
+execution_result.code_source
+execution_result.code
+execution_result.exit_code
+execution_result.elapsed_ms
+execution_result.result
+execution_result.safety_checks
+```
+
+说明口径：
+
+```text
+当前实现是 restricted Python CodeAct，不是裸 exec LLM 代码。
+代码必须定义 result，不能自行 print；Executor 使用 AST 检查、危险 import/call 黑名单、while 禁止、临时目录子进程、timeout 和输出长度限制执行，并统一输出 JSON。
+为了可复现实验，当前 deterministic 模式使用 reference_code；后续真实 API 模式可由 Reasoner 生成 execution_request.code。
+`run_demo.py --dataset-type codeact` 已接入主图，用于演示四角色闭环。
+`run_demo.py --dataset-type codeact` 的 `run_result_json.runs[].task_results[]` 会包含每题的 `execution_result`、`trace`、`memory_hits`、`memory_context` 和 `metrics`。
+```
+
+## 9. 终端自测模式
 
 mock 只用于确认流程能跑通，不进入页面正式选项。
 
@@ -240,7 +347,7 @@ python examples\competition_agents\run_demo.py `
   --show-state
 ```
 
-## 9. 页面收益统计怎么显示
+## 10. 页面收益统计怎么显示
 
 右下角“收益统计”建议永远显示 **当前实验模式相对同数据集 `baseline_text` 的收益**。
 
@@ -253,7 +360,7 @@ current = 当前 experiment_mode + 当前 dataset 的运行结果
 
 然后按下面公式计算。
 
-### 9.1 字符节省
+### 10.1 字符节省
 
 ```text
 字符节省率 = (baseline.metrics.text_chars - current.metrics.text_chars)
@@ -276,7 +383,7 @@ current = 当前 experiment_mode + 当前 dataset 的运行结果
 较 baseline_text
 ```
 
-### 9.2 耗时降低
+### 10.2 耗时降低
 
 ```text
 耗时降低率 = (baseline.elapsed_ms - current.elapsed_ms)
@@ -301,7 +408,7 @@ current = 当前 experiment_mode + 当前 dataset 的运行结果
 
 注意：真实 API 耗时受网络波动影响很大，报告里建议重复跑多次取平均值；页面实时展示可以直接显示本次结果。
 
-### 9.3 memory hit rate
+### 10.3 memory hit rate
 
 这里建议展示当前实验的绝对命中率，并在小字里显示相对 baseline 的变化。
 
@@ -325,7 +432,7 @@ memory hit rate
 0.83
 ```
 
-### 9.4 exact match
+### 10.4 exact match
 
 这里建议展示当前实验的准确率，并在小字里显示相对 baseline 的变化。
 
@@ -350,7 +457,7 @@ N/A
 无 gold
 ```
 
-### 9.5 latent_hidden 的收益统计
+### 10.5 latent_hidden 的收益统计
 
 `latent_hidden` 不完全等价于 `run_demo.py` 的 API 问答流程，因此右下角建议这样显示：
 
@@ -371,7 +478,7 @@ pooled_similarity
 
 不要把 `hidden_bytes` 当作通信文本开销，它表示共享 latent memory 中保存的 hidden tensor 规模。
 
-## 10. 输出字段
+## 11. 输出字段
 
 页面和实验报告优先读取这些字段：
 
@@ -394,7 +501,7 @@ exact_match
 
 `payload` 内部结构后续可能继续压缩优化，页面不要强依赖 payload 的具体子字段。
 
-## 11. 超图记忆裁剪口径
+## 12. 超图记忆裁剪口径
 
 超图记忆检索可以保留两类输出：
 
@@ -472,7 +579,7 @@ HyperGraphMemory.search()
 
 注意：RetrieverAgent 只把本轮 `evidence` 写入 latent state；`memory_context` 不再参与 evidence latent embedding。
 
-## 12. 常用验证命令
+## 13. 常用验证命令
 
 Python 语法检查：
 

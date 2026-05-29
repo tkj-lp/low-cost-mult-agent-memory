@@ -5,6 +5,25 @@ from competition_agents.protocol import make_cognitive_gap, make_compact_packet,
 from competition_agents.state import CompetitionState, put_latent_state, record_message
 
 
+def _build_codeact_execution_request(state: CompetitionState) -> dict | None:
+    """为 CodeAct 数据集生成确定性的执行请求，暂不引入 LLM 动态代码。"""
+
+    task_meta = state.get("task_meta", {})
+    if task_meta.get("dataset_type") != "codeact":
+        return None
+    code = task_meta.get("reference_code")
+    if not code:
+        return None
+    return {
+        "needs_tool": True,
+        "language": "python",
+        "code": code,
+        "allowed_imports": task_meta.get("allowed_imports", []),
+        "timeout_ms": task_meta.get("timeout_ms", 3000),
+        "code_source": "reference_code",
+    }
+
+
 def reasoner_agent(state: CompetitionState) -> dict:
     """基于任务、计划、检索证据和记忆命中生成候选答案。"""
 
@@ -57,33 +76,65 @@ def reasoner_agent(state: CompetitionState) -> dict:
             consumers=["summarizer"],
         )
 
-    if state["mode"] == "text":
-        payload = (
-            f"ReasonerAgent received {len(evidence)} evidence items and "
-            f"{len(memory_hits)} memory hits from RetrieverAgent. "
-            f"It generated an answer_candidate from the task, plan, evidence, and memory. "
-            f"Answer candidate: {result.get('answer_candidate', '')}"
-        )
-    else:
-        payload = make_compact_packet(
-            sender="reasoner",
-            receiver="summarizer",
-            action="summarize",
-            content_type="answer_ref",
-            params={"hits": len(memory_hits)},
-            result={"answer": answer_ref},
-            state_refs=[ref for ref in [plan_ref, evidence_ref, answer_ref] if ref],
-            memory_refs=[hit.get("memory_id") for hit in memory_hits],
-            capability_required=["summarize", "memory_write"],
-            cognitive_gap=cognitive_gap,
-            confidence=0.82 if memory_hits else 0.7,
-        )
+    execution_request = _build_codeact_execution_request(state)
 
+    if state["mode"] == "text":
+        if execution_request:
+            payload = (
+                "ReasonerAgent prepared a restricted Python CodeAct execution request. "
+                "The code comes from deterministic task metadata reference_code, and ExecutorAgent "
+                "must run AST safety checks before executing it. "
+                f"Allowed imports: {execution_request.get('allowed_imports', [])}."
+            )
+        else:
+            payload = (
+                f"ReasonerAgent received {len(evidence)} evidence items and "
+                f"{len(memory_hits)} memory hits from RetrieverAgent. "
+                f"It generated an answer_candidate from the task, plan, evidence, and memory. "
+                f"Answer candidate: {result.get('answer_candidate', '')}"
+            )
+    else:
+        if execution_request:
+            payload = make_compact_packet(
+                sender="reasoner",
+                receiver="executor",
+                action="execute",
+                content_type="protocol.execution_request",
+                params={
+                    "language": execution_request["language"],
+                    "allowed_imports": execution_request.get("allowed_imports", []),
+                    "timeout_ms": execution_request.get("timeout_ms", 3000),
+                    "code_source": execution_request.get("code_source", "reference_code"),
+                },
+                result={"needs_tool": True},
+                state_refs=[ref for ref in [plan_ref, evidence_ref, answer_ref] if ref],
+                memory_refs=[hit.get("memory_id") for hit in memory_hits],
+                capability_required=["tool_execution"],
+                cognitive_gap=cognitive_gap,
+                confidence=0.86,
+            )
+        else:
+            payload = make_compact_packet(
+                sender="reasoner",
+                receiver="summarizer",
+                action="summarize",
+                content_type="answer_ref",
+                params={"hits": len(memory_hits)},
+                result={"answer": answer_ref},
+                state_refs=[ref for ref in [plan_ref, evidence_ref, answer_ref] if ref],
+                memory_refs=[hit.get("memory_id") for hit in memory_hits],
+                capability_required=["summarize", "memory_write"],
+                cognitive_gap=cognitive_gap,
+                confidence=0.82 if memory_hits else 0.7,
+            )
+
+    receiver = "executor" if execution_request else "summarizer"
+    action = "execute" if execution_request else "summarize"
     messages, metrics = record_message(
         state,
         sender="reasoner",
-        receiver="summarizer",
-        action="summarize",
+        receiver=receiver,
+        action=action,
         payload=payload,
         metrics=metrics,
     )
@@ -102,6 +153,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             "plan_ref": plan_ref,
             "evidence_ref": evidence_ref,
             "answer_ref": answer_ref,
+            **({"execution_request": execution_request} if execution_request else {}),
         },
         "messages": messages,
         "metrics": metrics,
