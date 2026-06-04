@@ -164,7 +164,7 @@ def normalize_answer(text: str) -> str:
 def build_task(sample: dict[str, Any]) -> str:
     return (
         "HotpotQA-style multi-hop QA task.\n"
-        "Answer using only the provided Context. Return the shortest answer string.\n\n"
+        "Answer using only the provided Context. Return a short answer string that best matches the question.\n\n"
         f"Question: {sample['question']}\n"
         f"Context: {json.dumps(sample['context'], ensure_ascii=False)}\n"
     )

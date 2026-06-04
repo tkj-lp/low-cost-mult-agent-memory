@@ -29,3 +29,136 @@ def test_retriever_forwards_compact_memory_context_without_reembedding_summary()
     payload = result["messages"][-1]["payload"]
     assert payload["m"] == ["mem-0001"]
     assert payload["r"]["memory_context"][0]["memory_id"] == "mem-0001"
+
+
+def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
+    """Retriever 应把 Planner 的计划拼进检索查询，而不是只使用原始 task。"""
+
+    captured: dict[str, object] = {}
+
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
+        captured["query"] = query
+        captured["top_k"] = top_k
+        return []
+
+    monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
+
+    state = initial_state("Find the diplomatic role held by Shirley Temple.", "protocol", [])
+    state["plan"] = [
+        "Identify the actress who portrayed Corliss Archer.",
+        "Retrieve biographical details about Shirley Temple.",
+        "Extract the government position she later held.",
+    ]
+
+    result = retriever_agent(state)
+
+    assert "Planner retrieval focus:" in str(captured["query"])
+    assert "Retrieve biographical details about Shirley Temple" in str(captured["query"])
+    assert captured["top_k"] == 2
+    assert result["agent_outputs"][-1]["planner_focus"] == [
+        "Identify the actress who portrayed Corliss Archer",
+        "Retrieve biographical details about Shirley Temple",
+        "Extract the government position she later held",
+    ]
+    assert "hypergraph structural matching plus embedding similarity fusion ranking" in result["evidence"][-2]
+
+
+def test_retriever_extracts_context_evidence_from_planner_focus(monkeypatch) -> None:
+    """Retriever 应按 Planner 规划从 Context 中抽 supporting facts 给 Reasoner。"""
+
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
+        return []
+
+    monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
+
+    state = initial_state("Hotpot multi-hop task", "protocol", [])
+    state["plan"] = [
+        "Identify the actress who portrayed Corliss Archer.",
+        "Locate the biography of Shirley Temple.",
+        "Extract the government position she held.",
+    ]
+    state["task_meta"] = {
+        "question": "What government position was held by the woman who portrayed Corliss Archer in the film Kiss and Tell?",
+        "context": [
+            {
+                "title": "Kiss and Tell (1945 film)",
+                "sentences": [
+                    "Kiss and Tell is a 1945 American comedy film starring Shirley Temple as Corliss Archer.",
+                ],
+            },
+            {
+                "title": "Shirley Temple",
+                "sentences": [
+                    "As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States.",
+                ],
+            },
+        ],
+        "supporting_facts": [
+            ["Kiss and Tell (1945 film)", "Kiss and Tell is a 1945 American comedy film starring Shirley Temple as Corliss Archer."],
+            ["Shirley Temple", "As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States."],
+        ],
+    }
+
+    result = retriever_agent(state)
+
+    assert any("Kiss and Tell (1945 film): Kiss and Tell is a 1945 American comedy film starring Shirley Temple as Corliss Archer." == item for item in result["evidence"])
+    assert any("Shirley Temple: As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States." == item for item in result["evidence"])
+    assert result["agent_outputs"][-1]["context_evidence"]
+
+
+def test_retriever_prioritizes_answer_bearing_sentence_over_title_overlap(monkeypatch) -> None:
+    """Retriever 应优先保留承载答案的职位句，而不是只和片名重合的干扰句。"""
+
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
+        return []
+
+    monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
+
+    state = initial_state("Hotpot multi-hop task", "protocol", [])
+    state["plan"] = [
+        "Identify Shirley Temple as the actress who portrayed Corliss Archer.",
+        "Retrieve Shirley Temple's biography.",
+        "Extract the government position she held.",
+    ]
+    state["task_meta"] = {
+        "question": "What government position was held by the woman who portrayed Corliss Archer in the film Kiss and Tell?",
+        "context": [
+            {
+                "title": "Kiss and Tell (1945 film)",
+                "sentences": [
+                    "Kiss and Tell is a 1945 American comedy film starring then 17-year-old Shirley Temple as Corliss Archer.",
+                ],
+            },
+            {
+                "title": "Shirley Temple",
+                "sentences": [
+                    "Shirley Temple Black was an American actress, singer, dancer, businesswoman, and diplomat.",
+                    "As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States.",
+                ],
+            },
+            {
+                "title": "A Kiss for Corliss",
+                "sentences": [
+                    "A Kiss for Corliss is a sequel to the 1945 film Kiss and Tell.",
+                    "A Kiss for Corliss was retitled Almost a Bride before release.",
+                ],
+            },
+        ],
+        "supporting_facts": [
+            ["Kiss and Tell (1945 film)", "Kiss and Tell is a 1945 American comedy film starring then 17-year-old Shirley Temple as Corliss Archer."],
+            ["Shirley Temple", "As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States."],
+        ],
+    }
+
+    result = retriever_agent(state)
+    context_evidence = result["agent_outputs"][-1]["context_evidence"]
+
+    target = (
+        "Shirley Temple: As an adult, she was named United States ambassador to Ghana "
+        "and to Czechoslovakia and also served as Chief of Protocol of the United States."
+    )
+    distractor = "A Kiss for Corliss: A Kiss for Corliss is a sequel to the 1945 film Kiss and Tell."
+
+    assert target in context_evidence
+    assert distractor in context_evidence
+    assert context_evidence.index(target) < context_evidence.index(distractor)

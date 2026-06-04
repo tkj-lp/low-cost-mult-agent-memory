@@ -1,4 +1,4 @@
-# 运行手册
+﻿# 运行手册
 
 本文档回答两个问题：
 
@@ -9,7 +9,7 @@
 
 ```text
 experiment_mode：baseline_text / protocol_api / protocol_api_embedding / latent_hidden / codeact_tools
-dataset：competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous / codeact_20
+dataset: hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous / codeact_20
 ```
 
 `mock` 只用于终端自测流程是否跑通，不作为页面正式运行方式。
@@ -61,7 +61,6 @@ EMBEDDING_MODEL=text-embedding-v4
 
 | dataset | run_demo.py 参数 | 含义 |
 | --- | --- | --- |
-| `competition_10` | `--dataset-type builtin` | 内置 10 轮比赛主流程。 |
 | `hotpot_multihop` | `--dataset-type multihop --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json` | HotpotQA 抽样多跳问答。 |
 | `hotpot_continuous` | `--dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 从 `hotpot_dev_distractor_v1.json` 固定抽样构造的连续关联任务，当前为 2 个 chain，每个 chain 10 turn，共 20 turn。 |
 | `hidden_hotpot_5` | `run_hidden_latent_samples.py` 默认 | 5 条 hidden-state reference transfer 样例。 |
@@ -89,16 +88,15 @@ chain-002: 5a85ea095542994775f606a8, The Hork-Bajir Chronicles -> Animorphs, 10 
 
 | experiment_mode | 可用 dataset |
 | --- | --- |
-| `baseline_text` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
-| `protocol_api` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
-| `protocol_api_embedding` | `competition_10`, `hotpot_continuous` |
+| `baseline_text` | `hotpot_multihop`, `hotpot_continuous` |
+| `protocol_api` | `hotpot_multihop`, `hotpot_continuous` |
+| `protocol_api_embedding` | `hotpot_multihop`, `hotpot_continuous` |
 | `latent_hidden` | `hidden_hotpot_5`, `hidden_continuous` |
 | `codeact_tools` | `codeact_20` |
 
 不建议组合：
 
 ```text
-latent_hidden + competition_10
 latent_hidden + hotpot_multihop
 baseline_text + hidden_*
 protocol_api + hidden_*
@@ -106,17 +104,9 @@ protocol_api_embedding + hidden_*
 codeact_tools + non-codeact datasets
 ```
 
-原因：`latent_hidden` 当前使用独立脚本，验证的是本地 LLM hidden state 引用传递，不接入 `run_demo.py` 的 10 轮主流程。
+原因：`latent_hidden` 当前使用独立脚本，验证的是本地 LLM hidden state 引用传递，不接入 `run_demo.py` 的正式 HotpotQA 主流程。
 
 ## 4. baseline_text
-
-10 轮主流程：
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode baseline_text `
-  --dataset-type builtin
-```
 
 多跳问答：
 
@@ -138,19 +128,11 @@ python examples\competition_agents\run_demo.py `
   --limit 1
 ```
 
-这里 `--limit 1` 会运行 1 个连续任务组，也就是 `chain-001` 的 10 个 turn。
+这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
 
 `baseline_text` 是页面收益统计的统一参照项。前端需要保存同一 dataset 下的 baseline 结果，用于和其他实验模式计算收益。
 
 ## 5. protocol_api
-
-10 轮主流程：
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode protocol_api `
-  --dataset-type builtin
-```
 
 多跳问答：
 
@@ -175,16 +157,18 @@ python examples\competition_agents\run_demo.py `
   --show-state
 ```
 
-这里 `--limit 1` 会运行 10 个连续 turn，适合比赛页面和报告展示“单条连续链不少于 10 轮”。
+这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
 
 ## 6. protocol_api_embedding
 
-10 轮主流程：
+多跳问答：
 
 ```powershell
 python examples\competition_agents\run_demo.py `
   --experiment-mode protocol_api_embedding `
-  --dataset-type builtin
+  --dataset-type multihop `
+  --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
+  --limit 5
 ```
 
 连续任务：
@@ -200,7 +184,7 @@ python examples\competition_agents\run_demo.py `
   --show-state
 ```
 
-这里 `--limit 1` 同样会运行 `chain-001` 的 10 个 turn。
+这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
 
 该模式重点展示：
 
@@ -330,7 +314,8 @@ $env:LLM_SUMMARIZER_PROVIDER="mock"
 $env:EMBEDDING_PROVIDER="hash"
 
 python examples\competition_agents\run_demo.py `
-  --dataset-type builtin `
+  --dataset-type multihop `
+  --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
   --modes text,protocol
 ```
 

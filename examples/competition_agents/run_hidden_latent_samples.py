@@ -235,6 +235,59 @@ def run_sample(sample: dict[str, Any], prior_memory: list[dict[str, Any]] | None
             "evidence": evidence_ref,
             "answer": answer_ref,
         },
+        "agent_outputs": {
+            "planner": {
+                "display_text": planner_text,
+                "structured": {
+                    "memory_refs": memory_refs,
+                    "plan": "identify relevant context, retrieve supporting facts, infer shortest answer",
+                },
+                "state_ref": planner_ref,
+            },
+            "retriever": {
+                "display_text": retriever_text,
+                "structured": {
+                    "evidence": evidence,
+                    "memory_summaries": [memory["summary"] for memory in memory_hits],
+                    "memory_hit_ids": memory_refs,
+                },
+                "state_ref": evidence_ref,
+            },
+            "reasoner": {
+                "display_text": reasoner_text,
+                "structured": {
+                    "answer_candidate": answer_candidate,
+                    "memory_refs": memory_refs,
+                },
+                "state_ref": answer_ref,
+            },
+            "summarizer": {
+                "display_text": answer_candidate,
+                "structured": {
+                    "final_answer": answer_candidate,
+                    "gold": sample["answer"],
+                },
+                "state_ref": answer_ref,
+            },
+        },
+        "retrieval_debug": {
+            "retrieval_query": question,
+            "planner_focus": [
+                "identify relevant context",
+                "retrieve supporting facts",
+                "infer shortest answer",
+            ],
+            "memory_hit_ids": memory_refs,
+            "memory_summaries": [memory["summary"] for memory in memory_hits],
+            "memory_hits": [
+                {
+                    "memory_id": memory["memory_id"],
+                    "summary": memory["summary"],
+                    "state_refs": memory.get("state_refs", {}),
+                }
+                for memory in memory_hits
+            ],
+        },
     }
 
 
@@ -402,6 +455,9 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
                 "memory_context": [],
                 "latent_states": frontend_safe(result.get("latent_states", {})),
                 "state_refs": frontend_safe(result.get("state_refs", {})),
+                "agent_views": frontend_safe(result.get("agent_outputs", {}), max_string=1200),
+                "retrieval_debug": frontend_safe(result.get("retrieval_debug", {}), max_string=1500),
+                "agent_outputs": frontend_safe(result.get("agent_outputs", {}), max_string=1200),
             }
             for index, result in enumerate(results, start=1)
         ],

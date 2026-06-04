@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -46,6 +47,8 @@ def _embed_openai_compatible(text: str) -> EmbeddingResult:
         "LLM_BASE_URL", "https://api.openai.com/v1"
     )
     model = os.environ.get("EMBEDDING_MODEL", "text-embedding-v4")
+    request_timeout = float(os.environ.get("EMBEDDING_REQUEST_TIMEOUT_SECONDS", "180"))
+    max_retries = max(0, int(os.environ.get("EMBEDDING_MAX_RETRIES", "2")))
     payload = {"model": model, "input": text}
     request = urllib.request.Request(
         f"{base_url.rstrip('/')}/embeddings",
@@ -56,6 +59,31 @@ def _embed_openai_compatible(text: str) -> EmbeddingResult:
         },
         method="POST",
     )
+
+    last_error: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=request_timeout) as response:
+                body = json.loads(response.read().decode("utf-8"))
+            vector = body["data"][0]["embedding"]
+            return EmbeddingResult(
+                vector=[float(value) for value in vector],
+                provider="openai_compatible",
+                model=model,
+            )
+        except urllib.error.HTTPError as exc:
+            error_body = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(
+                f"Embedding API request failed with HTTP {exc.code}: {exc.reason}. "
+                f"Response body: {error_body}"
+            ) from exc
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            last_error = exc
+            if attempt >= max_retries:
+                break
+            time.sleep(min(2**attempt, 4))
+
+    raise RuntimeError(f"Embedding API request failed after retries: {last_error}") from last_error
 
     try:
         with urllib.request.urlopen(request, timeout=60) as response:

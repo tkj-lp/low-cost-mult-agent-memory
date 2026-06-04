@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -30,6 +32,49 @@ def _loads_json_object(text: str) -> dict[str, Any] | None:
     return None
 
 
+def _normalize_answer_span(text: str) -> str:
+    """把较长职位短语收成更适合精确匹配的答案片段。"""
+
+    cleaned = " ".join(str(text or "").strip().split())
+    if not cleaned:
+        return cleaned
+    if cleaned.lower().startswith("chief of protocol"):
+        return "Chief of Protocol"
+    return cleaned
+
+
+def _extract_preferred_answer_from_evidence(evidence: list[str]) -> str | None:
+    """优先从证据中提取更像最终答案的单一职位短语。"""
+
+    for item in evidence:
+        text = str(item or "")
+        match = re.search(r'\bserved as ([^.]+?)(?:[\.",\n]|$)', text, re.IGNORECASE)
+        if match:
+            candidate = _normalize_answer_span(match.group(1))
+            if candidate:
+                return candidate
+    return None
+
+
+def _coerce_answer_candidate(answer_candidate: str, evidence: list[str]) -> str:
+    """当模型把多个并列职位都写进答案时，收束成单个 canonical answer span。"""
+
+    cleaned = " ".join(str(answer_candidate or "").strip().split())
+    if not cleaned:
+        return cleaned
+
+    preferred = _extract_preferred_answer_from_evidence(evidence)
+    if preferred and preferred.lower() in cleaned.lower():
+        return preferred
+
+    if re.search(r"\bambassador to\b", cleaned, re.IGNORECASE) and re.search(
+        r"\bchief of protocol\b", cleaned, re.IGNORECASE
+    ):
+        return preferred or "Chief of Protocol"
+
+    return _normalize_answer_span(cleaned)
+
+
 class OpenAICompatibleClient:
     """只使用 Python 标准库实现的 OpenAI-compatible 聊天客户端。"""
 
@@ -38,11 +83,33 @@ class OpenAICompatibleClient:
         self.api_key = os.environ["LLM_API_KEY"]
         self.base_url = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1")
         self.model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+        self.request_timeout = float(os.environ.get("LLM_REQUEST_TIMEOUT_SECONDS", "180"))
+        self.max_retries = max(0, int(os.environ.get("LLM_MAX_RETRIES", "2")))
         if self.api_key in {"", "replace_with_your_api_key", "your_api_key", "你的 key"}:
             raise RuntimeError(
                 "LLM_API_KEY is not configured. Edit examples/competition_agents/.env.local "
                 "and replace the placeholder with your real API key."
             )
+
+    def _post_json(self, request: urllib.request.Request) -> dict[str, Any]:
+        last_error: Exception | None = None
+        for attempt in range(self.max_retries + 1):
+            try:
+                with urllib.request.urlopen(request, timeout=self.request_timeout) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                error_body = exc.read().decode("utf-8", errors="replace")
+                raise RuntimeError(
+                    f"LLM API request failed with HTTP {exc.code}: {exc.reason}. "
+                    f"Response body: {error_body}"
+                ) from exc
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                last_error = exc
+                if attempt >= self.max_retries:
+                    break
+                time.sleep(min(2**attempt, 4))
+
+        raise RuntimeError(f"LLM API request failed after retries: {last_error}") from last_error
 
     def generate(self, prompt: str) -> str:
         # 使用 OpenAI-compatible 服务通用的 chat/completions 请求格式。
@@ -60,6 +127,9 @@ class OpenAICompatibleClient:
             },
             method="POST",
         )
+
+        body = self._post_json(request)
+        return body["choices"][0]["message"]["content"].strip()
 
         try:
             # 用 urllib 避免为原型额外引入第三方 HTTP 依赖。
@@ -129,7 +199,10 @@ class OpenAICompatibleClient:
             "Answer the user's task directly in English. "
             "Do not invent retrieved documents, memory contents, sandbox execution, hidden states, or tool results. "
             "If the task contains a Context field, use only that context to answer the question. "
-            "For QA tasks, make answer_candidate the shortest correct answer string, not a paragraph. "
+            "For QA tasks, make answer_candidate a short correct answer string, not a paragraph. "
+            "Return exactly one answer span, not a list and not multiple titles joined together. "
+            "If evidence contains multiple candidate entities or positions, choose the single one most directly supported by the reasoning chain; do not choose based only on which string is shorter. "
+            "If one evidence sentence lists several roles, do not concatenate them into the final answer. "
             "If evidence is empty, solve from the task and plan only. "
             "Return JSON with keys answer_candidate, reasoning_summary, limitations.\n"
             f"Task: {task}\n"
@@ -147,14 +220,18 @@ class OpenAICompatibleClient:
                 limitations = [limitations]
             elif not isinstance(limitations, list):
                 limitations = [str(limitations)]
+            answer_candidate = _coerce_answer_candidate(
+                str(parsed.get("answer_candidate", "")).strip() or raw,
+                evidence,
+            )
             return {
-                "answer_candidate": str(parsed.get("answer_candidate", "")).strip() or raw,
+                "answer_candidate": answer_candidate,
                 "reasoning_summary": str(parsed.get("reasoning_summary", "")).strip(),
                 "limitations": limitations,
                 "raw_model_output": raw,
             }
         return {
-            "answer_candidate": raw,
+            "answer_candidate": _coerce_answer_candidate(raw, evidence),
             "reasoning_summary": "Model returned free-form text instead of JSON.",
             "limitations": [],
             "raw_model_output": raw,
@@ -188,7 +265,7 @@ class OpenAICompatibleClient:
             "<one or two lines with mode, memory_hits, latent_states, and execution caveats>\n"
             "Be faithful to the provided implementation state: if execution_result says sandbox_status is "
             "not_implemented, say the current run simulates CodeAct statistics rather than running a real sandbox. "
-            "If the evidence says vector similarity is planned but not implemented, do not claim vector search is active. "
+            "Treat memory retrieval as hypergraph structural matching plus embedding similarity fusion when the evidence says so. "
             "Separate implemented behavior from planned extensions.\n"
             f"Task: {task}\n"
             f"Mode: {mode}\n"

@@ -59,7 +59,7 @@
 {
   "agent": "retriever",
   "known": ["current_task", "local_evidence_templates", "memory_hit_count"],
-  "unknown": ["hypergraph_expansion", "true_embedding_similarity"],
+  "unknown": ["future_query_expansion", "additional_memory_not_yet_indexed"],
   "needed": ["latent_state_write", "tool_execution"],
   "gap_type": "partial_context",
   "confidence": 0.78

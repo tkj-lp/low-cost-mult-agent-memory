@@ -1,531 +1,467 @@
-# 页面同学工作文档
+# 前端字段契约
 
-本文档说明前端控制台应该如何选择实验、运行命令、读取输出字段。页面只展示正式实验模式；mock/quick 仅用于开发者在终端自测流程是否跑通，不放到页面选项里。
+本文档只回答前端真正需要的三件事：
 
-## 1. 页面选择模型
+1. 从结果文件里解析哪一段内容
+2. 每个页面模块应该读取哪些稳定字段
+3. 如何把字段归一化成可以直接渲染的前端数据
 
-页面建议保留两层选择：
+运行命令、实验边界、数据集说明统一看 `RUNBOOK.md`。本文档不重复维护运行手册。
 
-```text
-experiment_mode: baseline_text / protocol_api / protocol_api_embedding / latent_hidden / codeact_tools
-dataset: competition_10 / hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous / codeact_20
-```
+## 1. 唯一解析入口
 
-### experiment_mode
+前端不要从终端日志文本中反向提取字段，不要解析：
 
-| experiment_mode | 页面展示名 | 含义 |
-| --- | --- | --- |
-| `baseline_text` | 纯文本协作基线 | 真实 API 生成文字，Agent 间用自然语言长文本通信。用于作为其他协议方式的统一基线。 |
-| `protocol_api` | 结构化协议协作 | 真实 API 生成文字，Agent 间用结构化协议包通信，embedding 使用轻量 hash，占位且稳定。 |
-| `protocol_api_embedding` | 协议 + API embedding | 真实 API 生成文字，Agent 间用结构化协议通信，并用 OpenAI-compatible embedding 生成 `state_ref`。 |
-| `latent_hidden` | Hidden state 引用传递 | 本地 Qwen 读取最后一层 hidden state，消息中只传 `hidden_state_ref`。 |
-| `codeact_tools` | 受限工具执行 | 受限 Python CodeAct 执行，展示统计、表格、字符串、日期、证据链和记忆复用任务。 |
+- `summary: ...`
+- `metrics: ...`
+- `Answer: ...`
+- 普通调试日志
 
-### dataset
-
-| dataset | 页面展示名 | 含义 |
-| --- | --- | --- |
-| `competition_10` | 10 轮主流程 | 内置 10 个比赛主流程任务，适合看通信开销、记忆复用和总耗时。 |
-| `hotpot_multihop` | HotpotQA 多跳问答 | 抽样多跳问答，适合看 `gold` 和 `exact_match`。 |
-| `hotpot_continuous` | 连续关联任务 | 从 `hotpot_dev_distractor_v1.json` 固定抽样构造，当前为 2 个 chain，每个 chain 10 turn，共 20 turn，适合看跨轮记忆复用。 |
-| `hidden_hotpot_5` | Hidden Hotpot 样例 | 5 条 hidden-state reference transfer 样例。 |
-| `hidden_continuous` | Hidden 连续任务 | 同一连续任务数据集上的 hidden-state reference transfer + memory reuse。 |
-| `codeact_20` | CodeAct 20 题 | 自制 20 条安全工具执行任务，用于展示 Executor / CodeAct-style execution。 |
-
-## 2. 可用组合
-
-| experiment_mode | 可用 dataset |
-| --- | --- |
-| `baseline_text` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
-| `protocol_api` | `competition_10`, `hotpot_multihop`, `hotpot_continuous` |
-| `protocol_api_embedding` | `competition_10`, `hotpot_continuous` |
-| `latent_hidden` | `hidden_hotpot_5`, `hidden_continuous` |
-| `codeact_tools` | `codeact_20` |
-
-不建议组合：
-
-```text
-latent_hidden + competition_10
-latent_hidden + hotpot_multihop
-baseline_text + hidden_*
-protocol_api + hidden_*
-protocol_api_embedding + hidden_*
-codeact_tools + non-codeact datasets
-```
-
-原因：`latent_hidden` 当前使用独立入口 `run_hidden_latent_samples.py`，验证的是本地 LLM hidden state 引用传递，不接入 `run_demo.py` 的 10 轮主流程。
-
-## 3. 命令映射
-
-正式页面命令优先使用 `--experiment-mode`。`run_demo.py` 在设置该参数时会自动读取：
-
-```text
-examples/competition_agents/.env.local
-```
-
-并把 Planner / Reasoner / Summarizer 设置为 `openai_compatible`。因此页面不要再使用 mock/quick 作为正式展示模式。
-
-### baseline_text
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode baseline_text `
-  --dataset-type builtin
-```
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode baseline_text `
-  --dataset-type multihop `
-  --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
-  --limit 5
-```
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode baseline_text `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
-  --limit 1
-```
-
-### protocol_api
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode protocol_api `
-  --dataset-type builtin
-```
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode protocol_api `
-  --dataset-type multihop `
-  --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
-  --limit 5
-```
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode protocol_api `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
-  --limit 1 `
-  --show-memory `
-  --show-latent `
-  --show-state
-```
-
-### protocol_api_embedding
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode protocol_api_embedding `
-  --dataset-type builtin
-```
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode protocol_api_embedding `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
-  --limit 1 `
-  --show-memory `
-  --show-latent `
-  --show-state
-```
-
-### latent_hidden
-
-```powershell
-python examples\competition_agents\run_hidden_latent_samples.py
-```
-
-```powershell
-python examples\competition_agents\run_hidden_latent_samples.py `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
-  --limit 1
-```
-
-### codeact_tools
-
-```powershell
-python examples\competition_agents\run_codeact_samples.py `
-  --dataset-file examples\competition_agents\data\codeact_tasks.json
-```
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --dataset-type codeact `
-  --dataset-file examples\competition_agents\data\codeact_tasks.json `
-  --limit 20 `
-  --modes protocol
-```
-
-```powershell
-python examples\competition_agents\run_codeact_samples.py `
-  --dataset-file examples\competition_agents\data\codeact_tasks.json `
-  --limit 5
-```
-
-## 4. 开发自测命令
-
-以下命令只用于开发者确认流程能不能跑通，不进入页面正式选项：
-
-```powershell
-$env:LLM_PROVIDER="mock"
-$env:LLM_PLANNER_PROVIDER="mock"
-$env:LLM_REASONER_PROVIDER="mock"
-$env:LLM_SUMMARIZER_PROVIDER="mock"
-$env:EMBEDDING_PROVIDER="hash"
-
-python examples\competition_agents\run_demo.py --dataset-type builtin --modes text,protocol
-```
-
-## 5. 页面主要模块
-
-建议页面包含：
-
-- Agent 通信图：读取 `messages`。
-- 指标卡片：读取 `metrics`、`memory_hits`、`elapsed_ms`。
-- 基线对比图：用 `baseline_text` 作为参照，对比 `protocol_api` 和 `protocol_api_embedding`。
-- 记忆命中面板：读取 `memory_hits`。
-- latent 状态面板：读取 `latent_states` 和 `state_refs`。
-- 问答结果表：读取 `final_answer`、`gold`、`exact_match`。
-- hidden 实验面板：读取 `hidden_state_refs`、`hidden_bytes`、`pooled_similarity`、`memory_hits`。
-- CodeAct 面板：读取 `execution_result.execution_mode`、`sandbox_status`、`allowed_imports`、`code_source`、`code`、`result`、`elapsed_ms`、`safety_checks`。
-
-## 6. 稳定输出字段
-
-页面优先依赖这些稳定字段：
-
-```text
-run_result_json.schema_version
-run_result_json.experiment_mode
-run_result_json.dataset_type
-run_result_json.dataset_file
-run_result_json.limit
-run_result_json.task_count
-run_result_json.runs[]
-run_result_json.runs[].experiment_mode
-run_result_json.runs[].dataset_type
-run_result_json.runs[].dataset_file
-run_result_json.runs[].task_count
-run_result_json.runs[].metrics
-run_result_json.runs[].task_results[]
-run_result_json.runs[].task_results[].task_id
-run_result_json.runs[].task_results[].question
-run_result_json.runs[].task_results[].final_answer
-run_result_json.runs[].task_results[].gold
-run_result_json.runs[].task_results[].exact_match
-run_result_json.runs[].task_results[].messages
-run_result_json.runs[].task_results[].metrics
-run_result_json.runs[].task_results[].memory_hits
-run_result_json.runs[].task_results[].memory_context
-run_result_json.runs[].task_results[].latent_states
-run_result_json.runs[].task_results[].state_refs
-run_result_json.runs[].task_results[].execution_result
-run_result_json.runs[].task_results[].trace
-messages[].from
-messages[].to
-messages[].action
-messages[].char_cost
-metrics.message_count
-metrics.text_chars
-metrics.latent_transfer_count
-metrics.latent_bytes
-metrics.memory_hits
-metrics.memory_hit_rate
-metrics.elapsed_ms
-metrics.exact_match
-memory_context
-latent_states
-state_refs
-```
-
-不要强依赖 `payload` 内部结构。`payload` 未来可能继续压缩，但 `from`、`to`、`action`、`char_cost`、`metrics`、`memory_hits`、`latent_states` 会保持稳定。
-
-正式运行脚本会在最后输出一个机器可读区块。`run_demo.py`、`run_hidden_latent_samples.py` 和 `run_codeact_samples.py` 都遵循这个格式：
+前端只解析每个输出文件最后的机器可读区块：
 
 ```text
 === run_result_json ===
-{"schema_version":1,"experiment_mode":"protocol_api","dataset_type":"continuous","dataset_file":"examples/competition_agents/data/hotpot_continuous_tasks.json","limit":1,"task_count":10,"runs":[...]}
+{...json...}
 ```
 
-前端建议优先解析 `=== run_result_json ===` 后面的 JSON 行，不要从 `summary:`、`hidden latent summary` 或 `codeact summary` 文本里反向解析指标。
+适用脚本：
 
-`task_results[]` 现在是三个入口的统一单任务明细：
+- `run_demo.py`
+- `run_hidden_latent_samples.py`
+- `run_codeact_samples.py`
 
-```text
-run_demo.py：baseline_text / protocol_api / protocol_api_embedding / codeact graph 路径都会返回。
-run_hidden_latent_samples.py：hidden_hotpot_5 / hidden_continuous 会返回。
-run_codeact_samples.py：独立 restricted Python CodeAct 路径会返回。
-```
+推荐解析方式：
 
-前端页面如果要画任务时间线、Agent 通信图、记忆命中解释、latent 状态表和 CodeAct 执行详情，优先读取 `runs[].task_results[]`，不要只读 `runs[].metrics` 汇总字段。
-
-## 7. messages 字段
-
-每条 Agent 消息格式：
-
-```json
-{
-  "from": "planner",
-  "to": "retriever",
-  "action": "retrieve",
-  "payload": "...",
-  "char_cost": 305
-}
-```
-
-页面用途：
-
-- `from`：通信图起点。
-- `to`：通信图终点。
-- `action`：边标签。
-- `char_cost`：边权重或 tooltip。
-- `payload`：详情面板可选展示。
-
-## 8. metrics 字段
-
-单任务指标格式：
-
-```json
-{
-  "message_count": 3,
-  "text_chars": 3283,
-  "latent_transfer_count": 3,
-  "latent_bytes": 4608
-}
-```
-
-页面用途：
-
-- `message_count`：消息数量。
-- `text_chars`：文本通信开销。
-- `latent_transfer_count`：非文本状态传递次数。
-- `latent_bytes`：非文本状态规模。
-
-脚本还会额外输出：
-
-```json
-{
-  "memory_hits": 3,
-  "memory_hit_rate": 1.0,
-  "elapsed_ms": 8642.5,
-  "exact_match": 0.67,
-  "task_count": 3
-}
-```
-
-汇总结果里这些字段已经合并到 `runs[].metrics`，同时为了兼容旧页面，也保留了 `runs[].memory_hits`、`runs[].memory_hit_rate`、`runs[].elapsed_ms`、`runs[].exact_match` 顶层字段。新页面优先读取 `runs[].metrics`。
-
-hidden 实验会额外输出：
-
-```json
-{
-  "hidden_state_refs": 9,
-  "hidden_bytes": 8368640
-}
-```
-
-因此页面画“字符数对比”时仍读 `metrics.text_chars`；画 hidden 状态规模时读 `metrics.hidden_state_refs` 和 `metrics.hidden_bytes`。
-
-## 9. 收益统计计算
-
-右下角“收益统计”由页面计算，不需要后端直接给百分比。页面逻辑：
-
-1. 每次运行结束后，把 `run_result_json.runs[0]` 保存到实验记录列表。
-2. 当前运行不是 `baseline_text` 时，在实验记录里查找同一 `dataset_type`、同一 `dataset_file`、同一 `limit` 下最近一次 `baseline_text`。
-3. 找到 baseline 后，用当前运行结果和 baseline 计算收益。
-4. 没有找到 baseline 时，收益统计显示 `请先运行 baseline_text`。
-5. 当前运行本身是 `baseline_text` 时，显示 `基线已记录`，不要和自己比较。
-
-推荐展示 4 个指标：
-
-```text
-字符节省率 = (baseline.metrics.text_chars - current.metrics.text_chars) / baseline.metrics.text_chars
-耗时降低率 = (baseline.metrics.elapsed_ms - current.metrics.elapsed_ms) / baseline.metrics.elapsed_ms
-memory hit rate = current.metrics.memory_hit_rate
-exact match = current.metrics.exact_match
-```
-
-建议显示文案：
-
-```text
-字符节省：42%，较 baseline_text
-耗时降低：31%，较 baseline_text
-memory hit rate：0.83，较 baseline_text +0.50
-exact match：0.67，较 baseline_text +0.00
-```
-
-如果分母为 0 或 `exact_match` 为 `null`，页面显示 `N/A`。`latent_hidden` 也可以和同数据集的 `baseline_text` 做文本开销、耗时对比；但 hidden 的 `hidden_state_refs`、`hidden_bytes` 属于机制展示指标，不参与字符节省率公式。
-
-## 10. memory_hits 字段
-
-`memory_hits` 是 `list[dict]`，每条表示一次命中的历史记忆。
-
-基础字段：
-
-```json
-{
-  "memory_id": "mem-0001",
-  "source_agent": "summarizer",
-  "created_at": "2026-05-25T...",
-  "task_topic": "任务主题",
-  "summary": "摘要",
-  "tags": ["langgraph", "protocol"]
-}
-```
-
-超图检索解释字段：
-
-```json
-{
-  "retrieval_score": 75.5,
-  "hypergraph_score": 65.75,
-  "embedding_score": 0.59,
-  "matched_nodes": ["artifact:evidence", "state:evidence"],
-  "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
-  "reasoning_path": []
-}
-```
-
-页面可以展示记忆卡片、命中数量、命中分数、节点/超边和推理路径。
-
-## 11. memory_context 字段
-
-`memory_context` 是 RetrieverAgent 给 ReasonerAgent 的轻量上下文，不是新的 embedding。它由超图检索结果裁剪得到，目的是让 Reasoner 看到可解释的记忆摘要和检索路径，同时避免把完整 memory record 或命中正文再次压缩成向量传递。
-
-为控制通信开销，`summary`、`evidence`、`reasoning_path`、`matched_nodes` 和 `matched_hyperedges` 都会被截断到展示和推理够用的长度。完整原始命中仍保留在 `memory_hits` 和 trace 中，供超图同学离线分析。
-
-格式示例：
-
-```json
-[
-  {
-    "memory_id": "mem-0001",
-    "summary": "Chief of Protocol was supported by the evidence chain.",
-    "evidence": ["Kiss and Tell -> Shirley Temple -> Chief of Protocol."],
-    "reasoning_path": [
-      {
-        "query_node": "artifact:evidence",
-        "hyperedge_id": "hyperedge:mem-0001:evidence",
-        "memory_id": "mem-0001"
-      }
-    ],
-    "matched_nodes": ["artifact:evidence", "state:evidence"],
-    "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
-    "retrieval_score": 75.5,
-    "hypergraph_score": 65.75,
-    "embedding_score": 0.59
+```ts
+export function parseRunResultText(raw: string) {
+  const marker = "=== run_result_json ===";
+  const idx = raw.lastIndexOf(marker);
+  if (idx < 0) {
+    throw new Error("未找到 run_result_json 区块");
   }
-]
-```
 
-页面用途：
-
-- 记忆检索解释面板优先展示 `memory_context`。
-- 超图局部视图可以用 `matched_nodes`、`matched_hyperedges`、`reasoning_path` 高亮命中路径。
-- Agent 通信图仍使用消息里的 `memory_refs` 和 `state_refs` 展示低开销引用传递。
-
-当前协议链路是：
-
-```text
-HyperGraphMemory.search()
--> RetrieverAgent 裁剪成 memory_context
--> RetrieverAgent 传 memory_refs + memory_context + evidence_ref
--> ReasonerAgent 使用 memory_context 推理
-```
-
-注意：RetrieverAgent 只把本轮 `evidence` 写入 latent state；`memory_context` 不再参与 evidence latent embedding。
-
-## 12. latent_states 字段
-
-embedding 状态示例：
-
-```json
-{
-  "state-0001": {
-    "state_id": "state-0001",
-    "type": "latent_state_ref",
-    "content_type": "latent.embedding",
-    "producer": "retriever",
-    "shape": [384],
-    "embedding_provider": "openai_compatible",
-    "embedding_model": "text-embedding-v4",
-    "checksum": "..."
-  }
+  const jsonText = raw.slice(idx + marker.length).trim();
+  return JSON.parse(jsonText);
 }
 ```
 
-hidden state 示例：
+## 2. 顶层稳定结构
 
-```json
-{
-  "hidden-0001": {
-    "content_type": "latent.llm_hidden_state",
-    "type": "latent_hidden_state",
-    "producer": "planner",
-    "model": "Qwen/Qwen2.5-0.5B-Instruct",
-    "layer": "last",
-    "shape": [1, 44, 896],
-    "pooled_shape": [896],
-    "checksum": "..."
-  }
-}
-```
-
-页面只展示元数据，不展示完整向量或完整 tensor。
-
-## 13. hidden_continuous 展示建议
-
-`hidden_continuous` 最适合展示 hidden-state reference transfer。核心趋势：
+前端优先依赖这些稳定字段：
 
 ```text
-chain-001 memory_hits: 0 -> 1 -> 2 -> ... -> 9
+schema_version
+experiment_mode
+dataset_type
+dataset_file
+limit
+task_count
+runs[]
+runs[].metrics
+runs[].task_results[]
 ```
 
-每个 case 的链路固定为：
+单次运行最常用的读取入口通常是：
 
-```text
-planner -> retriever action=retrieve refs=hidden-0001
-retriever -> reasoner action=reason refs=hidden-0001,hidden-0002
-reasoner -> summarizer action=summarize refs=hidden-0003
+```ts
+const data = parseRunResultText(fileText);
+const run = data.runs[0];
+const turns = run.task_results;
 ```
 
-顶部指标卡建议展示：
+## 3. 每一轮稳定字段
+
+每个 `task_result` / 每一轮前端优先依赖：
 
 ```text
-samples
-exact_match
-messages
-text_chars
-hidden_state_refs
-hidden_bytes
-memory_hits
-elapsed_ms
-```
-
-每轮任务表建议展示：
-
-```text
+task_id
 group_id
 turn_id
+dataset_type
 question
 final_answer
 gold
 exact_match
+messages
+metrics
 memory_hits
-text_chars
-hidden_state_refs
-hidden_bytes
-elapsed_ms
+memory_context
+latent_states
+state_refs
+execution_result
+agent_views
+retrieval_debug
 ```
 
-说明文案建议保留：
+最常用基础字段：
+
+```ts
+type TaskResult = {
+  task_id: string;
+  group_id?: string | null;
+  turn_id?: string | null;
+  question?: string;
+  final_answer?: string;
+  gold?: string;
+  exact_match?: boolean | null;
+  messages?: unknown[];
+  metrics?: Record<string, unknown>;
+  memory_hits?: unknown[];
+  memory_context?: unknown[];
+  latent_states?: Record<string, unknown>;
+  state_refs?: Record<string, string>;
+  execution_result?: Record<string, unknown>;
+  agent_views?: Record<string, unknown>;
+  retrieval_debug?: Record<string, unknown>;
+};
+```
+
+## 4. 页面模块与字段路径
+
+### 4.1 问题与答案模块
+
+读取：
 
 ```text
-当前 exact_match 由确定性 evidence extractor 验证，用于隔离 hidden-state 传递机制的开销；完整 LLM 问答质量由 API/HotpotQA 主流程实验验证。
+runs[0].task_results[i].task_id
+runs[0].task_results[i].group_id
+runs[0].task_results[i].turn_id
+runs[0].task_results[i].question
+runs[0].task_results[i].final_answer
+runs[0].task_results[i].gold
+runs[0].task_results[i].exact_match
+runs[0].task_results[i].metrics
 ```
+
+### 4.2 Agent 输出模块
+
+前端优先读取：
+
+```text
+runs[0].task_results[i].agent_views
+```
+
+常见结构：
+
+```text
+agent_views.planner.display_text
+agent_views.planner.structured
+agent_views.planner.state_ref
+
+agent_views.retriever.display_text
+agent_views.retriever.structured
+agent_views.retriever.state_ref
+
+agent_views.reasoner.display_text
+agent_views.reasoner.structured
+agent_views.reasoner.state_ref
+
+agent_views.summarizer.display_text
+agent_views.summarizer.structured
+agent_views.summarizer.state_ref
+```
+
+如果 `agent_views` 不存在，再回退到：
+
+```text
+runs[0].task_results[i].agent_outputs
+```
+
+## 5. 你当前最关心的 3 类展示字段
+
+这一节是给前端直接写抽取代码用的。
+
+### 5.1 每一轮各个智能体的输出内容
+
+优先路径：
+
+```text
+runs[0].task_results[i].agent_views
+```
+
+前端应展示：
+
+- `planner.display_text`
+- `retriever.display_text`
+- `reasoner.display_text`
+- `summarizer.display_text`
+
+如果要展开结构化内容，再显示：
+
+- `planner.structured`
+- `retriever.structured`
+- `reasoner.structured`
+- `summarizer.structured`
+
+推荐归一化函数：
+
+```ts
+export function normalizeAgentPanels(taskResult: any) {
+  const views = taskResult?.agent_views;
+  if (!views || typeof views !== "object") return [];
+
+  const order = ["planner", "retriever", "reasoner", "summarizer", "executor"];
+
+  return order
+    .filter((key) => views[key])
+    .map((key) => ({
+      key,
+      title: key,
+      text: views[key]?.display_text ?? "",
+      structured: views[key]?.structured ?? null,
+      stateRef: views[key]?.state_ref ?? null,
+    }));
+}
+```
+
+### 5.2 检索智能体给超图记忆的检索词
+
+直接读取：
+
+```text
+runs[0].task_results[i].retrieval_debug.retrieval_query
+```
+
+推荐同时展示：
+
+```text
+runs[0].task_results[i].retrieval_debug.planner_focus
+runs[0].task_results[i].retrieval_debug.memory_hit_ids
+```
+
+推荐归一化函数：
+
+```ts
+export function normalizeRetrievalDebug(taskResult: any) {
+  const debug = taskResult?.retrieval_debug ?? {};
+  return {
+    retrievalQuery: debug.retrieval_query ?? "",
+    plannerFocus: Array.isArray(debug.planner_focus) ? debug.planner_focus : [],
+    memoryHitIds: Array.isArray(debug.memory_hit_ids) ? debug.memory_hit_ids : [],
+    memoryHits: Array.isArray(debug.memory_hits) ? debug.memory_hits : [],
+  };
+}
+```
+
+### 5.3 超图记忆的返回内容
+
+分两层展示：
+
+#### A. 完整命中结果
+
+读取：
+
+```text
+runs[0].task_results[i].memory_hits
+```
+
+常见子字段：
+
+```text
+memory_id
+summary
+evidence
+reasoning_path
+matched_nodes
+matched_hyperedges
+retrieval_score
+hypergraph_score
+embedding_score
+```
+
+这部分适合“调试视角”页面。
+
+#### B. 真正传给 Reasoner 的轻量上下文
+
+读取：
+
+```text
+runs[0].task_results[i].memory_context
+```
+
+这部分适合“在线推理视角”页面。
+
+推荐归一化函数：
+
+```ts
+export function normalizeMemoryPanel(taskResult: any) {
+  return {
+    memoryHits: Array.isArray(taskResult?.memory_hits) ? taskResult.memory_hits : [],
+    memoryContext: Array.isArray(taskResult?.memory_context) ? taskResult.memory_context : [],
+  };
+}
+```
+
+## 6. `protocol_api*` 与 `hidden_*` 的差异
+
+### `protocol_api` / `protocol_api_embedding`
+
+这两类结果里，前端重点读取：
+
+```text
+agent_views
+retrieval_debug
+memory_hits
+memory_context
+messages
+execution_result
+latent_states
+state_refs
+```
+
+### `hidden_multihop` / `hidden_continuous`
+
+这两类结果也有 `agent_views` 和 `retrieval_debug`，但它们更偏 hidden-state 机制展示。
+
+前端重点读取：
+
+```text
+agent_views
+retrieval_debug
+latent_states
+state_refs
+memory_hits
+memory_context
+```
+
+`hidden_*` 里同样可以直接显示：
+
+- `planner.display_text`
+- `retriever.display_text`
+- `reasoner.display_text`
+- `summarizer.display_text`
+
+## 7. 通信路径模块
+
+如果页面需要画 agent 通信图，读取：
+
+```text
+runs[0].task_results[i].messages
+```
+
+前端只稳定依赖：
+
+```text
+messages[].from
+messages[].to
+messages[].action
+messages[].char_cost
+```
+
+不要强依赖 `messages[].payload` 内部结构，因为它后续可能继续压缩。
+
+推荐归一化函数：
+
+```ts
+export function normalizeMessages(taskResult: any) {
+  const messages = Array.isArray(taskResult?.messages) ? taskResult.messages : [];
+  return messages.map((msg: any, index: number) => ({
+    id: `${index}-${msg.from}-${msg.to}-${msg.action}`,
+    from: msg.from ?? "",
+    to: msg.to ?? "",
+    action: msg.action ?? "",
+    charCost: msg.char_cost ?? null,
+  }));
+}
+```
+
+## 8. 指标模块
+
+运行级指标：
+
+```text
+runs[0].metrics
+```
+
+单轮指标：
+
+```text
+runs[0].task_results[i].metrics
+```
+
+常用字段：
+
+```text
+message_count
+text_chars
+latent_transfer_count
+latent_bytes
+hidden_state_refs
+hidden_bytes
+memory_hits
+memory_hit_rate
+elapsed_ms
+exact_match
+```
+
+## 9. 推荐给前端 AI 的直接实现骨架
+
+下面这段可以直接作为前端 AI 生成代码的输入约束：
+
+```ts
+export function buildTurnViewModel(taskResult: any) {
+  return {
+    id: taskResult.task_id,
+    groupId: taskResult.group_id ?? null,
+    turnId: taskResult.turn_id ?? null,
+    question: taskResult.question ?? "",
+    finalAnswer: taskResult.final_answer ?? "",
+    gold: taskResult.gold ?? "",
+    exactMatch: taskResult.exact_match ?? null,
+    metrics: taskResult.metrics ?? {},
+    agentPanels: normalizeAgentPanels(taskResult),
+    retrieval: normalizeRetrievalDebug(taskResult),
+    memory: normalizeMemoryPanel(taskResult),
+    messages: normalizeMessages(taskResult),
+    latentStates: taskResult.latent_states ?? {},
+    stateRefs: taskResult.state_refs ?? {},
+    executionResult: taskResult.execution_result ?? null,
+  };
+}
+
+export function buildRunViewModel(parsed: any) {
+  const run = parsed?.runs?.[0] ?? {};
+  const turns = Array.isArray(run.task_results) ? run.task_results : [];
+
+  return {
+    schemaVersion: parsed?.schema_version ?? 1,
+    experimentMode: parsed?.experiment_mode ?? "",
+    datasetType: parsed?.dataset_type ?? "",
+    datasetFile: parsed?.dataset_file ?? "",
+    limit: parsed?.limit ?? null,
+    taskCount: parsed?.task_count ?? turns.length,
+    metrics: run?.metrics ?? {},
+    turns: turns.map(buildTurnViewModel),
+  };
+}
+```
+
+## 10. 前端实现原则
+
+1. 只从 `run_result_json` 解析
+2. 只依赖文档中列出的稳定字段
+3. `agent_views` 优先于 `agent_outputs`
+4. `memory_context` 是在线推理视角，`memory_hits` 是完整调试视角
+5. `retrieval_debug.retrieval_query` 是检索词的唯一正式入口
+6. 不要从自然语言日志块里做字符串切片解析
+
+## 11. 你当前这批结果里，前端最该显示什么
+
+针对你当前已经跑出的结果文件，页面至少要能稳定显示：
+
+- 每轮 `question / final_answer / gold / exact_match`
+- 每轮四个 Agent 的 `display_text`
+- `retrieval_debug.retrieval_query`
+- `memory_hits`
+- `memory_context`
+- `messages`
+- `metrics.elapsed_ms / text_chars / memory_hits / latent_bytes / hidden_bytes`
+
+这样前端就已经能完整呈现：
+
+- 智能体逐轮输出
+- 检索词
+- 超图记忆返回
+- 实际送入推理的记忆
+- 通信路径
+- 每轮指标

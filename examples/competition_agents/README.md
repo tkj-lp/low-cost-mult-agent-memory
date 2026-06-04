@@ -1,102 +1,55 @@
 # 多智能体比赛原型
 
-这个目录是比赛用的多智能体协作原型，目标是验证三件事：
+这个目录是比赛用的多智能体协作原型，当前重点验证三件事：
 
 - 用结构化协议减少 Agent 之间的长文本通信。
-- 用本地或 API embedding 生成非文本 latent state，并通过 `state_ref` 在 Agent 间传递。
-- 用共享记忆和超图记忆检索支持跨任务复用。
+- 用 `state_ref` / `hidden_state_ref` 传递非文本中间状态。
+- 用共享记忆和超图检索支持跨任务复用。
 
-当前代码都放在 `examples/competition_agents` 下，不修改 LangGraph 原本核心代码。
+当前代码都放在 `examples/competition_agents` 下，不修改 LangGraph 核心代码。
 
-如果只是想快速知道每种方式怎么配置、每个脚本具体跑什么，请先看 `RUNBOOK.md`。
+## 文档导航
 
-## 团队文档入口
+这套文档现在按“入口 / 运行 / 前端 / 协议”分工：
 
-不同同学优先阅读不同文档：
+| 文档 | 作用 | 适合谁先看 |
+| --- | --- | --- |
+| `README.md` | 项目简介和文档导航 | 所有人 |
+| `RUNBOOK.md` | 唯一运行手册：怎么配、怎么跑、怎么看结果 | 智能体同学、联调同学 |
+| `FRONTEND_CONTRACT.md` | 前端字段契约：读哪些字段、怎么解析 `run_result_json`、页面怎么展示 | 前端同学 |
+| `PROTOCOL_V0_2.md` | 协议结构、`state_ref`、`memory_ref`、`cognitive_gap` 定义 | 协议/后端同学 |
+| `HYPERGRAPH_CONTRACT.md` | 超图记忆模块接口和对接口径 | 超图记忆同学 |
 
-| 角色 | 需要阅读 |
-| --- | --- |
-| 智能体同学 | `RUNBOOK.md`、`AGENT_WORK.md` |
-| 超图记忆同学 | `HYPERGRAPH_CONTRACT.md` |
-| 页面可视化同学 | `FRONTEND_CONTRACT.md` |
-| 所有人 | `README.md`、`RUNBOOK.md` |
+如果只想快速上手：
+
+1. 先看 `RUNBOOK.md`
+2. 需要接前端时再看 `FRONTEND_CONTRACT.md`
+3. 需要看协议字段来源时再看 `PROTOCOL_V0_2.md`
 
 ## Agent 分工
 
 - `PlannerAgent`：拆解任务，生成执行计划。
-- `RetrieverAgent`：检索共享记忆和证据，并写入 latent embedding state。
-- `ReasonerAgent`：基于计划、证据、记忆命中结果生成候选答案。
+- `RetrieverAgent`：检索共享记忆和证据，并写入 latent state。当前检索采用“超图结构匹配 + embedding 相似度融合排序”。
+- `ReasonerAgent`：基于计划、证据和记忆命中结果生成候选答案。
 - `SummarizerAgent`：生成最终答案，并把结果沉淀为共享记忆。
 
-主流程目标是：
+主流程是：
 
 ```text
 PlannerAgent -> RetrieverAgent -> ReasonerAgent -> SummarizerAgent
 ```
 
-如果本地 LangGraph 依赖不可用，代码会退回到顺序运行器，保证比赛 demo 可以先跑通。
+如果本地 LangGraph 依赖不可用，代码会退回顺序运行器，保证 demo 可以先跑通。
 
-## 快速运行
+## 当前结论
 
-Windows PowerShell：
+当前原型已经完成：
 
-```powershell
-cd D:\qq\low-cost-memory-integrate
-$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-python examples\competition_agents\run_demo.py
-```
+- 多 Agent 原型流程
+- `baseline_text` / `protocol_api` / `protocol_api_embedding` / `latent_hidden` / `codeact_tools` 几类实验入口
+- 文本开销、latent 传递、记忆命中、耗时、`exact_match` 等指标统计
+- 连续任务上的共享记忆复用实验
+- Hidden latent 引用传递实验
+- 受限 Python CodeAct 执行实验
 
-Linux / openEuler：
-
-```bash
-cd /path/to/low-cost-memory-integrate
-export PYTHONPATH=libs/langgraph:examples/competition_agents
-python examples/competition_agents/run_demo.py
-```
-
-`run_demo.py` 会连续运行 10 个相关任务，并输出：
-
-- Agent 消息路径。
-- 文本通信字符开销。
-- latent state 传递次数和字节规模。
-- 共享记忆命中次数。
-- text 模式和 protocol 模式对比结果。
-
-## 运行方式
-看RUNBOOK.md
-
-## 给超图记忆同学
-
-看 `examples\competition_agents\HYPERGRAPH_CONTRACT.md`。这是给超图记忆同学的唯一最新版文档，旧的 alignment/update/todo 文档已经删除，避免多个版本互相冲突。
-
-超图模块应尽量只对外暴露两个稳定入口：
-
-```python
-build_hypergraph_view(record: dict) -> dict
-search_hypergraph_memory(memory: list[dict], query: str, top_k: int) -> list[dict]
-```
-
-## 当前完成情况
-
-已经完成：
-
-- 多 Agent 原型流程。
-- text / protocol 两种通信模式。
-- 消息次数、字符开销、latent 传递次数、latent 字节数、记忆命中等指标统计。
-- 从 HotpotQA dev distractor 固定抽样构造的 2 组连续任务，每组 10 turn，共 20 turn。
-- 自制 20 条受限 CodeAct-style 工具执行任务，覆盖统计、表格、字符串、日期、证据链和记忆复用。
-- OpenAI-compatible LLM API 适配。
-- 本地 embedding provider。
-- `state_ref` 形式的非文本 latent state 传递。
-
-还需要继续完善：
-
-- 超图记忆和 embedding 相似度融合检索。
-- 更清晰的 protocol 模式压缩策略，提升字符节省率。
-- 更真实的任意 Python CodeAct 沙箱执行。
-- openEuler 24.03-LTS-SP3 上的部署验证。
-- 网页控制台读取 `messages`、`metrics`、`memory_hits`、`latent_states` 并可视化。
-
-## 给前端同学
-
-看examples\competition_agents\FRONTEND_CONTRACT.md和examples\competition_agents\RUNBOOK.md
+具体命令、数据集组合、收益统计和输出字段，不再放在这里重复描述，统一看 `RUNBOOK.md` 和 `FRONTEND_CONTRACT.md`。

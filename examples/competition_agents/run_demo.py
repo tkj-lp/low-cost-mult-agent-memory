@@ -13,18 +13,9 @@ from competition_agents.llm.client import get_llm_provider
 from competition_agents.state import initial_state
 
 
-BUILTIN_TASKS = [
-    "Design a LangGraph multi-agent protocol with shared memory",
-    "Reuse the previous LangGraph protocol memory for openEuler deployment",
-    "Compare text-mode and protocol-mode communication cost",
-    "Design latent state exchange with embedding references",
-    "Reuse latent state exchange memory for retrieval planning",
-    "Design shared memory metadata for competition evaluation",
-    "Reuse shared memory metadata for report generation",
-    "Plan CodeAct tool execution in a lightweight sandbox",
-    "Reuse CodeAct execution memory for performance analysis",
-    "Summarize the complete multi-agent competition architecture",
-]
+DEFAULT_MULTIHOP_DATASET = "examples/competition_agents/data/hotpot_multihop_sample.json"
+DEFAULT_CONTINUOUS_DATASET = "examples/competition_agents/data/hotpot_continuous_tasks.json"
+DEFAULT_CODEACT_DATASET = "examples/competition_agents/data/codeact_tasks.json"
 
 
 def normalize_answer(text: str) -> str:
@@ -42,25 +33,10 @@ def build_multihop_task(sample: dict[str, Any]) -> str:
 
     return (
         "HotpotQA-style multi-hop QA task.\n"
-        "Answer using only the provided Context. Return the shortest answer string.\n\n"
+        "Answer using only the provided Context. Return a short answer string that best matches the question.\n\n"
         f"Question: {sample['question']}\n"
         f"Context: {json.dumps(sample.get('context', []), ensure_ascii=False)}\n"
     )
-
-
-def load_builtin_tasks(limit: int | None) -> list[dict[str, Any]]:
-    tasks = [
-        {
-            "task_id": f"builtin-{index:03d}",
-            "group_id": "builtin",
-            "turn_id": f"turn-{index}",
-            "task": task,
-            "expected_answer": None,
-            "dataset_type": "builtin",
-        }
-        for index, task in enumerate(BUILTIN_TASKS, start=1)
-    ]
-    return tasks[:limit] if limit else tasks
 
 
 def load_multihop_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]:
@@ -143,10 +119,12 @@ def load_codeact_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]:
 
 
 def load_tasks(args: argparse.Namespace) -> list[dict[str, Any]]:
-    if args.dataset_type == "builtin":
-        return load_builtin_tasks(args.limit)
+    if args.dataset_type == "multihop" and not args.dataset_file:
+        args.dataset_file = DEFAULT_MULTIHOP_DATASET
+    if args.dataset_type == "continuous" and not args.dataset_file:
+        args.dataset_file = DEFAULT_CONTINUOUS_DATASET
     if args.dataset_type == "codeact" and not args.dataset_file:
-        args.dataset_file = "examples/competition_agents/data/codeact_tasks.json"
+        args.dataset_file = DEFAULT_CODEACT_DATASET
     if not args.dataset_file:
         raise ValueError("--dataset-file is required when dataset type is multihop, continuous, or codeact")
     path = Path(args.dataset_file)
@@ -230,6 +208,7 @@ def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
             "dataset_type",
             "expected_reuse",
             "question",
+            "context",
             "supporting_facts",
             "task_type",
             "inputs",
@@ -310,6 +289,177 @@ def _frontend_memory_hits(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return compact_hits
 
 
+def _agent_output_map(outputs: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """把 agent_outputs 列表整理成按 agent 名称索引的字典。"""
+
+    indexed: dict[str, dict[str, Any]] = {}
+    for item in outputs:
+        if not isinstance(item, dict):
+            continue
+        agent = str(item.get("agent", "")).strip()
+        if not agent:
+            continue
+        indexed[agent] = item
+    return indexed
+
+
+def _state_display(latent_states: dict[str, Any], state_ref: str) -> dict[str, Any]:
+    """提取 state_ref 对应的可展示信息，不暴露完整向量。"""
+
+    if not state_ref:
+        return {}
+    state = latent_states.get(state_ref, {})
+    if not isinstance(state, dict):
+        return {}
+    return _frontend_safe(
+        {
+            "state_ref": state_ref,
+            "content_type": state.get("content_type"),
+            "summary": state.get("summary"),
+            "source_text": state.get("source_text"),
+            "shape": state.get("shape"),
+            "pooled_shape": state.get("pooled_shape"),
+            "token_count": state.get("token_count"),
+            "embedding_provider": state.get("embedding_provider"),
+            "embedding_model": state.get("embedding_model"),
+            "model": state.get("model"),
+            "layer": state.get("layer"),
+            "checksum": state.get("checksum"),
+        },
+        max_string=1200,
+    )
+
+
+def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+    """构造统一的 Agent 展示视图，供前端直接渲染。"""
+
+    latent_states = result.get("latent_states", {})
+    state_refs = result.get("state_refs", {})
+    outputs = _agent_output_map(result.get("agent_outputs", []))
+    execution_result = result.get("execution_result", {})
+    memory_context = result.get("memory_context", [])
+    memory_hits = result.get("memory_hits", [])
+
+    planner_raw = outputs.get("PlannerAgent", {}).get("raw_output", "")
+    retriever_output = outputs.get("RetrieverAgent", {})
+    reasoner_raw = outputs.get("ReasonerAgent", {}).get("raw_output", "")
+    summarizer_raw = outputs.get("SummarizerAgent", {}).get("raw_output", "")
+    executor_raw = outputs.get("ExecutorAgent", {}).get("raw_output", "")
+
+    return {
+        "planner": _frontend_safe(
+            {
+                "content_type": "text" if result.get("mode") == "text" else "latent_ref",
+                "display_text": "\n".join(result.get("plan", [])) or planner_raw,
+                "structured": {
+                    "plan": result.get("plan", []),
+                    "raw_output": planner_raw,
+                },
+                "state_ref": state_refs.get("plan"),
+                "state_display": _state_display(latent_states, state_refs.get("plan", "")),
+            },
+            max_string=1200,
+        ),
+        "retriever": _frontend_safe(
+            {
+                "content_type": "structured",
+                "display_text": (
+                    "\n".join(
+                        [
+                            f"retrieval_query: {retriever_output.get('retrieval_query', '')}",
+                            (
+                                "planner_focus: "
+                                + " | ".join(retriever_output.get("planner_focus", []))
+                                if retriever_output.get("planner_focus")
+                                else ""
+                            ),
+                        ]
+                    ).strip()
+                ),
+                "structured": {
+                    "retrieval_query": retriever_output.get("retrieval_query", ""),
+                    "planner_focus": retriever_output.get("planner_focus", []),
+                    "memory_hit_ids": retriever_output.get("memory_hit_ids", []),
+                    "memory_context": memory_context,
+                },
+                "state_ref": state_refs.get("evidence"),
+                "state_display": _state_display(latent_states, state_refs.get("evidence", "")),
+            },
+            max_string=1200,
+        ),
+        "reasoner": _frontend_safe(
+            {
+                "content_type": "structured",
+                "display_text": (
+                    execution_result.get("answer_candidate")
+                    or execution_result.get("reasoning_summary")
+                    or reasoner_raw
+                ),
+                "structured": {
+                    "answer_candidate": execution_result.get("answer_candidate"),
+                    "reasoning_summary": execution_result.get("reasoning_summary"),
+                    "limitations": execution_result.get("limitations", []),
+                    "execution_request": execution_result.get("execution_request"),
+                },
+                "state_ref": state_refs.get("answer"),
+                "state_display": _state_display(latent_states, state_refs.get("answer", "")),
+            },
+            max_string=1200,
+        ),
+        "summarizer": _frontend_safe(
+            {
+                "content_type": "text",
+                "display_text": result.get("final_answer", "") or summarizer_raw,
+                "structured": {
+                    "final_answer": result.get("final_answer", ""),
+                    "latest_memory_summary": (result.get("memory", [])[-1] or {}).get("summary", "")
+                    if result.get("memory")
+                    else "",
+                },
+                "state_ref": execution_result.get("latent_answer_ref") or state_refs.get("answer"),
+                "state_display": _state_display(
+                    latent_states,
+                    execution_result.get("latent_answer_ref") or state_refs.get("answer", ""),
+                ),
+            },
+            max_string=1200,
+        ),
+        "executor": _frontend_safe(
+            {
+                "content_type": "structured",
+                "display_text": executor_raw or execution_result.get("sandbox_status", ""),
+                "structured": execution_result if task_item.get("dataset_type") == "codeact" else {},
+                "state_ref": "",
+                "state_display": {},
+            },
+            max_string=1200,
+        ),
+        "memory": _frontend_safe(
+            {
+                "memory_hit_count": len(memory_hits),
+                "memory_context_count": len(memory_context),
+            }
+        ),
+    }
+
+
+def _build_retrieval_debug(result: dict[str, Any]) -> dict[str, Any]:
+    """统一暴露 Retriever 到超图记忆检索的输入与解释字段。"""
+
+    outputs = _agent_output_map(result.get("agent_outputs", []))
+    retriever_output = outputs.get("RetrieverAgent", {})
+    return _frontend_safe(
+        {
+            "retrieval_query": retriever_output.get("retrieval_query", result.get("task", "")),
+            "planner_focus": retriever_output.get("planner_focus", []),
+            "memory_hit_ids": retriever_output.get("memory_hit_ids", []),
+            "memory_context": result.get("memory_context", []),
+            "memory_hits": _frontend_memory_hits(result.get("memory_hits", [])),
+        },
+        max_string=1500,
+    )
+
+
 def build_task_result(
     *,
     task_index: int,
@@ -359,6 +509,8 @@ def build_task_result(
         "execution_result": _frontend_safe(execution_result),
         "cognitive_gaps": _frontend_safe(result.get("cognitive_gaps", [])),
         "agent_outputs": _frontend_safe(result.get("agent_outputs", []), max_string=1200),
+        "agent_views": _build_agent_views(task_item, result),
+        "retrieval_debug": _build_retrieval_debug(result),
         "latest_memory_write": _frontend_safe(
             {
                 "memory_id": latest_memory.get("memory_id"),
@@ -743,7 +895,14 @@ def print_run_result_json(args: argparse.Namespace, tasks: list[dict[str, Any]],
         "runs": results,
     }
     print("\n=== run_result_json ===")
-    print(json.dumps(payload, ensure_ascii=False, default=str, separators=(",", ":")))
+    text = json.dumps(payload, ensure_ascii=False, default=str, separators=(",", ":"))
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        import sys
+
+        sys.stdout.buffer.write(text.encode("utf-8", errors="replace"))
+        sys.stdout.buffer.write(b"\n")
 
 
 def parse_args() -> argparse.Namespace:
@@ -765,11 +924,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--dataset-type",
-        choices=["builtin", "multihop", "continuous", "codeact"],
-        default="builtin",
-        help="Dataset type. Default keeps the original 10 competition tasks.",
+        choices=["multihop", "continuous", "codeact"],
+        default="multihop",
+        help="Dataset type. Formal QA experiments use Hotpot-style multihop or continuous tasks.",
     )
-    parser.add_argument("--dataset-file", default="", help="Path to multihop or continuous JSON data.")
+    parser.add_argument("--dataset-file", default="", help="Path to multihop, continuous, or codeact JSON data.")
     parser.add_argument("--limit", type=int, default=0, help="Limit samples or continuous groups. 0 means no limit.")
     parser.add_argument(
         "--modes",
@@ -798,7 +957,7 @@ def main() -> None:
         "dataset: "
         f"experiment_mode={args.experiment_mode or '<developer-modes>'}, "
         f"type={args.dataset_type}, "
-        f"file={args.dataset_file or '<builtin>'}, "
+        f"file={args.dataset_file}, "
         f"tasks={len(tasks)}, "
         f"modes={','.join(modes)}"
     )

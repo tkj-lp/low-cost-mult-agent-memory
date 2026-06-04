@@ -63,6 +63,75 @@ def frontend_task_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]
                 "latent_states": {},
                 "state_refs": {},
                 "execution_result": frontend_safe(execution),
+                "agent_views": frontend_safe(
+                    {
+                        "planner": {
+                            "content_type": "text",
+                            "display_text": result.get("task", ""),
+                            "structured": {"task": result.get("task", "")},
+                            "state_ref": "",
+                        },
+                        "retriever": {
+                            "content_type": "structured",
+                            "display_text": "",
+                            "structured": {
+                                "memory_hit": result.get("memory_hit"),
+                                "tags": result.get("tags", []),
+                            },
+                            "state_ref": "",
+                        },
+                        "reasoner": {
+                            "content_type": "structured",
+                            "display_text": "reference_code execution request",
+                            "structured": {
+                                "language": execution.get("language"),
+                                "allowed_imports": execution.get("allowed_imports", []),
+                                "code_source": execution.get("code_source"),
+                            },
+                            "state_ref": "",
+                        },
+                        "executor": {
+                            "content_type": "structured",
+                            "display_text": f"{execution.get('sandbox_status')} | {json.dumps(execution.get('result'), ensure_ascii=False, sort_keys=True)}",
+                            "structured": execution,
+                            "state_ref": "",
+                        },
+                        "summarizer": {
+                            "content_type": "text",
+                            "display_text": json.dumps(execution.get("result"), ensure_ascii=False, sort_keys=True),
+                            "structured": {"final_answer": execution.get("result")},
+                            "state_ref": "",
+                        },
+                    },
+                    max_string=1200,
+                ),
+                "retrieval_debug": frontend_safe(
+                    {
+                        "retrieval_query": result.get("task", ""),
+                        "planner_focus": [],
+                        "memory_hit_ids": [result.get("id")] if result.get("memory_hit") else [],
+                        "memory_hits": [],
+                    },
+                    max_string=1200,
+                ),
+                "agent_outputs": frontend_safe(
+                    {
+                        "reasoner": {
+                            "execution_request": {
+                                "language": execution.get("language"),
+                                "allowed_imports": execution.get("allowed_imports", []),
+                                "code_source": execution.get("code_source"),
+                                "code": execution.get("code"),
+                            }
+                        },
+                        "executor": {
+                            "sandbox_status": execution.get("sandbox_status"),
+                            "result": execution.get("result"),
+                            "error": execution.get("error"),
+                        },
+                    },
+                    max_string=1200,
+                ),
                 "sandbox_status": execution.get("sandbox_status"),
                 "tags": result.get("tags", []),
             }
