@@ -80,12 +80,18 @@ class OpenAICompatibleClient:
 
     def __init__(self) -> None:
         # 密钥和模型配置必须放在环境变量里，不要写进源码。
-        self.api_key = os.environ["LLM_API_KEY"]
+        self.api_key = os.environ.get("LLM_API_KEY", "")
         self.base_url = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1")
         self.model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
         self.request_timeout = float(os.environ.get("LLM_REQUEST_TIMEOUT_SECONDS", "180"))
         self.max_retries = max(0, int(os.environ.get("LLM_MAX_RETRIES", "2")))
-        if self.api_key in {"", "replace_with_your_api_key", "your_api_key", "你的 key"}:
+        if self.api_key in {
+            "",
+            "replace_with_your_api_key",
+            "your_api_key",
+            "你的 key",
+            "sk-competition-console",
+        }:
             raise RuntimeError(
                 "LLM_API_KEY is not configured. Edit examples/competition_agents/.env.local "
                 "and replace the placeholder with your real API key."

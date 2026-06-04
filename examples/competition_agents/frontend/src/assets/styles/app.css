@@ -129,6 +129,9 @@ button {
 
 .section-title {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0;
   padding: 13px 16px 8px 28px;
   color: #24364a;
@@ -155,34 +158,45 @@ button {
 
 .config-panel {
   position: relative;
-  height: 116px;
+  min-height: 152px;
   margin-bottom: 8px;
 }
 
 .config-grid {
   display: grid;
-  grid-template-columns: 186px 178px 236px 176px 184px;
-  gap: 12px 24px;
-  align-items: end;
-  padding: 0 180px 14px 20px;
+  grid-template-columns: minmax(190px, 0.95fr) minmax(190px, 0.95fr) minmax(250px, 1.25fr) minmax(170px, 0.8fr) minmax(200px, 0.95fr);
+  gap: 14px 26px;
+  align-items: start;
+  padding: 0 18px 16px 20px;
 }
 
 .field {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 18px 36px;
   gap: 7px;
 }
 
 .field span {
+  grid-row: 1;
+  height: 18px;
   color: #344054;
   font-size: 12px;
   font-weight: 700;
+  line-height: 18px;
 }
 
-.field input,
-.field select,
+.field span em {
+  margin-right: 8px;
+  color: #1d2939;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.field > input,
+.field > select,
 .password-field {
+  grid-row: 2;
   width: 100%;
   height: 36px;
   border: 1px solid var(--console-border);
@@ -193,12 +207,12 @@ button {
   box-shadow: 0 1px 3px rgba(35, 64, 99, 0.06);
 }
 
-.field input,
-.field select {
+.field > input,
+.field > select {
   padding: 0 13px;
 }
 
-.field select {
+.field > select {
   appearance: none;
   background-image:
     linear-gradient(45deg, transparent 50%, #667085 50%),
@@ -211,22 +225,11 @@ button {
 }
 
 .field small {
-  position: absolute;
-  top: 31px;
-  left: 13px;
-  pointer-events: none;
-  color: transparent;
-  font-size: 0;
-}
-
-.api-url small,
-.field:nth-child(4) small,
-.field:nth-child(5) small {
-  top: -23px;
-  left: 0;
+  grid-row: auto;
   color: #344054;
   font-size: 12px;
   font-weight: 700;
+  line-height: 18px;
 }
 
 .password-field {
@@ -236,23 +239,30 @@ button {
 }
 
 .password-field input {
+  grid-row: auto;
+  width: 100%;
   height: 34px;
+  padding: 0 13px;
   border: 0;
   box-shadow: none;
 }
 
 .password-field button {
+  grid-row: auto;
   height: 34px;
   background: transparent;
   color: #667085;
 }
 
 .run-actions {
-  position: absolute;
-  right: 20px;
-  bottom: 17px;
+  grid-column: 1 / -1;
   display: grid;
+  grid-template-columns: repeat(2, 140px);
   gap: 12px;
+  align-items: center;
+  justify-content: end;
+  justify-self: end;
+  max-width: 100%;
 }
 
 .run-button,
@@ -268,6 +278,12 @@ button {
 
 .run-button {
   background: linear-gradient(180deg, #22cc68 0%, #18b658 100%);
+}
+
+.run-button:disabled {
+  cursor: wait;
+  filter: saturate(0.75);
+  opacity: 0.78;
 }
 
 .stop-button {
@@ -293,11 +309,20 @@ button {
 
 .agent-header {
   display: grid;
-  grid-template-columns: 84px repeat(4, 92px) 1fr;
-  padding: 0 18px 6px;
+  column-gap: 0;
+  padding: 0 18px 6px 20px;
   color: var(--console-muted);
   font-size: 12px;
   font-weight: 800;
+}
+
+.agent-name {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clock-dot {
@@ -312,7 +337,8 @@ button {
 
 .timeline {
   position: relative;
-  padding: 0 17px 0 20px;
+  overflow-x: auto;
+  padding: 0 18px 0 20px;
 }
 
 .timeline::before {
@@ -329,8 +355,8 @@ button {
 .task-row {
   position: relative;
   display: grid;
-  grid-template-columns: 84px repeat(4, 92px) 1fr;
   align-items: center;
+  column-gap: 0;
   min-height: 26px;
   color: #344054;
   font-size: 12px;
@@ -347,8 +373,14 @@ button {
 }
 
 .task-label {
-  padding-left: 35px;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  padding-left: 34px;
+  background: var(--console-panel);
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .agent-step {
@@ -356,11 +388,11 @@ button {
   height: 26px;
 }
 
-.agent-step::before {
+.agent-step:not(:first-of-type)::before {
   position: absolute;
   top: 13px;
-  left: -42px;
-  right: 45px;
+  left: calc(-50% + 7px);
+  right: calc(50% + 7px);
   height: 2px;
   background: #dce4ee;
   content: "";
@@ -397,7 +429,11 @@ button {
 }
 
 .task-state {
+  overflow: hidden;
   color: var(--console-muted);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-row.active .task-state {
@@ -437,13 +473,14 @@ button {
 
 .query-card p {
   margin: 0;
-  height: 30px;
+  min-height: 30px;
   padding: 7px 10px;
   border: 1px solid #e5ecf4;
   border-radius: 6px;
   color: #344054;
   font-size: 12px;
-  white-space: nowrap;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .memory-hit {
@@ -605,9 +642,66 @@ button {
   font-size: 12px;
 }
 
+.gain-notice {
+  margin: -2px 18px 8px;
+  color: #d68a00;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: right;
+}
+
 .ep-popper,
 .ep-select__popper {
   font-family: var(--console-font);
+}
+
+.run-request-message {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  z-index: 2001;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  max-width: min(420px, calc(100vw - 32px));
+  min-width: 240px;
+  min-height: 40px;
+  padding: 10px 16px;
+  border: 1px solid #d9ecff;
+  border-radius: 6px;
+  background: #edf6ff;
+  color: #409eff;
+  box-shadow: 0 6px 18px rgba(29, 41, 57, 0.12);
+  font-size: 14px;
+  line-height: 20px;
+  transform: translateX(-50%);
+}
+
+.run-request-message .el-message__icon,
+.run-request-message .el-message__closeBtn,
+.run-request-message .el-icon,
+.run-request-message .el-icon svg,
+.run-request-message .ep-message__icon,
+.run-request-message .ep-message__closeBtn,
+.run-request-message .ep-icon,
+.run-request-message .ep-icon svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 16px;
+}
+
+.run-request-message .el-message__content,
+.run-request-message .ep-message__content {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @keyframes spin {
@@ -634,6 +728,17 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .run-actions {
+    justify-self: stretch;
+    grid-template-columns: repeat(2, 140px);
+  }
+
+  .run-button,
+  .stop-button,
+  .run-status {
+    width: 140px;
+  }
+
   .dashboard-grid {
     grid-template-rows: none;
   }
@@ -644,6 +749,6 @@ button {
 
   .agent-header,
   .task-row {
-    grid-template-columns: 86px repeat(4, minmax(58px, 1fr)) 84px;
+    min-width: 620px;
   }
 }

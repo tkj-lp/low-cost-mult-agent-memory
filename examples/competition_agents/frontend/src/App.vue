@@ -41,29 +41,26 @@
             </select>
           </label>
 
-          <label class="field api-url">
-            <span>API 配置 <b>ⓘ</b></span>
+          <label class="field api-field api-url">
+            <span><em>API 配置</em> base_url <b>ⓘ</b></span>
             <input v-model="apiBaseUrl" aria-label="base_url" />
-            <small>base_url</small>
           </label>
 
-          <label class="field">
-            <span>&nbsp;</span>
+          <label class="field api-field">
+            <span>model</span>
             <input v-model="modelName" aria-label="model" />
-            <small>model</small>
           </label>
 
-          <label class="field">
-            <span>&nbsp;</span>
+          <label class="field api-field">
+            <span>api_key</span>
             <div class="password-field">
               <input :type="showApiKey ? 'text' : 'password'" v-model="apiKey" />
               <button type="button" @click="showApiKey = !showApiKey">◎</button>
             </div>
-            <small>api_key</small>
           </label>
 
           <div class="run-actions">
-            <button class="run-button" @click="toggleRunning">
+            <button class="run-button" :disabled="isRunning" @click="toggleRunning">
               ▶ {{ isRunning ? "运行中" : "开始运行" }}
             </button>
             <button class="stop-button" :class="{ enabled: isRunning }" @click="stopRun">
@@ -76,10 +73,10 @@
       <section class="dashboard-grid">
         <article class="panel timeline-panel">
           <div class="section-title">运行进度时间线</div>
-          <div class="agent-header">
+          <div class="agent-header" :style="timelineGridStyle">
             <span class="clock-dot">◷</span>
             <span
-              v-for="agent in agents"
+              v-for="agent in activeAgents"
               :key="agent.key"
               class="agent-name"
               :style="{ color: agent.color }"
@@ -89,15 +86,16 @@
           </div>
           <div class="timeline">
             <div
-              v-for="task in tasks"
+              v-for="task in timelineTasks"
               :key="task.id"
               class="task-row"
               :class="{ active: task.status === 'running' }"
+              :style="timelineGridStyle"
             >
               <span class="rail-dot" :class="task.status"></span>
               <span class="task-label">{{ task.label }}</span>
               <div
-                v-for="agent in agents"
+                v-for="agent in activeAgents"
                 :key="`${task.id}-${agent.key}`"
                 class="agent-step"
                 :class="task.status"
@@ -198,7 +196,8 @@
               <small>{{ metric.caption }}</small>
             </div>
           </div>
-          <div class="updated-at">更新时间： 2025-05-30 11:24:35  ↻</div>
+          <p v-if="gainNotice" class="gain-notice">{{ gainNotice }}</p>
+          <div class="updated-at">更新时间： {{ lastUpdatedAt }}  ↻</div>
         </article>
       </section>
     </main>
@@ -209,19 +208,21 @@
 import { computed, defineComponent, h, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import type { PropType } from "vue";
 import * as echarts from "echarts";
+import { ElMessage } from "element-plus";
 
 type ExperimentMode =
   | "baseline_text"
   | "protocol_api"
   | "protocol_api_embedding"
-  | "latent_hidden";
+  | "latent_hidden"
+  | "codeact_tools";
 
 type Dataset =
-  | "competition_10"
   | "hotpot_multihop"
   | "hotpot_continuous"
   | "hidden_hotpot_5"
-  | "hidden_continuous";
+  | "hidden_continuous"
+  | "codeact_20";
 
 interface GraphNodeSpec {
   x: number;
@@ -236,6 +237,65 @@ interface RunComparison {
   color: string;
   timeMs: number[];
   textChars: number[];
+}
+
+interface BackendMetricBag {
+  elapsed_ms?: number | string;
+  text_chars?: number | string;
+  memory_hit_rate?: number | string;
+  exact_match?: number | string | null;
+  [key: string]: unknown;
+}
+
+interface BackendTaskResult {
+  messages?: Array<{
+    from?: string;
+    to?: string;
+    action?: string;
+  }>;
+  metrics?: BackendMetricBag;
+  execution_result?: unknown;
+  exact_match?: boolean | number | null;
+}
+
+interface BackendRunSummary {
+  mode?: string;
+  experiment_mode?: string;
+  metrics?: BackendMetricBag;
+  task_results?: BackendTaskResult[];
+  memory_hit_rate?: number | string;
+  exact_match?: number | string | null;
+  elapsed_ms?: number | string;
+}
+
+interface AgentSpec {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+interface TimelineTask {
+  id: number;
+  label: string;
+  status: "done" | "running" | "waiting";
+  state: string;
+}
+
+interface GainMetric {
+  label: string;
+  value: string;
+  caption: string;
+  color: string;
+}
+
+interface BackendRunPayload {
+  ok?: boolean;
+  error?: string;
+  result?: {
+    runs?: BackendRunSummary[];
+  };
+  stdout_tail?: string;
 }
 
 const GraphNode = defineComponent({
@@ -317,79 +377,62 @@ const GraphDiamond = defineComponent({
 });
 
 const experimentModes = [
-  { value: "baseline_text", label: "text_full_context" },
+  { value: "baseline_text", label: "baseline_text" },
   { value: "protocol_api", label: "protocol_api" },
-  { value: "protocol_api_embedding", label: "api_embedding" },
+  { value: "protocol_api_embedding", label: "protocol_api_embedding" },
   { value: "latent_hidden", label: "latent_hidden" },
+  { value: "codeact_tools", label: "codeact_tools" },
 ] satisfies Array<{ value: ExperimentMode; label: string }>;
 
 const datasets = [
-  { value: "competition_10", label: "10 轮主流程" },
-  { value: "hotpot_multihop", label: "HotpotQA 多跳问答" },
-  { value: "hotpot_continuous", label: "continuous HotpotQA" },
-  { value: "hidden_hotpot_5", label: "Hidden Hotpot 样例" },
-  { value: "hidden_continuous", label: "Hidden 连续任务" },
+  { value: "hotpot_multihop", label: "hotpot_multihop" },
+  { value: "hotpot_continuous", label: "hotpot_continuous" },
+  { value: "hidden_hotpot_5", label: "hidden_hotpot_5" },
+  { value: "hidden_continuous", label: "hidden_continuous" },
+  { value: "codeact_20", label: "codeact_20" },
 ] satisfies Array<{ value: Dataset; label: string }>;
 
 const datasetMap: Record<ExperimentMode, Dataset[]> = {
-  baseline_text: ["competition_10", "hotpot_multihop", "hotpot_continuous"],
-  protocol_api: ["competition_10", "hotpot_multihop", "hotpot_continuous"],
-  protocol_api_embedding: ["competition_10", "hotpot_continuous"],
+  baseline_text: ["hotpot_multihop", "hotpot_continuous"],
+  protocol_api: ["hotpot_multihop", "hotpot_continuous"],
+  protocol_api_embedding: ["hotpot_multihop", "hotpot_continuous"],
   latent_hidden: ["hidden_hotpot_5", "hidden_continuous"],
+  codeact_tools: ["codeact_20"],
 };
 
 const modeMeta: Record<ExperimentMode, { label: string; color: string }> = {
-  baseline_text: { label: "text_full_context", color: "#2576f3" },
+  baseline_text: { label: "baseline_text", color: "#2576f3" },
   protocol_api: { label: "protocol_api", color: "#ff9418" },
-  protocol_api_embedding: { label: "api_embedding", color: "#8e5ad7" },
+  protocol_api_embedding: { label: "protocol_api_embedding", color: "#8e5ad7" },
   latent_hidden: { label: "latent_hidden", color: "#18a957" },
-};
-
-const runProfiles: Record<ExperimentMode, Omit<RunComparison, "mode" | "label" | "color">> = {
-  baseline_text: {
-    timeMs: [820, 1350, 1960, 2700, 3480, 4260, 5080, 5920, 6680, 7350],
-    textChars: [10200, 18400, 26900, 35500, 46600, 57500, 67400, 77200, 86200, 95300],
-  },
-  protocol_api: {
-    timeMs: [520, 890, 1320, 1830, 2380, 2960, 3540, 4170, 4810, 5480],
-    textChars: [6200, 10600, 15800, 21400, 27600, 33800, 40200, 46800, 53600, 60600],
-  },
-  protocol_api_embedding: {
-    timeMs: [440, 760, 1110, 1510, 1980, 2440, 2920, 3460, 4010, 4580],
-    textChars: [5200, 8900, 13200, 17800, 22800, 28100, 33600, 39300, 45200, 51400],
-  },
-  latent_hidden: {
-    timeMs: [240, 420, 580, 790, 990, 1150, 1330, 1540, 1740, 1930],
-    textChars: [1050, 1900, 2900, 4100, 5400, 6700, 7900, 9100, 10500, 11900],
-  },
+  codeact_tools: { label: "codeact_tools", color: "#ef5a8a" },
 };
 
 const selectedMode = ref<ExperimentMode>("baseline_text");
 const selectedDataset = ref<Dataset>("hotpot_continuous");
-const apiBaseUrl = ref("https://api.example.com/v1");
-const modelName = ref("gpt-4o-mini");
-const apiKey = ref("sk-competition-console");
+const apiBaseUrl = ref("");
+const modelName = ref("");
+const apiKey = ref("");
 const showApiKey = ref(false);
 const isRunning = ref(false);
+const lastUpdatedAt = ref("尚未运行");
+const lastRunResult = ref<BackendRunSummary | null>(null);
+const activeRunController = ref<AbortController | null>(null);
+let runMessage: { close: () => void } | null = null;
+let stopMessageShown = false;
+const runResults = ref<Record<Dataset, Partial<Record<ExperimentMode, BackendRunSummary>>>>({
+  hotpot_multihop: {},
+  hotpot_continuous: {},
+  hidden_hotpot_5: {},
+  hidden_continuous: {},
+  codeact_20: {},
+});
 const comparisonRuns = ref<Record<Dataset, RunComparison[]>>({
-  competition_10: [],
   hotpot_multihop: [],
-  hotpot_continuous: [
-    {
-      mode: "baseline_text",
-      label: modeMeta.baseline_text.label,
-      color: modeMeta.baseline_text.color,
-      ...runProfiles.baseline_text,
-    },
-    {
-      mode: "latent_hidden",
-      label: modeMeta.latent_hidden.label,
-      color: modeMeta.latent_hidden.color,
-      ...runProfiles.latent_hidden,
-    },
-  ],
+  hotpot_continuous: [],
   hidden_hotpot_5: [],
   hidden_continuous: [],
+  codeact_20: [],
 });
 
 const availableDatasets = computed(() =>
@@ -404,24 +447,25 @@ watch(selectedMode, () => {
   }
 });
 
-const agents = [
-  { key: "planner", label: "planner", icon: "♙", color: "#2d7cff" },
-  { key: "retriever", label: "retriever", icon: "⌘", color: "#1baa55" },
-  { key: "reasoner", label: "reasoner", icon: "✣", color: "#8e5ad7" },
-  { key: "summarizer", label: "summarizer", icon: "♘", color: "#ff9418" },
-];
+const agentPalette: Record<string, Omit<AgentSpec, "key" | "label">> = {
+  planner: { icon: "♙", color: "#2d7cff" },
+  retriever: { icon: "⌘", color: "#1baa55" },
+  reasoner: { icon: "✣", color: "#8e5ad7" },
+  executor: { icon: "⚙", color: "#ef5a8a" },
+  summarizer: { icon: "♘", color: "#ff9418" },
+  user: { icon: "◇", color: "#64748b" },
+  system: { icon: "◆", color: "#475467" },
+};
 
-const tasks = [
-  { id: 1, label: "task 1", status: "done", state: "已完成 12.4s" },
-  { id: 2, label: "task 2", status: "done", state: "已完成 18.7s" },
-  { id: 3, label: "task 3", status: "running", state: "运行中 9.3s" },
-  ...Array.from({ length: 7 }, (_, index) => ({
-    id: index + 4,
-    label: `task ${index + 4}`,
-    status: "waiting",
-    state: "等待中",
-  })),
-];
+const fallbackAgentPalette = ["#2d7cff", "#1baa55", "#8e5ad7", "#ef5a8a", "#ff9418", "#35b6b6"];
+
+const defaultAgentKeysByMode: Record<ExperimentMode, string[]> = {
+  baseline_text: ["planner", "retriever", "reasoner", "summarizer"],
+  protocol_api: ["planner", "retriever", "reasoner", "summarizer"],
+  protocol_api_embedding: ["planner", "retriever", "reasoner", "summarizer"],
+  latent_hidden: ["planner", "retriever", "reasoner", "summarizer"],
+  codeact_tools: ["planner", "retriever", "reasoner", "executor", "summarizer"],
+};
 
 const memoryReasons = [
   { tag: "expected_reuse", score: "0.93", className: "blue" },
@@ -459,19 +503,27 @@ const graphNodes: GraphNodeSpec[] = [
   { x: 696, y: 153, label: "outcome-3", kind: "outcome" },
 ];
 
-const gainMetrics = [
-  { label: "字符节省", value: "42%", caption: "较 text_full_context", color: "#19b45b" },
-  { label: "耗时降低", value: "31%", caption: "较 text_full_context", color: "#247cff" },
-  { label: "memory hit rate", value: "0.83", caption: "命中率", color: "#8a61df" },
-  { label: "exact match", value: "0.67", caption: "匹配准确率", color: "#ff9418" },
-];
-
 const timeChartRef = ref<HTMLDivElement | null>(null);
 const charChartRef = ref<HTMLDivElement | null>(null);
 let timeChart: echarts.ECharts | null = null;
 let charChart: echarts.ECharts | null = null;
 
-const rounds = Array.from({ length: 10 }, (_, index) => index + 1);
+const FRONTEND_SERVER_URL = "http://127.0.0.1:8765";
+const USE_DEVELOPER_MODE = false;
+const toMetricNumber = (value: unknown) => {
+  const parsed = Number(value ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const makeRounds = (runs: RunComparison[]) => {
+  if (runs.length === 0) {
+    return [];
+  }
+  return Array.from(
+    { length: Math.max(...runs.flatMap((run) => [run.timeMs.length, run.textChars.length])) },
+    (_, index) => index + 1,
+  );
+};
 
 const makeLineSeries = (runs: RunComparison[], metric: "timeMs" | "textChars") =>
   runs.map((run) => ({
@@ -482,30 +534,212 @@ const makeLineSeries = (runs: RunComparison[], metric: "timeMs" | "textChars") =
     data: run[metric],
   }));
 
-const getVisibleRuns = () => {
-  if (activeComparisonRuns.value.length > 0) {
-    return activeComparisonRuns.value;
+const activeRunForSelection = computed(
+  () => runResults.value[selectedDataset.value]?.[selectedMode.value] ?? null,
+);
+
+const toAgentSpec = (key: string, index: number): AgentSpec => {
+  const normalizedKey = key.trim().toLowerCase();
+  const palette = agentPalette[normalizedKey];
+  return {
+    key: normalizedKey,
+    label: normalizedKey,
+    icon: palette?.icon ?? "●",
+    color: palette?.color ?? fallbackAgentPalette[index % fallbackAgentPalette.length],
+  };
+};
+
+const extractAgentKeys = (run: BackendRunSummary | null) => {
+  const keys: string[] = [];
+  const ignored = new Set(["", "user", "system", "task", "memory"]);
+
+  run?.task_results?.forEach((task) => {
+    task.messages?.forEach((message) => {
+      [message.from, message.to].forEach((value) => {
+        const key = String(value ?? "").trim().toLowerCase();
+        if (!ignored.has(key) && !keys.includes(key)) {
+          keys.push(key);
+        }
+      });
+    });
+  });
+
+  if (run?.task_results?.some((task) => task.metrics?.tool_execution_count || "execution_result" in task)) {
+    keys.push("executor");
   }
 
-  const meta = modeMeta[selectedMode.value];
-  const profile = runProfiles[selectedMode.value];
+  return keys;
+};
+
+const activeAgents = computed(() => {
+  const extractedKeys = extractAgentKeys(activeRunForSelection.value);
+  const keys = extractedKeys.length > 0 ? extractedKeys : defaultAgentKeysByMode[selectedMode.value];
+  return keys.map(toAgentSpec);
+});
+
+const timelineGridStyle = computed(() => ({
+  gridTemplateColumns: `112px repeat(${activeAgents.value.length}, minmax(68px, 1fr)) 104px`,
+}));
+
+const formatElapsed = (value: unknown) => {
+  const elapsed = toMetricNumber(value);
+  if (!elapsed) {
+    return "已完成";
+  }
+  return elapsed >= 1000 ? `已完成 ${(elapsed / 1000).toFixed(1)}s` : `已完成 ${Math.round(elapsed)}ms`;
+};
+
+const timelineTasks = computed<TimelineTask[]>(() => {
+  const run = activeRunForSelection.value;
+  const taskResults = run?.task_results ?? [];
+
+  if (taskResults.length > 0) {
+    return taskResults.map((task, index) => ({
+      id: index + 1,
+      label: `task ${index + 1}`,
+      status: "done",
+      state: formatElapsed(task.metrics?.elapsed_ms),
+    }));
+  }
+
+  if (isRunning.value) {
+    return [
+      { id: 1, label: "task 1", status: "running", state: "运行中" },
+      ...Array.from({ length: selectedDataset.value === "codeact_20" ? 19 : 9 }, (_, index) => ({
+        id: index + 2,
+        label: `task ${index + 2}`,
+        status: "waiting" as const,
+        state: "等待中",
+      })),
+    ];
+  }
+
+  const defaultTaskCount = selectedDataset.value === "codeact_20" ? 20 : 10;
+  return Array.from({ length: defaultTaskCount }, (_, index) => ({
+    id: index + 1,
+    label: `task ${index + 1}`,
+    status: "waiting",
+    state: "待运行",
+  }));
+});
+
+const getRunMetricTotal = (
+  run: BackendRunSummary | null | undefined,
+  metric: keyof Pick<BackendMetricBag, "elapsed_ms" | "text_chars">,
+) => {
+  const taskValues =
+    run?.task_results
+      ?.map((task) => toMetricNumber(task.metrics?.[metric]))
+      .filter((value) => value > 0) ?? [];
+
+  if (taskValues.length > 0) {
+    return taskValues.reduce((sum, value) => sum + value, 0);
+  }
+
+  return toMetricNumber(run?.metrics?.[metric] ?? (metric === "elapsed_ms" ? run?.elapsed_ms : 0));
+};
+
+const getRunRatioMetric = (
+  run: BackendRunSummary | null | undefined,
+  metric: keyof Pick<BackendMetricBag, "memory_hit_rate" | "exact_match">,
+) => {
+  const rawValue = run?.metrics?.[metric] ?? run?.[metric];
+  if (rawValue !== undefined && rawValue !== null && rawValue !== "") {
+    return toMetricNumber(rawValue);
+  }
+
+  if (metric === "exact_match") {
+    const values =
+      run?.task_results
+        ?.map((task) => task.exact_match)
+        .filter((value): value is boolean | number => value !== null && value !== undefined) ?? [];
+    if (values.length > 0) {
+      return values.filter(Boolean).length / values.length;
+    }
+  }
+
+  return null;
+};
+
+const formatPercent = (value: number) => `${Math.abs(value * 100).toFixed(0)}%`;
+const formatRatio = (value: number | null) => (value === null ? "N/A" : value.toFixed(2));
+
+const baselineRunForSelection = computed(
+  () => runResults.value[selectedDataset.value]?.baseline_text ?? null,
+);
+
+const hasBaselineComparableDataset = computed(() =>
+  datasetMap.baseline_text.includes(selectedDataset.value),
+);
+
+const gainNotice = computed(() => {
+  if (!hasBaselineComparableDataset.value) {
+    return "当前数据集不属于 baseline_text 可运行范围，收益统计仅展示当前实验指标。";
+  }
+  if (!baselineRunForSelection.value) {
+    return "请先在当前数据集运行 baseline_text，再查看相对收益。";
+  }
+  if (!activeRunForSelection.value) {
+    return "请运行当前实验模式后查看收益统计。";
+  }
+  return "";
+});
+
+const gainMetrics = computed<GainMetric[]>(() => {
+  const current = activeRunForSelection.value;
+  const baseline = baselineRunForSelection.value;
+  const currentText = getRunMetricTotal(current, "text_chars");
+  const currentElapsed = getRunMetricTotal(current, "elapsed_ms");
+  const baselineText = getRunMetricTotal(baseline, "text_chars");
+  const baselineElapsed = getRunMetricTotal(baseline, "elapsed_ms");
+  const memoryHitRate = getRunRatioMetric(current, "memory_hit_rate");
+  const exactMatch = getRunRatioMetric(current, "exact_match");
+
+  const canCompare = Boolean(current && baseline && baselineText > 0 && baselineElapsed > 0);
+  const textDelta = canCompare ? (baselineText - currentText) / baselineText : null;
+  const elapsedDelta = canCompare ? (baselineElapsed - currentElapsed) / baselineElapsed : null;
+
   return [
     {
-      mode: selectedMode.value,
-      label: `${meta.label}（待运行）`,
-      color: meta.color,
-      timeMs: profile.timeMs,
-      textChars: profile.textChars,
+      label: textDelta === null || textDelta >= 0 ? "字符节省" : "字符增加",
+      value: textDelta === null ? "N/A" : formatPercent(textDelta),
+      caption: baseline ? "较 baseline_text" : "等待 baseline_text",
+      color: textDelta !== null && textDelta < 0 ? "#e15959" : "#19b45b",
+    },
+    {
+      label: elapsedDelta === null || elapsedDelta >= 0 ? "耗时降低" : "耗时增加",
+      value: elapsedDelta === null ? "N/A" : formatPercent(elapsedDelta),
+      caption: baseline ? "较 baseline_text" : "等待 baseline_text",
+      color: elapsedDelta !== null && elapsedDelta < 0 ? "#e15959" : "#247cff",
+    },
+    {
+      label: "memory hit rate",
+      value: formatRatio(memoryHitRate),
+      caption: memoryHitRate === null ? "等待运行结果" : "当前实验",
+      color: "#8a61df",
+    },
+    {
+      label: "exact match",
+      value: formatRatio(exactMatch),
+      caption: exactMatch === null ? "无 gold 或未返回" : "当前实验",
+      color: "#ff9418",
     },
   ];
+});
+
+const getVisibleRuns = () => {
+  return activeComparisonRuns.value;
 };
 
 const getAxisMax = (runs: RunComparison[], metric: "timeMs" | "textChars") => {
+  if (runs.length === 0) {
+    return metric === "textChars" ? 1000 : 1000;
+  }
   const maxValue = Math.max(...runs.flatMap((run) => run[metric]), 0);
   if (metric === "textChars") {
     return Math.max(100000, Math.ceil(maxValue / 10000) * 10000);
   }
-  return Math.max(8000, Math.ceil(maxValue / 1000) * 1000);
+  return Math.max(1000, Math.ceil(maxValue / 1000) * 1000);
 };
 
 const baseChartOption = {
@@ -524,7 +758,7 @@ const baseChartOption = {
     name: "任务轮次",
     nameLocation: "middle",
     nameGap: 28,
-    data: rounds,
+    data: [],
     axisLine: { lineStyle: { color: "#d8e1ec" } },
     axisTick: { show: false },
     axisLabel: { color: "#536174" },
@@ -552,10 +786,15 @@ const updateCharts = () => {
 
   const runs = getVisibleRuns();
   const colors = runs.map((run) => run.color);
+  const rounds = makeRounds(runs);
 
   timeChart.setOption({
     ...baseChartOption,
     color: colors,
+    xAxis: {
+      ...baseChartOption.xAxis,
+      data: rounds,
+    },
     yAxis: {
       ...baseChartOption.yAxis,
       name: "耗时 (ms)",
@@ -563,11 +802,15 @@ const updateCharts = () => {
       max: getAxisMax(runs, "timeMs"),
     },
     series: makeLineSeries(runs, "timeMs"),
-  });
+  }, { notMerge: true });
 
   charChart.setOption({
     ...baseChartOption,
     color: colors,
+    xAxis: {
+      ...baseChartOption.xAxis,
+      data: rounds,
+    },
     yAxis: {
       ...baseChartOption.yAxis,
       name: "字符数",
@@ -579,7 +822,7 @@ const updateCharts = () => {
       max: getAxisMax(runs, "textChars"),
     },
     series: makeLineSeries(runs, "textChars"),
-  });
+  }, { notMerge: true });
 };
 
 const resizeCharts = () => {
@@ -587,17 +830,62 @@ const resizeCharts = () => {
   charChart?.resize();
 };
 
-const addCurrentRunToComparison = () => {
-  const meta = modeMeta[selectedMode.value];
-  const profile = runProfiles[selectedMode.value];
-  const datasetRuns = comparisonRuns.value[selectedDataset.value];
-  const existingIndex = datasetRuns.findIndex((run) => run.mode === selectedMode.value);
+const closeRunMessage = () => {
+  runMessage?.close();
+  runMessage = null;
+};
+
+const showRunLoadingMessage = () => {
+  closeRunMessage();
+  runMessage = ElMessage({
+    message: "正在请求实验运行...",
+    type: "info",
+    duration: 0,
+    showClose: true,
+    customClass: "run-request-message",
+  });
+};
+
+const summarizeStdoutTail = (stdoutTail?: string) =>
+  stdoutTail
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(-4)
+    .join(" / ");
+
+const pickMetricSeries = (
+  run: BackendRunSummary,
+  metric: keyof Pick<BackendMetricBag, "elapsed_ms" | "text_chars">,
+) => {
+  const taskValues =
+    run.task_results
+      ?.map((task) => toMetricNumber(task.metrics?.[metric]))
+      .filter((value) => value > 0) ?? [];
+
+  if (taskValues.length > 0) {
+    return taskValues;
+  }
+
+  const runValue = toMetricNumber(run.metrics?.[metric]);
+  return runValue > 0 ? [runValue] : [0];
+};
+
+const addRunResultToComparison = (
+  run: BackendRunSummary,
+  mode: ExperimentMode,
+  dataset: Dataset,
+) => {
+  const meta = modeMeta[mode];
+  const datasetRuns = comparisonRuns.value[dataset];
+  const existingIndex = datasetRuns.findIndex((item) => item.mode === mode);
+  runResults.value[dataset][mode] = run;
   const nextRun: RunComparison = {
-    mode: selectedMode.value,
+    mode,
     label: meta.label,
     color: meta.color,
-    timeMs: profile.timeMs,
-    textChars: profile.textChars,
+    timeMs: pickMetricSeries(run, "elapsed_ms"),
+    textChars: pickMetricSeries(run, "text_chars"),
   };
 
   if (existingIndex >= 0) {
@@ -609,13 +897,84 @@ const addCurrentRunToComparison = () => {
   updateCharts();
 };
 
-const toggleRunning = () => {
+const toggleRunning = async () => {
+  if (isRunning.value) {
+    return;
+  }
+
+  const mode = selectedMode.value;
+  const dataset = selectedDataset.value;
+  const controller = new AbortController();
+
   isRunning.value = true;
-  addCurrentRunToComparison();
+  activeRunController.value = controller;
+  stopMessageShown = false;
+  showRunLoadingMessage();
+
+  try {
+    const response = await fetch(`${FRONTEND_SERVER_URL}/api/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        experiment_mode: mode,
+        dataset,
+        limit: 1,
+        timeout_seconds: 600,
+        ...(USE_DEVELOPER_MODE ? { developer_mode: true } : {}),
+        base_url: apiBaseUrl.value,
+        model: modelName.value,
+        api_key: apiKey.value,
+      }),
+    });
+    const payload = (await response.json()) as BackendRunPayload;
+
+    if (!response.ok || !payload.ok) {
+      const stdoutSummary = summarizeStdoutTail(payload.stdout_tail);
+      throw new Error(
+        [payload.error || `实验运行失败，HTTP ${response.status}`, stdoutSummary]
+          .filter(Boolean)
+          .join("："),
+      );
+    }
+
+    const run = payload.result?.runs?.[0];
+    if (!run) {
+      throw new Error("后端返回结果缺少 result.runs[0]");
+    }
+
+    lastRunResult.value = run;
+    addRunResultToComparison(run, mode, dataset);
+    lastUpdatedAt.value = new Date().toLocaleString();
+    closeRunMessage();
+    ElMessage.success(
+      `${modeMeta[mode].label} / ${datasets.find((item) => item.value === dataset)?.label ?? dataset} 已完成`,
+    );
+  } catch (error) {
+    closeRunMessage();
+    if (error instanceof DOMException && error.name === "AbortError") {
+      if (!stopMessageShown) {
+        ElMessage.warning("已停止本次前端请求");
+      }
+      return;
+    }
+    ElMessage.error(error instanceof Error ? error.message : String(error));
+  } finally {
+    if (activeRunController.value === controller) {
+      activeRunController.value = null;
+    }
+    isRunning.value = false;
+  }
 };
 
 const stopRun = () => {
+  activeRunController.value?.abort();
   isRunning.value = false;
+  closeRunMessage();
+  if (activeRunController.value && !stopMessageShown) {
+    stopMessageShown = true;
+    ElMessage.warning("已停止本次前端请求");
+  }
 };
 
 onMounted(async () => {

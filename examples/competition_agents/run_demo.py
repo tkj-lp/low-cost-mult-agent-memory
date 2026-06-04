@@ -147,7 +147,7 @@ def load_env_file(path: Path) -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         name, value = line.split("=", 1)
-        os.environ[name.strip()] = value.strip().strip('"').strip("'")
+        os.environ.setdefault(name.strip(), value.strip().strip('"').strip("'"))
 
 
 def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
