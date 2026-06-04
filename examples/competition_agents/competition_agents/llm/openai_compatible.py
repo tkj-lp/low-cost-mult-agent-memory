@@ -124,6 +124,7 @@ class OpenAICompatibleClient:
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.2,
         }
+        print(f"[openai_compatible] model={self.model} prompt chars: {len(prompt)}", flush=True)
         request = urllib.request.Request(
             f"{self.base_url.rstrip('/')}/chat/completions",
             data=json.dumps(payload).encode("utf-8"),
@@ -213,10 +214,10 @@ class OpenAICompatibleClient:
             "Return JSON with keys answer_candidate, reasoning_summary, limitations.\n"
             f"Task: {task}\n"
             f"Mode: {mode}\n"
-            f"Plan: {json.dumps(plan, ensure_ascii=False)}\n"
-            f"Evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
+            f"Plan: {json.dumps((plan or [])[:3], ensure_ascii=False)}\n"
+            f"Evidence: {json.dumps((evidence or [])[:4], ensure_ascii=False)}\n"
             f"Memory hits: {memory_hits}\n"
-            f"Memory hit details: {json.dumps(memory_hit_details or [], ensure_ascii=False)}\n"
+            f"Memory hit details: {json.dumps((memory_hit_details or [])[:2], ensure_ascii=False)}\n"
         )
         raw = self.generate(prompt)
         parsed = _loads_json_object(raw)
@@ -266,19 +267,19 @@ class OpenAICompatibleClient:
             "Answer:\n"
             "<a direct, useful answer to the task>\n\n"
             "Implementation notes:\n"
-            "<briefly mention what context from plan/evidence/execution was used>\n\n"
+            "<one short sentence about which evidence or execution result was used>\n\n"
             "Run diagnostics:\n"
-            "<one or two lines with mode, memory_hits, latent_states, and execution caveats>\n"
+            "<one short line with mode, memory_hits, latent_states, and caveats>\n"
             "Be faithful to the provided implementation state: if execution_result says sandbox_status is "
             "not_implemented, say the current run simulates CodeAct statistics rather than running a real sandbox. "
             "Treat memory retrieval as hypergraph structural matching plus embedding similarity fusion when the evidence says so. "
             "Separate implemented behavior from planned extensions.\n"
             f"Task: {task}\n"
             f"Mode: {mode}\n"
-            f"Plan: {json.dumps(plan or [], ensure_ascii=False)}\n"
-            f"Evidence: {json.dumps(evidence or [], ensure_ascii=False)}\n"
-            f"Execution result: {json.dumps(execution_result or {}, ensure_ascii=False)}\n"
-            f"Cognitive gaps: {json.dumps(cognitive_gaps or [], ensure_ascii=False)}\n"
+            f"Plan: {json.dumps((plan or [])[:2], ensure_ascii=False)}\n"
+            f"Evidence: {json.dumps((evidence or [])[:3], ensure_ascii=False)}\n"
+            f"Execution result: {json.dumps({key: (execution_result or {}).get(key) for key in ['answer_candidate', 'reasoning_summary', 'execution_mode', 'retrieval_mode', 'sandbox_status'] if key in (execution_result or {})}, ensure_ascii=False)}\n"
+            f"Cognitive gaps: {json.dumps((cognitive_gaps or [])[:1], ensure_ascii=False)}\n"
             f"Memory hits: {memory_hits}\n"
             f"Non-text latent states exchanged: {latent_states}"
         )

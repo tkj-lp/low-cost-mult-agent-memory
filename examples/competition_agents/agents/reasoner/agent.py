@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
+
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
-from competition_agents.state import CompetitionState, put_latent_state, record_message
+from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
 
 
 def _build_codeact_execution_request(state: CompetitionState) -> dict | None:
@@ -32,9 +34,16 @@ def reasoner_agent(state: CompetitionState) -> dict:
     memory_context = state.get("memory_context", [])
     evidence = state.get("evidence", [])
     plan = state.get("plan", [])
+    print(
+        "[reasoner] "
+        f"task chars={len(state['task'])} evidence_count={len(evidence)} "
+        f"memory_hits={len(memory_hits)} "
+        f"memory_context chars={len(json.dumps(memory_context, ensure_ascii=False))}",
+        flush=True,
+    )
     plan_ref = state.get("state_refs", {}).get("plan", "")
     evidence_ref = state.get("state_refs", {}).get("evidence", "")
-    if state["mode"] == "protocol" and plan_ref:
+    if state["mode"] in {"protocol", "hidden"} and plan_ref:
         plan_state = state.get("latent_states", {}).get(plan_ref, {})
         plan_text = str(plan_state.get("source_text") or plan_state.get("summary") or "")
         latent_plan = [line.strip() for line in plan_text.splitlines() if line.strip()]
@@ -60,7 +69,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
     answer_ref = ""
     latent_states = state.get("latent_states", {})
     metrics = state["metrics"]
-    if state["mode"] == "protocol":
+    if state["mode"] in {"protocol", "hidden"}:
         answer_text = (
             f"answer_candidate: {result.get('answer_candidate', '')}\n"
             f"reasoning_summary: {result.get('reasoning_summary', '')}\n"
@@ -68,13 +77,22 @@ def reasoner_agent(state: CompetitionState) -> dict:
             f"memory_context_count: {len(memory_context)}\n"
             f"limitations: {result.get('limitations', [])}"
         )
-        answer_ref, latent_states, metrics = put_latent_state(
-            state,
-            producer="reasoner",
-            topic=state["task"],
-            text=answer_text,
-            consumers=["summarizer"],
-        )
+        if state["mode"] == "hidden":
+            answer_ref, latent_states, metrics = put_hidden_state(
+                state,
+                producer="reasoner",
+                topic=state["task"],
+                text=answer_text,
+                consumers=["summarizer"],
+            )
+        else:
+            answer_ref, latent_states, metrics = put_latent_state(
+                state,
+                producer="reasoner",
+                topic=state["task"],
+                text=answer_text,
+                consumers=["summarizer"],
+            )
 
     execution_request = _build_codeact_execution_request(state)
 
@@ -118,7 +136,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
                 sender="reasoner",
                 receiver="summarizer",
                 action="summarize",
-                content_type="answer_ref",
+                content_type="hidden_answer_ref" if state["mode"] == "hidden" else "answer_ref",
                 params={"hits": len(memory_hits)},
                 result={"answer": answer_ref},
                 state_refs=[ref for ref in [plan_ref, evidence_ref, answer_ref] if ref],

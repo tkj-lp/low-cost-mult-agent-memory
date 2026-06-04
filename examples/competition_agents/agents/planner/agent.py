@@ -1,14 +1,23 @@
 from __future__ import annotations
 
+import json
+
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
-from competition_agents.state import CompetitionState, put_latent_state, record_message
+from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
 
 
 def planner_agent(state: CompetitionState) -> dict:
     """规划任务，并向 ReasonerAgent 发起推理请求。"""
 
     task = state["task"]
+    memory_context = state.get("memory_context", [])
+    print(
+        "[planner] "
+        f"task chars={len(task)} memory_hits={len(state.get('memory_hits', []))} "
+        f"memory_context chars={len(json.dumps(memory_context, ensure_ascii=False))}",
+        flush=True,
+    )
     # Planner 可通过 LLM_PLANNER_PROVIDER 切换 mock 或真实 API。
     client = get_llm_client("planner")
     if hasattr(client, "plan_with_raw"):
@@ -27,14 +36,23 @@ def planner_agent(state: CompetitionState) -> dict:
     plan_ref = ""
     latent_states = state.get("latent_states", {})
     metrics = state["metrics"]
-    if state["mode"] == "protocol":
-        plan_ref, latent_states, metrics = put_latent_state(
-            state,
-            producer="planner",
-            topic=task,
-            text="\n".join(plan),
-            consumers=["reasoner", "summarizer"],
-        )
+    if state["mode"] in {"protocol", "hidden"}:
+        if state["mode"] == "hidden":
+            plan_ref, latent_states, metrics = put_hidden_state(
+                state,
+                producer="planner",
+                topic=task,
+                text="\n".join(plan),
+                consumers=["retriever", "reasoner"],
+            )
+        else:
+            plan_ref, latent_states, metrics = put_latent_state(
+                state,
+                producer="planner",
+                topic=task,
+                text="\n".join(plan),
+                consumers=["reasoner", "summarizer"],
+            )
 
     if state["mode"] == "text":
         # text 模式故意重复上下文，用来模拟传统自然语言协作的高开销。
@@ -58,7 +76,7 @@ def planner_agent(state: CompetitionState) -> dict:
             sender="planner",
             receiver="retriever",
             action="retrieve",
-            content_type="state_ref",
+            content_type="hidden_state_ref" if state["mode"] == "hidden" else "state_ref",
             params={"plan": plan_ref},
             result={"next": "retriever"},
             state_refs=[plan_ref],

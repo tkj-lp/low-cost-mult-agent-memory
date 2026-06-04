@@ -9,20 +9,20 @@
 
 ```text
 experiment_mode：baseline_text / protocol_api / protocol_api_embedding / latent_hidden / codeact_tools
-dataset: hotpot_multihop / hotpot_continuous / hidden_hotpot_5 / hidden_continuous / codeact_20
+dataset: hotpot_multihop / hotpot_continuous / topiocqa_continuous / hidden_hotpot_5 / hidden_continuous / codeact_20
 ```
 
 `mock` 只用于终端自测流程是否跑通，不作为页面正式运行方式。
 
 ## 1. 正式实验模式
 
-| experiment_mode          | 含义                                                                                                                       | 入口                           |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `baseline_text`          | 纯文本协作基线。真实 API 生成文字，Agent 间用自然语言长文本通信。                                                          | `run_demo.py`                  |
-| `protocol_api`           | 结构化协议协作。真实 API 生成文字，Agent 间用结构化协议包通信，embedding 使用 hash 占位。                                  | `run_demo.py`                  |
-| `protocol_api_embedding` | 协议 + API embedding。真实 API 生成文字，并用 OpenAI-compatible embedding 生成 `state_ref`。                               | `run_demo.py`                  |
-| `latent_hidden`          | 本地 LLM hidden state 引用传递。消息里只传 `hidden_state_ref`。                                                            | `run_hidden_latent_samples.py` |
-| `codeact_tools`          | 受限 Python CodeAct 执行。使用 `reference_code` 或后续 LLM 生成代码，经 AST 安全检查和临时目录子进程执行后返回结构化结果。 | `run_codeact_samples.py`       |
+| experiment_mode | 含义 | 入口 |
+| --- | --- | --- |
+| `baseline_text` | 纯文本协作基线。真实 API 生成文字，Agent 间用自然语言长文本通信。 | `run_demo.py` |
+| `protocol_api` | 结构化协议协作。真实 API 生成文字，Agent 间用结构化协议包通信，embedding 使用 hash 占位。 | `run_demo.py` |
+| `protocol_api_embedding` | 协议 + API embedding。真实 API 生成文字，并用 OpenAI-compatible embedding 生成 `state_ref`。 | `run_demo.py` |
+| `latent_hidden` | 本地 LLM hidden state 引用传递。消息里只传 `hidden_state_ref`。 | `run_hidden_latent_samples.py` |
+| `codeact_tools` | 受限 Python CodeAct 执行。使用 `reference_code` 或后续 LLM 生成代码，经 AST 安全检查和临时目录子进程执行后返回结构化结果。 | `run_codeact_samples.py` |
 
 `run_demo.py` 在设置 `--experiment-mode` 时会自动读取：
 
@@ -48,10 +48,6 @@ LLM_MODEL=你的模型名
 LLM_API_KEY=你的 key
 ```
 
-`.env.local` 是本机私有配置文件，推荐放真实 key 并保持不提交；
-`.env.example` 是示例配置文件。前端 HTTP 服务默认优先读取 `.env.local`，
-如果该文件不存在，会回退读取 `.env.example`，方便本地联调。
-
 如果运行 `protocol_api_embedding`，还会使用：
 
 ```text
@@ -63,13 +59,14 @@ EMBEDDING_MODEL=text-embedding-v4
 
 ## 2. 数据集
 
-| dataset             | run_demo.py 参数                                                                                                                      | 含义                                                                                                               |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `hotpot_multihop`   | `--dataset-type multihop --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json`                                 | HotpotQA 抽样多跳问答。                                                                                            |
-| `hotpot_continuous` | `--dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json`                              | 从 `hotpot_dev_distractor_v1.json` 固定抽样构造的连续关联任务，当前为 2 个 chain，每个 chain 10 turn，共 20 turn。 |
-| `hidden_hotpot_5`   | `run_hidden_latent_samples.py` 默认                                                                                                   | 5 条 hidden-state reference transfer 样例。                                                                        |
-| `hidden_continuous` | `run_hidden_latent_samples.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 同一连续任务数据集上的 hidden-state reference transfer + memory reuse。                                            |
-| `codeact_20`        | `run_codeact_samples.py --dataset-file examples\competition_agents\data\codeact_tasks.json`                                           | 自制 20 条安全工具执行任务，覆盖统计、表格、字符串、日期、证据链处理和记忆复用。                                   |
+| dataset | run_demo.py 参数 | 含义 |
+| --- | --- | --- |
+| `hotpot_multihop` | `--dataset-type multihop --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json` | HotpotQA 抽样多跳问答。 |
+| `hotpot_continuous` | `--dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 从 `hotpot_dev_distractor_v1.json` 固定抽样构造的连续关联任务，当前为 2 个 chain，每个 chain 10 turn，共 20 turn。 |
+| `topiocqa_continuous` | `--dataset-type continuous --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json` | TopiOCQA 风格的连续追问任务，当前为 2 个 chain，每个 chain 10 turn，共 20 turn。 |
+| `hidden_hotpot_5` | `run_hidden_latent_samples.py` 默认 | 5 条 hidden-state reference transfer 样例。 |
+| `hidden_continuous` | `run_hidden_latent_samples.py --dataset-type continuous --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json` | 同一连续任务数据集上的 hidden-state reference transfer + memory reuse。 |
+| `codeact_20` | `run_codeact_samples.py --dataset-file examples\competition_agents\data\codeact_tasks.json` | 自制 20 条安全工具执行任务，覆盖统计、表格、字符串、日期、证据链处理和记忆复用。 |
 
 `hotpot_continuous_tasks.json` 由脚本从 HotpotQA dev distractor 原始数据集中固定抽样生成，不手写事实：
 
@@ -88,15 +85,24 @@ chain-002: 5a85ea095542994775f606a8, The Hork-Bajir Chronicles -> Animorphs, 10 
 
 运行时 `--limit 1` 表示只跑 `chain-001` 的 10 turn；不加 `--limit` 会跑 2 个 chain，共 20 turn。
 
+`topiocqa_two_chains_10turns_refined.json` 当前也使用相同的连续任务分组格式：
+
+```text
+chain-001: Dunkirk (2017 film) -> Urk -> North Sea, 10 turn
+chain-002: Metabolism -> Catabolism -> Hormone -> Cortisol / Insulin / Melatonin, 10 turn
+```
+
+运行时 `--limit 1` 同样表示只跑 `chain-001` 的 10 turn；不加 `--limit` 会跑 2 个 chain，共 20 turn。
+
 ## 3. 可用组合
 
-| experiment_mode          | 可用 dataset                           |
-| ------------------------ | -------------------------------------- |
-| `baseline_text`          | `hotpot_multihop`, `hotpot_continuous` |
-| `protocol_api`           | `hotpot_multihop`, `hotpot_continuous` |
-| `protocol_api_embedding` | `hotpot_multihop`, `hotpot_continuous` |
-| `latent_hidden`          | `hidden_hotpot_5`, `hidden_continuous` |
-| `codeact_tools`          | `codeact_20`                           |
+| experiment_mode | 可用 dataset |
+| --- | --- |
+| `baseline_text` | `hotpot_multihop`, `hotpot_continuous`, `topiocqa_continuous` |
+| `protocol_api` | `hotpot_multihop`, `hotpot_continuous`, `topiocqa_continuous` |
+| `protocol_api_embedding` | `hotpot_multihop`, `hotpot_continuous`, `topiocqa_continuous` |
+| `latent_hidden` | `hidden_hotpot_5`, `hidden_continuous`, `topiocqa_continuous` |
+| `codeact_tools` | `codeact_20` |
 
 不建议组合：
 
@@ -132,6 +138,16 @@ python examples\competition_agents\run_demo.py `
   --limit 1
 ```
 
+TopiOCQA 风格连续任务：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --experiment-mode baseline_text `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
+  --limit 1
+```
+
 这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
 
 `baseline_text` 是页面收益统计的统一参照项。前端需要保存同一 dataset 下的 baseline 结果，用于和其他实验模式计算收益。
@@ -161,6 +177,19 @@ python examples\competition_agents\run_demo.py `
   --show-state
 ```
 
+TopiOCQA 风格连续任务，带超图/latent 展示：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --experiment-mode protocol_api `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
+  --limit 1 `
+  --show-memory `
+  --show-latent `
+  --show-state
+```
+
 这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
 
 ## 6. protocol_api_embedding
@@ -182,6 +211,19 @@ python examples\competition_agents\run_demo.py `
   --experiment-mode protocol_api_embedding `
   --dataset-type continuous `
   --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
+  --limit 1 `
+  --show-memory `
+  --show-latent `
+  --show-state
+```
+
+TopiOCQA 风格连续任务：
+
+```powershell
+python examples\competition_agents\run_demo.py `
+  --experiment-mode protocol_api_embedding `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
   --limit 1 `
   --show-memory `
   --show-latent `
@@ -223,16 +265,41 @@ python examples\competition_agents\run_hidden_latent_samples.py `
   --limit 1
 ```
 
+TopiOCQA 风格连续任务：
+
+```powershell
+python examples\competition_agents\run_hidden_latent_samples.py `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
+  --limit 1
+```
+
 这里 `--limit 1` 会在 hidden-state reference transfer 实验中运行 `chain-001` 的 10 个 turn。
+
+如果第一次运行 `latent_hidden` 报缺少依赖，需要先安装：
+
+```powershell
+pip install torch transformers
+```
 
 `latent_hidden` 输出中的 `exact_match` 使用确定性 evidence extractor，用于隔离 hidden-state 传递机制的开销；完整 LLM 问答质量由 `baseline_text` / `protocol_api` / `protocol_api_embedding` 路径验证。
 
 ## 8. codeact_tools
 
-CodeAct 工具执行当前有两层验证：独立入口 `run_codeact_samples.py` 用于 20 题可复现实验；主图中的 `ExecutorAgent` 也已复用同一套受限 Python CodeAct 沙箱，用于验证 `Planner -> Retriever -> Reasoner -> Executor -> Summarizer` 四角色闭环。数据集位置：
+CodeAct 工具执行建议按 4 种场景理解，避免把“是否走主图”“是否使用真实模型”“是否真实执行代码”混在一起。数据集位置：
 
 ```text
 examples/competition_agents/data/codeact_tasks.json
+```
+
+### 8.1 场景 1：独立执行器验证
+
+用途：
+
+```text
+只验证 restricted Python CodeAct 执行器本身是否可用。
+不强调多智能体主图，不依赖 LLM 规划或总结质量。
+真实执行代码；默认执行数据集中的 reference_code。
 ```
 
 运行 20 条任务：
@@ -240,6 +307,25 @@ examples/competition_agents/data/codeact_tasks.json
 ```powershell
 python examples\competition_agents\run_codeact_samples.py `
   --dataset-file examples\competition_agents\data\codeact_tasks.json
+```
+
+快速运行前 5 条：
+
+```powershell
+python examples\competition_agents\run_codeact_samples.py `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 5
+```
+
+### 8.2 场景 2：主图闭环验证
+
+用途：
+
+```text
+验证多智能体主图中的完整闭环：
+Planner -> Retriever -> Reasoner -> Executor -> Summarizer
+其中 Executor 会真实执行 restricted_python_codeact。
+是否使用真实 LLM，由运行前环境变量决定。
 ```
 
 通过多智能体主图运行 20 条任务：
@@ -252,14 +338,6 @@ python examples\competition_agents\run_demo.py `
   --modes protocol
 ```
 
-快速运行前 5 条：
-
-```powershell
-python examples\competition_agents\run_codeact_samples.py `
-  --dataset-file examples\competition_agents\data\codeact_tasks.json `
-  --limit 5
-```
-
 通过主图快速运行前 5 条：
 
 ```powershell
@@ -268,6 +346,71 @@ python examples\competition_agents\run_demo.py `
   --dataset-file examples\competition_agents\data\codeact_tasks.json `
   --limit 5 `
   --modes protocol
+```
+
+### 8.3 场景 3：mock 主图联调
+
+用途：
+
+```text
+验证“主图流程是否跑通”，不验证真实模型效果。
+Planner / Reasoner / Summarizer 使用 mock；
+Executor 仍会真实执行 restricted_python_codeact。
+适合本地开发、自测和排查主图链路。
+```
+
+运行示例：
+
+```powershell
+$env:LLM_PROVIDER="mock"
+$env:LLM_PLANNER_PROVIDER="mock"
+$env:LLM_REASONER_PROVIDER="mock"
+$env:LLM_SUMMARIZER_PROVIDER="mock"
+$env:EMBEDDING_PROVIDER="hash"
+
+python examples\competition_agents\run_demo.py `
+  --dataset-type codeact `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 20 `
+  --modes protocol
+```
+
+### 8.4 场景 4：真实 API 主图联调
+
+用途：
+
+```text
+验证“真实模型 + 多智能体主图 + 真实 CodeAct 执行器”整条链路。
+这是最接近比赛展示口径的 CodeAct 主图运行方式。
+如果模型接口请求失败，流程会在 Planner/Reasoner 阶段提前报错，
+此时还没有进入 Executor 执行代码。
+```
+
+运行示例：
+
+```powershell
+$env:LLM_PROVIDER="openai_compatible"
+$env:LLM_PLANNER_PROVIDER="openai_compatible"
+$env:LLM_REASONER_PROVIDER="openai_compatible"
+$env:LLM_SUMMARIZER_PROVIDER="openai_compatible"
+$env:LLM_API_KEY="你的 key"
+$env:LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
+$env:LLM_MODEL="你的模型名"
+$env:EMBEDDING_PROVIDER="hash"
+
+python examples\competition_agents\run_demo.py `
+  --dataset-type codeact `
+  --dataset-file examples\competition_agents\data\codeact_tasks.json `
+  --limit 20 `
+  --modes protocol
+```
+
+说明：
+
+```text
+`--modes protocol` 只决定走协议主图，不负责自动设置模型。
+如果没有预先设置 `LLM_PROVIDER` 等环境变量，`run_demo.py` 默认会回落到 mock。
+`--experiment-mode codeact_tools` 当前会强制设置为 mock，适合可复现实验，不适合声明为真实 API 主图运行。
 ```
 
 任务覆盖：
@@ -300,9 +443,12 @@ execution_result.safety_checks
 ```text
 当前实现是 restricted Python CodeAct，不是裸 exec LLM 代码。
 代码必须定义 result，不能自行 print；Executor 使用 AST 检查、危险 import/call 黑名单、while 禁止、临时目录子进程、timeout 和输出长度限制执行，并统一输出 JSON。
-为了可复现实验，当前 deterministic 模式使用 reference_code；后续真实 API 模式可由 Reasoner 生成 execution_request.code。
-`run_demo.py --dataset-type codeact` 已接入主图，用于演示四角色闭环。
+为了可复现实验，当前 deterministic 模式默认使用 reference_code；后续真实 API 模式可由 Reasoner 生成 execution_request.code。
+`run_demo.py --dataset-type codeact --modes protocol` 已接入主图，用于演示四角色闭环。
 `run_demo.py --dataset-type codeact` 的 `run_result_json.runs[].task_results[]` 会包含每题的 `execution_result`、`trace`、`memory_hits`、`memory_context` 和 `metrics`。
+看到运行输出中的
+LLM providers: default=..., planner=..., reasoner=..., summarizer=...
+即可判断当前到底是 mock 还是真实 API。
 ```
 
 ## 9. 终端自测模式
@@ -450,12 +596,12 @@ N/A
 
 `latent_hidden` 不完全等价于 `run_demo.py` 的 API 问答流程，因此右下角建议这样显示：
 
-| 卡片            | 显示内容                                                                        |
-| --------------- | ------------------------------------------------------------------------------- |
-| 字符节省        | 如果存在同 dataset 的 `baseline_text`，按 `text_chars` 公式计算；否则显示 N/A。 |
-| 耗时降低        | 如果存在同 dataset 的 `baseline_text`，按 `elapsed_ms` 公式计算；否则显示 N/A。 |
-| memory hit rate | 显示 `latent_hidden` 当前命中率。                                               |
-| exact match     | 显示 `latent_hidden` 当前 exact_match，并注明 deterministic extractor。         |
+| 卡片 | 显示内容 |
+| --- | --- |
+| 字符节省 | 如果存在同 dataset 的 `baseline_text`，按 `text_chars` 公式计算；否则显示 N/A。 |
+| 耗时降低 | 如果存在同 dataset 的 `baseline_text`，按 `elapsed_ms` 公式计算；否则显示 N/A。 |
+| memory hit rate | 显示 `latent_hidden` 当前命中率。 |
+| exact match | 显示 `latent_hidden` 当前 exact_match，并注明 deterministic extractor。 |
 
 同时在 hidden 专属区域额外展示：
 
@@ -549,7 +695,7 @@ retrieval_score / hypergraph_score / embedding_score：用于排序、置信度�
 不要把 `memory_context` 裁成纯向量：
 
 ```json
-{ "memory_id": "mem-0001", "vector": [0.12, 0.33] }
+{"memory_id": "mem-0001", "vector": [0.12, 0.33]}
 ```
 
 Reasoner 无法直接解释向量，还需要额外解码或解释层。
@@ -589,144 +735,3 @@ cd examples\competition_agents\frontend
 npm.cmd install
 npm.cmd run build
 ```
-
-## 14. 前端运行 HTTP API
-
-页面不能直接执行 Python 脚本，因此本目录提供了一个零第三方依赖的本地
-HTTP 服务，用于把页面请求转换成正式实验命令，并返回 `run_result_json`。
-
-页面点击“运行”后的完整链路如下：
-
-```text
-前端按钮
--> POST http://127.0.0.1:8765/api/run
--> frontend_server.py 校验 experiment_mode / dataset / limit
--> frontend_server.py 读取 .env.local；如果不存在则回退 .env.example
--> frontend_server.py 组装 PYTHONPATH、LLM_*、EMBEDDING_* 等环境变量
--> frontend_server.py 根据实验模式生成 run_demo.py / run_hidden_latent_samples.py / run_codeact_samples.py 命令
--> subprocess.run(...) 启动实验脚本并捕获 stdout
--> 实验脚本运行 PlannerAgent / RetrieverAgent / ReasonerAgent / SummarizerAgent
--> 实验脚本打印 === run_result_json === 和后一行 JSON
--> frontend_server.py 从 stdout 中解析 run_result_json
--> 前端读取 result.runs[0]，更新时间线、图表、收益统计和任务明细
-```
-
-关键入口：
-
-- 前端点击处理：`frontend/src/App.vue` 中的 `toggleRunning()`
-- 后端请求处理：`frontend_server.py` 中的 `do_POST()` 和 `run_experiment()`
-- 命令生成：`frontend_server.py` 中的 `_build_command()`
-- 环境变量生成：`frontend_server.py` 中的 `_build_env()`
-- 主实验脚本：`run_demo.py` 中的 `main()` 和 `run_mode()`
-- JSON 输出：`run_demo.py` 中的 `print_run_result_json()`
-
-启动服务：
-
-```powershell
-python examples\competition_agents\frontend_server.py --host 127.0.0.1 --port 8765
-```
-
-如果希望前端点击“运行”后，也在启动服务的终端看到完整实验输出和
-`run_result_json`，启动时加上 `--echo-run-output`：
-
-```powershell
-python examples\competition_agents\frontend_server.py --host 127.0.0.1 --port 8765 --echo-run-output
-```
-
-终端中会出现：
-
-```text
-=== run_result_json ===
-{...}
-```
-
-也可以不经过前端，直接运行实验脚本查看 `run_result_json`：
-
-```powershell
-python examples\competition_agents\run_demo.py `
-  --experiment-mode baseline_text `
-  --env-file examples\competition_agents\.env.example `
-  --dataset-type multihop `
-  --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
-  --limit 1
-```
-
-健康检查：
-
-```powershell
-Invoke-RestMethod -Uri "http://127.0.0.1:8765/api/health" -Method Get
-```
-
-查询页面可用选项：
-
-```powershell
-Invoke-RestMethod -Uri "http://127.0.0.1:8765/api/options" -Method Get
-```
-
-正式运行请求：
-
-```powershell
-$body = @{
-  experiment_mode = "protocol_api_embedding"
-  dataset = "hotpot_continuous"
-  limit = 1
-  timeout_seconds = 600
-} | ConvertTo-Json
-
-Invoke-RestMethod `
-  -Uri "http://127.0.0.1:8765/api/run" `
-  -Method Post `
-  -ContentType "application/json" `
-  -Body $body
-```
-
-返回格式：
-
-```json
-{
-  "ok": true,
-  "command": ["python", "examples/competition_agents/run_demo.py", "..."],
-  "result": {
-    "schema_version": 1,
-    "experiment_mode": "protocol_api_embedding",
-    "dataset_type": "continuous",
-    "runs": [
-      {
-        "metrics": {},
-        "task_results": []
-      }
-    ]
-  },
-  "stdout_tail": "..."
-}
-```
-
-如果 `.env.local` 缺少 `LLM_API_KEY` 或 API 调用失败，接口会返回：
-
-```json
-{
-  "ok": false,
-  "error": "Experiment process exited with code 1.",
-  "stdout_tail": "..."
-}
-```
-
-仅用于本地联调的 mock 成功路径：
-
-```powershell
-$body = @{
-  experiment_mode = "protocol_api"
-  dataset = "competition_10"
-  limit = 1
-  developer_mode = $true
-} | ConvertTo-Json
-
-Invoke-RestMethod `
-  -Uri "http://127.0.0.1:8765/api/run" `
-  -Method Post `
-  -ContentType "application/json" `
-  -Body $body
-```
-
-`developer_mode=true` 只用于确认 HTTP 链路和页面解析能跑通，会强制使用 mock
-LLM 和 hash embedding；正式页面默认不要传这个字段。

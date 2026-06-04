@@ -4,7 +4,7 @@ import re
 
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
-from competition_agents.state import CompetitionState, put_latent_state, record_message
+from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
 
 
 def _shorten(value: object, limit: int = 220) -> str:
@@ -22,14 +22,8 @@ def _compact_memory_context(hits: list[dict]) -> list[dict]:
         context.append(
             {
                 "memory_id": hit.get("memory_id"),
-                "summary": _shorten(hit.get("summary", ""), 220),
-                "evidence": [_shorten(item, 180) for item in hit.get("evidence", [])[:2]],
-                "reasoning_path": hit.get("reasoning_path", [])[:3],
-                "matched_nodes": hit.get("matched_nodes", [])[:8],
-                "matched_hyperedges": hit.get("matched_hyperedges", [])[:6],
+                "summary": _shorten(hit.get("summary", ""), 160),
                 "retrieval_score": hit.get("retrieval_score"),
-                "hypergraph_score": hit.get("hypergraph_score"),
-                "embedding_score": hit.get("embedding_score"),
             }
         )
     return context
@@ -241,13 +235,22 @@ def retriever_agent(state: CompetitionState) -> dict:
         confidence=0.78 if hits else 0.64,
     )
     # evidence 单独写入 latent state；记忆命中不再重新 embedding，只以 compact context 和 memory_ref 转发。
-    latent_ref, latent_states, metrics = put_latent_state(
-        state,
-        producer="retriever",
-        topic=state["task"],
-        text=" ".join(evidence),
-        consumers=["executor", "summarizer"],
-    )
+    if state["mode"] == "hidden":
+        latent_ref, latent_states, metrics = put_hidden_state(
+            state,
+            producer="retriever",
+            topic=state["task"],
+            text=" ".join(evidence),
+            consumers=["reasoner", "summarizer"],
+        )
+    else:
+        latent_ref, latent_states, metrics = put_latent_state(
+            state,
+            producer="retriever",
+            topic=state["task"],
+            text=" ".join(evidence),
+            consumers=["executor", "summarizer"],
+        )
 
     if state["mode"] == "text":
         # text 模式把证据和检索理由都序列化成长文本，作为 baseline。
@@ -277,7 +280,7 @@ def retriever_agent(state: CompetitionState) -> dict:
             sender="retriever",
             receiver="reasoner",
             action="reason",
-            content_type="state_ref",
+            content_type="hidden_state_ref" if state["mode"] == "hidden" else "state_ref",
             params={"tool": "codeact_stats", "n": len(evidence)},
             result={
                 "mode": "memory",

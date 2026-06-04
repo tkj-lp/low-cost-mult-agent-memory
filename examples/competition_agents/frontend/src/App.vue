@@ -220,6 +220,8 @@ type ExperimentMode =
 type Dataset =
   | "hotpot_multihop"
   | "hotpot_continuous"
+  | "hotpot_continuous_3turn"
+  | "topiocqa_continuous"
   | "hidden_hotpot_5"
   | "hidden_continuous"
   | "codeact_20";
@@ -296,6 +298,28 @@ interface BackendRunPayload {
     runs?: BackendRunSummary[];
   };
   stdout_tail?: string;
+}
+
+interface BackendExperimentModeOption {
+  value: ExperimentMode;
+  label: string;
+  script?: string;
+  datasets: Dataset[];
+}
+
+interface BackendDatasetOption {
+  value: Dataset;
+  label: string;
+  default_limit: number;
+  preview_task_count: number;
+  script_dataset_type?: string;
+  dataset_file?: string;
+}
+
+interface BackendOptionsPayload {
+  ok?: boolean;
+  experiment_modes?: BackendExperimentModeOption[];
+  datasets?: BackendDatasetOption[];
 }
 
 const GraphNode = defineComponent({
@@ -376,7 +400,7 @@ const GraphDiamond = defineComponent({
   },
 });
 
-const experimentModes = [
+const fallbackExperimentModes = [
   { value: "baseline_text", label: "baseline_text" },
   { value: "protocol_api", label: "protocol_api" },
   { value: "protocol_api_embedding", label: "protocol_api_embedding" },
@@ -384,19 +408,70 @@ const experimentModes = [
   { value: "codeact_tools", label: "codeact_tools" },
 ] satisfies Array<{ value: ExperimentMode; label: string }>;
 
-const datasets = [
-  { value: "hotpot_multihop", label: "hotpot_multihop" },
-  { value: "hotpot_continuous", label: "hotpot_continuous" },
-  { value: "hidden_hotpot_5", label: "hidden_hotpot_5" },
-  { value: "hidden_continuous", label: "hidden_continuous" },
-  { value: "codeact_20", label: "codeact_20" },
-] satisfies Array<{ value: Dataset; label: string }>;
+const fallbackDatasets = [
+  {
+    value: "hotpot_multihop",
+    label: "HotpotQA 多跳问答",
+    default_limit: 5,
+    preview_task_count: 5,
+    script_dataset_type: "multihop",
+    dataset_file: "examples/competition_agents/data/hotpot_multihop_sample.json",
+  },
+  {
+    value: "hotpot_continuous",
+    label: "continuous HotpotQA",
+    default_limit: 1,
+    preview_task_count: 10,
+    script_dataset_type: "continuous",
+    dataset_file: "examples/competition_agents/data/hotpot_continuous_tasks.json",
+  },
+  {
+    value: "hotpot_continuous_3turn",
+    label: "continuous HotpotQA 3-turn",
+    default_limit: 1,
+    preview_task_count: 3,
+    script_dataset_type: "continuous",
+    dataset_file: "examples/competition_agents/data/hotpot_continuous_tasks_3turn.json",
+  },
+  {
+    value: "topiocqa_continuous",
+    label: "TopiOCQA 连续追问",
+    default_limit: 1,
+    preview_task_count: 10,
+    script_dataset_type: "continuous",
+    dataset_file: "examples/competition_agents/data/topiocqa_two_chains_10turns_refined.json",
+  },
+  {
+    value: "hidden_hotpot_5",
+    label: "Hidden Hotpot 样例",
+    default_limit: 0,
+    preview_task_count: 5,
+    script_dataset_type: "samples",
+    dataset_file: "",
+  },
+  {
+    value: "hidden_continuous",
+    label: "Hidden 连续任务",
+    default_limit: 1,
+    preview_task_count: 10,
+    script_dataset_type: "continuous",
+    dataset_file: "examples/competition_agents/data/hotpot_continuous_tasks.json",
+  },
+  {
+    value: "codeact_20",
+    label: "CodeAct 20 题",
+    default_limit: 0,
+    preview_task_count: 20,
+    script_dataset_type: "codeact",
+    dataset_file: "examples/competition_agents/data/codeact_tasks.json",
+  },
+] satisfies BackendDatasetOption[];
 
-const datasetMap: Record<ExperimentMode, Dataset[]> = {
-  baseline_text: ["hotpot_multihop", "hotpot_continuous"],
-  protocol_api: ["hotpot_multihop", "hotpot_continuous"],
-  protocol_api_embedding: ["hotpot_multihop", "hotpot_continuous"],
-  latent_hidden: ["hidden_hotpot_5", "hidden_continuous"],
+const fallbackDatasetMap: Record<ExperimentMode, Dataset[]> = {
+  baseline_text: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"],
+  protocol_api: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"],
+  protocol_api_embedding: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"],
+  latent_hidden: ["hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous"],
   codeact_tools: ["codeact_20"],
 };
 
@@ -417,12 +492,15 @@ const showApiKey = ref(false);
 const isRunning = ref(false);
 const lastUpdatedAt = ref("尚未运行");
 const lastRunResult = ref<BackendRunSummary | null>(null);
+const backendOptions = ref<BackendOptionsPayload | null>(null);
 const activeRunController = ref<AbortController | null>(null);
 let runMessage: { close: () => void } | null = null;
 let stopMessageShown = false;
 const runResults = ref<Record<Dataset, Partial<Record<ExperimentMode, BackendRunSummary>>>>({
   hotpot_multihop: {},
   hotpot_continuous: {},
+  hotpot_continuous_3turn: {},
+  topiocqa_continuous: {},
   hidden_hotpot_5: {},
   hidden_continuous: {},
   codeact_20: {},
@@ -430,20 +508,53 @@ const runResults = ref<Record<Dataset, Partial<Record<ExperimentMode, BackendRun
 const comparisonRuns = ref<Record<Dataset, RunComparison[]>>({
   hotpot_multihop: [],
   hotpot_continuous: [],
+  hotpot_continuous_3turn: [],
+  topiocqa_continuous: [],
   hidden_hotpot_5: [],
   hidden_continuous: [],
   codeact_20: [],
 });
 
+const experimentModes = computed(() =>
+  backendOptions.value?.experiment_modes?.map((mode) => ({
+    value: mode.value,
+    label: mode.label,
+  })) ?? fallbackExperimentModes,
+);
+
+const datasetOptions = computed(() => backendOptions.value?.datasets ?? fallbackDatasets);
+
+const datasetMap = computed<Record<ExperimentMode, Dataset[]>>(() => {
+  const options = backendOptions.value?.experiment_modes;
+  if (!options || options.length === 0) {
+    return fallbackDatasetMap;
+  }
+  const nextMap = { ...fallbackDatasetMap };
+  options.forEach((mode) => {
+    nextMap[mode.value] = mode.datasets;
+  });
+  return nextMap;
+});
+
+const datasetInfoMap = computed<Record<Dataset, BackendDatasetOption>>(() => {
+  return datasetOptions.value.reduce(
+    (acc, dataset) => {
+      acc[dataset.value] = dataset;
+      return acc;
+    },
+    {} as Record<Dataset, BackendDatasetOption>,
+  );
+});
+
 const availableDatasets = computed(() =>
-  datasets.filter((dataset) => datasetMap[selectedMode.value].includes(dataset.value)),
+  datasetOptions.value.filter((dataset) => datasetMap.value[selectedMode.value].includes(dataset.value)),
 );
 
 const activeComparisonRuns = computed(() => comparisonRuns.value[selectedDataset.value]);
 
 watch(selectedMode, () => {
-  if (!datasetMap[selectedMode.value].includes(selectedDataset.value)) {
-    selectedDataset.value = datasetMap[selectedMode.value][0];
+  if (!datasetMap.value[selectedMode.value].includes(selectedDataset.value)) {
+    selectedDataset.value = datasetMap.value[selectedMode.value][0];
   }
 });
 
@@ -592,6 +703,9 @@ const formatElapsed = (value: unknown) => {
 const timelineTasks = computed<TimelineTask[]>(() => {
   const run = activeRunForSelection.value;
   const taskResults = run?.task_results ?? [];
+  const previewTaskCount =
+    Number(datasetInfoMap.value[selectedDataset.value]?.preview_task_count) ||
+    (selectedDataset.value === "codeact_20" ? 20 : 10);
 
   if (taskResults.length > 0) {
     return taskResults.map((task, index) => ({
@@ -605,7 +719,7 @@ const timelineTasks = computed<TimelineTask[]>(() => {
   if (isRunning.value) {
     return [
       { id: 1, label: "task 1", status: "running", state: "运行中" },
-      ...Array.from({ length: selectedDataset.value === "codeact_20" ? 19 : 9 }, (_, index) => ({
+      ...Array.from({ length: Math.max(previewTaskCount - 1, 0) }, (_, index) => ({
         id: index + 2,
         label: `task ${index + 2}`,
         status: "waiting" as const,
@@ -614,8 +728,7 @@ const timelineTasks = computed<TimelineTask[]>(() => {
     ];
   }
 
-  const defaultTaskCount = selectedDataset.value === "codeact_20" ? 20 : 10;
-  return Array.from({ length: defaultTaskCount }, (_, index) => ({
+  return Array.from({ length: previewTaskCount }, (_, index) => ({
     id: index + 1,
     label: `task ${index + 1}`,
     status: "waiting",
@@ -669,7 +782,7 @@ const baselineRunForSelection = computed(
 );
 
 const hasBaselineComparableDataset = computed(() =>
-  datasetMap.baseline_text.includes(selectedDataset.value),
+  datasetMap.value.baseline_text.includes(selectedDataset.value),
 );
 
 const gainNotice = computed(() => {
@@ -733,11 +846,11 @@ const getVisibleRuns = () => {
 
 const getAxisMax = (runs: RunComparison[], metric: "timeMs" | "textChars") => {
   if (runs.length === 0) {
-    return metric === "textChars" ? 1000 : 1000;
+    return metric === "textChars" ? 40000 : 1000;
   }
   const maxValue = Math.max(...runs.flatMap((run) => run[metric]), 0);
   if (metric === "textChars") {
-    return Math.max(100000, Math.ceil(maxValue / 10000) * 10000);
+    return Math.max(40000, Math.ceil(maxValue / 5000) * 5000);
   }
   return Math.max(1000, Math.ceil(maxValue / 1000) * 1000);
 };
@@ -897,6 +1010,25 @@ const addRunResultToComparison = (
   updateCharts();
 };
 
+const loadBackendOptions = async () => {
+  const response = await fetch(`${FRONTEND_SERVER_URL}/api/options`);
+  const payload = (await response.json()) as BackendOptionsPayload;
+  if (!response.ok || !payload.ok) {
+    throw new Error("无法读取前端运行配置。");
+  }
+  backendOptions.value = payload;
+
+  const supportedModes = payload.experiment_modes?.map((mode) => mode.value) ?? [];
+  if (supportedModes.length > 0 && !supportedModes.includes(selectedMode.value)) {
+    selectedMode.value = supportedModes[0];
+  }
+
+  const allowedDatasets = datasetMap.value[selectedMode.value] ?? [];
+  if (allowedDatasets.length > 0 && !allowedDatasets.includes(selectedDataset.value)) {
+    selectedDataset.value = allowedDatasets[0];
+  }
+};
+
 const toggleRunning = async () => {
   if (isRunning.value) {
     return;
@@ -948,7 +1080,7 @@ const toggleRunning = async () => {
     lastUpdatedAt.value = new Date().toLocaleString();
     closeRunMessage();
     ElMessage.success(
-      `${modeMeta[mode].label} / ${datasets.find((item) => item.value === dataset)?.label ?? dataset} 已完成`,
+      `${modeMeta[mode].label} / ${datasetInfoMap.value[dataset]?.label ?? dataset} 已完成`,
     );
   } catch (error) {
     closeRunMessage();
@@ -978,6 +1110,11 @@ const stopRun = () => {
 };
 
 onMounted(async () => {
+  try {
+    await loadBackendOptions();
+  } catch (error) {
+    ElMessage.warning(error instanceof Error ? error.message : "读取运行配置失败，已回退到本地默认选项。");
+  }
   await nextTick();
   updateCharts();
   window.addEventListener("resize", resizeCharts);

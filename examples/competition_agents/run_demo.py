@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import re
+import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,21 @@ from competition_agents.state import initial_state
 DEFAULT_MULTIHOP_DATASET = "examples/competition_agents/data/hotpot_multihop_sample.json"
 DEFAULT_CONTINUOUS_DATASET = "examples/competition_agents/data/hotpot_continuous_tasks.json"
 DEFAULT_CODEACT_DATASET = "examples/competition_agents/data/codeact_tasks.json"
+
+
+def configure_stdout() -> None:
+    """尽量避免 Windows 控制台因单个 Unicode 字符中断整轮实验。"""
+
+    stream = getattr(sys, "stdout", None)
+    if stream is None:
+        return
+    reconfigure = getattr(stream, "reconfigure", None)
+    if callable(reconfigure):
+        try:
+            # 保留当前控制台编码，只把不可编码字符替换掉，避免 print 直接抛异常。
+            reconfigure(errors="replace")
+        except Exception:
+            pass
 
 
 def normalize_answer(text: str) -> str:
@@ -73,7 +89,6 @@ def load_continuous_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]
                 f"Task type: {turn.get('task_type', '')}\n"
                 f"Question: {turn.get('question', '')}\n"
                 f"Context: {json.dumps(group.get('context', []), ensure_ascii=False)}\n"
-                f"Supporting facts: {json.dumps(group.get('supporting_facts', []), ensure_ascii=False)}\n"
             )
             tasks.append(
                 {
@@ -180,14 +195,17 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
     if args.experiment_mode == "protocol_api_embedding":
         os.environ["EMBEDDING_PROVIDER"] = "openai_compatible"
         return ["protocol"]
+    if args.experiment_mode == "hidden_api":
+        os.environ["EMBEDDING_PROVIDER"] = "hash"
+        return ["hidden"]
     raise ValueError(f"Unsupported experiment mode: {args.experiment_mode}")
 
 
 def parse_modes(raw_modes: str) -> list[str]:
     modes = [mode.strip().lower() for mode in raw_modes.split(",") if mode.strip()]
-    invalid = [mode for mode in modes if mode not in {"text", "protocol"}]
+    invalid = [mode for mode in modes if mode not in {"text", "protocol", "hidden"}]
     if invalid:
-        raise ValueError(f"Unsupported mode(s): {invalid}. Use text and/or protocol.")
+        raise ValueError(f"Unsupported mode(s): {invalid}. Use text, protocol, and/or hidden.")
     return modes or ["text", "protocol"]
 
 
@@ -909,12 +927,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run competition multi-agent experiments.")
     parser.add_argument(
         "--experiment-mode",
-        choices=["baseline_text", "protocol_api", "protocol_api_embedding", "codeact_tools"],
+        choices=["baseline_text", "protocol_api", "protocol_api_embedding", "hidden_api", "codeact_tools"],
         default="",
         help=(
             "Formal experiment mode for dashboards. "
             "baseline_text uses text collaboration; protocol_api uses structured protocol; "
-            "protocol_api_embedding additionally uses configured embedding API."
+            "protocol_api_embedding additionally uses configured embedding API; "
+            "hidden_api keeps real multi-agent reasoning but replaces agent-to-agent text exchange with hidden-state refs."
         ),
     )
     parser.add_argument(
@@ -933,7 +952,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--modes",
         default="text,protocol",
-        help="Developer/self-test only. Comma-separated modes: text,protocol. Ignored when --experiment-mode is set.",
+        help="Developer/self-test only. Comma-separated modes: text,protocol,hidden. Ignored when --experiment-mode is set.",
     )
     parser.add_argument("--show-agents", action="store_true", help="Print Planner/Retriever/Reasoner/Summarizer outputs.")
     parser.add_argument("--show-memory", action="store_true", help="Print hypergraph memory hits and reasoning paths.")
@@ -943,6 +962,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    configure_stdout()
     args = parse_args()
     modes = configure_experiment_mode(args)
     tasks = load_tasks(args)

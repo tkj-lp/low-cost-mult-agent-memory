@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from competition_agents.llm import get_llm_client
 from competition_agents.memory import add_memory
 from competition_agents.protocol import make_cognitive_gap
@@ -12,7 +14,13 @@ def summarizer_agent(state: CompetitionState) -> dict:
     hit_count = len(state.get("memory_hits", []))
     latent_count = len(state.get("latent_states", {}))
     execution_result = state.get("execution_result", {})
-    if state["mode"] == "protocol":
+    print(
+        "[summarizer] "
+        f"task chars={len(state['task'])} memory_hits={hit_count} latent_states={latent_count} "
+        f"memory_context chars={len(json.dumps(state.get('memory_context', []), ensure_ascii=False))}",
+        flush=True,
+    )
+    if state["mode"] in {"protocol", "hidden"}:
         answer_ref = state.get("state_refs", {}).get("answer", "")
         answer_state = state.get("latent_states", {}).get(answer_ref, {})
         if answer_state:
@@ -22,6 +30,8 @@ def summarizer_agent(state: CompetitionState) -> dict:
                 "latent_answer_summary": answer_state.get("summary", ""),
                 "latent_embedding_provider": answer_state.get("embedding_provider", ""),
                 "latent_embedding_model": answer_state.get("embedding_model", ""),
+                "latent_model": answer_state.get("model", ""),
+                "latent_layer": answer_state.get("layer", ""),
                 "latent_shape": answer_state.get("shape", []),
             }
     # Summarizer 可单独接真实 API，其他 Agent 保持 mock 以便快速验证。

@@ -24,30 +24,49 @@ DATASETS: dict[str, dict[str, Any]] = {
         "script_dataset_type": "multihop",
         "dataset_file": "examples/competition_agents/data/hotpot_multihop_sample.json",
         "default_limit": 5,
+        "preview_task_count": 5,
     },
     "hotpot_continuous": {
         "label": "continuous HotpotQA",
         "script_dataset_type": "continuous",
         "dataset_file": "examples/competition_agents/data/hotpot_continuous_tasks.json",
         "default_limit": 1,
+        "preview_task_count": 10,
+    },
+    "hotpot_continuous_3turn": {
+        "label": "continuous HotpotQA 3-turn",
+        "script_dataset_type": "continuous",
+        "dataset_file": "examples/competition_agents/data/hotpot_continuous_tasks_3turn.json",
+        "default_limit": 1,
+        "preview_task_count": 3,
+    },
+    "topiocqa_continuous": {
+        "label": "TopiOCQA 连续追问",
+        "script_dataset_type": "continuous",
+        "dataset_file": "examples/competition_agents/data/topiocqa_two_chains_10turns_refined.json",
+        "default_limit": 1,
+        "preview_task_count": 10,
     },
     "hidden_hotpot_5": {
         "label": "Hidden Hotpot 样例",
         "script_dataset_type": "samples",
         "dataset_file": "",
         "default_limit": 0,
+        "preview_task_count": 5,
     },
     "hidden_continuous": {
         "label": "Hidden 连续任务",
         "script_dataset_type": "continuous",
         "dataset_file": "examples/competition_agents/data/hotpot_continuous_tasks.json",
         "default_limit": 1,
+        "preview_task_count": 10,
     },
     "codeact_20": {
         "label": "CodeAct 20 题",
         "script_dataset_type": "codeact",
         "dataset_file": "examples/competition_agents/data/codeact_tasks.json",
         "default_limit": 0,
+        "preview_task_count": 20,
     },
 }
 
@@ -56,22 +75,22 @@ EXPERIMENT_MODES: dict[str, dict[str, Any]] = {
     "baseline_text": {
         "label": "纯文本协作基线",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"},
     },
     "protocol_api": {
         "label": "结构化协议协作",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"},
     },
     "protocol_api_embedding": {
         "label": "协议 + API embedding",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"},
     },
     "latent_hidden": {
         "label": "Hidden state 引用传递",
         "script": "run_hidden_latent_samples.py",
-        "datasets": {"hidden_hotpot_5", "hidden_continuous"},
+        "datasets": {"hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous"},
     },
     "codeact_tools": {
         "label": "受限工具执行",
@@ -140,6 +159,69 @@ def _extract_run_result(stdout: str) -> dict[str, Any]:
     if not isinstance(result, dict):
         raise RuntimeError("Experiment result JSON must be an object.")
     return result
+
+
+def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+
+    messages = task.get("messages")
+    if isinstance(messages, list):
+        summary["messages"] = [
+            {
+                "from": message.get("from"),
+                "to": message.get("to"),
+                "action": message.get("action"),
+            }
+            for message in messages
+            if isinstance(message, dict)
+        ]
+
+    metrics = task.get("metrics")
+    if isinstance(metrics, dict):
+        summary["metrics"] = metrics
+
+    if "exact_match" in task:
+        summary["exact_match"] = task.get("exact_match")
+
+    if "execution_result" in task:
+        execution_result = task.get("execution_result")
+        summary["execution_result"] = execution_result if isinstance(execution_result, dict) else {}
+
+    return summary
+
+
+def _summarize_run(run: dict[str, Any]) -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+
+    for key in ("mode", "experiment_mode", "memory_hit_rate", "exact_match", "elapsed_ms"):
+        if key in run:
+            summary[key] = run.get(key)
+
+    metrics = run.get("metrics")
+    if isinstance(metrics, dict):
+        summary["metrics"] = metrics
+
+    task_results = run.get("task_results")
+    if isinstance(task_results, list):
+        summary["task_results"] = [
+            _summarize_task_result(task) for task in task_results if isinstance(task, dict)
+        ]
+
+    return summary
+
+
+def _summarize_result_for_frontend(result: dict[str, Any]) -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+
+    for key in ("schema_version", "experiment_mode", "dataset_type"):
+        if key in result:
+            summary[key] = result.get(key)
+
+    runs = result.get("runs")
+    if isinstance(runs, list):
+        summary["runs"] = [_summarize_run(run) for run in runs if isinstance(run, dict)]
+
+    return summary
 
 
 def _validate_run_request(payload: dict[str, Any]) -> tuple[str, str, int | None]:
@@ -317,13 +399,21 @@ def _build_command(
         command.extend(["--dataset-file", dataset_config["dataset_file"]])
     if effective_limit:
         command.extend(["--limit", str(effective_limit)])
-    if dataset in {"hotpot_continuous", "codeact_20"} or experiment_mode in {
+    if dataset in {"hotpot_continuous", "topiocqa_continuous", "codeact_20"} or experiment_mode in {
         "protocol_api",
         "protocol_api_embedding",
         "codeact_tools",
     }:
         command.extend(["--show-memory", "--show-latent", "--show-state"])
     return command
+
+
+def _mask_secret(value: str | None) -> str:
+    if not value:
+        return ""
+    if len(value) <= 8:
+        return "*" * len(value)
+    return f"{value[:4]}...{value[-4:]}"
 
 
 def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
@@ -346,6 +436,23 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         developer_mode=developer_mode,
     )
     env = _build_env(env_file, payload, developer_mode=developer_mode)
+    print(
+        "[frontend_server] received run request: "
+        f"mode={experiment_mode}, dataset={dataset}, limit={limit}, developer_mode={developer_mode}",
+        flush=True,
+    )
+    print(
+        "[frontend_server] effective llm config: "
+        f"provider={env.get('LLM_PROVIDER', '')}, "
+        f"planner={env.get('LLM_PLANNER_PROVIDER', '')}, "
+        f"reasoner={env.get('LLM_REASONER_PROVIDER', '')}, "
+        f"summarizer={env.get('LLM_SUMMARIZER_PROVIDER', '')}, "
+        f"base_url={env.get('LLM_BASE_URL', '')}, "
+        f"model={env.get('LLM_MODEL', '')}, "
+        f"api_key={_mask_secret(env.get('LLM_API_KEY'))}",
+        flush=True,
+    )
+    print("[frontend_server] launching command:", " ".join(command), flush=True)
     _validate_real_llm_config(
         experiment_mode,
         env,
@@ -389,7 +496,7 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         "ok": True,
         "command": command,
         "developer_mode": developer_mode,
-        "result": result,
+        "result": _summarize_result_for_frontend(result),
         "stdout_tail": _stdout_tail(stdout),
     }
 
@@ -401,6 +508,7 @@ def options_payload() -> dict[str, Any]:
             {
                 "value": value,
                 "label": config["label"],
+                "script": config["script"],
                 "datasets": sorted(config["datasets"]),
             }
             for value, config in EXPERIMENT_MODES.items()
@@ -410,6 +518,9 @@ def options_payload() -> dict[str, Any]:
                 "value": value,
                 "label": config["label"],
                 "default_limit": config["default_limit"],
+                "preview_task_count": config["preview_task_count"],
+                "script_dataset_type": config["script_dataset_type"],
+                "dataset_file": config["dataset_file"],
             }
             for value, config in DATASETS.items()
         ],
