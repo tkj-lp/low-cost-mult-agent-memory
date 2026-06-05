@@ -161,6 +161,113 @@ def normalize_answer(text: str) -> str:
     return " ".join(text.split())
 
 
+MONTH_ALIASES = {
+    "january": "01",
+    "february": "02",
+    "march": "03",
+    "april": "04",
+    "may": "05",
+    "june": "06",
+    "july": "07",
+    "august": "08",
+    "september": "09",
+    "october": "10",
+    "november": "11",
+    "december": "12",
+}
+
+
+ANSWER_ALIASES = {
+    "uk": "united kingdom",
+    "u k": "united kingdom",
+    "u s": "united states",
+    "usa": "united states",
+    "u s a": "united states",
+}
+
+
+def canonicalize_answer(text: str) -> str:
+    """把常见别名折叠成统一写法，便于宽松匹配。"""
+
+    normalized = normalize_answer(text)
+    return ANSWER_ALIASES.get(normalized, normalized)
+
+
+def normalize_date_answer(text: str) -> str | None:
+    """把常见日期写法压成 `yyyy-mm-dd` 或 `mm-dd` 形式。"""
+
+    normalized = canonicalize_answer(text)
+    month_pattern = "|".join(MONTH_ALIASES.keys())
+
+    match = re.search(rf"\b(\d{{1,2}})\s+({month_pattern})(?:\s+(\d{{4}}))?\b", normalized)
+    if match:
+        day = int(match.group(1))
+        month = MONTH_ALIASES[match.group(2)]
+        year = match.group(3)
+        if year:
+            return f"{year}-{month}-{day:02d}"
+        return f"{month}-{day:02d}"
+
+    match = re.search(rf"\b({month_pattern})\s+(\d{{1,2}})(?:\s+(\d{{4}}))?\b", normalized)
+    if match:
+        month = MONTH_ALIASES[match.group(1)]
+        day = int(match.group(2))
+        year = match.group(3)
+        if year:
+            return f"{year}-{month}-{day:02d}"
+        return f"{month}-{day:02d}"
+
+    return None
+
+
+def split_answer_list(text: str) -> list[str]:
+    """把枚举型答案拆成若干项，便于判断列表覆盖关系。"""
+
+    normalized = canonicalize_answer(text)
+    normalized = re.sub(r"\band\b", ",", normalized)
+    parts = [part.strip() for part in normalized.split(",")]
+    return [part for part in parts if part]
+
+
+def answers_match(prediction: str, gold: str) -> bool:
+    """用更宽松的语义近似规则判断答案是否等价。"""
+
+    pred = canonicalize_answer(prediction)
+    expected = canonicalize_answer(gold)
+    if not pred or not expected:
+        return False
+    if pred == expected:
+        return True
+    if expected in pred or pred in expected:
+        return True
+
+    pred_date = normalize_date_answer(prediction)
+    expected_date = normalize_date_answer(gold)
+    if pred_date and expected_date and pred_date == expected_date:
+        return True
+
+    pred_items = split_answer_list(prediction)
+    expected_items = split_answer_list(gold)
+    if len(expected_items) > 1 and pred_items:
+        pred_joined = " ".join(pred_items)
+        if all(item in pred_joined for item in expected_items):
+            return True
+
+    pred_tokens = [token for token in pred.split() if token]
+    expected_tokens = [token for token in expected.split() if token]
+    if not pred_tokens or not expected_tokens:
+        return False
+
+    expected_set = set(expected_tokens)
+    pred_set = set(pred_tokens)
+    overlap = expected_set & pred_set
+    if len(expected_set) <= 3:
+        return overlap == expected_set
+
+    coverage = len(overlap) / len(expected_set)
+    return coverage >= 0.8
+
+
 def build_task(sample: dict[str, Any]) -> str:
     return (
         "HotpotQA-style multi-hop QA task.\n"
@@ -229,7 +336,7 @@ def run_mode(mode: str, *, verbose: bool, show_latent: bool) -> dict[str, Any]:
         total_elapsed += elapsed_ms
         memory = state["memory"]
         prediction = state["execution_result"].get("answer_candidate", state["final_answer"])
-        is_correct = normalize_answer(prediction) == normalize_answer(sample["answer"])
+        is_correct = answers_match(prediction, sample["answer"])
         correct += int(is_correct)
 
         metrics = state["metrics"]

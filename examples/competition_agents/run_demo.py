@@ -17,6 +17,7 @@ from competition_agents.state import initial_state
 DEFAULT_MULTIHOP_DATASET = "examples/competition_agents/data/hotpot_multihop_sample.json"
 DEFAULT_CONTINUOUS_DATASET = "examples/competition_agents/data/hotpot_continuous_tasks.json"
 DEFAULT_CODEACT_DATASET = "examples/competition_agents/data/codeact_tasks.json"
+DEFAULT_CONTEXT_SOURCE = "inline"
 
 
 def configure_stdout() -> None:
@@ -44,8 +45,122 @@ def normalize_answer(text: str) -> str:
     return " ".join(text.split())
 
 
-def build_multihop_task(sample: dict[str, Any]) -> str:
-    """把 HotpotQA-style 样例转换成 Agent 可读取的任务文本。"""
+MONTH_ALIASES = {
+    "january": "01",
+    "february": "02",
+    "march": "03",
+    "april": "04",
+    "may": "05",
+    "june": "06",
+    "july": "07",
+    "august": "08",
+    "september": "09",
+    "october": "10",
+    "november": "11",
+    "december": "12",
+}
+
+
+ANSWER_ALIASES = {
+    "uk": "united kingdom",
+    "u k": "united kingdom",
+    "u s": "united states",
+    "usa": "united states",
+    "u s a": "united states",
+}
+
+
+def canonicalize_answer(text: str) -> str:
+    """把常见别名折叠成统一写法，便于宽松匹配。"""
+
+    normalized = normalize_answer(text)
+    return ANSWER_ALIASES.get(normalized, normalized)
+
+
+def normalize_date_answer(text: str) -> str | None:
+    """把常见日期写法压成 `yyyy-mm-dd` 或 `mm-dd` 形式。"""
+
+    normalized = canonicalize_answer(text)
+    month_pattern = "|".join(MONTH_ALIASES.keys())
+
+    match = re.search(rf"\b(\d{{1,2}})\s+({month_pattern})(?:\s+(\d{{4}}))?\b", normalized)
+    if match:
+        day = int(match.group(1))
+        month = MONTH_ALIASES[match.group(2)]
+        year = match.group(3)
+        if year:
+            return f"{year}-{month}-{day:02d}"
+        return f"{month}-{day:02d}"
+
+    match = re.search(rf"\b({month_pattern})\s+(\d{{1,2}})(?:\s+(\d{{4}}))?\b", normalized)
+    if match:
+        month = MONTH_ALIASES[match.group(1)]
+        day = int(match.group(2))
+        year = match.group(3)
+        if year:
+            return f"{year}-{month}-{day:02d}"
+        return f"{month}-{day:02d}"
+
+    return None
+
+
+def split_answer_list(text: str) -> list[str]:
+    """把枚举型答案拆成若干项，便于判断列表覆盖关系。"""
+
+    normalized = canonicalize_answer(text)
+    normalized = re.sub(r"\band\b", ",", normalized)
+    parts = [part.strip() for part in normalized.split(",")]
+    return [part for part in parts if part]
+
+
+def answers_match(prediction: str, gold: str) -> bool:
+    """用更宽松的语义近似规则判断答案是否等价。"""
+
+    pred = canonicalize_answer(prediction)
+    expected = canonicalize_answer(gold)
+    if not pred or not expected:
+        return False
+    if pred == expected:
+        return True
+    if expected in pred or pred in expected:
+        return True
+
+    pred_date = normalize_date_answer(prediction)
+    expected_date = normalize_date_answer(gold)
+    if pred_date and expected_date and pred_date == expected_date:
+        return True
+
+    pred_items = split_answer_list(prediction)
+    expected_items = split_answer_list(gold)
+    if len(expected_items) > 1 and pred_items:
+        pred_joined = " ".join(pred_items)
+        if all(item in pred_joined for item in expected_items):
+            return True
+
+    pred_tokens = [token for token in pred.split() if token]
+    expected_tokens = [token for token in expected.split() if token]
+    if not pred_tokens or not expected_tokens:
+        return False
+
+    expected_set = set(expected_tokens)
+    pred_set = set(pred_tokens)
+    overlap = expected_set & pred_set
+    if len(expected_set) <= 3:
+        return overlap == expected_set
+
+    coverage = len(overlap) / len(expected_set)
+    return coverage >= 0.8
+
+
+def build_multihop_task(sample: dict[str, Any], *, context_source: str = DEFAULT_CONTEXT_SOURCE) -> str:
+    """构建 multi-hop 任务文本，可在 `inline` 和 `hypergraph` 两种上下文模式间切换。"""
+
+    if context_source == "hypergraph":
+        return (
+            "HotpotQA-style multi-hop QA task.\n"
+            "Answer the question using evidence retrieved by RetrieverAgent.\n\n"
+            f"Question: {sample['question']}\n"
+        )
 
     return (
         "HotpotQA-style multi-hop QA task.\n"
@@ -55,7 +170,12 @@ def build_multihop_task(sample: dict[str, Any]) -> str:
     )
 
 
-def load_multihop_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]:
+def load_multihop_tasks(
+    path: Path,
+    limit: int | None,
+    *,
+    context_source: str = DEFAULT_CONTEXT_SOURCE,
+) -> list[dict[str, Any]]:
     samples = json.loads(path.read_text(encoding="utf-8"))
     if limit:
         samples = samples[:limit]
@@ -64,18 +184,47 @@ def load_multihop_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]:
             "task_id": sample.get("id", f"multihop-{index:03d}"),
             "group_id": sample.get("id", f"multihop-{index:03d}"),
             "turn_id": "turn-1",
-            "task": build_multihop_task(sample),
+            "task": build_multihop_task(sample, context_source=context_source),
             "question": sample.get("question", ""),
             "expected_answer": sample.get("answer"),
             "context": sample.get("context", []),
             "supporting_facts": sample.get("supporting_facts", []),
             "dataset_type": "multihop",
+            "context_source": context_source,
         }
         for index, sample in enumerate(samples, start=1)
     ]
 
 
-def load_continuous_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]:
+def _build_continuous_task_text(
+    group: dict[str, Any],
+    turn: dict[str, Any],
+    *,
+    context_source: str = DEFAULT_CONTEXT_SOURCE,
+) -> str:
+    """构建连续任务文本，默认保留旧逻辑，可切换到只给问题的实验模式。"""
+
+    if context_source == "hypergraph":
+        return (
+            "Continuous HotpotQA-style task. Reuse prior memory in the same group when helpful.\n\n"
+            f"Question: {turn.get('question', '')}\n"
+        )
+
+    return (
+        "Continuous HotpotQA-style task. Reuse prior memory in the same group when helpful.\n\n"
+        f"Group topic: {group.get('topic', '')}\n"
+        f"Task type: {turn.get('task_type', '')}\n"
+        f"Question: {turn.get('question', '')}\n"
+        f"Context: {json.dumps(group.get('context', []), ensure_ascii=False)}\n"
+    )
+
+
+def load_continuous_tasks(
+    path: Path,
+    limit: int | None,
+    *,
+    context_source: str = DEFAULT_CONTEXT_SOURCE,
+) -> list[dict[str, Any]]:
     groups = json.loads(path.read_text(encoding="utf-8"))
     if limit:
         groups = groups[:limit]
@@ -83,13 +232,7 @@ def load_continuous_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]
     tasks: list[dict[str, Any]] = []
     for group in groups:
         for turn in group.get("tasks", []):
-            task_text = (
-                "Continuous HotpotQA-style task. Reuse prior memory in the same group when helpful.\n\n"
-                f"Group topic: {group.get('topic', '')}\n"
-                f"Task type: {turn.get('task_type', '')}\n"
-                f"Question: {turn.get('question', '')}\n"
-                f"Context: {json.dumps(group.get('context', []), ensure_ascii=False)}\n"
-            )
+            task_text = _build_continuous_task_text(group, turn, context_source=context_source)
             tasks.append(
                 {
                     "task_id": f"{group.get('group_id', 'group')}:{turn.get('turn_id', 'turn')}",
@@ -102,6 +245,12 @@ def load_continuous_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]
                     "supporting_facts": group.get("supporting_facts", []),
                     "dataset_type": "continuous",
                     "expected_reuse": turn.get("expected_reuse", []),
+                    "source_dataset": group.get("source_dataset"),
+                    "topic": turn.get("topic") or group.get("topic"),
+                    "topic_section": turn.get("topic_section"),
+                    "conversation_context": turn.get("conversation_context", []),
+                    "supporting_passage": turn.get("supporting_passage"),
+                    "context_source": context_source,
                 }
             )
     return tasks
@@ -144,9 +293,9 @@ def load_tasks(args: argparse.Namespace) -> list[dict[str, Any]]:
         raise ValueError("--dataset-file is required when dataset type is multihop, continuous, or codeact")
     path = Path(args.dataset_file)
     if args.dataset_type == "multihop":
-        return load_multihop_tasks(path, args.limit)
+        return load_multihop_tasks(path, args.limit, context_source=args.context_source)
     if args.dataset_type == "continuous":
-        return load_continuous_tasks(path, args.limit)
+        return load_continuous_tasks(path, args.limit, context_source=args.context_source)
     if args.dataset_type == "codeact":
         return load_codeact_tasks(path, args.limit)
     raise ValueError(f"Unsupported dataset type: {args.dataset_type}")
@@ -224,10 +373,16 @@ def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
             "group_id",
             "turn_id",
             "dataset_type",
+            "source_dataset",
             "expected_reuse",
             "question",
             "context",
             "supporting_facts",
+            "topic",
+            "topic_section",
+            "conversation_context",
+            "supporting_passage",
+            "context_source",
             "task_type",
             "inputs",
             "expected",
@@ -397,6 +552,9 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
                 "structured": {
                     "retrieval_query": retriever_output.get("retrieval_query", ""),
                     "planner_focus": retriever_output.get("planner_focus", []),
+                    "context_source": retriever_output.get("context_source", "inline"),
+                    "context_hit_ids": retriever_output.get("context_hit_ids", []),
+                    "context_hits": retriever_output.get("context_hits", []),
                     "memory_hit_ids": retriever_output.get("memory_hit_ids", []),
                     "memory_context": memory_context,
                 },
@@ -470,6 +628,9 @@ def _build_retrieval_debug(result: dict[str, Any]) -> dict[str, Any]:
         {
             "retrieval_query": retriever_output.get("retrieval_query", result.get("task", "")),
             "planner_focus": retriever_output.get("planner_focus", []),
+            "context_source": retriever_output.get("context_source", "inline"),
+            "context_hit_ids": retriever_output.get("context_hit_ids", []),
+            "context_hits": retriever_output.get("context_hits", []),
             "memory_hit_ids": retriever_output.get("memory_hit_ids", []),
             "memory_context": result.get("memory_context", []),
             "memory_hits": _frontend_memory_hits(result.get("memory_hits", [])),
@@ -771,7 +932,7 @@ def run_mode(
             correct += int(exact_match)
         elif expected_answer:
             comparable += 1
-            exact_match = normalize_answer(prediction) == normalize_answer(str(expected_answer))
+            exact_match = answers_match(prediction, str(expected_answer))
             correct += int(exact_match)
 
         print(f"task {index}: {task_item['task_id']}")
@@ -900,6 +1061,31 @@ def print_comparison(results: list[dict[str, Any]]) -> None:
         print(f"protocol exact match: {protocol_result['exact_match']:.2%}")
 
 
+def print_readable_run_summaries(results: list[dict[str, Any]]) -> None:
+    """打印更适合人工查看的运行汇总表。"""
+
+    print("\n=== run summaries ===")
+    print(
+        "mode | experiment_mode | tasks | exact_match | messages | "
+        "text_chars | latent_bytes | memory_hits | elapsed_ms"
+    )
+    for result in results:
+        metrics = result.get("metrics", {})
+        exact_match = result.get("exact_match")
+        exact_match_text = f"{exact_match:.2%}" if isinstance(exact_match, (int, float)) else "n/a"
+        print(
+            f"{result.get('mode', '')} | "
+            f"{result.get('experiment_mode', '')} | "
+            f"{result.get('task_count', result.get('tasks', 0))} | "
+            f"{exact_match_text} | "
+            f"{metrics.get('message_count', 0)} | "
+            f"{metrics.get('text_chars', 0)} | "
+            f"{metrics.get('latent_bytes', 0)} | "
+            f"{metrics.get('memory_hits', 0)} | "
+            f"{metrics.get('elapsed_ms', 0.0):.2f}"
+        )
+
+
 def print_run_result_json(args: argparse.Namespace, tasks: list[dict[str, Any]], results: list[dict[str, Any]]) -> None:
     """输出前端可直接解析的汇总 JSON，避免页面从终端文本里猜字段。"""
 
@@ -908,6 +1094,7 @@ def print_run_result_json(args: argparse.Namespace, tasks: list[dict[str, Any]],
         "experiment_mode": args.experiment_mode or "<developer-modes>",
         "dataset_type": args.dataset_type,
         "dataset_file": args.dataset_file,
+        "context_source": args.context_source,
         "limit": args.limit,
         "task_count": len(tasks),
         "runs": results,
@@ -950,6 +1137,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset-file", default="", help="Path to multihop, continuous, or codeact JSON data.")
     parser.add_argument("--limit", type=int, default=0, help="Limit samples or continuous groups. 0 means no limit.")
     parser.add_argument(
+        "--context-source",
+        choices=["inline", "hypergraph"],
+        default=DEFAULT_CONTEXT_SOURCE,
+        help=(
+            "Context feeding mode. inline keeps dataset context inside each task; "
+            "hypergraph sends only the question and expects RetrieverAgent to fetch context."
+        ),
+    )
+    parser.add_argument(
         "--modes",
         default="text,protocol",
         help="Developer/self-test only. Comma-separated modes: text,protocol,hidden. Ignored when --experiment-mode is set.",
@@ -978,6 +1174,7 @@ def main() -> None:
         f"experiment_mode={args.experiment_mode or '<developer-modes>'}, "
         f"type={args.dataset_type}, "
         f"file={args.dataset_file}, "
+        f"context_source={args.context_source}, "
         f"tasks={len(tasks)}, "
         f"modes={','.join(modes)}"
     )
@@ -996,6 +1193,7 @@ def main() -> None:
         )
         for mode in modes
     ]
+    print_readable_run_summaries(results)
     print_comparison(results)
     print_run_result_json(args, tasks, results)
 

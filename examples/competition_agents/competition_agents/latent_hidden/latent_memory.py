@@ -3,7 +3,13 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from competition_agents.latent_hidden.hidden_state import HiddenStateResult
+from competition_agents.latent_hidden.hidden_state import (
+    HiddenStateResult,
+    hidden_storage_mode,
+    should_store_full_hidden_tensor,
+    stored_hidden_bytes,
+    stored_hidden_shape,
+)
 
 
 _HIDDEN_TENSOR_STORE: dict[str, object] = {}
@@ -18,10 +24,12 @@ def put_hidden_tensor(
     tensor: object,
     consumers: list[str] | None = None,
 ) -> tuple[str, dict[str, dict[str, Any]]]:
-    """把完整 hidden tensor 放到进程内存，消息里只传 state_id。"""
+    """写入 hidden state；默认只保留 pooled 向量，完整 tensor 仅调试时保留。"""
 
     state_id = f"hidden-{len(latent_states) + 1:04d}"
-    _HIDDEN_TENSOR_STORE[state_id] = tensor
+    if should_store_full_hidden_tensor():
+        _HIDDEN_TENSOR_STORE[state_id] = tensor
+
     latent_state = {
         "state_id": state_id,
         "type": "latent_hidden_state",
@@ -32,6 +40,7 @@ def put_hidden_tensor(
         "model": result.model_name,
         "layer": result.layer,
         "shape": result.shape,
+        "stored_shape": stored_hidden_shape(result),
         "pooling": result.pooling,
         "pooled_vector": result.pooled_vector,
         "pooled_shape": [len(result.pooled_vector)],
@@ -39,13 +48,15 @@ def put_hidden_tensor(
         "dtype": result.dtype,
         "device": result.device,
         "checksum": result.checksum,
-        "storage": "process_memory",
+        "storage": "process_memory" if should_store_full_hidden_tensor() else "pooled_only",
+        "storage_mode": hidden_storage_mode(),
+        "stored_hidden_bytes": stored_hidden_bytes(result),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     return state_id, {**latent_states, state_id: latent_state}
 
 
 def get_hidden_tensor(state_id: str) -> object | None:
-    """根据 state_id 读取完整 hidden tensor。"""
+    """根据 `state_id` 读取完整 hidden tensor。默认模式下通常为空。"""
 
     return _HIDDEN_TENSOR_STORE.get(state_id)

@@ -7,6 +7,13 @@ from typing import Any, Literal, TypedDict
 
 from competition_agents.capabilities import build_capability_registry
 from competition_agents.embedding import embed_text, hash_embedding
+from competition_agents.latent_hidden import (
+    extract_last_hidden_state,
+    hidden_storage_mode,
+    should_store_full_hidden_tensor,
+    stored_hidden_bytes,
+    stored_hidden_shape,
+)
 
 
 class Metrics(TypedDict):
@@ -23,7 +30,7 @@ class CompetitionState(TypedDict):
 
     task: str
     task_meta: dict[str, Any]
-    mode: Literal["text", "protocol"]
+    mode: Literal["text", "protocol", "hidden"]
     plan: list[str]
     evidence: list[str]
     execution_result: dict[str, Any]
@@ -42,7 +49,7 @@ class CompetitionState(TypedDict):
 
 def initial_state(
     task: str,
-    mode: Literal["text", "protocol"],
+    mode: Literal["text", "protocol", "hidden"],
     memory: list[dict] | None = None,
     task_meta: dict[str, Any] | None = None,
 ) -> CompetitionState:
@@ -118,6 +125,55 @@ def put_latent_state(
     # 简化估算：把向量按 32 位浮点数统计数据规模。
     metrics["latent_transfer_count"] += 1
     metrics["latent_bytes"] += len(vector) * 4
+    return state_id, {**state["latent_states"], state_id: latent_state}, metrics
+
+
+def put_hidden_state(
+    state: CompetitionState,
+    *,
+    producer: str,
+    topic: str,
+    text: str,
+    consumers: list[str] | None = None,
+    scope: str = "task",
+    ttl: int = 3,
+) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
+    """创建本地 LLM hidden state，并复用现有 latent_state 容器输出 state_ref。"""
+
+    result, tensor = extract_last_hidden_state(text)
+    state_id = f"hidden-{len(state['latent_states']) + 1:04d}"
+    latent_state = {
+        "state_id": state_id,
+        "type": "latent_hidden_state",
+        "content_type": "latent.llm_hidden_state",
+        "producer": producer,
+        "consumers": consumers or [],
+        "topic": topic,
+        "summary": text[:160],
+        "source_text": text,
+        "model": result.model_name,
+        "layer": result.layer,
+        "shape": result.shape,
+        "stored_shape": stored_hidden_shape(result),
+        "pooling": result.pooling,
+        "pooled_shape": [len(result.pooled_vector)],
+        "pooled_vector": result.pooled_vector,
+        "token_count": result.token_count,
+        "dtype": result.dtype,
+        "device": result.device,
+        "checksum": result.checksum,
+        "scope": scope,
+        "ttl": ttl,
+        "storage": "process_memory" if should_store_full_hidden_tensor() else "pooled_only",
+        "storage_mode": hidden_storage_mode(),
+        "stored_hidden_bytes": stored_hidden_bytes(result),
+        "tensor": tensor if should_store_full_hidden_tensor() else None,
+        "source_text_chars": len(text),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    metrics = dict(state["metrics"])
+    metrics["latent_transfer_count"] += 1
+    metrics["latent_bytes"] += stored_hidden_bytes(result)
     return state_id, {**state["latent_states"], state_id: latent_state}, metrics
 
 

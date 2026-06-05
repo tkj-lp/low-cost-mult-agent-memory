@@ -12,13 +12,13 @@
 
 这套文档现在按“入口 / 运行 / 前端 / 协议”分工：
 
-| 文档 | 作用 | 适合谁先看 |
-| --- | --- | --- |
-| `README.md` | 项目简介和文档导航 | 所有人 |
-| `RUNBOOK.md` | 唯一运行手册：怎么配、怎么跑、怎么看结果 | 智能体同学、联调同学 |
-| `FRONTEND_CONTRACT.md` | 前端字段契约：读哪些字段、怎么解析 `run_result_json`、页面怎么展示 | 前端同学 |
-| `PROTOCOL_V0_2.md` | 协议结构、`state_ref`、`memory_ref`、`cognitive_gap` 定义 | 协议/后端同学 |
-| `HYPERGRAPH_CONTRACT.md` | 超图记忆模块接口和对接口径 | 超图记忆同学 |
+| 文档 | 作用 | 
+| --- | --- | 
+| `README.md` | 项目简介和文档导航 | 
+| `RUNBOOK.md` | 唯一运行手册：怎么配、怎么跑、怎么看结果 | 
+| `FRONTEND_CONTRACT.md` | 前端字段契约：读哪些字段、怎么解析 `run_result_json`、页面怎么展示 | 
+| `PROTOCOL_V0_2.md` | 协议结构、`state_ref`、`memory_ref`、`cognitive_gap` 定义 | 
+| `HYPERGRAPH_CONTRACT.md` | 超图记忆模块接口和对接口径 | 
 
 如果只想快速上手：
 

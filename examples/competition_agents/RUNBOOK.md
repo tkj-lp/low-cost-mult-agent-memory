@@ -5,6 +5,8 @@
 1. 不同实验模式应该怎么跑。
 2. 页面上的收益统计应该怎么和基线结果对齐。
 
+本文档同时是当前唯一正式运行手册。凡是运行命令、结果文件命名、`run_result_json` 输出口径、前后端稳定字段约定，统一以本文档为准；页面字段细节再结合 `FRONTEND_CONTRACT.md` 与 `INTEGRATION.md` 一起看。
+
 当前正式实验入口采用两层选择：
 
 ```text
@@ -13,6 +15,26 @@ dataset: hotpot_multihop / hotpot_continuous / topiocqa_continuous / hidden_hotp
 ```
 
 `mock` 只用于终端自测流程是否跑通，不作为页面正式运行方式。
+
+## 0. 当前状态总览
+
+截至当前版本，下面这些正式方法都已经可以在至少一个正式数据集上跑通，并输出前端可直接解析的 `run_result_json`：
+
+| experiment_mode | 当前已跑通的数据集口径 | 备注 |
+| --- | --- | --- |
+| `baseline_text` | `hotpot_multihop` / `hotpot_continuous` / `topiocqa_continuous` | 作为收益统计基线。 |
+| `protocol_api` | `hotpot_multihop` / `hotpot_continuous` / `topiocqa_continuous` | 结构化协议主链。 |
+| `protocol_api_embedding` | `hotpot_multihop` / `hotpot_continuous` / `topiocqa_continuous` | 已支持 `context_source=hypergraph`。 |
+| `latent_hidden` | `hidden_hotpot_5` / `hidden_continuous` / `topiocqa_continuous` | 已支持 `context_source=hypergraph`。 |
+| `codeact_tools` | `codeact_20` | 独立执行器与主图闭环都可跑。 |
+
+补充说明：
+
+```text
+1. “跑通”指命令可正常完成，并在输出末尾带有 `=== run_result_json ===` 机器可读区块。
+2. “跑通”不等于“当前效果最好”。例如 TopiOCQA 上 `protocol_api_embedding` 和 `latent_hidden` 都已跑通，但准确率仍会随检索和生成策略变化。
+3. 前端正式解析入口始终只有 `run_result_json`，不要依赖普通日志文本。
+```
 
 ## 1. 正式实验模式
 
@@ -114,7 +136,7 @@ protocol_api_embedding + hidden_*
 codeact_tools + non-codeact datasets
 ```
 
-原因：`latent_hidden` 当前使用独立脚本，验证的是本地 LLM hidden state 引用传递，不接入 `run_demo.py` 的正式 HotpotQA 主流程。
+原因：`latent_hidden` 当前使用独立脚本，验证的是本地 LLM hidden state 引用传递；它已可运行连续任务正式数据集，但入口仍独立于 `run_demo.py`。
 
 ## 4. baseline_text
 
@@ -147,6 +169,7 @@ python examples\competition_agents\run_demo.py `
   --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
   --limit 1
 ```
+ 2>&1 | Tee-Object run_result\baseline_topiocqa_run.txt
 
 这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
 
@@ -189,6 +212,7 @@ python examples\competition_agents\run_demo.py `
   --show-latent `
   --show-state
 ```
+2>&1 | Tee-Object run_result\api_topiocqa_run.txt
 
 这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
 
@@ -201,8 +225,9 @@ python examples\competition_agents\run_demo.py `
   --experiment-mode protocol_api_embedding `
   --dataset-type multihop `
   --dataset-file examples\competition_agents\data\hotpot_multihop_sample.json `
-  --limit 5
+  --limit 5 
 ```
+ 2>&1 | Tee-Object run_result\protocol_api_embedding_multihop_run.txt
 
 连续任务：
 
@@ -214,8 +239,9 @@ python examples\competition_agents\run_demo.py `
   --limit 1 `
   --show-memory `
   --show-latent `
-  --show-state
+  --show-state 
 ```
+2>&1 | Tee-Object run_result\protocol_api_embedding_continuous_run.txt
 
 TopiOCQA 风格连续任务：
 
@@ -225,12 +251,22 @@ python examples\competition_agents\run_demo.py `
   --dataset-type continuous `
   --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
   --limit 1 `
+  --context-source hypergraph `
   --show-memory `
   --show-latent `
   --show-state
 ```
+ 2>&1 | Tee-Object run_result\api_embedding_TopiOCQA_run.txt
 
 这里 `--limit 1` 表示运行 1 个连续任务组；当前示例数据文件中的该任务组包含 10 个 turn。
+
+当前推荐口径：
+
+```text
+TopiOCQA 连续任务请显式使用 `--context-source hypergraph`。
+这表示顶层任务文本只保留 Question，
+Retriever 再从超图里取回 supporting passage / context hits。
+```
 
 该模式重点展示：
 
@@ -244,45 +280,139 @@ state_refs
 
 ## 7. latent_hidden
 
-单条机制验证：
+这一部分当前有两个入口：
+
+1. `run_hidden_generation_demo.py`
+   只验证“同一个本地模型生成文本，并在同一条生成流程里直接拿最后一层 hidden state”。
+2. `run_hidden_latent_samples.py`
+   用连续任务数据集验证 hidden-state 引用传递、共享记忆复用和存储开销。
+
+### 7.1 最小 demo
 
 ```powershell
-python examples\competition_agents\run_latent_hidden_demo.py
+$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
+$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+
+python examples\competition_agents\run_hidden_generation_demo.py
 ```
 
-5 条 hidden Hotpot 样例：
+这个 demo 不跑数据集，只验证：
 
-```powershell
-python examples\competition_agents\run_hidden_latent_samples.py
+```text
+同一个本地模型生成答案
+同一条生成流程里直接拿最后一层 hidden state
 ```
 
-连续任务：
+### 7.2 数据集运行
 
-```powershell
-python examples\competition_agents\run_hidden_latent_samples.py `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
-  --limit 1
-```
-
-TopiOCQA 风格连续任务：
-
-```powershell
-python examples\competition_agents\run_hidden_latent_samples.py `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
-  --limit 1
-```
-
-这里 `--limit 1` 会在 hidden-state reference transfer 实验中运行 `chain-001` 的 10 个 turn。
-
-如果第一次运行 `latent_hidden` 报缺少依赖，需要先安装：
+如果第一次运行缺少依赖，需要先安装：
 
 ```powershell
 pip install torch transformers
 ```
 
-`latent_hidden` 输出中的 `exact_match` 使用确定性 evidence extractor，用于隔离 hidden-state 传递机制的开销；完整 LLM 问答质量由 `baseline_text` / `protocol_api` / `protocol_api_embedding` 路径验证。
+轻量模式配置：
+
+```powershell
+$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
+$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+$env:LOCAL_HIDDEN_STORAGE_MODE="pooled_only"
+```
+
+说明：
+
+```text
+默认推荐模式。
+只保留 pooled hidden、pooled_shape、checksum、shape 等元信息，
+不在进程内保留完整 [seq_len, hidden_dim] tensor。
+更适合前端展示和连续任务演示。
+```
+
+Tensor 配置：
+
+```powershell
+$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
+$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+$env:LOCAL_HIDDEN_STORAGE_MODE="full"
+```
+
+说明：
+
+```text
+调试模式。
+会在进程内保留完整 hidden tensor，并把 hidden_bytes 按完整存储规模统计。
+更慢、更占内存，不推荐作为默认演示模式。
+```
+
+
+TopiOCQA 连续任务，推荐跑法：
+
+```powershell
+python examples\competition_agents\run_hidden_latent_samples.py `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
+  --limit 1 `
+  --context-source hypergraph `
+  --answer-mode generate
+```
+
+`pooled_only` 推荐结果文件：
+
+```powershell
+$env:LOCAL_HIDDEN_STORAGE_MODE="pooled_only"
+
+python examples\competition_agents\run_hidden_latent_samples.py `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
+  --limit 1 `
+  --context-source hypergraph `
+  --answer-mode generate `
+```
+  2>&1 | Tee-Object run_result\hidden_pooled_only_TopiOCQA_run.txt
+
+
+`full` 调试结果文件：
+
+```powershell
+$env:LOCAL_HIDDEN_STORAGE_MODE="full"
+
+python examples\competition_agents\run_hidden_latent_samples.py `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_two_chains_10turns_refined.json `
+  --limit 1 `
+  --context-source hypergraph `
+  --answer-mode generate `
+```
+  2>&1 | Tee-Object run_result\hidden_full_TopiOCQA_run.txt
+
+
+这里：
+
+```text
+`--limit 1` 表示只跑 chain-001 的 10 个 turn。
+`--answer-mode generate` 表示由同一个本地模型生成答案，并直接提取这次生成流程的 hidden state。
+`--context-source hypergraph` 表示 hidden 路径也采用“Question only + 从超图取证据”的正式口径。
+```
+
+Hotpot 连续任务，推荐跑法：
+
+```powershell
+python examples\competition_agents\run_hidden_latent_samples.py `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
+  --limit 1 `
+  --answer-mode generate
+```
+
+
+### 7.5 说明口径
+
+```text
+`run_hidden_latent_samples.py --answer-mode generate` 现在已经不是旧的关键词抽取主路径，
+而是“同一个本地模型生成答案 + 直接提取 hidden state”的数据集运行方式。
+
+如果显式改成 `--answer-mode extract`，才会退回旧的确定性 evidence extractor 模式。
+```
 
 ## 8. codeact_tools
 
@@ -292,7 +422,7 @@ CodeAct 工具执行建议按 4 种场景理解，避免把“是否走主图”
 examples/competition_agents/data/codeact_tasks.json
 ```
 
-### 8.1 场景 1：独立执行器验证
+### 8.1 独立执行器验证
 
 用途：
 
@@ -317,7 +447,7 @@ python examples\competition_agents\run_codeact_samples.py `
   --limit 5
 ```
 
-### 8.2 场景 2：主图闭环验证
+### 8.2 主图闭环
 
 用途：
 
@@ -325,10 +455,9 @@ python examples\competition_agents\run_codeact_samples.py `
 验证多智能体主图中的完整闭环：
 Planner -> Retriever -> Reasoner -> Executor -> Summarizer
 其中 Executor 会真实执行 restricted_python_codeact。
-是否使用真实 LLM，由运行前环境变量决定。
 ```
 
-通过多智能体主图运行 20 条任务：
+基础命令：
 
 ```powershell
 python examples\competition_agents\run_demo.py `
@@ -348,9 +477,9 @@ python examples\competition_agents\run_demo.py `
   --modes protocol
 ```
 
-### 8.3 场景 3：mock 主图联调
+主图闭环分成两种口径：
 
-用途：
+`mock` 口径：
 
 ```text
 验证“主图流程是否跑通”，不验证真实模型效果。
@@ -375,9 +504,7 @@ python examples\competition_agents\run_demo.py `
   --modes protocol
 ```
 
-### 8.4 场景 4：真实 API 主图联调
-
-用途：
+`真实 API` 口径：
 
 ```text
 验证“真实模型 + 多智能体主图 + 真实 CodeAct 执行器”整条链路。
@@ -405,7 +532,7 @@ python examples\competition_agents\run_demo.py `
   --modes protocol
 ```
 
-说明：
+补充说明：
 
 ```text
 `--modes protocol` 只决定走协议主图，不负责自动设置模型。
@@ -615,6 +742,30 @@ pooled_similarity
 
 ## 11. 输出字段
 
+本项目当前正式输出契约必须同时满足：
+
+```text
+examples/competition_agents/FRONTEND_CONTRACT.md
+examples/competition_agents/INTEGRATION.md
+```
+
+也就是说，无论是：
+
+```text
+run_demo.py
+run_hidden_latent_samples.py
+run_codeact_samples.py
+```
+
+都必须保证输出末尾存在：
+
+```text
+=== run_result_json ===
+{...json...}
+```
+
+并且前端只从这一段解析，不从普通日志文本反向抠字段。
+
 页面和实验报告优先读取这些字段：
 
 ```text
@@ -635,6 +786,25 @@ exact_match
 ```
 
 `payload` 内部结构后续可能继续压缩优化，页面不要强依赖 payload 的具体子字段。
+
+补充稳定字段要求：
+
+```text
+1. 顶层必须稳定保留：schema_version / experiment_mode / dataset_type / dataset_file / limit / task_count / runs
+2. runs[0] 必须稳定保留：mode / experiment_mode / metrics / task_results
+3. task_results[] 必须稳定保留：task_id / question / final_answer / gold / exact_match / messages / metrics / agent_views / retrieval_debug
+4. 如果当前链路支持上下文来源切换，应保留：context_source
+5. 如果当前链路支持检索调试，应在 retrieval_debug 中保留：retrieval_query / planner_focus / context_hit_ids / context_hits
+6. hidden 路径与 protocol 路径都应继续保留：latent_states / state_refs
+```
+
+当前已确认符合文档口径的输出脚本：
+
+| 脚本 | 已确认口径 |
+| --- | --- |
+| `run_demo.py` | 已输出统一 `run_result_json`，并保留 `agent_views` / `retrieval_debug` / `memory_hits` / `memory_context` / `latent_states` / `state_refs`。 |
+| `run_hidden_latent_samples.py` | 已输出统一 `run_result_json`，并与正式连续任务口径对齐 `context_source`、`agent_views`、`retrieval_debug`、`latent_states`、`state_refs`。 |
+| `run_codeact_samples.py` | 已输出统一 `run_result_json`，并保留 `execution_result` 等 CodeAct 专属字段。 |
 
 ## 12. 超图记忆裁剪口径
 

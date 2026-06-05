@@ -5,6 +5,7 @@ import re
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
+from hypergraph_memory_method import search_context
 
 
 def _shorten(value: object, limit: int = 220) -> str:
@@ -168,6 +169,97 @@ def _extract_context_evidence(task_meta: dict, planner_focus: list[str], limit: 
     return evidence
 
 
+def _extract_hypergraph_context(
+    task_meta: dict,
+    planner_focus: list[str],
+    *,
+    limit: int = 4,
+) -> tuple[list[str], list[dict]]:
+    """从上下文超图中取回证据，并压成与旧逻辑兼容的 evidence 形式。"""
+
+    question = str(task_meta.get("question") or "")
+    dataset_type = task_meta.get("dataset_type")
+    if task_meta.get("supporting_passage") or task_meta.get("conversation_context"):
+        dataset_type = "topiocqa"
+    hits = search_context(
+        task_meta,
+        query=question,
+        dataset_type=dataset_type,
+        planner_focus=planner_focus or None,
+        top_k=max(limit * 3, 8),
+    )
+    hits = _rerank_hypergraph_hits(task_meta, planner_focus, hits, limit=limit)
+    evidence = []
+    for hit in hits:
+        title = str(hit.get("title") or "").strip()
+        text = str(hit.get("text") or "").strip()
+        if not text:
+            continue
+        evidence.append(f"{title}: {text}" if title else text)
+    return evidence, hits
+
+
+def _rerank_hypergraph_hits(
+    task_meta: dict,
+    planner_focus: list[str],
+    hits: list[dict],
+    *,
+    limit: int,
+) -> list[dict]:
+    """对超图命中的上下文做答题导向重排，优先保留最像最终证据的片段。"""
+
+    question_tokens = _tokenize(task_meta.get("question", ""))
+    focus_tokens = set().union(*(_tokenize(step) for step in planner_focus)) if planner_focus else set()
+    topic_tokens = _tokenize(task_meta.get("topic", ""))
+    section_tokens = _tokenize(task_meta.get("topic_section", ""))
+    supporting_passage = str(task_meta.get("supporting_passage") or "").strip().lower()
+
+    reranked: list[tuple[float, dict]] = []
+    for hit in hits:
+        score = float(hit.get("context_score") or 0.0)
+        kind = str(hit.get("kind") or "")
+        title = str(hit.get("title") or "")
+        section = str(hit.get("section") or "")
+        text = str(hit.get("text") or "")
+        text_lower = text.lower()
+
+        if supporting_passage and text_lower == supporting_passage:
+            score += 20.0
+        if kind == "supporting_passage":
+            score += 10.0
+        if kind in {"dialogue_question", "dialogue_answer"}:
+            score -= 4.0
+
+        if topic_tokens and (_tokenize(title) & topic_tokens):
+            score += 4.0
+        if section_tokens and (_tokenize(section) & section_tokens):
+            score += 5.0
+
+        text_tokens = _tokenize(text)
+        score += 0.5 * len(text_tokens & (question_tokens | focus_tokens))
+
+        if {"when", "date", "year", "month"} & question_tokens:
+            if re.search(r"\b\d{1,2}\s+[a-z]+\s+\d{4}\b", text_lower):
+                score += 4.0
+        if {"who", "cast", "members"} & question_tokens:
+            if "," in text and len(text.split(",")) >= 3:
+                score += 3.0
+        if {"what", "about"} & question_tokens:
+            if any(marker in text_lower for marker in ("depicts", "about", "is a", "was a")):
+                score += 2.0
+
+        reranked.append((score, hit))
+
+    ranked_hits = [
+        hit
+        for _, hit in sorted(
+            reranked,
+            key=lambda item: (-item[0], str(item[1].get("context_id") or "")),
+        )
+    ]
+    return ranked_hits[:limit]
+
+
 def _task_specific_evidence(task: str) -> list[str]:
     """根据任务主题补充具体证据，避免 Summarizer 只复述运行状态。"""
 
@@ -215,7 +307,13 @@ def retriever_agent(state: CompetitionState) -> dict:
     """检索可复用记忆，并生成非文本状态引用。"""
 
     retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []))
-    retrieved_context_evidence = _extract_context_evidence(state.get("task_meta", {}), planner_focus)
+    task_meta = state.get("task_meta", {})
+    context_source = str(task_meta.get("context_source") or "inline")
+    context_hits: list[dict] = []
+    if context_source == "hypergraph":
+        retrieved_context_evidence, context_hits = _extract_hypergraph_context(task_meta, planner_focus)
+    else:
+        retrieved_context_evidence = _extract_context_evidence(task_meta, planner_focus)
 
     # 把 Planner 的显式计划并入 query，让检索不再只依赖原始任务文本。
     hits = search_memory(state["memory"], retrieval_query, top_k=2)
@@ -318,6 +416,9 @@ def retriever_agent(state: CompetitionState) -> dict:
                 "agent": "RetrieverAgent",
                 "retrieval_query": retrieval_query,
                 "planner_focus": planner_focus,
+                "context_source": context_source,
+                "context_hit_ids": [hit.get("context_id") for hit in context_hits],
+                "context_hits": context_hits,
                 "memory_hit_ids": [hit.get("memory_id") for hit in hits],
                 "context_evidence": retrieved_context_evidence,
             },

@@ -8,15 +8,27 @@ from competition_agents.protocol import make_cognitive_gap
 from competition_agents.state import CompetitionState
 
 
+def _summarizer_task_text(state: CompetitionState) -> str:
+    """在 hypergraph 模式下只把问题文本传给 Summarizer，不直接暴露原始上下文。"""
+
+    task_meta = state.get("task_meta", {})
+    if str(task_meta.get("context_source") or "") == "hypergraph":
+        question = str(task_meta.get("question") or "").strip()
+        if question:
+            return f"Question: {question}"
+    return state["task"]
+
+
 def summarizer_agent(state: CompetitionState) -> dict:
     """生成最终答案，并沉淀为可复用共享记忆。"""
 
     hit_count = len(state.get("memory_hits", []))
     latent_count = len(state.get("latent_states", {}))
     execution_result = state.get("execution_result", {})
+    task_text = _summarizer_task_text(state)
     print(
         "[summarizer] "
-        f"task chars={len(state['task'])} memory_hits={hit_count} latent_states={latent_count} "
+        f"task chars={len(task_text)} memory_hits={hit_count} latent_states={latent_count} "
         f"memory_context chars={len(json.dumps(state.get('memory_context', []), ensure_ascii=False))}",
         flush=True,
     )
@@ -36,7 +48,7 @@ def summarizer_agent(state: CompetitionState) -> dict:
             }
     # Summarizer 可单独接真实 API，其他 Agent 保持 mock 以便快速验证。
     summary = get_llm_client("summarizer").summarize(
-        task=state["task"],
+        task=task_text,
         memory_hits=hit_count,
         latent_states=latent_count,
         plan=state.get("plan", []),
@@ -63,7 +75,7 @@ def summarizer_agent(state: CompetitionState) -> dict:
     memory = add_memory(
         state["memory"],
         source_agent="summarizer",
-        task_topic=state["task"],
+        task_topic=task_text,
         summary=summary,
         tags=["langgraph", "multi-agent", "protocol", state["mode"]],
         trace=trace,

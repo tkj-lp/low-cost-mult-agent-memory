@@ -7,6 +7,17 @@ from competition_agents.protocol import make_cognitive_gap, make_compact_packet,
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
 
 
+def _reasoner_task_text(state: CompetitionState) -> str:
+    """在 hypergraph 模式下只把问题本身传给 Reasoner，避免意外回看原始上下文。"""
+
+    task_meta = state.get("task_meta", {})
+    if str(task_meta.get("context_source") or "") == "hypergraph":
+        question = str(task_meta.get("question") or "").strip()
+        if question:
+            return f"Question: {question}"
+    return state["task"]
+
+
 def _build_codeact_execution_request(state: CompetitionState) -> dict | None:
     """为 CodeAct 数据集生成确定性的执行请求，暂不引入 LLM 动态代码。"""
 
@@ -34,9 +45,10 @@ def reasoner_agent(state: CompetitionState) -> dict:
     memory_context = state.get("memory_context", [])
     evidence = state.get("evidence", [])
     plan = state.get("plan", [])
+    task_text = _reasoner_task_text(state)
     print(
         "[reasoner] "
-        f"task chars={len(state['task'])} evidence_count={len(evidence)} "
+        f"task chars={len(task_text)} evidence_count={len(evidence)} "
         f"memory_hits={len(memory_hits)} "
         f"memory_context chars={len(json.dumps(memory_context, ensure_ascii=False))}",
         flush=True,
@@ -51,7 +63,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             plan = latent_plan
 
     result = get_llm_client("reasoner").reason(
-        task=state["task"],
+        task=task_text,
         plan=plan,
         evidence=evidence,
         memory_hits=len(memory_hits),
@@ -81,7 +93,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             answer_ref, latent_states, metrics = put_hidden_state(
                 state,
                 producer="reasoner",
-                topic=state["task"],
+                topic=task_text,
                 text=answer_text,
                 consumers=["summarizer"],
             )
@@ -89,7 +101,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             answer_ref, latent_states, metrics = put_latent_state(
                 state,
                 producer="reasoner",
-                topic=state["task"],
+                topic=task_text,
                 text=answer_text,
                 consumers=["summarizer"],
             )
