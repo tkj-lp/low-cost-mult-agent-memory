@@ -16,6 +16,7 @@ RESULT_MARKER = "=== run_result_json ==="
 DEFAULT_ENV_FILE = "examples/competition_agents/.env.local"
 FALLBACK_ENV_FILE = "examples/competition_agents/.env.example"
 ECHO_RUN_OUTPUT = False
+DEFAULT_RUN_TIMEOUT_SECONDS = 3600
 
 
 DATASETS: dict[str, dict[str, Any]] = {
@@ -420,7 +421,7 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
     experiment_mode, dataset, limit = _validate_run_request(payload)
     env_file = _resolve_env_file(str(payload.get("env_file") or DEFAULT_ENV_FILE))
     developer_mode = bool(payload.get("developer_mode", False))
-    timeout_value = payload.get("timeout_seconds", 600)
+    timeout_value = payload.get("timeout_seconds", DEFAULT_RUN_TIMEOUT_SECONDS)
     try:
         timeout_seconds = int(timeout_value)
     except (TypeError, ValueError) as exc:

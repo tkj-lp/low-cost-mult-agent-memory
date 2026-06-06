@@ -197,7 +197,7 @@
             </div>
           </div>
           <p v-if="gainNotice" class="gain-notice">{{ gainNotice }}</p>
-          <div class="updated-at">更新时间： {{ lastUpdatedAt }}  ↻</div>
+          <div class="updated-at">更新时间： {{ activeGainUpdatedAt }}  ↻</div>
         </article>
       </section>
     </main>
@@ -289,6 +289,12 @@ interface GainMetric {
   value: string;
   caption: string;
   color: string;
+}
+
+interface GainSnapshot {
+  metrics: GainMetric[];
+  notice: string;
+  updatedAt: string;
 }
 
 interface BackendRunPayload {
@@ -490,7 +496,7 @@ const modelName = ref("");
 const apiKey = ref("");
 const showApiKey = ref(false);
 const isRunning = ref(false);
-const lastUpdatedAt = ref("尚未运行");
+const notRunLabel = "尚未运行";
 const lastRunResult = ref<BackendRunSummary | null>(null);
 const backendOptions = ref<BackendOptionsPayload | null>(null);
 const activeRunController = ref<AbortController | null>(null);
@@ -513,6 +519,15 @@ const comparisonRuns = ref<Record<Dataset, RunComparison[]>>({
   hidden_hotpot_5: [],
   hidden_continuous: [],
   codeact_20: [],
+});
+const gainSnapshots = ref<Record<Dataset, Partial<Record<ExperimentMode, GainSnapshot>>>>({
+  hotpot_multihop: {},
+  hotpot_continuous: {},
+  hotpot_continuous_3turn: {},
+  topiocqa_continuous: {},
+  hidden_hotpot_5: {},
+  hidden_continuous: {},
+  codeact_20: {},
 });
 
 const experimentModes = computed(() =>
@@ -621,6 +636,7 @@ let charChart: echarts.ECharts | null = null;
 
 const FRONTEND_SERVER_URL = "http://127.0.0.1:8765";
 const USE_DEVELOPER_MODE = false;
+const RUN_TIMEOUT_SECONDS = 3600;
 const toMetricNumber = (value: unknown) => {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -780,27 +796,32 @@ const formatRatio = (value: number | null) => (value === null ? "N/A" : value.to
 const baselineRunForSelection = computed(
   () => runResults.value[selectedDataset.value]?.baseline_text ?? null,
 );
-
-const hasBaselineComparableDataset = computed(() =>
-  datasetMap.value.baseline_text.includes(selectedDataset.value),
+const gainSnapshotForSelection = computed(
+  () => gainSnapshots.value[selectedDataset.value]?.[selectedMode.value] ?? null,
 );
+const activeGainUpdatedAt = computed(() => gainSnapshotForSelection.value?.updatedAt ?? notRunLabel);
 
-const gainNotice = computed(() => {
-  if (!hasBaselineComparableDataset.value) {
+const buildGainNotice = (
+  dataset: Dataset,
+  current: BackendRunSummary | null,
+  baseline: BackendRunSummary | null,
+) => {
+  if (!datasetMap.value.baseline_text.includes(dataset)) {
     return "当前数据集不属于 baseline_text 可运行范围，收益统计仅展示当前实验指标。";
   }
-  if (!baselineRunForSelection.value) {
+  if (!baseline) {
     return "请先在当前数据集运行 baseline_text，再查看相对收益。";
   }
-  if (!activeRunForSelection.value) {
+  if (!current) {
     return "请运行当前实验模式后查看收益统计。";
   }
   return "";
-});
+};
 
-const gainMetrics = computed<GainMetric[]>(() => {
-  const current = activeRunForSelection.value;
-  const baseline = baselineRunForSelection.value;
+const buildGainMetrics = (
+  current: BackendRunSummary | null,
+  baseline: BackendRunSummary | null,
+): GainMetric[] => {
   const currentText = getRunMetricTotal(current, "text_chars");
   const currentElapsed = getRunMetricTotal(current, "elapsed_ms");
   const baselineText = getRunMetricTotal(baseline, "text_chars");
@@ -838,7 +859,45 @@ const gainMetrics = computed<GainMetric[]>(() => {
       color: "#ff9418",
     },
   ];
+};
+
+const gainNotice = computed(() => {
+  return (
+    gainSnapshotForSelection.value?.notice ??
+    buildGainNotice(selectedDataset.value, activeRunForSelection.value, baselineRunForSelection.value)
+  );
 });
+
+const gainMetrics = computed<GainMetric[]>(() => {
+  return (
+    gainSnapshotForSelection.value?.metrics ??
+    buildGainMetrics(activeRunForSelection.value, baselineRunForSelection.value)
+  );
+});
+
+const createGainSnapshot = (
+  dataset: Dataset,
+  mode: ExperimentMode,
+  updatedAt: string,
+): GainSnapshot => {
+  const current = runResults.value[dataset]?.[mode] ?? null;
+  const baseline = runResults.value[dataset]?.baseline_text ?? null;
+  return {
+    metrics: buildGainMetrics(current, baseline),
+    notice: buildGainNotice(dataset, current, baseline),
+    updatedAt,
+  };
+};
+
+const refreshGainSnapshot = (dataset: Dataset, mode: ExperimentMode, updatedAt: string) => {
+  gainSnapshots.value[dataset][mode] = createGainSnapshot(dataset, mode, updatedAt);
+};
+
+const refreshDatasetGainSnapshots = (dataset: Dataset, updatedAt: string) => {
+  (Object.keys(runResults.value[dataset]) as ExperimentMode[]).forEach((mode) => {
+    refreshGainSnapshot(dataset, mode, updatedAt);
+  });
+};
 
 const getVisibleRuns = () => {
   return activeComparisonRuns.value;
@@ -988,6 +1047,7 @@ const addRunResultToComparison = (
   run: BackendRunSummary,
   mode: ExperimentMode,
   dataset: Dataset,
+  updatedAt: string,
 ) => {
   const meta = modeMeta[mode];
   const datasetRuns = comparisonRuns.value[dataset];
@@ -1007,6 +1067,10 @@ const addRunResultToComparison = (
     datasetRuns.push(nextRun);
   }
 
+  refreshGainSnapshot(dataset, mode, updatedAt);
+  if (mode === "baseline_text") {
+    refreshDatasetGainSnapshots(dataset, updatedAt);
+  }
   updateCharts();
 };
 
@@ -1052,7 +1116,7 @@ const toggleRunning = async () => {
         experiment_mode: mode,
         dataset,
         limit: 1,
-        timeout_seconds: 600,
+        timeout_seconds: RUN_TIMEOUT_SECONDS,
         ...(USE_DEVELOPER_MODE ? { developer_mode: true } : {}),
         base_url: apiBaseUrl.value,
         model: modelName.value,
@@ -1076,8 +1140,8 @@ const toggleRunning = async () => {
     }
 
     lastRunResult.value = run;
-    addRunResultToComparison(run, mode, dataset);
-    lastUpdatedAt.value = new Date().toLocaleString();
+    const updatedAt = new Date().toLocaleString();
+    addRunResultToComparison(run, mode, dataset, updatedAt);
     closeRunMessage();
     ElMessage.success(
       `${modeMeta[mode].label} / ${datasetInfoMap.value[dataset]?.label ?? dataset} 已完成`,
