@@ -165,6 +165,18 @@ def _extract_run_result(stdout: str) -> dict[str, Any]:
 def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
 
+    for key in (
+        "task_id",
+        "group_id",
+        "turn_id",
+        "dataset_type",
+        "question",
+        "final_answer",
+        "gold",
+    ):
+        if key in task:
+            summary[key] = task.get(key)
+
     messages = task.get("messages")
     if isinstance(messages, list):
         summary["messages"] = [
@@ -172,6 +184,7 @@ def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
                 "from": message.get("from"),
                 "to": message.get("to"),
                 "action": message.get("action"),
+                "char_cost": message.get("char_cost"),
             }
             for message in messages
             if isinstance(message, dict)
@@ -187,6 +200,19 @@ def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
     if "execution_result" in task:
         execution_result = task.get("execution_result")
         summary["execution_result"] = execution_result if isinstance(execution_result, dict) else {}
+
+    for key in (
+        "agent_views",
+        "agent_outputs",
+        "retrieval_debug",
+        "memory_hits",
+        "memory_context",
+        "latent_states",
+        "state_refs",
+    ):
+        value = task.get(key)
+        if value is not None:
+            summary[key] = value
 
     return summary
 

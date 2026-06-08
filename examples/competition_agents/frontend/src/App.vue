@@ -73,75 +73,152 @@
       <section class="dashboard-grid">
         <article class="panel timeline-panel">
           <div class="section-title">运行进度时间线</div>
-          <div class="agent-header" :style="timelineGridStyle">
-            <span class="clock-dot">◷</span>
-            <span
-              v-for="agent in activeAgents"
-              :key="agent.key"
-              class="agent-name"
-              :style="{ color: agent.color }"
-            >
-              {{ agent.icon }} {{ agent.label }}
-            </span>
-          </div>
-          <div class="timeline">
-            <div
-              v-for="task in timelineTasks"
-              :key="task.id"
-              class="task-row"
-              :class="{ active: task.status === 'running' }"
-              :style="timelineGridStyle"
-            >
-              <span class="rail-dot" :class="task.status"></span>
-              <span class="task-label">{{ task.label }}</span>
-              <div
-                v-for="agent in activeAgents"
-                :key="`${task.id}-${agent.key}`"
-                class="agent-step"
-                :class="task.status"
-              >
-                <span v-if="task.status === 'done'" class="done-dot">✓</span>
-                <span v-else-if="task.status === 'running'" class="spinner"></span>
-                <span v-else class="empty-dot"></span>
+          <div class="timeline-workspace">
+            <div class="timeline-matrix">
+              <div class="agent-header" :style="timelineGridStyle">
+                <span class="clock-dot">◷</span>
+                <span
+                  v-for="agent in activeAgents"
+                  :key="agent.key"
+                  class="agent-name"
+                  :style="{ color: agent.color }"
+                >
+                  {{ agent.icon }} {{ agent.label }}
+                </span>
+                <span class="task-state-head">状态</span>
               </div>
-              <span class="task-state">{{ task.state }}</span>
+              <div class="timeline">
+                <div
+                  v-for="(task, taskIndex) in timelineTasks"
+                  :key="task.id"
+                  class="task-row"
+                  :class="{ active: task.status === 'running' }"
+                  :style="timelineGridStyle"
+                >
+                  <span class="rail-dot" :class="task.status"></span>
+                  <span class="task-label">{{ task.label }}</span>
+                  <button
+                    v-for="agent in activeAgents"
+                    :key="`${task.id}-${agent.key}`"
+                    type="button"
+                    class="agent-step"
+                    :class="[
+                      task.status,
+                      {
+                        selected: isSelectedTimelineCell(taskIndex, agent.key),
+                        missing: task.status === 'done' && !hasAgentOutput(taskIndex, agent.key),
+                      },
+                    ]"
+                    :disabled="task.status === 'waiting'"
+                    :aria-label="`${task.label} ${agent.label} 输出`"
+                    @click="selectTimelineCell(taskIndex, agent.key, task.status)"
+                  >
+                    <span v-if="task.status === 'done'" class="done-dot">✓</span>
+                    <span v-else-if="task.status === 'running'" class="spinner"></span>
+                    <span v-else class="empty-dot"></span>
+                  </button>
+                  <span class="task-state">{{ task.state }}</span>
+                </div>
+              </div>
             </div>
+
+            <aside class="agent-detail-panel">
+              <div class="detail-head">
+                <div>
+                  <span>{{ activeAgentDetail.taskLabel }}</span>
+                  <strong>{{ activeAgentDetail.agentLabel }}</strong>
+                </div>
+                <span class="detail-status" :class="activeAgentDetail.status">
+                  {{ activeAgentDetail.status === "done" ? "已完成" : activeAgentDetail.status === "running" ? "运行中" : "待运行" }}
+                </span>
+              </div>
+
+              <div class="detail-meta">
+                <span>exact_match: {{ formatExactMatch(activeAgentDetail.exactMatch) }}</span>
+                <span v-if="activeAgentDetail.stateRef">state_ref: {{ activeAgentDetail.stateRef }}</span>
+              </div>
+
+              <div class="detail-scroll">
+                <section class="detail-section">
+                  <h3>问题</h3>
+                  <p>{{ activeAgentDetail.question || "当前轮次暂无问题文本。" }}</p>
+                </section>
+
+                <section class="detail-section">
+                  <h3>Agent 输出</h3>
+                  <p>{{ activeAgentDetail.displayText || (activeAgentDetail.hasOutput ? "该 Agent 本轮未返回 display_text。" : "该 Agent 本轮暂无 agent_views 输出。") }}</p>
+                </section>
+
+                <section v-if="activeAgentDetail.structuredText" class="detail-section">
+                  <h3>结构化内容</h3>
+                  <pre>{{ activeAgentDetail.structuredText }}</pre>
+                </section>
+
+                <section v-if="activeAgentDetail.retrievalQuery || activeAgentDetail.memoryContextText !== '[]'" class="detail-section">
+                  <h3>检索与记忆</h3>
+                  <p v-if="activeAgentDetail.retrievalQuery">query: {{ activeAgentDetail.retrievalQuery }}</p>
+                  <pre v-if="activeAgentDetail.memoryContextText !== '[]'">{{ activeAgentDetail.memoryContextText }}</pre>
+                </section>
+
+                <section v-if="activeAgentDetail.executionResultText" class="detail-section">
+                  <h3>执行结果</h3>
+                  <pre>{{ activeAgentDetail.executionResultText }}</pre>
+                </section>
+
+                <section class="detail-section">
+                  <h3>通信消息</h3>
+                  <div v-if="activeAgentDetail.messages.length > 0" class="message-list">
+                    <div v-for="message in activeAgentDetail.messages" :key="message.id" class="message-row">
+                      <span>{{ message.from }} → {{ message.to }}</span>
+                      <strong>{{ message.action }}</strong>
+                      <small>{{ message.charCost ?? "N/A" }}</small>
+                    </div>
+                  </div>
+                  <p v-else>暂无与该 Agent 相关的 messages。</p>
+                </section>
+
+                <section v-if="activeAgentDetail.finalAnswer || activeAgentDetail.gold" class="detail-section">
+                  <h3>答案</h3>
+                  <p v-if="activeAgentDetail.finalAnswer">final: {{ activeAgentDetail.finalAnswer }}</p>
+                  <p v-if="activeAgentDetail.gold">gold: {{ activeAgentDetail.gold }}</p>
+                </section>
+              </div>
+            </aside>
           </div>
-        </article>
-
-        <article class="panel chart-panel">
-          <div class="section-title">耗时对比（每轮） <b>ⓘ</b></div>
-          <div ref="timeChartRef" class="chart"></div>
-        </article>
-
-        <article class="panel chart-panel">
-          <div class="section-title">字符数对比（每轮） <b>ⓘ</b></div>
-          <div ref="charChartRef" class="chart"></div>
         </article>
 
         <article class="panel memory-panel">
           <div class="section-title">记忆检索解释</div>
-          <div class="query-card">
-            <strong>当前 query</strong>
-            <p>蒙娜丽莎的创作时间、作者以及现藏地点分别是什么？</p>
-          </div>
-          <div class="memory-hit">
-            <strong>命中记忆</strong>
-            <div>
-              <span class="pill blue">memory-0003</span>
-              <span class="pill green">相关度 0.92</span>
+          <div class="memory-body">
+            <div class="query-card">
+              <strong>当前 query</strong>
+              <p>{{ activeMemoryPanel.query }}</p>
             </div>
-          </div>
-          <div class="reason-table">
-            <div
-              v-for="item in memoryReasons"
-              :key="item.tag"
-              class="reason-row"
-            >
-              <span class="pill" :class="item.className">{{ item.tag }}</span>
-              <span>命中</span>
-              <strong>{{ item.score }}</strong>
-              <span>⌄</span>
+            <div class="memory-hit">
+              <strong>命中记忆</strong>
+              <div>
+                <span class="pill blue">{{ activeMemoryPanel.firstHitId }}</span>
+                <span class="pill green">相关度 {{ activeMemoryPanel.firstHitScore }}</span>
+              </div>
+            </div>
+            <div class="memory-hit memory-counts">
+              <strong>上下文</strong>
+              <div>
+                <span class="pill purple">context {{ activeMemoryPanel.contextCount }}</span>
+                <span class="pill orange">hits {{ activeMemoryPanel.hitCount }}</span>
+              </div>
+            </div>
+            <div class="reason-table">
+              <div
+                v-for="item in memoryReasonRows"
+                :key="item.tag"
+                class="reason-row"
+              >
+                <span class="pill" :class="item.className">{{ item.tag }}</span>
+                <span>命中</span>
+                <strong>{{ item.score }}</strong>
+                <span>⌄</span>
+              </div>
             </div>
           </div>
         </article>
@@ -168,9 +245,9 @@
                 <path d="M596 92 L596 218" />
               </g>
               <circle cx="58" cy="153" r="24" class="node task" />
-              <text x="58" y="158" text-anchor="middle">task-3</text>
+              <text x="58" y="158" text-anchor="middle">{{ activeAgentDetail.taskLabel }}</text>
               <GraphNode
-                v-for="node in graphNodes"
+                v-for="node in activeGraphNodes"
                 :key="node.label"
                 v-bind="node"
               />
@@ -181,6 +258,16 @@
               <GraphDiamond :x="596" :y="153" label="e6" />
             </svg>
           </div>
+        </article>
+
+        <article class="panel chart-panel">
+          <div class="section-title">耗时对比（每轮） <b>ⓘ</b></div>
+          <div ref="timeChartRef" class="chart"></div>
+        </article>
+
+        <article class="panel chart-panel">
+          <div class="section-title">字符数对比（每轮） <b>ⓘ</b></div>
+          <div ref="charChartRef" class="chart"></div>
         </article>
 
         <article class="panel gains-panel">
@@ -250,13 +337,28 @@ interface BackendMetricBag {
 }
 
 interface BackendTaskResult {
+  task_id?: string;
+  group_id?: string | null;
+  turn_id?: string | null;
+  dataset_type?: string;
+  question?: string;
+  final_answer?: string;
+  gold?: string;
   messages?: Array<{
     from?: string;
     to?: string;
     action?: string;
+    char_cost?: number | string | null;
   }>;
   metrics?: BackendMetricBag;
-  execution_result?: unknown;
+  agent_views?: Record<string, AgentViewPayload>;
+  agent_outputs?: Record<string, AgentViewPayload> | Array<Record<string, unknown>>;
+  retrieval_debug?: Record<string, unknown>;
+  memory_hits?: unknown[];
+  memory_context?: unknown[];
+  latent_states?: Record<string, unknown>;
+  state_refs?: Record<string, string>;
+  execution_result?: Record<string, unknown> | null;
   exact_match?: boolean | number | null;
 }
 
@@ -282,6 +384,46 @@ interface TimelineTask {
   label: string;
   status: "done" | "running" | "waiting";
   state: string;
+}
+
+interface TimelineCell {
+  taskIndex: number;
+  agentKey: string;
+}
+
+interface AgentViewPayload {
+  display_text?: string;
+  structured?: unknown;
+  state_ref?: string | null;
+  [key: string]: unknown;
+}
+
+interface AgentDetailView {
+  taskLabel: string;
+  agentLabel: string;
+  status: "done" | "running" | "waiting";
+  hasTask: boolean;
+  hasOutput: boolean;
+  question: string;
+  finalAnswer: string;
+  gold: string;
+  exactMatch: boolean | number | null;
+  displayText: string;
+  structuredText: string;
+  stateRef: string;
+  retrievalQuery: string;
+  plannerFocusText: string;
+  memoryHitIds: string[];
+  memoryContextText: string;
+  memoryHitsText: string;
+  messages: Array<{
+    id: string;
+    from: string;
+    to: string;
+    action: string;
+    charCost: number | string | null;
+  }>;
+  executionResultText: string;
 }
 
 interface GainMetric {
@@ -500,6 +642,7 @@ const notRunLabel = "尚未运行";
 const lastRunResult = ref<BackendRunSummary | null>(null);
 const backendOptions = ref<BackendOptionsPayload | null>(null);
 const activeRunController = ref<AbortController | null>(null);
+const selectedTimelineCell = ref<TimelineCell | null>(null);
 let runMessage: { close: () => void } | null = null;
 let stopMessageShown = false;
 const runResults = ref<Record<Dataset, Partial<Record<ExperimentMode, BackendRunSummary>>>>({
@@ -707,6 +850,258 @@ const activeAgents = computed(() => {
 const timelineGridStyle = computed(() => ({
   gridTemplateColumns: `112px repeat(${activeAgents.value.length}, minmax(68px, 1fr)) 104px`,
 }));
+
+const safeStringify = (value: unknown) => {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+};
+
+const getTaskResult = (taskIndex: number) => activeRunForSelection.value?.task_results?.[taskIndex] ?? null;
+
+const normalizeAgentOutputKey = (value: unknown) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/agent$/, "");
+
+const agentOutputListItemToView = (item: Record<string, unknown>): AgentViewPayload => {
+  const displayText =
+    item.display_text ??
+    item.raw_output ??
+    item.answer_candidate ??
+    item.reasoning_summary ??
+    item.retrieval_query ??
+    "";
+  return {
+    content_type: item.content_type ?? "structured",
+    display_text: String(displayText ?? ""),
+    structured: item,
+    state_ref: typeof item.state_ref === "string" ? item.state_ref : "",
+  };
+};
+
+const getAgentView = (task: BackendTaskResult | null, agentKey: string) => {
+  const normalizedKey = agentKey.toLowerCase();
+  const views = task?.agent_views;
+  if (views && typeof views === "object" && !Array.isArray(views)) {
+    const directView = views[normalizedKey];
+    if (directView) {
+      return directView;
+    }
+  }
+
+  const outputs = task?.agent_outputs;
+  if (outputs && typeof outputs === "object" && !Array.isArray(outputs)) {
+    const directOutput = outputs[normalizedKey];
+    if (directOutput) {
+      return directOutput;
+    }
+  }
+
+  if (Array.isArray(outputs)) {
+    const item = outputs.find((output) => normalizeAgentOutputKey(output.agent) === normalizedKey);
+    if (item) {
+      return agentOutputListItemToView(item);
+    }
+  }
+
+  return null;
+};
+
+const hasAgentOutput = (taskIndex: number, agentKey: string) => {
+  const task = getTaskResult(taskIndex);
+  const view = getAgentView(task, agentKey);
+  return Boolean(view?.display_text || view?.structured || view?.state_ref);
+};
+
+const isSelectedTimelineCell = (taskIndex: number, agentKey: string) =>
+  selectedTimelineCell.value?.taskIndex === taskIndex &&
+  selectedTimelineCell.value?.agentKey === agentKey;
+
+const selectTimelineCell = (taskIndex: number, agentKey: string, status: TimelineTask["status"]) => {
+  if (status === "waiting") {
+    return;
+  }
+  selectedTimelineCell.value = { taskIndex, agentKey };
+};
+
+const ensureSelectedTimelineCell = () => {
+  const taskResults = activeRunForSelection.value?.task_results ?? [];
+  if (taskResults.length > 0) {
+    const current = selectedTimelineCell.value;
+    const currentStillValid =
+      current &&
+      current.taskIndex < taskResults.length &&
+      activeAgents.value.some((agent) => agent.key === current.agentKey);
+    if (!currentStillValid) {
+      selectedTimelineCell.value = {
+        taskIndex: 0,
+        agentKey: activeAgents.value[0]?.key ?? "planner",
+      };
+    }
+    return;
+  }
+
+  if (isRunning.value) {
+    selectedTimelineCell.value = {
+      taskIndex: 0,
+      agentKey: activeAgents.value[0]?.key ?? "planner",
+    };
+    return;
+  }
+
+  selectedTimelineCell.value = null;
+};
+
+const formatExactMatch = (value: boolean | number | null) => {
+  if (value === null || value === undefined) {
+    return "N/A";
+  }
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+  return String(value);
+};
+
+const normalizeMessagesForAgent = (task: BackendTaskResult | null, agentKey: string) => {
+  const normalizedKey = agentKey.toLowerCase();
+  const messages = Array.isArray(task?.messages) ? task.messages : [];
+  return messages
+    .map((message, index) => ({
+      id: `${index}-${message.from ?? ""}-${message.to ?? ""}-${message.action ?? ""}`,
+      from: message.from ?? "",
+      to: message.to ?? "",
+      action: message.action ?? "",
+      charCost: message.char_cost ?? null,
+    }))
+    .filter((message) =>
+      [message.from, message.to]
+        .map((value) => String(value).toLowerCase())
+        .includes(normalizedKey),
+    );
+};
+
+const getArrayField = (value: unknown) => (Array.isArray(value) ? value : []);
+
+const activeAgentDetail = computed<AgentDetailView>(() => {
+  const selectedCell = selectedTimelineCell.value;
+  const taskIndex = selectedCell?.taskIndex ?? 0;
+  const agentKey = selectedCell?.agentKey ?? activeAgents.value[0]?.key ?? "planner";
+  const task = getTaskResult(taskIndex);
+  const agent = activeAgents.value.find((item) => item.key === agentKey);
+  const agentView = getAgentView(task, agentKey);
+  const retrievalDebug = task?.retrieval_debug ?? {};
+  const plannerFocus = getArrayField(retrievalDebug.planner_focus);
+  const memoryHitIds = getArrayField(retrievalDebug.memory_hit_ids ?? retrievalDebug.context_hit_ids).map(String);
+
+  return {
+    taskLabel: `task ${taskIndex + 1}`,
+    agentLabel: agent?.label ?? agentKey,
+    status: task ? "done" : isRunning.value ? "running" : "waiting",
+    hasTask: Boolean(task),
+    hasOutput: Boolean(agentView),
+    question: task?.question ?? "",
+    finalAnswer: task?.final_answer ?? "",
+    gold: task?.gold ?? "",
+    exactMatch: task?.exact_match ?? null,
+    displayText: agentView?.display_text ?? "",
+    structuredText: safeStringify(agentView?.structured),
+    stateRef: String(agentView?.state_ref ?? task?.state_refs?.[agentKey] ?? ""),
+    retrievalQuery: String(retrievalDebug.retrieval_query ?? ""),
+    plannerFocusText: safeStringify(plannerFocus),
+    memoryHitIds,
+    memoryContextText: safeStringify(task?.memory_context ?? []),
+    memoryHitsText: safeStringify(task?.memory_hits ?? []),
+    messages: normalizeMessagesForAgent(task, agentKey),
+    executionResultText: safeStringify(task?.execution_result),
+  };
+});
+
+const selectedTaskResult = computed(() => {
+  const taskIndex = selectedTimelineCell.value?.taskIndex ?? 0;
+  return getTaskResult(taskIndex);
+});
+
+const activeMemoryPanel = computed(() => {
+  const task = selectedTaskResult.value;
+  const retrievalDebug = task?.retrieval_debug ?? {};
+  const hitIds = getArrayField(retrievalDebug.memory_hit_ids ?? retrievalDebug.context_hit_ids).map(String);
+  const hits = Array.isArray(task?.memory_hits) ? task.memory_hits : [];
+  const context = Array.isArray(task?.memory_context) ? task.memory_context : [];
+  const firstHit = hits[0];
+  const firstHitRecord = firstHit && typeof firstHit === "object" ? (firstHit as Record<string, unknown>) : null;
+  const score = firstHitRecord?.retrieval_score ?? firstHitRecord?.hypergraph_score ?? firstHitRecord?.embedding_score;
+
+  return {
+    query: String(retrievalDebug.retrieval_query ?? "点击时间线中的 retriever / reasoner 圆圈查看本轮检索词。"),
+    hitIds,
+    contextCount: context.length,
+    hitCount: hits.length,
+    firstHitId: String(firstHitRecord?.memory_id ?? hitIds[0] ?? "暂无命中"),
+    firstHitScore: score === undefined || score === null ? "N/A" : String(score),
+    plannerFocus: getArrayField(retrievalDebug.planner_focus).slice(0, 4).map(String),
+  };
+});
+
+const memoryReasonRows = computed(() => {
+  const focusRows = activeMemoryPanel.value.plannerFocus.map((tag, index) => ({
+    tag,
+    score: index === 0 ? "focus" : "plan",
+    className: index % 2 === 0 ? "blue" : "purple",
+  }));
+  if (focusRows.length > 0) {
+    return focusRows;
+  }
+  return memoryReasons;
+});
+
+const truncateGraphLabel = (value: string, fallback: string) => {
+  const text = value.trim() || fallback;
+  return text.length > 12 ? `${text.slice(0, 10)}...` : text;
+};
+
+const activeGraphNodes = computed<GraphNodeSpec[]>(() => {
+  const task = selectedTaskResult.value;
+  if (!task) {
+    return graphNodes;
+  }
+
+  const memoryIds = activeMemoryPanel.value.hitIds;
+  const stateRefs = Object.values(task.state_refs ?? {});
+
+  return graphNodes.map((node) => {
+    if (node.kind === "memory") {
+      const memoryIndex = node.y < 120 ? 0 : node.y > 190 ? 1 : 2;
+      return {
+        ...node,
+        label: truncateGraphLabel(memoryIds[memoryIndex] ?? node.label, node.label || "memory"),
+      };
+    }
+    if (node.kind === "state") {
+      const stateIndex = node.y < 120 ? 0 : 1;
+      return {
+        ...node,
+        label: truncateGraphLabel(stateRefs[stateIndex] ?? node.label, node.label || "state"),
+      };
+    }
+    if (node.kind === "outcome") {
+      return {
+        ...node,
+        label: truncateGraphLabel(task.final_answer ?? node.label, node.label),
+      };
+    }
+    return node;
+  });
+});
 
 const formatElapsed = (value: unknown) => {
   const elapsed = toMetricNumber(value);
@@ -1185,8 +1580,13 @@ onMounted(async () => {
 });
 
 watch(selectedDataset, () => {
+  ensureSelectedTimelineCell();
   nextTick(() => updateCharts());
 });
+
+watch([activeRunForSelection, activeAgents, isRunning], () => {
+  ensureSelectedTimelineCell();
+}, { immediate: true });
 
 onUnmounted(() => {
   window.removeEventListener("resize", resizeCharts);
