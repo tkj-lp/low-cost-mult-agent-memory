@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from datetime import datetime, timezone
 from typing import Any, Literal, TypedDict
 
@@ -23,6 +24,7 @@ class Metrics(TypedDict):
     text_chars: int
     latent_transfer_count: int
     latent_bytes: int
+    transfer_latency_ms: float
 
 
 class CompetitionState(TypedDict):
@@ -43,7 +45,15 @@ class CompetitionState(TypedDict):
     state_refs: dict[str, str]
     memory: list[dict[str, Any]]
     memory_hits: list[dict[str, Any]]
+    experience_hits: list[dict[str, Any]]
+    experience_rules: list[dict[str, Any]]
     memory_context: list[dict[str, Any]]
+    memory_refine_case: dict[str, Any]
+    memory_refine_debug: dict[str, Any]
+    latest_evidence_write: dict[str, Any]
+    latest_experience_write: dict[str, Any]
+    memory_write_count: int
+    experience_write_count: int
     metrics: Metrics
 
 
@@ -71,12 +81,21 @@ def initial_state(
         "state_refs": {},
         "memory": memory or [],
         "memory_hits": [],
+        "experience_hits": [],
+        "experience_rules": [],
         "memory_context": [],
+        "memory_refine_case": {},
+        "memory_refine_debug": {},
+        "latest_evidence_write": {},
+        "latest_experience_write": {},
+        "memory_write_count": 0,
+        "experience_write_count": 0,
         "metrics": {
             "message_count": 0,
             "text_chars": 0,
             "latent_transfer_count": 0,
             "latent_bytes": 0,
+            "transfer_latency_ms": 0.0,
         },
     }
 
@@ -188,11 +207,14 @@ def record_message(
 ) -> tuple[list[dict[str, Any]], Metrics]:
     """记录一条 Agent 间消息，并更新通信指标。"""
 
+    started = time.perf_counter()
     # 结构化 payload 使用紧凑 JSON 统计传输大小。
     serialized = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    transfer_elapsed_ms = (time.perf_counter() - started) * 1000
     next_metrics = dict(metrics or state["metrics"])
     next_metrics["message_count"] += 1
     next_metrics["text_chars"] += len(serialized)
+    next_metrics["transfer_latency_ms"] += transfer_elapsed_ms
 
     # 网页端可以把这条 message 画成通信图中的一条边。
     message = {
@@ -201,5 +223,6 @@ def record_message(
         "action": action,
         "payload": payload,
         "char_cost": len(serialized),
+        "transfer_latency_ms": transfer_elapsed_ms,
     }
     return [*state["messages"], message], next_metrics

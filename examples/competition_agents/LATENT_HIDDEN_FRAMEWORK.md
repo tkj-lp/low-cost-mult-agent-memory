@@ -65,7 +65,7 @@ hidden state 的作用是非文本状态传递、引用通信和开销统计。
 cd D:\qq\low-cost-memory-integrate
 .\.venv\Scripts\Activate.ps1
 $env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-1.5B-Instruct"
 python examples\competition_agents\run_hidden_latent_samples.py
 ```
 
@@ -113,7 +113,7 @@ hidden state 只是在 `latent_states` 中新增一种类型：
 {
   "content_type": "latent.llm_hidden_state",
   "type": "latent_hidden_state",
-  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
   "layer": "last",
   "shape": [1, 33, 896],
   "pooled_shape": [896],
@@ -132,4 +132,3 @@ hidden state 只是在 `latent_states` 中新增一种类型：
 3. 增加 hidden state 与 memory embedding 的相似度分析。
 4. 尝试 KV cache / `past_key_values` 传递实验。
 5. 研究 adapter，把 hidden state 转成下游模型可消费的 prefix embedding。
-

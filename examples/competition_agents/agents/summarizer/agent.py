@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from competition_agents.llm import get_llm_client
-from competition_agents.memory import add_memory
+from competition_agents.memory import add_memory, increment_reuse_counts, refine_memory
 from competition_agents.protocol import make_cognitive_gap
 from competition_agents.state import CompetitionState
 
@@ -72,14 +72,62 @@ def summarizer_agent(state: CompetitionState) -> dict:
         "agent_outputs": state.get("agent_outputs", []),
         "metrics": state.get("metrics", {}),
     }
-    memory = add_memory(
+    refined = refine_memory(
+        task_topic=task_text,
+        summary=summary,
+        trace=trace,
+    )
+    successful_experience_ids: list[str] = []
+    if refined.get("experience_source") == "success-derived":
+        successful_experience_ids = [
+            str(memory_id)
+            for memory_id in state.get("execution_result", {}).get("experience_used_memory_ids", [])
+            if memory_id
+        ]
+    updated_memory = increment_reuse_counts(
         state["memory"],
+        [hit.get("memory_id") for hit in state.get("memory_hits", [])],
+        successful_memory_ids=successful_experience_ids,
+    )
+    evidence_memory = add_memory(
+        updated_memory,
         source_agent="summarizer",
         task_topic=task_text,
         summary=summary,
         tags=["langgraph", "multi-agent", "protocol", state["mode"]],
         trace=trace,
     )
+    latest_evidence_write = evidence_memory[-1] if evidence_memory else {}
+    memory = evidence_memory
+    latest_experience_write: dict = {}
+    if refined.get("should_write", True):
+        memory = add_memory(
+            evidence_memory,
+            source_agent="summarizer",
+            task_topic=task_text,
+            summary=refined["summary"],
+            tags=["langgraph", "multi-agent", "experience", state["mode"]],
+            trace=None,
+            memory_type="experience",
+            problem_pattern=refined["problem_pattern"],
+            solution_pattern=refined["solution_pattern"],
+            failure_pattern=refined["failure_pattern"],
+            trigger_conditions=refined["trigger_conditions"],
+            supporting_evidence=refined["supporting_evidence"],
+            confidence=refined["confidence"],
+            archive_scope=refined["archive_scope"],
+            lifecycle_stage=refined["lifecycle_stage"],
+            strategies=refined["strategies"],
+            experiences=refined["experiences"],
+            reuse_benefits=refined["reuse_benefits"],
+            experience_rule_card=refined["experience_rule_card"],
+            experience_source=refined.get("experience_source", ""),
+            distillation_case=refined.get("distillation_case", {}),
+            abstraction_note=refined.get("abstraction_note", ""),
+            distillation_mode=refined.get("distillation_mode", ""),
+            distillation_raw_output=refined.get("distillation_raw_output", ""),
+        )
+        latest_experience_write = memory[-1] if memory else {}
     cognitive_gap = make_cognitive_gap(
         agent="summarizer",
         known=["plan", "evidence", "execution_result", "latent_state_refs"],
@@ -91,6 +139,20 @@ def summarizer_agent(state: CompetitionState) -> dict:
     return {
         "final_answer": summary,
         "memory": memory,
+        "memory_refine_case": refined.get("distillation_case", {}),
+        "memory_refine_debug": {
+            "should_write": refined.get("should_write", True),
+            "memory_type": refined.get("memory_type", "experience"),
+            "experience_source": refined.get("experience_source", ""),
+            "abstraction_note": refined.get("abstraction_note", ""),
+            "experience_rule_card": refined.get("experience_rule_card", {}),
+            "distillation_mode": refined.get("distillation_mode", ""),
+            "distillation_raw_output": refined.get("distillation_raw_output", ""),
+        },
+        "latest_evidence_write": latest_evidence_write,
+        "latest_experience_write": latest_experience_write,
+        "memory_write_count": 2 if refined.get("should_write", True) else 1,
+        "experience_write_count": 1 if refined.get("should_write", True) else 0,
         "agent_outputs": [
             *state.get("agent_outputs", []),
             {"agent": "SummarizerAgent", "raw_output": summary},

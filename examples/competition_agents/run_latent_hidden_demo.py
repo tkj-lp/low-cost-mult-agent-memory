@@ -66,7 +66,7 @@ def main() -> None:
     serialized_message = json.dumps(message, ensure_ascii=False, separators=(",", ":"))
 
     print("=== hidden-state latent collaboration demo ===")
-    print(f"LOCAL_HIDDEN_MODEL={os.environ.get('LOCAL_HIDDEN_MODEL', 'Qwen/Qwen2.5-0.5B-Instruct')}")
+    print(f"LOCAL_HIDDEN_MODEL={os.environ.get('LOCAL_HIDDEN_MODEL', 'Qwen/Qwen2.5-1.5B-Instruct')}")
     print("message:")
     print(json.dumps(message, ensure_ascii=False, indent=2))
     print("latent states:")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 import time
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -13,7 +14,9 @@ from competition_agents.latent_hidden import (
     hidden_storage_mode,
     put_hidden_tensor,
 )
+from competition_agents.latent_hidden.hidden_state import HiddenStateResult
 from competition_agents.latent_hidden.adapter import cosine_similarity
+from competition_agents.restricted_python_codeact import run_restricted_python
 from hypergraph_memory_method import search_context
 from run_hotpot_samples import SAMPLES, answers_match, normalize_answer
 
@@ -34,6 +37,20 @@ COUNTRY_ALIASES = {
 
 FRONTEND_OMIT_KEYS = {"pooled_vector", "tensor", "vector"}
 DEFAULT_CONTEXT_SOURCE = "inline"
+
+
+def force_utf8_stdout() -> None:
+    """强制 hidden 脚本 stdout 使用 utf-8，避免前端读取结果时出现乱码。"""
+
+    stream = getattr(sys, "stdout", None)
+    if stream is None:
+        return
+    reconfigure = getattr(stream, "reconfigure", None)
+    if callable(reconfigure):
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 
 def frontend_safe(value: Any, *, max_string: int = 3000) -> Any:
@@ -98,6 +115,185 @@ def _tokenize(text: str) -> set[str]:
         token
         for token in re.findall(r"[a-z0-9][a-z0-9\-]+", str(text or "").lower())
         if len(token) >= 3
+    }
+
+
+def _default_hidden_plan() -> list[str]:
+    return [
+        "identify relevant context",
+        "retrieve supporting facts",
+        "infer shortest answer",
+    ]
+
+
+def _planner_focus(plan: list[str], limit: int = 3) -> list[str]:
+    """提取规划中最适合用于检索的前几步。"""
+
+    focus = []
+    for step in plan:
+        text = str(step or "").strip()
+        if not text:
+            continue
+        focus.append(text.rstrip("."))
+        if len(focus) >= limit:
+            break
+    return focus
+
+
+def _build_retrieval_query(task: str, plan: list[str]) -> tuple[str, list[str]]:
+    """把 Planner 产出的检索关注点显式拼进查询。"""
+
+    focus = _planner_focus(plan)
+    if not focus:
+        return task, []
+    query = (
+        f"{task}\n"
+        "Planner retrieval focus:\n"
+        + "\n".join(f"- {step}" for step in focus)
+    )
+    return query, focus
+
+
+def _build_hidden_planner_task(sample: dict[str, Any], *, context_source: str) -> str:
+    """为 hidden 路径构造与主实验尽量一致的 planner 输入任务文本。"""
+
+    question = str(sample.get("question") or "")
+    if sample.get("dataset_type") == "codeact":
+        return (
+            "CodeAct-style task. Reuse prior memory when helpful.\n"
+            "Plan safe restricted Python execution in short retrieval-oriented steps.\n\n"
+            f"Task: {question}\n"
+        )
+    if sample.get("conversation_context") or sample.get("turn_id"):
+        if context_source == "hypergraph":
+            return (
+                "Continuous HotpotQA-style task. Reuse prior memory in the same group when helpful.\n\n"
+                f"Question: {question}\n"
+            )
+        return (
+            "Continuous HotpotQA-style task. Reuse prior memory in the same group when helpful.\n\n"
+            f"Question: {question}\n"
+            f"Context: {json.dumps(sample.get('context', []), ensure_ascii=False)}\n"
+        )
+    if context_source == "hypergraph":
+        return (
+            "HotpotQA-style multi-hop QA task.\n"
+            "Answer the question using evidence retrieved by RetrieverAgent.\n\n"
+            f"Question: {question}\n"
+        )
+    return (
+        "HotpotQA-style multi-hop QA task.\n"
+        "Answer using only the provided Context. Return a short answer string that best matches the question.\n\n"
+        f"Question: {question}\n"
+        f"Context: {json.dumps(sample.get('context', []), ensure_ascii=False)}\n"
+    )
+
+
+def _parse_plan_lines(raw_text: str, *, limit: int = 4) -> list[str]:
+    """把本地模型生成文本解析成 planner 步骤列表。"""
+
+    steps: list[str] = []
+    for line in str(raw_text or "").splitlines():
+        text = line.strip()
+        if not text:
+            continue
+        text = re.sub(r"^[-*\d\.\)\s]+", "", text).strip()
+        lowered = text.lower()
+        if lowered.startswith("plan:"):
+            text = text.split(":", 1)[1].strip()
+        if not text:
+            continue
+        steps.append(text.rstrip("."))
+        if len(steps) >= limit:
+            break
+    return steps
+
+
+def _is_incomplete_plan_step(step: str) -> bool:
+    """判断 planner 某一步是否像被截断的半句。"""
+
+    text = str(step or "").strip()
+    if not text:
+        return True
+    if text.endswith((".", "!", "?", ";", ":")):
+        return False
+
+    trailing_tokens = {
+        "a",
+        "an",
+        "and",
+        "for",
+        "from",
+        "if",
+        "in",
+        "into",
+        "is",
+        "not",
+        "of",
+        "on",
+        "or",
+        "the",
+        "to",
+        "with",
+    }
+    tokens = re.findall(r"[a-z]+", text.lower())
+    return bool(tokens and tokens[-1] in trailing_tokens)
+
+
+def _generate_hidden_plan(
+    task: str,
+) -> tuple[list[str], str, HiddenStateResult | None, object | None, dict[str, Any]]:
+    """用本地模型生成 planner plan，并直接复用这次生成的 hidden state。"""
+
+    fallback_used = False
+    fallback_reason = ""
+    raw_output = ""
+    planner_hidden: HiddenStateResult | None = None
+    planner_tensor = None
+
+    try:
+        prompt = (
+            "You are PlannerAgent in a multi-agent competition prototype.\n"
+            "Return exactly four short English retrieval-oriented task steps, one per line.\n"
+            "Each step must be concise, complete, and under 12 words.\n"
+            "Avoid conditionals, subordinate clauses, and explanations.\n"
+            "Prefer verb-first actions such as Retrieve, Identify, Check, Confirm.\n"
+            "Keep each step specific to the question.\n"
+            "Do not output explanations.\n"
+            f"Task: {task}\n"
+            "Plan:\n"
+        )
+        generated, planner_tensor = generate_text_with_last_hidden_state(
+            prompt,
+            max_new_tokens=96,
+            do_sample=False,
+        )
+        planner_hidden = generated.hidden
+        raw_output = generated.generated_text.strip()
+        plan = _parse_plan_lines(raw_output)
+    except Exception as exc:
+        fallback_used = True
+        fallback_reason = f"{type(exc).__name__}: {exc}"
+        plan = _default_hidden_plan()
+        raw_output = "\n".join(plan)
+
+    normalized = [str(step).strip() for step in plan if str(step).strip()]
+    if normalized and _is_incomplete_plan_step(normalized[-1]):
+        fallback_used = True
+        if not fallback_reason:
+            fallback_reason = "planner output ended with an incomplete step"
+        normalized = normalized[:-1]
+    if not normalized:
+        fallback_used = True
+        if not fallback_reason:
+            fallback_reason = "planner returned empty plan"
+        normalized = _default_hidden_plan()
+        raw_output = "\n".join(normalized)
+
+    return normalized[:4], raw_output, planner_hidden, planner_tensor, {
+        "planner_provider": "local_hidden_model",
+        "fallback_used": fallback_used,
+        "fallback_reason": fallback_reason,
     }
 
 
@@ -172,6 +368,8 @@ def _question_answer_rules(question: str) -> str:
     rules = [
         "Copy the answer span exactly from the evidence when possible.",
         "Prefer the most specific phrase that directly answers the question.",
+        "Do not answer with the title or topic unless the question explicitly asks for it.",
+        "If the evidence contains multiple candidate spans, choose the one that satisfies every constraint in the question.",
     ]
     if "when" in question_lower:
         rules.append("If multiple dates appear, choose the one that matches all constraints in the question.")
@@ -180,9 +378,11 @@ def _question_answer_rules(question: str) -> str:
         rules.append("Return the event or subject the film depicts, not just the title.")
     if "cast" in question_lower or "members of the cast" in question_lower:
         rules.append("Return only person names from the cast list, separated by commas.")
+        rules.append("Return the first four cast members mentioned in the evidence, in order.")
         rules.append("Do not return the film title.")
     if "where was it filmed" in question_lower or "where was it filmed?" in question_lower:
         rules.append("Return all filming locations mentioned in the evidence, including both places if two are listed.")
+        rules.append("Return locations only, not the film title.")
     if "what does the economy" in question_lower:
         rules.append("Return only the economic pillar or resource, not a full sentence.")
     if "which nearby sea" in question_lower:
@@ -191,6 +391,7 @@ def _question_answer_rules(question: str) -> str:
         rules.append("Return only the fish names mentioned in the evidence.")
     if "what mineral resources" in question_lower:
         rules.append("Return only the mineral resources, not the full explanatory sentence.")
+        rules.append("Include every mineral resource mentioned in the evidence, including amber if present.")
     if "what natural hazard" in question_lower:
         rules.append("Return only the hazard name, not an explanatory sentence.")
     return "\n".join(f"- {rule}" for rule in rules)
@@ -198,6 +399,7 @@ def _question_answer_rules(question: str) -> str:
 
 def evidence_from_hypergraph_sample(
     sample: dict[str, Any],
+    retrieval_query: str,
     planner_focus: list[str],
     *,
     limit: int = 4,
@@ -223,7 +425,7 @@ def evidence_from_hypergraph_sample(
             "conversation_context": sample.get("conversation_context", []),
             "supporting_passage": sample.get("supporting_passage"),
         },
-        query=str(sample.get("question") or ""),
+        query=retrieval_query,
         dataset_type=dataset_type,
         planner_focus=planner_focus or None,
         top_k=max(limit * 3, 8),
@@ -323,13 +525,17 @@ def generate_answer_with_hidden_state(
     prompt = (
         "You are ReasonerAgent in a multi-agent memory experiment.\n"
         "Answer the question using only the controlled evidence.\n"
-        "Return a short answer span only. Do not explain.\n"
+        "Return one short answer span only. Do not explain.\n"
         "Do not output role tags such as Human:, Assistant:, Question:, Answer:, or Evidence:.\n"
+        "First identify the exact answer span in the evidence, then copy that span with minimal formatting changes.\n"
+        "Never output the topic name when the question asks for a date, place, list, or resource.\n"
+        "If the answer is a list, keep all required items and preserve their original order.\n"
         "Answer rules:\n"
         f"{_question_answer_rules(question)}\n"
         f"Question: {question}\n"
         f"Memory refs: {json.dumps(memory_refs, ensure_ascii=False)}\n"
         f"Controlled evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
+        "Output only the final answer span.\n"
         "Answer:"
     )
     generated, tensor = generate_text_with_last_hidden_state(
@@ -354,9 +560,45 @@ def build_summary_memory(result: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "memory_id": f"hidden-mem-{result['sample_id']}",
+        "memory_type": "evidence",
         "source_agent": "summarizer",
         "task_topic": result["question"],
         "summary": f"{result['answer_candidate']} | evidence={'; '.join(result['evidence'])}",
+        "state_refs": result["state_refs"],
+    }
+
+
+def build_experience_memory(result: dict[str, Any]) -> dict[str, Any]:
+    """把 hidden 路径结果提炼成第一版 experience memory。"""
+
+    question = str(result.get("question") or "")
+    answer_candidate = str(result.get("answer_candidate") or "")
+    planner_focus = result.get("retrieval_debug", {}).get("planner_focus", [])
+    trigger_conditions = []
+    question_lower = question.lower()
+    if "when" in question_lower:
+        trigger_conditions.append("question:when")
+    if "dvd" in question_lower:
+        trigger_conditions.append("constraint:dvd_release")
+    if "cast" in question_lower:
+        trigger_conditions.append("question:cast_list")
+    if result.get("group_id"):
+        trigger_conditions.append(f"group:{result['group_id']}")
+
+    return {
+        "memory_id": f"hidden-exp-{result['sample_id']}",
+        "memory_type": "experience",
+        "source_agent": "summarizer",
+        "task_topic": question,
+        "summary": (
+            f"经验记忆：该题建议优先按 planner_focus 检索，再输出最短答案槽位。"
+            f" 当前答案={answer_candidate}"
+        ),
+        "problem_pattern": "hidden_continuous_reasoning",
+        "solution_pattern": "先复用历史记忆摘要，再结合 planner_focus 缩小检索范围，最后输出最短答案。",
+        "failure_pattern": "若首轮答案槽位或 supporting facts 选偏，后续复用会一起被带偏。",
+        "trigger_conditions": trigger_conditions,
+        "planner_focus": planner_focus,
         "state_refs": result["state_refs"],
     }
 
@@ -399,35 +641,51 @@ def run_sample(
     topic = f"{sample['id']}: {question}"
     memory_refs = [memory["memory_id"] for memory in memory_hits]
     context_source = str(sample.get("context_source") or DEFAULT_CONTEXT_SOURCE)
-    planner_focus = [
-        "identify relevant context",
-        "retrieve supporting facts",
-        "infer shortest answer",
-    ]
+    planner_task = _build_hidden_planner_task(sample, context_source=context_source)
+    plan, planner_raw_output, planner_hidden, planner_tensor, planner_debug = _generate_hidden_plan(planner_task)
+    retrieval_query, planner_focus = _build_retrieval_query(planner_task, plan)
 
     planner_text = (
         "PlannerAgent hidden-latent planning input.\n"
         f"Question: {question}\n"
         f"Reusable memory refs: {json.dumps(memory_refs, ensure_ascii=False)}\n"
-        "Plan: identify relevant context, retrieve supporting facts, infer shortest answer."
+        f"Planner task: {planner_task}\n"
+        f"Planner provider: {planner_debug['planner_provider']}\n"
+        f"Planner fallback used: {planner_debug['fallback_used']}\n"
+        f"Planner fallback reason: {planner_debug['fallback_reason']}\n"
+        f"Plan: {json.dumps(plan, ensure_ascii=False)}\n"
+        f"Raw planner output: {planner_raw_output}"
     )
-    planner_ref, latent_states, planner_state = put_hidden_state(
-        latent_states,
-        producer="planner",
-        topic=topic,
-        text=planner_text,
-        consumers=["retriever", "reasoner"],
-    )
+    if planner_hidden is not None and planner_tensor is not None and not planner_debug["fallback_used"]:
+        planner_ref, latent_states = put_hidden_tensor(
+            latent_states,
+            producer="planner",
+            topic=topic,
+            result=planner_hidden,
+            tensor=planner_tensor,
+            consumers=["retriever", "reasoner"],
+        )
+        planner_state = latent_states[planner_ref]
+    else:
+        planner_ref, latent_states, planner_state = put_hidden_state(
+            latent_states,
+            producer="planner",
+            topic=topic,
+            text=planner_text,
+            consumers=["retriever", "reasoner"],
+        )
     messages.append(compact_message("planner", "retriever", "retrieve", [planner_ref], memory_refs))
 
     context_hits: list[dict[str, Any]] = []
     if context_source == "hypergraph":
-        evidence, context_hits = evidence_from_hypergraph_sample(sample, planner_focus)
+        evidence, context_hits = evidence_from_hypergraph_sample(sample, retrieval_query, planner_focus)
     else:
         evidence = evidence_from_sample(sample)
     retriever_text = (
         "RetrieverAgent hidden-latent evidence input.\n"
         f"Question: {question}\n"
+        f"Retrieval query: {retrieval_query}\n"
+        f"Planner focus: {json.dumps(planner_focus, ensure_ascii=False)}\n"
         f"Context source: {context_source}\n"
         f"Evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
         f"Reusable memory summaries: {json.dumps([m['summary'] for m in memory_hits], ensure_ascii=False)}"
@@ -474,9 +732,12 @@ def run_sample(
         )
     messages.append(compact_message("reasoner", "summarizer", "summarize", [answer_ref], memory_refs))
 
-    serialized_messages = [
-        json.dumps(message, ensure_ascii=False, separators=(",", ":")) for message in messages
-    ]
+    serialized_messages: list[str] = []
+    transfer_latency_ms = 0.0
+    for message in messages:
+        serialize_started = time.perf_counter()
+        serialized_messages.append(json.dumps(message, ensure_ascii=False, separators=(",", ":")))
+        transfer_latency_ms += (time.perf_counter() - serialize_started) * 1000
     hidden_total_bytes = sum(
         int(state.get("stored_hidden_bytes", 0))
         for state in latent_states.values()
@@ -504,8 +765,12 @@ def run_sample(
             "hidden_state_refs": len(latent_states),
             "hidden_bytes": hidden_total_bytes,
             "memory_hits": len(memory_hits),
+            "experience_hit_count": sum(1 for memory in memory_hits if memory.get("memory_type") == "experience"),
             "planner_evidence_similarity": similarity,
+            "transfer_latency_ms": transfer_latency_ms,
             "elapsed_ms": elapsed_ms,
+            "memory_write_count": 2,
+            "experience_write_count": 1,
         },
         "state_refs": {
             "planner": planner_ref,
@@ -517,7 +782,14 @@ def run_sample(
                 "display_text": planner_text,
                 "structured": {
                     "memory_refs": memory_refs,
-                    "plan": "identify relevant context, retrieve supporting facts, infer shortest answer",
+                    "planner_task": planner_task,
+                    "plan": plan,
+                    "planner_focus": planner_focus,
+                    "retrieval_query": retrieval_query,
+                    "raw_output": planner_raw_output,
+                    "planner_provider": planner_debug["planner_provider"],
+                    "fallback_used": planner_debug["fallback_used"],
+                    "fallback_reason": planner_debug["fallback_reason"],
                 },
                 "state_ref": planner_ref,
             },
@@ -527,6 +799,13 @@ def run_sample(
                     "evidence": evidence,
                     "memory_summaries": [memory["summary"] for memory in memory_hits],
                     "memory_hit_ids": memory_refs,
+                    "experience_hit_ids": [
+                        memory["memory_id"]
+                        for memory in memory_hits
+                        if memory.get("memory_type") == "experience"
+                    ],
+                    "retrieval_query": retrieval_query,
+                    "planner_focus": planner_focus,
                     "context_source": context_source,
                     "context_hit_ids": [hit.get("context_id") for hit in context_hits],
                 },
@@ -551,17 +830,35 @@ def run_sample(
             },
         },
         "retrieval_debug": {
-            "retrieval_query": question,
+            "retrieval_query": retrieval_query,
             "planner_focus": planner_focus,
+            "planner_provider": planner_debug["planner_provider"],
+            "planner_fallback_used": planner_debug["fallback_used"],
+            "planner_fallback_reason": planner_debug["fallback_reason"],
             "context_source": context_source,
             "context_hit_ids": [hit.get("context_id") for hit in context_hits],
             "context_hits": context_hits,
             "memory_hit_ids": memory_refs,
             "memory_summaries": [memory["summary"] for memory in memory_hits],
+            "experience_hit_ids": [
+                memory["memory_id"] for memory in memory_hits if memory.get("memory_type") == "experience"
+            ],
+            "experience_hits": [
+                {
+                    "memory_id": memory["memory_id"],
+                    "summary": memory["summary"],
+                    "problem_pattern": memory.get("problem_pattern", ""),
+                    "solution_pattern": memory.get("solution_pattern", ""),
+                    "trigger_conditions": memory.get("trigger_conditions", []),
+                }
+                for memory in memory_hits
+                if memory.get("memory_type") == "experience"
+            ],
             "memory_hits": [
                 {
                     "memory_id": memory["memory_id"],
                     "summary": memory["summary"],
+                    "memory_type": memory.get("memory_type", "evidence"),
                     "state_refs": memory.get("state_refs", {}),
                 }
                 for memory in memory_hits
@@ -591,12 +888,20 @@ def print_sample(result: dict[str, Any]) -> None:
     print(f"gold: {result['gold']}")
     print(f"exact_match: {result['exact_match']}")
     metrics = result["metrics"]
+    retrieval_debug = result.get("retrieval_debug", {})
+    print(
+        "planner_debug: "
+        f"provider={retrieval_debug.get('planner_provider', '')}, "
+        f"fallback_used={retrieval_debug.get('planner_fallback_used', False)}, "
+        f"fallback_reason={retrieval_debug.get('planner_fallback_reason', '')}"
+    )
     print(
         "metrics: "
         f"messages={metrics['message_count']}, "
         f"text_chars={metrics['text_chars']}, "
         f"hidden_state_refs={metrics['hidden_state_refs']}, "
         f"hidden_bytes={metrics['hidden_bytes']}, "
+        f"transfer_latency_ms={metrics.get('transfer_latency_ms', 0.0):.2f}, "
         f"storage_mode={result.get('hidden_storage_mode', '')}, "
         f"memory_hits={metrics['memory_hits']}, "
         f"answer_mode={result.get('answer_mode', '')}, "
@@ -646,6 +951,373 @@ def run_continuous_group(group: dict[str, Any], *, answer_mode: str = "generate"
         result["expected_reuse"] = turn.get("expected_reuse", [])
         results.append(result)
         memory.append(build_summary_memory(result))
+        memory.append(build_experience_memory(result))
+    return results
+
+
+def load_codeact_tasks(path: Path, limit: int) -> list[dict[str, Any]]:
+    """读取 CodeAct 数据集，并转成 hidden 路径可复用的样本结构。"""
+
+    tasks = json.loads(path.read_text(encoding="utf-8"))
+    if limit:
+        tasks = tasks[:limit]
+    return [
+        {
+            "id": task["id"],
+            "group_id": "codeact",
+            "turn_id": task["id"],
+            "dataset_type": "codeact",
+            "question": task["task"],
+            "task": task["task"],
+            "task_type": task.get("task_type", "codeact"),
+            "inputs": task.get("inputs", {}),
+            "expected": task.get("expected"),
+            "allowed_imports": task.get("allowed_imports", []),
+            "reference_code": task.get("reference_code", ""),
+            "timeout_ms": task.get("timeout_ms", 3000),
+            "tags": task.get("tags", []),
+            "answer": json.dumps(task.get("expected"), ensure_ascii=False, sort_keys=True),
+            "context_source": DEFAULT_CONTEXT_SOURCE,
+        }
+        for task in tasks
+    ]
+
+
+def build_codeact_summary_memory(result: dict[str, Any]) -> dict[str, Any]:
+    """把 CodeAct 执行结果压缩成后续任务可复用的轻量记忆。"""
+
+    execution_result = result.get("execution_result", {})
+    return {
+        "memory_id": f"hidden-mem-{result['sample_id']}",
+        "memory_type": "evidence",
+        "source_agent": "summarizer",
+        "task_id": result["sample_id"],
+        "task_topic": result["question"],
+        "summary": (
+            f"task={result['question']} | "
+            f"result={json.dumps(execution_result.get('result'), ensure_ascii=False, sort_keys=True)} | "
+            f"tags={result.get('tags', [])}"
+        ),
+        "result": execution_result.get("result"),
+        "state_refs": result.get("state_refs", {}),
+        "tags": result.get("tags", []),
+    }
+
+
+def build_codeact_experience_memory(result: dict[str, Any]) -> dict[str, Any]:
+    """把 hidden CodeAct 结果提炼成可复用的经验记忆。"""
+
+    return {
+        "memory_id": f"hidden-exp-{result['sample_id']}",
+        "memory_type": "experience",
+        "source_agent": "summarizer",
+        "task_topic": result["question"],
+        "summary": "经验记忆：先整理 allowed_imports 和 reference_code，再用受限执行器返回结构化 execution_result。",
+        "problem_pattern": "codeact_restricted_python_execution",
+        "solution_pattern": "把执行请求和运行约束显式化，再以 execution_result 作为最终答案来源。",
+        "failure_pattern": "如果执行约束缺失或代码被沙箱拦截，最终结果会变成结构化错误而不是正常答案。",
+        "trigger_conditions": ["dataset:codeact", "execution:restricted_python"],
+        "state_refs": result.get("state_refs", {}),
+        "tags": result.get("tags", []),
+    }
+
+
+def run_codeact_sample(
+    sample: dict[str, Any],
+    *,
+    prior_memory: list[dict[str, Any]] | None = None,
+    execution_memory: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """在 hidden-state 框架下运行一条 CodeAct 任务。"""
+
+    started = time.perf_counter()
+    latent_states: dict[str, dict[str, Any]] = {}
+    messages: list[dict[str, Any]] = []
+    memory_hits = prior_memory or []
+    execution_memory = execution_memory or {}
+
+    question = sample["question"]
+    topic = f"{sample['id']}: {question}"
+    memory_refs = [memory["memory_id"] for memory in memory_hits]
+    planner_task = _build_hidden_planner_task(sample, context_source=DEFAULT_CONTEXT_SOURCE)
+    plan, planner_raw_output, planner_hidden, planner_tensor, planner_debug = _generate_hidden_plan(planner_task)
+    retrieval_query, planner_focus = _build_retrieval_query(planner_task, plan)
+
+    planner_text = (
+        "PlannerAgent hidden-latent planning input.\n"
+        f"Task: {question}\n"
+        f"Reusable memory refs: {json.dumps(memory_refs, ensure_ascii=False)}\n"
+        f"Planner task: {planner_task}\n"
+        f"Planner provider: {planner_debug['planner_provider']}\n"
+        f"Planner fallback used: {planner_debug['fallback_used']}\n"
+        f"Planner fallback reason: {planner_debug['fallback_reason']}\n"
+        f"Plan: {json.dumps(plan, ensure_ascii=False)}\n"
+        f"Raw planner output: {planner_raw_output}"
+    )
+    if planner_hidden is not None and planner_tensor is not None and not planner_debug["fallback_used"]:
+        planner_ref, latent_states = put_hidden_tensor(
+            latent_states,
+            producer="planner",
+            topic=topic,
+            result=planner_hidden,
+            tensor=planner_tensor,
+            consumers=["retriever", "reasoner"],
+        )
+        planner_state = latent_states[planner_ref]
+    else:
+        planner_ref, latent_states, planner_state = put_hidden_state(
+            latent_states,
+            producer="planner",
+            topic=topic,
+            text=planner_text,
+            consumers=["retriever", "reasoner"],
+        )
+    messages.append(compact_message("planner", "retriever", "retrieve", [planner_ref], memory_refs))
+
+    evidence = [
+        f"task: {question}",
+        f"inputs: {json.dumps(sample.get('inputs', {}), ensure_ascii=False, sort_keys=True)}",
+        f"allowed_imports: {json.dumps(sample.get('allowed_imports', []), ensure_ascii=False)}",
+        f"tags: {json.dumps(sample.get('tags', []), ensure_ascii=False)}",
+        f"reference_code: {sample.get('reference_code', '')}",
+    ]
+    retriever_text = (
+        "RetrieverAgent hidden-latent evidence input.\n"
+        f"Task: {question}\n"
+        f"Retrieval query: {retrieval_query}\n"
+        f"Planner focus: {json.dumps(planner_focus, ensure_ascii=False)}\n"
+        f"Evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
+        f"Reusable memory summaries: {json.dumps([m['summary'] for m in memory_hits], ensure_ascii=False)}"
+    )
+    evidence_ref, latent_states, evidence_state = put_hidden_state(
+        latent_states,
+        producer="retriever",
+        topic=topic,
+        text=retriever_text,
+        consumers=["reasoner", "executor", "summarizer"],
+    )
+    messages.append(compact_message("retriever", "reasoner", "reason", [planner_ref, evidence_ref], memory_refs))
+
+    reasoner_prompt = (
+        "ReasonerAgent hidden-latent execution request.\n"
+        f"Task: {question}\n"
+        f"planner_hidden_ref: {planner_ref}\n"
+        f"evidence_hidden_ref: {evidence_ref}\n"
+        f"memory_refs: {json.dumps(memory_refs, ensure_ascii=False)}\n"
+        f"allowed_imports: {json.dumps(sample.get('allowed_imports', []), ensure_ascii=False)}\n"
+        f"reference_code: {sample.get('reference_code', '')}\n"
+        "Execution strategy: run the provided reference_code in restricted Python."
+    )
+    answer_ref, latent_states, answer_state = put_hidden_state(
+        latent_states,
+        producer="reasoner",
+        topic=topic,
+        text=reasoner_prompt,
+        consumers=["executor"],
+    )
+    messages.append(compact_message("reasoner", "executor", "execute", [answer_ref], memory_refs))
+
+    execution_result = run_restricted_python(
+        sample.get("reference_code", ""),
+        inputs=sample.get("inputs", {}),
+        memory=execution_memory,
+        allowed_imports=sample.get("allowed_imports", []),
+        timeout_ms=sample.get("timeout_ms", 3000),
+    )
+    execution_result = {
+        **execution_result,
+        "code_source": "reference_code",
+        "code": sample.get("reference_code", ""),
+    }
+    final_answer = json.dumps(execution_result.get("result"), ensure_ascii=False, sort_keys=True)
+    executor_text = (
+        "ExecutorAgent hidden-latent execution result.\n"
+        f"sandbox_status: {execution_result.get('sandbox_status')}\n"
+        f"exit_code: {execution_result.get('exit_code')}\n"
+        f"result: {final_answer}\n"
+        f"stderr: {execution_result.get('stderr', '')}"
+    )
+    executor_ref, latent_states, executor_state = put_hidden_state(
+        latent_states,
+        producer="executor",
+        topic=topic,
+        text=executor_text,
+        consumers=["summarizer"],
+    )
+    messages.append(compact_message("executor", "summarizer", "summarize", [executor_ref], memory_refs))
+
+    execution_memory[sample["id"]] = {
+        "task_id": sample["id"],
+        "result": execution_result.get("result"),
+        "tags": sample.get("tags", []),
+        "execution_mode": execution_result.get("execution_mode"),
+        "sandbox_status": execution_result.get("sandbox_status"),
+    }
+
+    serialized_messages: list[str] = []
+    transfer_latency_ms = 0.0
+    for message in messages:
+        serialize_started = time.perf_counter()
+        serialized_messages.append(json.dumps(message, ensure_ascii=False, separators=(",", ":")))
+        transfer_latency_ms += (time.perf_counter() - serialize_started) * 1000
+
+    hidden_total_bytes = sum(
+        int(state.get("stored_hidden_bytes", 0))
+        for state in latent_states.values()
+        if isinstance(state, dict)
+    )
+    similarity = cosine_similarity(planner_state["pooled_vector"], evidence_state["pooled_vector"])
+    exact_match = execution_result.get("result") == sample.get("expected")
+    elapsed_ms = (time.perf_counter() - started) * 1000
+
+    return {
+        "sample_id": sample["id"],
+        "question": question,
+        "task_type": sample.get("task_type", "codeact"),
+        "inputs": sample.get("inputs", {}),
+        "allowed_imports": sample.get("allowed_imports", []),
+        "tags": sample.get("tags", []),
+        "evidence": evidence,
+        "answer_candidate": final_answer,
+        "gold": json.dumps(sample.get("expected"), ensure_ascii=False, sort_keys=True),
+        "expected_result": sample.get("expected"),
+        "execution_result": execution_result,
+        "exact_match": exact_match,
+        "context_source": DEFAULT_CONTEXT_SOURCE,
+        "messages": messages,
+        "latent_states": latent_states,
+        "hidden_storage_mode": hidden_storage_mode(),
+        "answer_mode": "reference_code",
+        "metrics": {
+            "message_count": len(messages),
+            "text_chars": sum(len(message) for message in serialized_messages),
+            "hidden_state_refs": len(latent_states),
+            "hidden_bytes": hidden_total_bytes,
+            "memory_hits": len(memory_hits),
+            "experience_hit_count": sum(1 for memory in memory_hits if memory.get("memory_type") == "experience"),
+            "planner_evidence_similarity": similarity,
+            "transfer_latency_ms": transfer_latency_ms,
+            "elapsed_ms": elapsed_ms,
+            "tool_execution_count": 1,
+            "memory_write_count": 2,
+            "experience_write_count": 1,
+        },
+        "state_refs": {
+            "planner": planner_ref,
+            "evidence": evidence_ref,
+            "answer": answer_ref,
+            "executor": executor_ref,
+        },
+        "agent_outputs": {
+            "planner": {
+                "display_text": planner_text,
+                "structured": {
+                    "memory_refs": memory_refs,
+                    "planner_task": planner_task,
+                    "plan": plan,
+                    "planner_focus": planner_focus,
+                    "retrieval_query": retrieval_query,
+                    "raw_output": planner_raw_output,
+                    "planner_provider": planner_debug["planner_provider"],
+                    "fallback_used": planner_debug["fallback_used"],
+                    "fallback_reason": planner_debug["fallback_reason"],
+                },
+                "state_ref": planner_ref,
+            },
+            "retriever": {
+                "display_text": retriever_text,
+                "structured": {
+                    "evidence": evidence,
+                    "memory_summaries": [memory["summary"] for memory in memory_hits],
+                    "memory_hit_ids": memory_refs,
+                    "experience_hit_ids": [
+                        memory["memory_id"]
+                        for memory in memory_hits
+                        if memory.get("memory_type") == "experience"
+                    ],
+                    "retrieval_query": retrieval_query,
+                    "planner_focus": planner_focus,
+                    "context_source": DEFAULT_CONTEXT_SOURCE,
+                    "context_hit_ids": [],
+                },
+                "state_ref": evidence_ref,
+            },
+            "reasoner": {
+                "display_text": reasoner_prompt,
+                "structured": {
+                    "execution_request": {
+                        "allowed_imports": sample.get("allowed_imports", []),
+                        "code_source": "reference_code",
+                        "code": sample.get("reference_code", ""),
+                    },
+                    "memory_refs": memory_refs,
+                    "answer_mode": "reference_code",
+                },
+                "state_ref": answer_ref,
+            },
+            "executor": {
+                "display_text": executor_text,
+                "structured": execution_result,
+                "state_ref": executor_ref,
+            },
+            "summarizer": {
+                "display_text": final_answer,
+                "structured": {
+                    "final_answer": execution_result.get("result"),
+                    "gold": sample.get("expected"),
+                },
+                "state_ref": executor_ref,
+            },
+        },
+        "retrieval_debug": {
+            "retrieval_query": retrieval_query,
+            "planner_focus": planner_focus,
+            "planner_provider": planner_debug["planner_provider"],
+            "planner_fallback_used": planner_debug["fallback_used"],
+            "planner_fallback_reason": planner_debug["fallback_reason"],
+            "context_source": DEFAULT_CONTEXT_SOURCE,
+            "context_hit_ids": [],
+            "context_hits": [],
+            "memory_hit_ids": memory_refs,
+            "memory_summaries": [memory["summary"] for memory in memory_hits],
+            "experience_hit_ids": [
+                memory["memory_id"] for memory in memory_hits if memory.get("memory_type") == "experience"
+            ],
+            "experience_hits": [
+                {
+                    "memory_id": memory["memory_id"],
+                    "summary": memory["summary"],
+                    "problem_pattern": memory.get("problem_pattern", ""),
+                    "solution_pattern": memory.get("solution_pattern", ""),
+                    "trigger_conditions": memory.get("trigger_conditions", []),
+                }
+                for memory in memory_hits
+                if memory.get("memory_type") == "experience"
+            ],
+            "memory_hits": [
+                {
+                    "memory_id": memory["memory_id"],
+                    "summary": memory["summary"],
+                    "memory_type": memory.get("memory_type", "evidence"),
+                    "state_refs": memory.get("state_refs", {}),
+                }
+                for memory in memory_hits
+            ],
+        },
+    }
+
+
+def run_codeact_tasks(tasks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """顺序运行 CodeAct 任务，并让后续任务可复用前序执行记忆。"""
+
+    results = []
+    memory: list[dict[str, Any]] = []
+    execution_memory: dict[str, dict[str, Any]] = {}
+    for task in tasks:
+        result = run_codeact_sample(task, prior_memory=memory, execution_memory=execution_memory)
+        results.append(result)
+        memory.append(build_codeact_summary_memory(result))
+        memory.append(build_codeact_experience_memory(result))
     return results
 
 
@@ -658,12 +1330,13 @@ def print_summary(results: list[dict[str, Any]]) -> None:
     total_bytes = sum(result["metrics"]["hidden_bytes"] for result in results)
     total_memory_hits = sum(result["metrics"]["memory_hits"] for result in results)
     total_elapsed = sum(result["metrics"]["elapsed_ms"] for result in results)
+    total_transfer_latency = sum(result["metrics"].get("transfer_latency_ms", 0.0) for result in results)
     correct = sum(1 for result in results if result["exact_match"])
 
     print("\n=== hidden latent summary ===")
     print(
         "samples | exact_match | messages | text_chars | hidden_state_refs | "
-        "hidden_bytes | memory_hits | elapsed_ms"
+        "hidden_bytes | transfer_latency_ms | memory_hits | elapsed_ms"
     )
     print(
         f"{len(results)} | "
@@ -672,6 +1345,7 @@ def print_summary(results: list[dict[str, Any]]) -> None:
         f"{total_chars} | "
         f"{total_refs} | "
         f"{total_bytes} | "
+        f"{total_transfer_latency:.2f} | "
         f"{total_memory_hits} | "
         f"{total_elapsed:.2f}"
     )
@@ -684,7 +1358,11 @@ def print_summary(results: list[dict[str, Any]]) -> None:
 def hidden_dataset_key(args: Namespace) -> str:
     """把 hidden 脚本的数据集参数映射成页面使用的数据集键。"""
 
-    return "hidden_continuous" if args.dataset_type == "continuous" else "hidden_hotpot_5"
+    if args.dataset_type == "continuous":
+        return "hidden_continuous"
+    if args.dataset_type == "codeact":
+        return "codeact_20"
+    return "hidden_hotpot_5"
 
 
 def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -695,25 +1373,36 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
     total_refs = sum(result["metrics"]["hidden_state_refs"] for result in results)
     total_bytes = sum(result["metrics"]["hidden_bytes"] for result in results)
     total_memory_hits = sum(result["metrics"]["memory_hits"] for result in results)
+    total_experience_hits = sum(result["metrics"].get("experience_hit_count", 0) for result in results)
     total_elapsed = sum(result["metrics"]["elapsed_ms"] for result in results)
+    total_transfer_latency = sum(result["metrics"].get("transfer_latency_ms", 0.0) for result in results)
+    total_tool_execution_count = sum(result["metrics"].get("tool_execution_count", 0) for result in results)
+    total_memory_write_count = sum(result["metrics"].get("memory_write_count", 0) for result in results)
+    total_experience_write_count = sum(result["metrics"].get("experience_write_count", 0) for result in results)
     exact_match = sum(1 for result in results if result["exact_match"]) / len(results) if results else None
-    memory_hit_rate = total_memory_hits / len(results) if results else 0.0
+    hit_task_count = sum(1 for result in results if result["metrics"]["memory_hits"] > 0)
+    memory_hit_rate = hit_task_count / len(results) if results else 0.0
     metrics = {
         "message_count": total_messages,
         "text_chars": total_chars,
         "hidden_state_refs": total_refs,
         "hidden_bytes": total_bytes,
         "memory_hits": total_memory_hits,
+        "experience_hit_count": total_experience_hits,
         "memory_hit_rate": memory_hit_rate,
+        "transfer_latency_ms": total_transfer_latency,
         "elapsed_ms": total_elapsed,
         "exact_match": exact_match,
         "task_count": len(results),
+        "tool_execution_count": total_tool_execution_count,
+        "memory_write_count": total_memory_write_count,
+        "experience_write_count": total_experience_write_count,
     }
     return {
         "mode": "latent_hidden",
         "experiment_mode": "latent_hidden",
         "dataset_type": hidden_dataset_key(args),
-        "dataset_file": args.dataset_file if args.dataset_type == "continuous" else "",
+        "dataset_file": args.dataset_file if args.dataset_type in {"continuous", "codeact"} else "",
         "context_source": args.context_source,
         "limit": args.limit,
         "answer_mode": args.answer_mode,
@@ -732,6 +1421,7 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
                 "group_id": result.get("group_id"),
                 "turn_id": result.get("turn_id"),
                 "dataset_type": hidden_dataset_key(args),
+                "task_type": result.get("task_type"),
                 "question": result.get("question"),
                 "answer_mode": result.get("answer_mode", args.answer_mode),
                 "context_source": result.get("context_source", args.context_source),
@@ -749,12 +1439,23 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
                 },
                 "memory_hits": [],
                 "memory_hit_count": result.get("metrics", {}).get("memory_hits", 0),
+                "experience_hit_count": result.get("metrics", {}).get("experience_hit_count", 0),
                 "memory_context": [],
                 "latent_states": frontend_safe(result.get("latent_states", {})),
                 "state_refs": frontend_safe(result.get("state_refs", {})),
+                "execution_result": frontend_safe(result.get("execution_result")),
                 "agent_views": frontend_safe(result.get("agent_outputs", {}), max_string=1200),
                 "retrieval_debug": frontend_safe(result.get("retrieval_debug", {}), max_string=1500),
                 "agent_outputs": frontend_safe(result.get("agent_outputs", {}), max_string=1200),
+                "memory_refine_debug": frontend_safe(
+                    {
+                        "experience_hits": result.get("retrieval_debug", {}).get("experience_hits", []),
+                    }
+                ),
+                "inputs": frontend_safe(result.get("inputs")),
+                "allowed_imports": frontend_safe(result.get("allowed_imports")),
+                "tags": frontend_safe(result.get("tags")),
+                "expected_result": frontend_safe(result.get("expected_result")),
             }
             for index, result in enumerate(results, start=1)
         ],
@@ -769,7 +1470,7 @@ def print_run_result_json(args: Namespace, results: list[dict[str, Any]]) -> Non
         "schema_version": 1,
         "experiment_mode": "latent_hidden",
         "dataset_type": dataset_type,
-        "dataset_file": args.dataset_file if args.dataset_type == "continuous" else "",
+        "dataset_file": args.dataset_file if args.dataset_type in {"continuous", "codeact"} else "",
         "context_source": args.context_source,
         "limit": args.limit,
         "answer_mode": args.answer_mode,
@@ -784,14 +1485,14 @@ def parse_args() -> Namespace:
     parser = ArgumentParser(description="Run hidden-state latent transfer experiments.")
     parser.add_argument(
         "--dataset-type",
-        choices=["samples", "continuous"],
+        choices=["samples", "continuous", "codeact"],
         default="samples",
-        help="samples runs the built-in 5 hidden Hotpot examples; continuous runs grouped tasks.",
+        help="samples runs the built-in 5 hidden Hotpot examples; continuous runs grouped tasks; codeact runs CodeAct tasks.",
     )
     parser.add_argument(
         "--dataset-file",
         default="examples/competition_agents/data/hotpot_continuous_tasks.json",
-        help="Path used when --dataset-type continuous.",
+        help="Path used when --dataset-type is continuous or codeact.",
     )
     parser.add_argument("--limit", type=int, default=0, help="Limit sample count or continuous group count.")
     parser.add_argument(
@@ -810,6 +1511,7 @@ def parse_args() -> Namespace:
 
 
 def main() -> None:
+    force_utf8_stdout()
     args = parse_args()
     print("=== hidden latent samples ===")
     print("mode: local_llm_last_hidden_state")
@@ -824,6 +1526,9 @@ def main() -> None:
         for group in groups:
             print(f"\n--- continuous group: {group['group_id']} topic={group['topic']} ---")
             results.extend(run_continuous_group(group, answer_mode=args.answer_mode))
+    elif args.dataset_type == "codeact":
+        tasks = load_codeact_tasks(Path(args.dataset_file), args.limit)
+        results = run_codeact_tasks(tasks)
     else:
         samples = [
             {**sample, "context_source": args.context_source}

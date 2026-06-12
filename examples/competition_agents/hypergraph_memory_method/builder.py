@@ -124,12 +124,28 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
     memory_id = record["memory_id"]
     task_topic = record.get("task_topic", "")
     tags = _clean_tags(record.get("tags", []))
+    memory_type = str(record.get("memory_type", "evidence"))
+    if memory_type == "experience":
+        trigger_text = " ".join(str(item) for item in record.get("trigger_conditions", []) or [])
+        expanded_trigger_text = " ".join(str(item).replace("_", " ").replace(":", " ") for item in record.get("trigger_conditions", []) or [])
+        task_topic = str(record.get("problem_pattern") or task_topic)
+        keyword_source = " ".join(
+            [
+                str(record.get("problem_pattern", "")),
+                str(record.get("solution_pattern", "")),
+                str(record.get("failure_pattern", "")),
+                trigger_text,
+                expanded_trigger_text,
+            ]
+        )
+    else:
+        keyword_source = record.get("summary", "")
 
     memory_node = node_id(NODE_MEMORY, memory_id)
     task_node = task_node_id(task_topic)
     agent_node = node_id(NODE_AGENT, record.get("source_agent", "unknown"))
     tag_nodes = [node_id(NODE_TAG, tag) for tag in tags]
-    keyword_nodes = _keyword_nodes(task_topic, record.get("summary", ""), " ".join(tags), limit=48)
+    keyword_nodes = _keyword_nodes(task_topic, keyword_source, " ".join(tags), limit=48)
     hyperedge = _edge(
         EDGE_MEMORY_EVENT,
         memory_id,

@@ -32,6 +32,7 @@ class MockLLMClient:
         memory_hits: int,
         mode: str,
         memory_hit_details: list[dict[str, Any]] | None = None,
+        experience_rules: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         return {
             "answer_candidate": (
@@ -40,7 +41,8 @@ class MockLLMClient:
             ),
             "reasoning_summary": (
                 "Mock reasoner did not perform real model reasoning. "
-                f"Received {len(memory_hit_details or [])} memory hit detail records."
+                f"Received {len(memory_hit_details or [])} memory hit detail records and "
+                f"{len(experience_rules or [])} experience rules."
             ),
             "limitations": ["mock_reasoner"],
             "raw_model_output": "",

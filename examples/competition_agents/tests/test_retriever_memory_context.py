@@ -36,7 +36,7 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
 
     captured: dict[str, object] = {}
 
-    def fake_search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
         captured["query"] = query
         captured["top_k"] = top_k
         return []
@@ -63,10 +63,61 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
     assert "hypergraph structural matching plus embedding similarity fusion ranking" in result["evidence"][-2]
 
 
+def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
+    """Retriever 应把 experience memory 单独暴露出来，而不是全都混成一类。"""
+
+    memory = [
+        {
+            "memory_id": "mem-0001",
+            "memory_type": "evidence",
+            "summary": "18 December 2017",
+            "retrieval_score": 42.0,
+        },
+        {
+            "memory_id": "mem-0002",
+            "memory_type": "experience",
+            "summary": "经验记忆：先锁定影片与地区，再选满足介质约束的日期槽位。",
+            "problem_pattern": "temporal_slot_selection",
+            "solution_pattern": "choose_date_matching_constraints",
+            "failure_pattern": "wrong_date_slot",
+            "trigger_conditions": ["question:when", "constraint:dvd_release"],
+            "supporting_evidence": ["Dunkirk (2017 film): DVD on 18 December in the United Kingdom."],
+            "confidence": 0.9,
+            "retrieval_score": 51.0,
+        },
+    ]
+
+    def fake_search_memory(memory_records: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
+        if memory_types == ["evidence"]:
+            return [memory_records[0]]
+        if memory_types == ["experience"]:
+            return [memory_records[1]]
+        return []
+
+    monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
+
+    state = initial_state("when was dunkirk released on dvd in the united kingdom?", "protocol", memory)
+    state["plan"] = [
+        "Retrieve the film release sentence.",
+        "Check the United Kingdom constraint.",
+        "Select the DVD release date.",
+    ]
+
+    result = retriever_agent(state)
+    retriever_output = result["agent_outputs"][-1]
+
+    assert result["experience_hits"]
+    assert result["experience_hits"][0]["memory_type"] == "experience"
+    assert retriever_output["experience_hit_ids"] == ["mem-0002"]
+    assert retriever_output["experience_hits"][0]["problem_pattern"] == "temporal_slot_selection"
+    assert retriever_output["experience_rules"][0]["solution_pattern"] == "choose_date_matching_constraints"
+    assert any(item["memory_type"] == "experience" for item in result["memory_context"])
+
+
 def test_retriever_extracts_context_evidence_from_planner_focus(monkeypatch) -> None:
     """Retriever 应按 Planner 规划从 Context 中抽 supporting facts 给 Reasoner。"""
 
-    def fake_search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
         return []
 
     monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
@@ -109,7 +160,7 @@ def test_retriever_extracts_context_evidence_from_planner_focus(monkeypatch) -> 
 def test_retriever_prioritizes_answer_bearing_sentence_over_title_overlap(monkeypatch) -> None:
     """Retriever 应优先保留承载答案的职位句，而不是只和片名重合的干扰句。"""
 
-    def fake_search_memory(memory: list[dict], query: str, *, top_k: int) -> list[dict]:
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
         return []
 
     monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)

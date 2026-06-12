@@ -1,356 +1,414 @@
-# 超图记忆对接文档
+# 超图记忆对接契约
 
-本文档是给超图记忆同学看的唯一最新版。旧的 `HYPERGRAPH_MEMORY_ALIGNMENT.md`、`HYPERGRAPH_MEMORY_UPDATE.md`、`HYPERGRAPH_TODO.md` 已废弃，避免多个版本互相冲突。
+本文档是智能体主流程与超图记忆模块之间当前唯一有效的对接说明。
 
-当前目标不是让超图模块绕过智能体主流程，而是让超图记忆给 `RetrieverAgent` 提供可解释、可裁剪、可复用的记忆命中结果。
+目标只有两个：
+- 明确现在已经落地且必须保持稳定的接口
+- 明确后续优化时你这边和超图同学各自负责什么
 
-## 1. 当前主链路
+如果后续口头沟通与代码不一致，以当前仓库代码和本文档为准。
 
-```text
-PlannerAgent
--> RetrieverAgent
--> ReasonerAgent
--> SummarizerAgent
-```
+## 1. 职责边界
 
-职责划分：
+### 智能体主流程侧负责
 
-```text
-PlannerAgent：生成计划，并写入 plan_ref。
-RetrieverAgent：调用超图记忆检索，生成 evidence_ref，裁剪 memory_context。
-ReasonerAgent：读取 plan、evidence、memory_context，生成 answer_ref。
-SummarizerAgent：输出 final_answer，并通过 add_memory(..., trace=trace) 写入共享记忆。
-```
+- `PlannerAgent -> RetrieverAgent -> ReasonerAgent -> SummarizerAgent` 主链路
+- 什么时候写入共享记忆
+- 什么时候检索 `evidence memory` 和 `experience memory`
+- Reasoner 如何消费经验规则
+- 结果 JSON、前端展示、评测指标
 
-## 2. 超图模块边界
+### 超图记忆侧负责
 
-超图同学主要维护：
+- memory record 的超图建模
+- 超图检索与排序
+- `distill_experience()` 等经验蒸馏辅助逻辑
+- 经验记忆的后续 `merge / dedup / prune / decay`
+- 检索解释字段的构造
 
-```text
-examples/competition_agents/hypergraph_memory_method/
-```
+### 当前分工结论
 
-多智能体主流程通过下面两个稳定入口接入超图记忆：
+- 我这边负责“经验闭环接入和验证”
+- 超图同学负责“经验在超图里的组织、检索、排序和演化”
 
-```python
-add_memory(memory, *, source_agent, task_topic, summary, tags, trace=None) -> list[dict]
-search_memory(memory, query, *, top_k) -> list[dict]
-```
+## 2. 当前共享入口
 
-不要直接改这些 Agent 文件，除非和智能体同学确认：
+当前主流程通过下面这个文件调用超图能力：
 
-```text
-agents/planner/agent.py
-agents/retriever/agent.py
-agents/reasoner/agent.py
-agents/summarizer/agent.py
-competition_agents/graph.py
-```
+- [memory.py](/d:/qq/low-cost-memory-integrate/examples/competition_agents/competition_agents/memory.py)
 
-如果需要给 Agent 或页面增加信息，优先在 `search_memory()` 返回的 `memory_hits` 中追加兼容字段。
+超图同学自己的主目录是：
 
-## 3. add_memory 写入内容
+- [hypergraph_memory_method](/d:/qq/low-cost-memory-integrate/examples/competition_agents/hypergraph_memory_method)
 
-每轮任务结束时，`SummarizerAgent` 会调用：
+后续超图内部实现可以继续优化，但下面这些共享入口的函数名、参数名、返回结构不要再改。
+
+## 3. 必须稳定的共享函数
+
+### `add_memory`
 
 ```python
 add_memory(
-    memory,
-    source_agent="summarizer",
-    task_topic=state["task"],
-    summary=summary,
-    tags=[...],
-    trace=trace,
-)
+    memory: list[dict],
+    *,
+    source_agent: str,
+    task_topic: str,
+    summary: str,
+    tags: list[str],
+    trace: dict[str, Any] | None = None,
+    memory_type: str = "evidence",
+    problem_pattern: str = "",
+    solution_pattern: str = "",
+    failure_pattern: str = "",
+    trigger_conditions: list[str] | None = None,
+    supporting_evidence: list[str] | None = None,
+    confidence: float = 0.0,
+    archive_scope: str = "task",
+    lifecycle_stage: str = "episodic",
+    strategies: list[str] | None = None,
+    experiences: list[str] | None = None,
+    reuse_benefits: list[str] | None = None,
+    experience_rule_card: dict[str, Any] | None = None,
+    experience_source: str = "",
+    distillation_case: dict[str, Any] | None = None,
+    abstraction_note: str = "",
+    distillation_mode: str = "",
+    distillation_raw_output: str = "",
+) -> list[dict]
 ```
 
-`trace` 当前包含：
+### `refine_memory`
 
-```text
-task_meta
-plan
-messages
-evidence
-memory_hits
-memory_context
-latent_states
-state_refs
-execution_result
-cognitive_gaps
-agent_outputs
-metrics
+```python
+refine_memory(
+    *,
+    task_topic: str,
+    summary: str,
+    trace: dict[str, Any] | None = None,
+) -> dict[str, Any]
 ```
 
-这意味着一条 memory 不只是答案文本，而是一条完整协作经验记录。超图可以从 trace 中建：
+### `search_memory`
 
-```text
-task-agent-message-evidence-state_ref-memory_ref-outcome
+```python
+search_memory(
+    memory: list[dict],
+    query: str,
+    *,
+    top_k: int,
+    memory_types: Iterable[str] | None = None,
+) -> list[dict]
 ```
 
-## 4. memory record 基础字段
+### `increment_reuse_counts`
 
-每条记忆至少保留：
+```python
+increment_reuse_counts(
+    memory: list[dict],
+    memory_ids: Iterable[str],
+    *,
+    successful_memory_ids: Iterable[str] | None = None,
+) -> list[dict]
+```
+
+## 4. 当前记忆分层
+
+当前不是两套物理存储，而是同一个共享记忆池中的两类逻辑记忆：
+
+### `evidence memory`
+
+作用：
+- 存放摘要、证据、问答结果、执行结果等可直接复用事实
+- 给 Reasoner 提供事实答案支撑
+
+### `experience memory`
+
+作用：
+- 存放可迁移策略和避错经验
+- 给 Reasoner 提供“怎么选答案”的规则
+
+关键字段：
+- `problem_pattern`
+- `solution_pattern`
+- `failure_pattern`
+- `trigger_conditions`
+- `reuse_count`
+- `reuse_success_count`
+
+## 5. 当前 memory record 最小契约
+
+### 基础字段
 
 ```json
 {
   "memory_id": "mem-0001",
+  "memory_type": "evidence",
   "source_agent": "summarizer",
-  "created_at": "2026-05-28T...",
-  "task_topic": "任务文本",
-  "summary": "最终总结或可复用经验摘要",
-  "tags": ["langgraph", "multi-agent", "protocol"],
-  "embedding": [0.1, -0.2],
+  "created_at": "2026-06-11T00:00:00+00:00",
+  "task_topic": "Question: ...",
+  "summary": "可复用摘要",
+  "tags": ["langgraph", "multi-agent"],
+  "embedding": [],
   "embedding_provider": "hash",
   "embedding_model": "hash-v1"
 }
 ```
 
-可选但推荐保留：
+### 兼容字段
 
 ```json
 {
   "entities": [],
   "supporting_facts": [],
+  "supporting_evidence": [],
   "evidence": [],
   "reasoning_path": [],
-  "state_refs": ["state-0001", "state-0002"],
+  "state_refs": [],
   "answer": "answer text",
   "reuse_count": 0,
+  "reuse_success_count": 0,
   "trace": {},
   "hypergraph": {}
 }
 ```
 
-## 5. search_memory 返回内容
-
-`RetrieverAgent` 调用：
-
-```python
-hits = search_memory(state["memory"], state["task"], top_k=2)
-```
-
-返回值保持 `list[dict]`。每个 hit 是完整 memory record 的兼容扩展，建议包含：
+### experience memory 额外字段
 
 ```json
 {
-  "memory_id": "mem-0001",
-  "summary": "历史记忆摘要",
-  "evidence": ["关键证据"],
-  "state_refs": ["state-0002"],
-  "retrieval_score": 75.5,
-  "hypergraph_score": 65.75,
-  "embedding_score": 0.59,
-  "matched_nodes": ["artifact:evidence", "state:evidence"],
-  "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
-  "reasoning_path": [
-    {
-      "query_node": "artifact:evidence",
-      "hyperedge_id": "hyperedge:mem-0001:evidence",
-      "memory_id": "mem-0001"
-    }
-  ]
+  "memory_type": "experience",
+  "problem_pattern": "multiple_temporal_candidates_with_constraints",
+  "solution_pattern": "choose_date_matching_all_constraints",
+  "failure_pattern": "confuse_digital_release_with_disc_release",
+  "trigger_conditions": ["question_when", "release_date", "medium_constraint"],
+  "confidence": 0.8,
+  "experience_source": "success-derived",
+  "abstraction_note": "When multiple release dates exist, follow the medium and region constraint before selecting a date.",
+  "source_case": {
+    "question": "when was ...",
+    "group_id": "chain-001",
+    "dataset_type": "continuous",
+    "case_outcome": "success",
+    "exact_match": true
+  },
+  "experience_rule_card": {
+    "problem_pattern": "multiple_temporal_candidates_with_constraints",
+    "solution_pattern": "choose_date_matching_all_constraints",
+    "failure_pattern": "confuse_digital_release_with_disc_release",
+    "trigger_conditions": ["question_when", "release_date", "medium_constraint"],
+    "supporting_evidence": [],
+    "confidence": 0.8,
+    "abstraction_note": "..."
+  }
 }
 ```
 
-字段作用：
+## 6. 当前主流程怎样消费超图返回
+
+### Retriever
+
+当前固定分两路查：
+
+```python
+evidence_hits = search_memory(..., memory_types=["evidence"])
+experience_hits = search_memory(..., memory_types=["experience"])
+```
+
+要求：
+- 这两个入口必须持续可用
+- `experience_hits` 返回的每条记录必须保留完整经验字段
+
+### Reasoner
+
+Reasoner 当前已经显式接收：
+
+- `evidence`
+- `memory_hit_details`
+- `experience_rules`
+
+其中 `experience_rules` 的用途不是补充事实，而是：
+- 用 `solution_pattern` 指导答案抽取
+- 用 `failure_pattern` 规避历史错误
+- 用 `trigger_conditions` 判断规则是否匹配当前题
+
+### Summarizer
+
+当前固定节奏是：
 
 ```text
-retrieval_score：最终排序分。
-hypergraph_score：超图结构命中分。
-embedding_score：query 与 memory embedding 的相似分。
-matched_nodes：命中的结构节点，用于解释和页面高亮。
-matched_hyperedges：命中的超边，用于解释和页面高亮。
-reasoning_path：query 如何走到该 memory 的路径。
+先写 evidence memory
+再做 refine_memory
+再写 experience memory
 ```
 
-## 6. memory_hits 和 memory_context 的区别
+超图侧后续即使做 `merge / dedup / prune / decay`，也必须兼容这个双写节奏。
 
-现在在线链路同时保留两类数据：
+## 7. 当前必须稳定的结果字段
 
-```text
-memory_hits：完整检索命中，用于 trace、离线分析、超图调试和完整展示。
-memory_context：裁剪后的在线推理上下文，用于 RetrieverAgent 传给 ReasonerAgent。
-```
+### task 结果层
 
-`memory_hits` 可以较完整；`memory_context` 必须短、稳定、可解释。
+- `memory_hits`
+- `memory_hit_count`
+- `experience_hits`
+- `experience_hit_count`
+- `memory_refine_case`
+- `memory_refine_debug`
+- `latest_evidence_write`
+- `latest_experience_write`
+- `latest_memory_write`
 
-当前链路：
+说明：
+- `latest_evidence_write` 和 `latest_experience_write` 是当前前后端展示应优先使用的稳定字段
+- `latest_memory_write` 仅作为兼容旧前端和旧结果文件的保留字段，后续不再作为主展示出口
 
-```text
-HyperGraphMemory.search()
--> RetrieverAgent 得到完整 memory_hits
--> RetrieverAgent 裁剪成 memory_context
--> RetrieverAgent 传 memory_refs + memory_context + evidence_ref
--> ReasonerAgent 使用 memory_context 推理
-```
+### metrics 层
 
-注意：`RetrieverAgent` 只把本轮 `evidence` 写入 latent state；`memory_context` 不再参与 evidence latent embedding。
+- `memory_write_count`
+- `experience_write_count`
+- `experience_hit_count`
+- `experience_used_count`
+- `reuse_success_count`
+- `memory_hit_rate`
+- `memory_growth`
 
-## 7. memory_context 推荐 schema
+### retrieval_debug 层
 
-`memory_context` 的目标不是把检索结果再压成向量，而是保留 Reasoner 正常推理需要的最小可解释信息：
+- `memory_hit_ids`
+- `evidence_hit_ids`
+- `experience_hit_ids`
+- `experience_hits`
+- `experience_rules`
+- `memory_context`
+- `matched_nodes`
+- `matched_hyperedges`
+- `reasoning_path`
 
-```json
-[
-  {
-    "memory_id": "mem-0001",
-    "summary": "一句话说明这条记忆支持什么结论",
-    "evidence": ["最多 1-2 条关键证据句"],
-    "reasoning_path": [
-      {
-        "query_node": "artifact:evidence",
-        "hyperedge_id": "hyperedge:mem-0001:evidence",
-        "memory_id": "mem-0001"
-      }
-    ],
-    "matched_nodes": ["artifact:evidence", "state:evidence", "tag:protocol"],
-    "matched_hyperedges": ["hyperedge:mem-0001:evidence"],
-    "retrieval_score": 75.5,
-    "hypergraph_score": 65.75,
-    "embedding_score": 0.59
-  }
-]
-```
+## 8. 超图同学后续优先做什么
 
-裁剪规则建议：
+按当前代码状态，超图侧下一阶段最值得做的是：
 
-```text
-top_k：2 或 3
-summary：最多 200-300 字符
-evidence：最多 2 条，每条最多 150-200 字符
-reasoning_path：最多 3 条
-matched_nodes：最多 8-12 个
-matched_hyperedges：最多 6-8 个
-score：全部保留
-```
+1. 单独加强 `experience memory` 的排序
+2. 排序时使用：
+   - `problem_pattern`
+   - `solution_pattern`
+   - `failure_pattern`
+   - `trigger_conditions`
+   - `reuse_count`
+   - `reuse_success_count`
+3. 后续再做：
+   - `merge`
+   - `dedup`
+   - `prune`
+   - `decay`
 
-为什么保留这些字段：
+## 9. 一句话结论
 
-```text
-memory_id：后续 Agent 引用完整记忆，不直接传完整正文。
-summary：告诉 Reasoner 这条记忆支持什么结论。
-evidence：告诉 Reasoner 这条记忆凭什么可信。
-reasoning_path：告诉 Reasoner 和页面为什么命中这条记忆。
-matched_nodes / matched_hyperedges：用于超图局部视图高亮命中路径。
-score：用于排序、置信度和收益解释。
-```
+当前已经稳定对齐的口径是：
 
-不要把 `memory_context` 裁成纯向量：
+`evidence memory` 和 `experience memory` 现在逻辑上已经分层，但物理上仍共用同一个 memory store 与 hypergraph pipeline。后续超图内部实现可以继续增强，但共享函数签名、关键字段名和结果 JSON 结构不再变动。
 
-```json
-{"memory_id": "mem-0001", "vector": [0.12, 0.33]}
-```
+## 10. 冻结接口与内部可调边界
 
-Reasoner 无法直接解释向量，还需要额外解码或解释层。
+这一节用于明确：哪些内容从现在开始视为“冻结接口”，哪些属于我方内部实现，可继续调整但不影响超图侧对接。
 
-也不要把完整 record、完整 trace、完整 messages 放进 `memory_context`，否则会重新拉高通信开销。完整信息继续放在 `memory_hits` 和 trace 里。
+### 10.1 冻结接口
 
-## 8. 检索打分建议
+以下内容从当前版本开始视为稳定契约，后续优化不应再改字段名、主语义或函数签名：
 
-当前检索应优先体现结构命中，再融合 embedding 分：
+#### 共享函数签名
 
-```text
-retrieval_score =
-  hypergraph_score
-  + structured_bonus
-  + embedding_score * weight
-```
+- `add_memory(...)`
+- `search_memory(...)`
+- `refine_memory(...)`
 
-建议超图召回优先使用：
+#### memory record 核心字段
 
-```text
-task_meta
-expected_reuse
-supporting_facts
-state_refs
-memory_refs
-evidence
-strategy / experience
-```
+- `memory_id`
+- `memory_type`
+- `source_agent`
+- `created_at`
+- `task_topic`
+- `summary`
+- `problem_pattern`
+- `solution_pattern`
+- `failure_pattern`
+- `trigger_conditions`
+- `supporting_evidence`
+- `confidence`
+- `reuse_count`
+- `reuse_success_count`
+- `source_case`
+- `experience_rule_card`
 
-关键词和 embedding 可以作为补充，但不要让无关关键词或纯向量相似度覆盖结构信号。
+#### 运行态结果字段
 
-## 9. 页面和实验展示字段
+- `memory_hits`
+- `experience_hits`
+- `experience_rules`
+- `memory_context`
+- `latest_evidence_write`
+- `latest_experience_write`
+- `memory_refine_case`
+- `memory_refine_debug`
 
-页面可以直接读取：
+#### 字段语义也冻结
 
-```text
-memory_hits
-memory_context
-state_refs
-latent_states
-messages
-metrics
-```
+- `memory_type="evidence"` 表示事实/证据型记忆
+- `memory_type="experience"` 表示经验/策略型记忆
+- `trigger_conditions` 表示经验触发条件，不得改成别的用途
+- `experience_rule_card` 表示供 Reasoner 消费的规则卡片，不得退化成普通日志容器
 
-其中：
+### 10.2 我方内部可调实现
 
-```text
-memory_hits：展示完整命中详情。
-memory_context：展示在线推理实际使用的裁剪上下文。
-matched_nodes / matched_hyperedges：画超图局部高亮。
-reasoning_path：解释 query 到 memory 的命中路径。
-```
+以下内容后续可以继续优化，但默认只在我方链路内部调整，不要求超图侧同步改接口：
 
-## 10. 验证命令
+- experience distillation prompt
+- `problem_pattern / solution_pattern / failure_pattern` 的生成策略
+- `trigger_conditions` 的补全、清洗与泛化规则
+- experience rerank / soft match / 打分权重
+- Reasoner 如何消费 `experience_rules`
+- evidence / experience 的写回节奏
+- 前端展示结构与文案
+- `merge / dedup / prune / decay` 的内部策略
 
-Windows PowerShell：
+原则：
+- 可以新增向后兼容字段
+- 不可以删除冻结字段
+- 不可以改变冻结字段的主语义
+- 不可以修改共享函数名和入参名
 
-```powershell
-cd D:\qq\low-cost-memory-integrate
-$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-$env:LLM_PROVIDER="mock"
-$env:LLM_PLANNER_PROVIDER="mock"
-$env:LLM_REASONER_PROVIDER="mock"
-$env:LLM_SUMMARIZER_PROVIDER="mock"
-$env:EMBEDDING_PROVIDER="hash"
+### 10.3 协作边界
 
-python examples\competition_agents\run_demo.py `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\hotpot_continuous_tasks.json `
-  --limit 1 `
-  --modes protocol `
-  --show-memory `
-  --show-latent `
-  --show-state
-```
+从现在起建议按下面的边界协作：
 
-重点看：
+- 超图同学负责：
+  - `add_memory / search_memory / refine_memory` 这类共享记忆子系统内部能力增强
+  - experience/evidence 的排序、合并、去重、淘汰、衰减
+  - 超图检索命中质量优化
 
-```text
-chain-001 共 10 个 turn
-turn-1: memory_hits=0
-turn-2: memory_hits>=1
-turn-3 到 turn-10: memory_hits 持续命中前序记忆
-top_level_state_refs.evidence = state-xxxx
-execution_result.memory_context 非空
-retriever -> reasoner message 中有 memory_refs 和 memory_context
-```
+- 我方负责：
+  - 多 Agent 主流程接入
+  - Planner / Retriever / Reasoner / Summarizer 如何使用这些接口
+  - 经验提炼策略
+  - 实验入口、结果结构、前端展示、评测口径
 
-测试：
+### 10.4 后续默认协作规则
 
-```powershell
-$env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-python -m pytest -p no:cacheprovider `
-  examples\competition_agents\tests\test_hypergraph_memory.py `
-  examples\competition_agents\tests\test_retriever_memory_context.py
-```
+若后续仅涉及以下内容：
 
-## 11. 当前结论
+- prompt 调整
+- trigger 生成逻辑调整
+- 经验规则卡片提炼优化
+- Reasoner 消费策略优化
+- 前端字段展示优化
 
-最新对接口径：
+则默认视为我方内部调整，不要求超图侧改接口。
 
-```text
-超图记忆负责返回完整、可解释的 memory_hits。
-RetrieverAgent 负责把 memory_hits 裁剪成 memory_context。
-ReasonerAgent 使用 memory_context 推理。
-完整 trace 继续写入 memory，供超图离线建图和页面展示。
-```
+若后续需要变更以下内容：
 
-这个设计兼顾三件事：
+- 共享函数签名
+- 冻结字段名
+- 冻结字段语义
+- `memory_type` 取值含义
 
-```text
-1. Reasoner 有足够信息推理，不只看到 memory_id。
-2. 在线消息不传完整 trace，不把检索结果重新 embedding。
-3. 超图仍保留完整 memory_hits 和 trace，方便可视化和离线分析。
-```
+则必须先同步并更新本合同文档，再做代码变更。

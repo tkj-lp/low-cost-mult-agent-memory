@@ -291,7 +291,7 @@ state_refs
 
 ```powershell
 $env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-1.5B-Instruct"
 
 python examples\competition_agents\run_hidden_generation_demo.py
 ```
@@ -315,7 +315,7 @@ pip install torch transformers
 
 ```powershell
 $env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-1.5B-Instruct"
 $env:LOCAL_HIDDEN_STORAGE_MODE="pooled_only"
 ```
 
@@ -332,7 +332,7 @@ Tensor 配置：
 
 ```powershell
 $env:PYTHONPATH="libs/langgraph;examples/competition_agents"
-$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-0.5B-Instruct"
+$env:LOCAL_HIDDEN_MODEL="Qwen/Qwen2.5-1.5B-Instruct"
 $env:LOCAL_HIDDEN_STORAGE_MODE="full"
 ```
 

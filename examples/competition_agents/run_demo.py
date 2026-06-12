@@ -35,6 +35,20 @@ def configure_stdout() -> None:
             pass
 
 
+def force_utf8_stdout() -> None:
+    """强制子进程 stdout 使用 utf-8，避免前端读取实验结果时出现乱码。"""
+
+    stream = getattr(sys, "stdout", None)
+    if stream is None:
+        return
+    reconfigure = getattr(stream, "reconfigure", None)
+    if callable(reconfigure):
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 def normalize_answer(text: str) -> str:
     """把答案标准化，方便计算 exact_match。"""
 
@@ -268,6 +282,7 @@ def load_codeact_tasks(path: Path, limit: int | None) -> list[dict[str, Any]]:
             "group_id": "codeact",
             "turn_id": sample["id"],
             "task": sample["task"],
+            "question": sample["task"],
             "task_type": sample.get("task_type", ""),
             "inputs": sample.get("inputs", {}),
             "expected": sample.get("expected"),
@@ -360,7 +375,18 @@ def parse_modes(raw_modes: str) -> list[str]:
 
 def prediction_from_result(result: dict[str, Any]) -> str:
     execution_result = result.get("execution_result", {})
+    if execution_result.get("result") is not None:
+        return json.dumps(execution_result.get("result"), ensure_ascii=False, sort_keys=True)
     return str(execution_result.get("answer_candidate") or result.get("final_answer", ""))
+
+
+def codeact_result_text(execution_result: dict[str, Any]) -> str:
+    """把 CodeAct 执行结果压成稳定的前端展示文本。"""
+
+    result = execution_result.get("result")
+    if result is None:
+        return ""
+    return json.dumps(result, ensure_ascii=False, sort_keys=True)
 
 
 def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
@@ -374,6 +400,7 @@ def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
             "turn_id",
             "dataset_type",
             "source_dataset",
+            "expected_answer",
             "expected_reuse",
             "question",
             "context",
@@ -512,14 +539,19 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
     execution_result = result.get("execution_result", {})
     memory_context = result.get("memory_context", [])
     memory_hits = result.get("memory_hits", [])
+    experience_hits = result.get("experience_hits", [])
+    is_codeact = task_item.get("dataset_type") == "codeact"
+    codeact_display = codeact_result_text(execution_result)
 
     planner_raw = outputs.get("PlannerAgent", {}).get("raw_output", "")
     retriever_output = outputs.get("RetrieverAgent", {})
     reasoner_raw = outputs.get("ReasonerAgent", {}).get("raw_output", "")
     summarizer_raw = outputs.get("SummarizerAgent", {}).get("raw_output", "")
     executor_raw = outputs.get("ExecutorAgent", {}).get("raw_output", "")
+    executor_display_text = executor_raw or execution_result.get("sandbox_status", "")
+    executor_structured = execution_result if is_codeact else {}
 
-    return {
+    views = {
         "planner": _frontend_safe(
             {
                 "content_type": "text" if result.get("mode") == "text" else "latent_ref",
@@ -556,6 +588,10 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
                     "context_hit_ids": retriever_output.get("context_hit_ids", []),
                     "context_hits": retriever_output.get("context_hits", []),
                     "memory_hit_ids": retriever_output.get("memory_hit_ids", []),
+                    "evidence_hits": retriever_output.get("evidence_hits", []),
+                    "experience_hit_ids": retriever_output.get("experience_hit_ids", []),
+                    "experience_hits": retriever_output.get("experience_hits", []),
+                    "experience_rules": retriever_output.get("experience_rules", []),
                     "memory_context": memory_context,
                 },
                 "state_ref": state_refs.get("evidence"),
@@ -567,14 +603,24 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
             {
                 "content_type": "structured",
                 "display_text": (
-                    execution_result.get("answer_candidate")
-                    or execution_result.get("reasoning_summary")
-                    or reasoner_raw
+                    (
+                        "reference_code execution request"
+                        if execution_result.get("execution_request")
+                        else ""
+                    )
+                    if is_codeact
+                    else (
+                        execution_result.get("answer_candidate")
+                        or execution_result.get("reasoning_summary")
+                        or reasoner_raw
+                    )
                 ),
                 "structured": {
-                    "answer_candidate": execution_result.get("answer_candidate"),
-                    "reasoning_summary": execution_result.get("reasoning_summary"),
-                    "limitations": execution_result.get("limitations", []),
+                    "answer_candidate": None if is_codeact else execution_result.get("answer_candidate"),
+                    "reasoning_summary": None if is_codeact else execution_result.get("reasoning_summary"),
+                    "limitations": [] if is_codeact else execution_result.get("limitations", []),
+                    "experience_rules": execution_result.get("experience_rules", []),
+                    "experience_used_count": execution_result.get("experience_used_count", 0),
                     "execution_request": execution_result.get("execution_request"),
                 },
                 "state_ref": state_refs.get("answer"),
@@ -585,9 +631,9 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
         "summarizer": _frontend_safe(
             {
                 "content_type": "text",
-                "display_text": result.get("final_answer", "") or summarizer_raw,
+                "display_text": (codeact_display or summarizer_raw) if is_codeact else (result.get("final_answer", "") or summarizer_raw),
                 "structured": {
-                    "final_answer": result.get("final_answer", ""),
+                    "final_answer": execution_result.get("result") if is_codeact else result.get("final_answer", ""),
                     "latest_memory_summary": (result.get("memory", [])[-1] or {}).get("summary", "")
                     if result.get("memory")
                     else "",
@@ -600,23 +646,28 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
             },
             max_string=1200,
         ),
-        "executor": _frontend_safe(
-            {
-                "content_type": "structured",
-                "display_text": executor_raw or execution_result.get("sandbox_status", ""),
-                "structured": execution_result if task_item.get("dataset_type") == "codeact" else {},
-                "state_ref": "",
-                "state_display": {},
-            },
-            max_string=1200,
-        ),
         "memory": _frontend_safe(
             {
                 "memory_hit_count": len(memory_hits),
+                "experience_hit_count": len(experience_hits),
                 "memory_context_count": len(memory_context),
             }
         ),
     }
+
+    if executor_display_text or executor_structured:
+        views["executor"] = _frontend_safe(
+            {
+                "content_type": "structured",
+                "display_text": executor_display_text,
+                "structured": executor_structured,
+                "state_ref": "",
+                "state_display": {},
+            },
+            max_string=1200,
+        )
+
+    return views
 
 
 def _build_retrieval_debug(result: dict[str, Any]) -> dict[str, Any]:
@@ -632,6 +683,11 @@ def _build_retrieval_debug(result: dict[str, Any]) -> dict[str, Any]:
             "context_hit_ids": retriever_output.get("context_hit_ids", []),
             "context_hits": retriever_output.get("context_hits", []),
             "memory_hit_ids": retriever_output.get("memory_hit_ids", []),
+            "evidence_hits": retriever_output.get("evidence_hits", []),
+            "evidence_hit_ids": retriever_output.get("evidence_hit_ids", []),
+            "experience_hit_ids": retriever_output.get("experience_hit_ids", []),
+            "experience_hits": retriever_output.get("experience_hits", []),
+            "experience_rules": retriever_output.get("experience_rules", []),
             "memory_context": result.get("memory_context", []),
             "memory_hits": _frontend_memory_hits(result.get("memory_hits", [])),
         },
@@ -652,12 +708,27 @@ def build_task_result(
 
     metrics = result.get("metrics", {})
     memory_hits = result.get("memory_hits", [])
+    experience_hits = result.get("experience_hits", [])
     latest_memory = result.get("memory", [])[-1] if result.get("memory") else {}
+    latest_evidence_write = result.get("latest_evidence_write", {})
+    latest_experience_write = result.get("latest_experience_write", {})
     execution_result = result.get("execution_result", {})
+    is_codeact = task_item.get("dataset_type") == "codeact"
+    codeact_display = codeact_result_text(execution_result)
+    all_memory = result.get("memory", [])
+    evidence_memory_count = sum(1 for item in all_memory if item.get("memory_type", "evidence") == "evidence")
+    experience_memory_count = sum(1 for item in all_memory if item.get("memory_type") == "experience")
     task_metrics = {
         **metrics,
         "memory_hits": len(memory_hits),
         "memory_hit_rate": 1.0 if memory_hits else 0.0,
+        "experience_hit_count": len(experience_hits),
+        "experience_used_count": int(result.get("execution_result", {}).get("experience_used_count", 0)),
+        "memory_write_count": result.get("memory_write_count", 0),
+        "experience_write_count": result.get("experience_write_count", 0),
+        "memory_growth": len(all_memory),
+        "evidence_memory_count": evidence_memory_count,
+        "experience_memory_count": experience_memory_count,
         "elapsed_ms": elapsed_ms,
         "exact_match": exact_match,
     }
@@ -671,16 +742,19 @@ def build_task_result(
         "task": task_item.get("task"),
         "question": task_item.get("question", ""),
         "expected_answer": task_item.get("expected_answer"),
-        "gold": task_item.get("expected_answer"),
+        "gold": codeact_display if is_codeact else task_item.get("expected_answer"),
         "expected": task_item.get("expected"),
         "expected_reuse": task_item.get("expected_reuse", []),
         "prediction": prediction,
-        "final_answer": result.get("final_answer", ""),
+        "final_answer": codeact_display if is_codeact else result.get("final_answer", ""),
         "exact_match": exact_match,
         "messages": _frontend_safe(result.get("messages", [])),
         "metrics": _frontend_safe(task_metrics),
         "memory_hits": _frontend_memory_hits(memory_hits),
         "memory_hit_count": len(memory_hits),
+        "experience_hits": _frontend_memory_hits(experience_hits),
+        "experience_hit_count": len(experience_hits),
+        "experience_rules": _frontend_safe(result.get("experience_rules", [])),
         "memory_context": _frontend_safe(result.get("memory_context", [])),
         "latent_states": _frontend_safe(result.get("latent_states", {})),
         "state_refs": _frontend_safe(result.get("state_refs", {})),
@@ -690,17 +764,55 @@ def build_task_result(
         "agent_outputs": _frontend_safe(result.get("agent_outputs", []), max_string=1200),
         "agent_views": _build_agent_views(task_item, result),
         "retrieval_debug": _build_retrieval_debug(result),
+        "latest_evidence_write": _frontend_safe(
+            {
+                "memory_id": latest_evidence_write.get("memory_id"),
+                "memory_type": latest_evidence_write.get("memory_type", "evidence"),
+                "source_agent": latest_evidence_write.get("source_agent"),
+                "summary": latest_evidence_write.get("summary"),
+                "tags": latest_evidence_write.get("tags"),
+                "state_refs": latest_evidence_write.get("state_refs"),
+                "has_trace": "trace" in latest_evidence_write,
+            }
+        ),
+        "latest_experience_write": _frontend_safe(
+            {
+                "memory_id": latest_experience_write.get("memory_id"),
+                "memory_type": latest_experience_write.get("memory_type", "experience"),
+                "source_agent": latest_experience_write.get("source_agent"),
+                "summary": latest_experience_write.get("summary"),
+                "tags": latest_experience_write.get("tags"),
+                "state_refs": latest_experience_write.get("state_refs"),
+                "experience_source": latest_experience_write.get("experience_source", ""),
+                "abstraction_note": latest_experience_write.get("abstraction_note", ""),
+                "reuse_count": latest_experience_write.get("reuse_count", 0),
+                "reuse_success_count": latest_experience_write.get("reuse_success_count", 0),
+                "merge_count": latest_experience_write.get("merge_count", 0),
+                "source_case": latest_experience_write.get("source_case", {}),
+                "experience_rule_card": latest_experience_write.get("experience_rule_card", {}),
+                "has_trace": "trace" in latest_experience_write,
+            }
+        ),
         "latest_memory_write": _frontend_safe(
             {
                 "memory_id": latest_memory.get("memory_id"),
+                "memory_type": latest_memory.get("memory_type", "evidence"),
                 "source_agent": latest_memory.get("source_agent"),
                 "summary": latest_memory.get("summary"),
                 "tags": latest_memory.get("tags"),
                 "state_refs": latest_memory.get("state_refs"),
+                "experience_source": latest_memory.get("experience_source", ""),
+                "abstraction_note": latest_memory.get("abstraction_note", ""),
+                "reuse_count": latest_memory.get("reuse_count", 0),
+                "reuse_success_count": latest_memory.get("reuse_success_count", 0),
+                "source_case": latest_memory.get("source_case", {}),
+                "experience_rule_card": latest_memory.get("experience_rule_card", {}),
                 "has_trace": "trace" in latest_memory,
             }
         ),
         "trace": _frontend_safe(latest_memory.get("trace", {}), max_string=1800),
+        "memory_refine_case": _frontend_safe(result.get("memory_refine_case", {}), max_string=1800),
+        "memory_refine_debug": _frontend_safe(result.get("memory_refine_debug", {}), max_string=1800),
     }
     if task_item.get("dataset_type") == "codeact":
         task_result.update(
@@ -897,6 +1009,12 @@ def run_mode(
         "text_chars": 0,
         "latent_transfer_count": 0,
         "latent_bytes": 0,
+        "transfer_latency_ms": 0.0,
+        "memory_write_count": 0,
+        "experience_write_count": 0,
+        "experience_hit_count": 0,
+        "experience_used_count": 0,
+        "reuse_success_count": 0,
     }
 
     print(f"\n=== {mode} mode ===")
@@ -919,7 +1037,12 @@ def run_mode(
         memory_hits = len(result["memory_hits"])
         total_memory_hits += memory_hits
         for key in total_metrics:
-            total_metrics[key] += metrics[key]
+            if key in metrics:
+                total_metrics[key] += metrics[key]
+        total_metrics["memory_write_count"] += int(result.get("memory_write_count", 0))
+        total_metrics["experience_write_count"] += int(result.get("experience_write_count", 0))
+        total_metrics["experience_hit_count"] += len(result.get("experience_hits", []))
+        total_metrics["experience_used_count"] += int(result.get("execution_result", {}).get("experience_used_count", 0))
 
         expected_answer = task_item.get("expected_answer")
         prediction = prediction_from_result(result)
@@ -934,6 +1057,8 @@ def run_mode(
             comparable += 1
             exact_match = answers_match(prediction, str(expected_answer))
             correct += int(exact_match)
+        if exact_match and int(result.get("execution_result", {}).get("experience_used_count", 0)) > 0:
+            total_metrics["reuse_success_count"] += 1
 
         print(f"task {index}: {task_item['task_id']}")
         if task_item.get("question"):
@@ -962,7 +1087,9 @@ def run_mode(
             f"text_chars={metrics['text_chars']}, "
             f"latent_transfers={metrics['latent_transfer_count']}, "
             f"latent_bytes={metrics['latent_bytes']}, "
+            f"transfer_latency_ms={metrics['transfer_latency_ms']:.2f}, "
             f"memory_hits={memory_hits}, "
+            f"experience_hits={len(result.get('experience_hits', []))}, "
             f"elapsed_ms={elapsed * 1000:.2f}"
         )
         if show_agents:
@@ -985,7 +1112,8 @@ def run_mode(
             )
         )
 
-    memory_hit_rate = total_memory_hits / len(tasks) if tasks else 0.0
+    hit_task_count = sum(1 for task_result in task_results if task_result.get("memory_hit_count", 0) > 0)
+    memory_hit_rate = hit_task_count / len(tasks) if tasks else 0.0
     exact_match_rate = correct / comparable if comparable else None
     summary = (
         "summary: "
@@ -995,7 +1123,11 @@ def run_mode(
         f"text_chars={total_metrics['text_chars']}, "
         f"latent_transfers={total_metrics['latent_transfer_count']}, "
         f"latent_bytes={total_metrics['latent_bytes']}, "
+        f"transfer_latency_ms={total_metrics['transfer_latency_ms']:.2f}, "
         f"memory_hits={total_memory_hits}, "
+        f"experience_hits={total_metrics['experience_hit_count']}, "
+        f"experience_used={total_metrics['experience_used_count']}, "
+        f"memory_writes={total_metrics['memory_write_count']}, "
         f"memory_hit_rate={memory_hit_rate:.2f}, "
         f"elapsed_ms={total_elapsed * 1000:.2f}"
     )
@@ -1067,7 +1199,7 @@ def print_readable_run_summaries(results: list[dict[str, Any]]) -> None:
     print("\n=== run summaries ===")
     print(
         "mode | experiment_mode | tasks | exact_match | messages | "
-        "text_chars | latent_bytes | memory_hits | elapsed_ms"
+        "text_chars | latent_bytes | transfer_latency_ms | memory_hits | elapsed_ms"
     )
     for result in results:
         metrics = result.get("metrics", {})
@@ -1081,6 +1213,7 @@ def print_readable_run_summaries(results: list[dict[str, Any]]) -> None:
             f"{metrics.get('message_count', 0)} | "
             f"{metrics.get('text_chars', 0)} | "
             f"{metrics.get('latent_bytes', 0)} | "
+            f"{metrics.get('transfer_latency_ms', 0.0):.2f} | "
             f"{metrics.get('memory_hits', 0)} | "
             f"{metrics.get('elapsed_ms', 0.0):.2f}"
         )
@@ -1159,6 +1292,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     configure_stdout()
+    force_utf8_stdout()
     args = parse_args()
     modes = configure_experiment_mode(args)
     tasks = load_tasks(args)

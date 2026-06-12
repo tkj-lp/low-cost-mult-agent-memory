@@ -56,11 +56,22 @@ def test_execution_result_is_written_to_memory_trace() -> None:
 
     result = _invoke_codeact("values = inputs['values']\nresult = {'sum': sum(values)}")
 
-    latest_memory = result["memory"][-1]
-    trace_execution = latest_memory["trace"]["execution_result"]
+    evidence_memory = next(record for record in result["memory"] if "trace" in record)
+    trace_execution = evidence_memory["trace"]["execution_result"]
     assert trace_execution["execution_mode"] == "restricted_python_codeact"
     assert trace_execution["sandbox_status"] == "ok"
     assert trace_execution["result"] == {"sum": 10}
+
+
+def test_summarizer_writes_evidence_and_experience_memory() -> None:
+    """当前主图在任务结束后应同时写 evidence memory 和 experience memory。"""
+
+    result = _invoke_codeact("values = inputs['values']\nresult = {'sum': sum(values)}")
+
+    memory_types = [record.get("memory_type", "evidence") for record in result["memory"]]
+    assert "evidence" in memory_types
+    assert "experience" in memory_types
+    assert result["memory"][-1]["memory_type"] == "experience"
 
 
 def test_blocked_codeact_graph_task_does_not_crash() -> None:
@@ -74,4 +85,5 @@ def test_blocked_codeact_graph_task_does_not_crash() -> None:
     assert execution_result["blocked_reason"] == "blocked import: os"
     assert execution_result["error"]["type"] == "SandboxExecutionError"
     assert result["final_answer"]
-    assert result["memory"][-1]["trace"]["execution_result"]["sandbox_status"] == "blocked"
+    evidence_memory = next(record for record in result["memory"] if "trace" in record)
+    assert evidence_memory["trace"]["execution_result"]["sandbox_status"] == "blocked"

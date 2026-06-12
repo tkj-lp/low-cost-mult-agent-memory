@@ -20,7 +20,7 @@ class LocalHiddenModel:
 def get_hidden_model_name() -> str:
     """读取用于 hidden-state 实验的本地模型名称。"""
 
-    return os.environ.get("LOCAL_HIDDEN_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
+    return os.environ.get("LOCAL_HIDDEN_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
 
 
 @lru_cache(maxsize=1)

@@ -71,7 +71,7 @@ def main() -> None:
     }
 
     print("=== local hidden generation demo ===")
-    print(f"LOCAL_HIDDEN_MODEL={os.environ.get('LOCAL_HIDDEN_MODEL', 'Qwen/Qwen2.5-0.5B-Instruct')}")
+    print(f"LOCAL_HIDDEN_MODEL={os.environ.get('LOCAL_HIDDEN_MODEL', 'Qwen/Qwen2.5-1.5B-Instruct')}")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 

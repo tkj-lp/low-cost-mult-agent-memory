@@ -1,187 +1,264 @@
-# 智能体部分后续工作文档
+# 智能体侧工作说明
 
-本文档用于记录智能体侧当前已经完成的内容、简单完成但还可补强的内容，以及后续仍需推进的工作。后续如与历史口头记录不一致，以本文档为准。
+本文档只记录当前智能体主流程已经实现、正在推进和下一阶段准备继续推进的内容。
+
+如果和历史聊天记录不一致，以当前仓库代码、`RUNBOOK.md` 和本文档为准。
 
 ## 当前职责范围
 
-智能体部分当前主要负责：
+智能体侧当前主要负责：
 
-- 多 Agent 主流程组织
-- `baseline_text` / `protocol_api` / `protocol_api_embedding` / `latent_hidden` 等协作模式
-- LLM 与 embedding 调用链路
-- 非文本中间状态传递
-- 结果输出结构设计
-- 与前端、记忆模块的字段对接稳定性
+- 多 Agent 主流程组织与运行时接入
+- `baseline_text`、`protocol_api`、`protocol_api_embedding`、`latent_hidden`、`codeact_tools` 等实验入口
+- Agent 间结构化通信和非文本状态传递
+- 共享记忆写入、检索接入与结果结构维护
+- 前端结果 JSON 与评测指标输出
 
-## 已完成
+## 已经实现
 
-### 1. 纯文本协作模式
+### 1. 多种实验模式已接通
 
-- 已支持 `baseline_text`
-- 可作为结构化协议协作模式的对照组
+当前已支持：
 
-### 2. 结构化协议协作模式
+- `baseline_text`
+- `protocol_api`
+- `protocol_api_embedding`
+- `latent_hidden`
+- `codeact_tools`
 
-- 已支持 `protocol_api`
-- Agent 间通信已经采用结构化字段，而不是纯自然语言长文本透传
-- 当前稳定保留的核心字段包括：
-  - `from`
-  - `to`
-  - `action`
-  - `payload`
-  - `state_refs`
-  - `memory_refs`
+其中：
+- `baseline_text` 作为纯文本协作基线
+- `protocol_api` 作为结构化协议协作主链路
+- `protocol_api_embedding` 作为结构化协议 + embedding 状态传递
+- `latent_hidden` 作为本地模型 hidden state 传递路径
+- `codeact_tools` 作为 CodeAct 执行路径
 
-### 3. 非文本中间状态传递机制
+### 2. 共享记忆已经分成两层
 
-- 已支持 `protocol_api_embedding`
-- 已支持 `latent_hidden`
-- 已实现“中间状态先生成，再通过 `state_ref` 引用在 Agent 间传递”的机制
-- `latent_hidden` 当前可表述为“结构化协议 + hidden state 引用传递”
+当前共享记忆逻辑上已经分成：
 
-### 4. 数据集与实验入口
+- `evidence memory`
+- `experience memory`
 
-- 已支持 `multihop`
-- 已支持 `continuous`
-- 已支持 `codeact`
-- `run_demo.py` 已不再保留旧的内置十题 `builtin` 入口
+但物理上仍共用同一个 memory store 和同一套超图索引入口。
 
-### 5. 统一结果输出
+### 3. experience memory 已经接入主流程
 
-- 已输出统一的 `run_result_json`
-- 已稳定输出前端依赖的主要字段：
-  - `agent_views`
-  - `messages`
-  - `retrieval_debug`
-  - `execution_result`
-  - `memory_hits`
-  - `memory_context`
-  - `latent_states`
-  - `state_refs`
-
-### 6. 前端对接说明
-
-- 已补充 [FRONTEND_CONTRACT.md](D:/qq/low-cost-memory-integrate/examples/competition_agents/FRONTEND_CONTRACT.md)
-- 已补充 [INTEGRATION.md](D:/qq/low-cost-memory-integrate/examples/competition_agents/INTEGRATION.md)
-- 已明确前端按动态 Agent 渲染，不写死固定智能体名单
-
-## 简单完成
-
-这一部分表示：已经有实现或原型，可以运行，也可以用于比赛说明，但还没有完全打磨到最稳状态。
-
-### 1. 协议中的能力描述
-
-- 当前已经有：
-  - `cap`
-  - `capability_required`
-  - `gap`
-- 可以说明系统具备基础能力描述与能力需求表达
-- 但“显式握手 / 能力发现 / 协议映射”的展示还不算特别完整
-
-### 2. 纯文本模式与结构化协议模式的对比
-
-- 现在两种模式都已经有
-- 但正式的并排对比结果、统一口径总结还可以再收口
-
-### 3. 非文本中间状态传递的正式说明
-
-- 机制本身已经做了
-- 但“生成方式、传递方式、接收方式、后续使用方式”的比赛化表述还可以再收硬一点
-
-### 4. `latent_hidden` 的答辩表述
-
-- 当前已经可以解释它如何用结构化消息传递 hidden state 引用
-- 但还可以继续整理成更适合 README、答辩和汇报的标准表述
-
-## 待完成
-
-### 1. `protocol_api` 首轮答案选择稳定性
-
-- 当前连续任务里最主要的问题仍然是首轮 canonical answer 选错
-- 典型问题：
-  - `Chief of Protocol`
-  - 被选成 `United States ambassador to Ghana`
-
-### 2. 错误记忆扩散控制
-
-- 当前 `continuous` 链路中，首轮错答会被写入 memory 并持续复用
-- 需要继续补：
-  - memory write gate
-  - supporting facts 与 final answer 分层写入
-  - 低置信度结果不直接进入高优先级 memory
-
-### 3. 正式对比结果收口
-
-- 后续最好统一收成：
-  - `baseline_text`
-  - `protocol_api`
-  - `protocol_api_embedding`
-  - `latent_hidden`
-- 并在相同数据集、相同 `limit` 下给出可复现实验对比
-
-### 4. 新 Agent 扩展准备
-
-- 后续可能新增：
-  - `executor`
-  - `experience_extractor`
-  - `memory_graph`
-- 需要在不破坏前端稳定字段的前提下继续扩展
-
-## 当前建议优先级
-
-1. 先修 `protocol_api` 首轮答案选择
-2. 再控制错误答案写入 memory
-3. 再补比赛用的正式说明和对比收口
-4. 最后再继续扩展新 Agent 和记忆图能力
-
-## 后续改代码时继续遵守的规则
-
-### 1. 不改正式解析入口
-
-保留：
+当前主链路中，`SummarizerAgent` 会执行：
 
 ```text
-=== run_result_json ===
-{...json...}
+先写 evidence memory
+再做 refine_memory
+再写 experience memory
 ```
 
-### 2. 不随意改前端已依赖的字段名
+这意味着经验记忆已经不是单独脚本实验，而是主流程里的正式步骤。
 
-继续稳定保留：
+### 4. experience memory 已有基础字段
 
-- `agent_views`
-- `messages`
-- `retrieval_debug`
-- `execution_result`
-- `memory_hits`
-- `memory_context`
-- `latent_states`
-- `state_refs`
+当前经验记忆已经稳定产出这些字段：
 
-### 3. `agent_views` 继续采用按需输出
+- `problem_pattern`
+- `solution_pattern`
+- `failure_pattern`
+- `trigger_conditions`
+- `experience_source`
+- `abstraction_note`
+- `experience_rule_card`
+- `source_case`
+- `reuse_count`
+- `reuse_success_count`
 
-- 哪个 Agent 本轮用了，就输出哪个 Agent
-- 不强制所有 Agent 都带空字段
-- 但一旦输出，尽量保持统一结构：
+### 5. 经验命中已经能进入 Retriever 和 Reasoner
 
-```json
-{
-  "display_text": "...",
-  "structured": {},
-  "state_ref": "..."
-}
-```
+当前 `RetrieverAgent` 已经分两路检索：
 
-### 4. 新特殊能力优先走独立字段
+- `evidence_hits`
+- `experience_hits`
 
-例如未来新增：
+并把经验规则整理成：
 
-- `experience_debug`
-- `memory_graph_debug`
+- `experience_rules`
+
+再传给 `ReasonerAgent`。
+
+### 6. Reasoner 已经显式消费经验规则
+
+当前 `ReasonerAgent` 不只是“带着经验字段跑一遍”，而是已经把经验规则显式传入 reason prompt。
+
+当前口径是：
+
+- `solution_pattern` 用来指导答案抽取策略
+- `failure_pattern` 用来规避历史错误
+- `trigger_conditions` 用来判断规则是否匹配当前题
+- 经验规则不能替代事实证据
+
+### 7. experience 复用计数已经接上
+
+当前已经区分两层复用信号：
+
+- `reuse_count`
+  - 被命中了多少次
+- `reuse_success_count`
+  - 命中之后成功帮助答对了多少次
+
+这部分已经接入：
+
+- memory record
+- `increment_reuse_counts`
+- continuous 汇总指标
+
+### 8. experience 排序已开始使用复用效果
+
+当前 `RetrieverAgent` 的经验重排已开始参考：
+
+- family 匹配
+- `trigger_conditions`
+- `reuse_count`
+- `reuse_success_count`
+
+虽然这还不是最终版经验演化排序，但已经不是只看文本相似度。
+
+### 9. memory refine case / debug 已拆层
+
+当前结果输出已把下面几层拆开：
+
+- `latest_memory_write`
+- `memory_refine_case`
 - `memory_refine_debug`
+- `execution_result`
 
-不要把所有新内容都硬塞进已有字段里。
+目的是避免再把“经验本体、案例输入、调试信息”混在一个字段里。
 
-## 一句话总结
+### 10. CodeAct 路径已接入主图
 
-当前阶段，智能体侧不是优先继续铺新功能，而是先把已经做出的结构化协议、非文本中间状态传递和连续任务链路收稳、讲清楚、对比完整。
+当前 CodeAct 已经不是独立实验，而是主图链路的一部分：
+
+```text
+planner -> retriever -> reasoner -> executor -> summarizer
+```
+
+并且：
+
+- `executor` 只在真正有执行内容时展示
+- `reasoner` 在 CodeAct 场景下主要负责 `execution_request`
+- `summarizer` 以真实执行结果为准做最终呈现
+
+## 当前还没完成
+
+### 1. experience 内容质量还不够稳
+
+虽然 experience memory 已经落地，但当前最大问题仍然是：
+
+- 有时仍会退回到偏“题型标签”的模式
+- 还没有完全稳定到 Evo-Memory 风格的“成功/失败后抽象策略”
+
+当前已经做了第一轮约束和 fallback，但还需要继续打磨。
+
+### 2. 还没有完整的经验演化生命周期
+
+当前还没正式完成：
+
+- `merge`
+- `dedup`
+- `prune`
+- `decay`
+
+这部分后续由超图侧主导实现。
+
+### 3. 还没有完整的对照实验矩阵
+
+当前还没正式整理好的对照包括：
+
+- `NoMemory`
+- `StaticMemory`
+- `EvolvingMemory`
+- `Hidden/EfficientMemory`
+
+### 4. 前端“停止运行”还不是真停
+
+当前前端停止按钮只会中断浏览器请求，不会真正终止后端实验进程。
+
+这部分还需要补真正的后端 stop 机制。
+
+## 下一阶段我这边继续做什么
+
+### 1. 继续提升 experience distillation 质量
+
+目标是让经验更像：
+
+- 为什么成功
+- 为什么失败
+- 下次怎么办
+
+而不是：
+
+- 这是什么题
+
+### 2. 强化 Reasoner 对经验规则的真实消费
+
+下一步重点观察：
+
+- 经验是否真的改变答案选择
+- 没有经验时是否更容易犯错
+- `experience_used_count` 和 `reuse_success_count` 是否开始增长
+
+### 3. 持续收紧结果展示层
+
+目标是让页面上更清楚地区分：
+
+- 最终答案
+- 经验卡片
+- 检索命中
+- 调试信息
+
+### 4. 继续补 continuous 的记忆复用指标
+
+后续重点保留并继续强化：
+
+- `memory_write_count`
+- `experience_write_count`
+- `experience_hit_count`
+- `experience_used_count`
+- `reuse_success_count`
+- `memory_growth`
+
+## 超图同学下一阶段该做什么
+
+超图侧建议优先推进：
+
+1. 单独增强 `experience memory` 的排序
+2. 排序中显式利用：
+   - `problem_pattern`
+   - `solution_pattern`
+   - `failure_pattern`
+   - `trigger_conditions`
+   - `reuse_count`
+   - `reuse_success_count`
+3. 后续再做：
+   - `merge`
+   - `dedup`
+   - `prune`
+   - `decay`
+
+## 当前协作边界
+
+### 我这边负责
+
+- 经验闭环接入
+- experience 写入时机
+- experience 检索时机
+- Reasoner 消费经验
+- 结果 JSON
+- 指标与页面展示
+
+### 超图同学负责
+
+- 经验在超图中的建模
+- 经验检索与排序
+- 经验演化
+- 经验去重与淘汰
+
+## 一句话结论
+
+当前智能体侧已经从“只有问答记忆”升级到“evidence + experience 双层记忆”，并且经验规则已经进入 Retriever 和 Reasoner 主链路。下一阶段不再是补字段，而是继续把 experience 做成真正能提升后续任务效果的可复用策略记忆。

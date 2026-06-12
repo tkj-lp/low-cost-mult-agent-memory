@@ -23,11 +23,37 @@ def _compact_memory_context(hits: list[dict]) -> list[dict]:
         context.append(
             {
                 "memory_id": hit.get("memory_id"),
+                "memory_type": hit.get("memory_type", "evidence"),
                 "summary": _shorten(hit.get("summary", ""), 160),
                 "retrieval_score": hit.get("retrieval_score"),
+                "problem_pattern": _shorten(hit.get("problem_pattern", ""), 120),
+                "solution_pattern": _shorten(hit.get("solution_pattern", ""), 140),
+                "trigger_conditions": hit.get("trigger_conditions", []),
             }
         )
     return context
+
+
+def _build_experience_rules(hits: list[dict]) -> list[dict]:
+    """把经验记忆压成 Reasoner 可直接消费的规则卡片。"""
+
+    rules: list[dict] = []
+    for hit in hits:
+        rules.append(
+            {
+                "memory_id": hit.get("memory_id"),
+                "problem_pattern": hit.get("problem_pattern", ""),
+                "solution_pattern": hit.get("solution_pattern", ""),
+                "failure_pattern": hit.get("failure_pattern", ""),
+                "trigger_conditions": hit.get("trigger_conditions", []),
+                "supporting_evidence": hit.get("supporting_evidence", []),
+                "confidence": hit.get("confidence", 0.0),
+                "retrieval_score": hit.get("retrieval_score"),
+                "reuse_count": hit.get("reuse_count", 0),
+                "reuse_success_count": hit.get("reuse_success_count", 0),
+            }
+        )
+    return rules
 
 
 def _planner_focus(plan: list[str], limit: int = 3) -> list[str]:
@@ -65,6 +91,108 @@ def _tokenize(text: str) -> set[str]:
         for token in re.findall(r"[a-z0-9][a-z0-9\-]+", str(text or "").lower())
         if len(token) >= 3
     }
+
+
+def _experience_family(question: str) -> str:
+    normalized = str(question or "").lower()
+    if "when" in normalized and any(token in normalized for token in ("dvd", "release", "digital", "blu-ray", "blu ray")):
+        return "temporal_constraint_selection"
+    if "cast" in normalized or "members" in normalized:
+        return "entity_list_extraction"
+    if "where" in normalized and "filmed" in normalized:
+        return "multi_location_selection"
+    if "what is the film about" in normalized or ("what" in normalized and "film" in normalized and "about" in normalized):
+        return "topic_summary_selection"
+    if any(marker in normalized for marker in ("economy", "depend on", "mineral", "resources", "hazard", "fish")):
+        return "attribute_lookup_with_context"
+    return "memory_grounded_question_answering"
+
+
+def _build_experience_query(task: str, plan: list[str], question: str) -> str:
+    retrieval_query, planner_focus = _build_retrieval_query(task, plan)
+    family = _experience_family(question)
+    hint = f"\nExperience retrieval family: {family}"
+    return retrieval_query + hint if planner_focus else f"{question}\nExperience retrieval family: {family}"
+
+
+def _experience_match_score(question: str, hit: dict) -> float:
+    family = _experience_family(question)
+    combined = " ".join(
+        [
+            str(hit.get("problem_pattern") or ""),
+            str(hit.get("solution_pattern") or ""),
+            str(hit.get("failure_pattern") or ""),
+            " ".join(str(item) for item in hit.get("trigger_conditions", []) or []),
+        ]
+    ).lower()
+    score = float(hit.get("retrieval_score") or 0.0)
+
+    family_rules = {
+        "temporal_constraint_selection": ("temporal", "time", "date", "constraint", "medium", "region"),
+        "entity_list_extraction": ("entity", "person", "list", "cast"),
+        "multi_location_selection": ("location", "multi_location", "location_span"),
+        "topic_summary_selection": ("topic", "summary", "core_event", "depiction"),
+        "attribute_lookup_with_context": ("attribute", "resource", "hazard", "fish", "economy"),
+        "memory_grounded_question_answering": ("memory_grounded", "evidence_backed"),
+    }
+    markers = family_rules.get(family, ())
+    if any(marker in combined for marker in markers):
+        score += 12.0
+    else:
+        score -= 10.0
+
+    question_tokens = _tokenize(question)
+    trigger_tokens = set()
+    for item in hit.get("trigger_conditions", []) or []:
+        trigger_tokens |= _tokenize(str(item).replace("_", " "))
+    score += min(len(question_tokens & trigger_tokens) * 2.0, 6.0)
+
+    if family == "attribute_lookup_with_context":
+        if any(token in combined for token in ("filter_for_target_attribute", "filter_all_matching_values", "match_target_attribute_phrase", "pick_fact_matching_requested_attribute")):
+            score += 5.0
+        if any(token in combined for token in ("attribute_lookup_query", "question_targets_single_attribute", "supporting_fact_contains_attribute_value")):
+            score += 4.0
+    if family == "temporal_constraint_selection":
+        if any(token in combined for token in ("temporal_query", "format_constraint", "region_constraint", "multiple_temporal_candidates")):
+            score += 4.0
+    if family == "entity_list_extraction":
+        if any(token in combined for token in ("entity_list_query", "supporting_span_contains_person_list", "extract_complete_person_entities_only")):
+            score += 4.0
+
+    reuse_count = int(hit.get("reuse_count", 0) or 0)
+    reuse_success_count = int(hit.get("reuse_success_count", 0) or 0)
+    if reuse_count > 0:
+        score += min(reuse_count * 0.8, 4.0)
+    if reuse_success_count > 0:
+        score += min(reuse_success_count * 1.5, 6.0)
+    if reuse_count > 0 and reuse_success_count == 0:
+        score -= min(reuse_count * 0.5, 3.0)
+    return score
+
+
+def _rerank_experience_hits(question: str, hits: list[dict], *, top_k: int) -> list[dict]:
+    ranked = sorted(hits, key=lambda hit: (-_experience_match_score(question, hit), hit.get("memory_id", "")))
+    family = _experience_family(question)
+    filtered: list[dict] = []
+    for hit in ranked:
+        combined = " ".join(
+            [
+                str(hit.get("problem_pattern") or ""),
+                str(hit.get("solution_pattern") or ""),
+                str(hit.get("failure_pattern") or ""),
+                " ".join(str(item) for item in hit.get("trigger_conditions", []) or []),
+            ]
+        ).lower()
+        if family != "memory_grounded_question_answering" and _experience_match_score(question, hit) < float(hit.get("retrieval_score") or 0.0):
+            continue
+        next_hit = dict(hit)
+        next_hit["retrieval_score"] = round(_experience_match_score(question, hit), 4)
+        next_hit["experience_family"] = family
+        next_hit["experience_match_text"] = combined[:240]
+        filtered.append(next_hit)
+        if len(filtered) >= top_k:
+            break
+    return filtered
 
 
 def _supporting_fact_lookup(task_meta: dict) -> dict[str, set[str]]:
@@ -308,6 +436,8 @@ def retriever_agent(state: CompetitionState) -> dict:
 
     retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []))
     task_meta = state.get("task_meta", {})
+    question = str(task_meta.get("question") or state["task"])
+    experience_query = _build_experience_query(state["task"], state.get("plan", []), question)
     context_source = str(task_meta.get("context_source") or "inline")
     context_hits: list[dict] = []
     if context_source == "hypergraph":
@@ -316,8 +446,15 @@ def retriever_agent(state: CompetitionState) -> dict:
         retrieved_context_evidence = _extract_context_evidence(task_meta, planner_focus)
 
     # 把 Planner 的显式计划并入 query，让检索不再只依赖原始任务文本。
-    hits = search_memory(state["memory"], retrieval_query, top_k=2)
+    evidence_hits = search_memory(state["memory"], retrieval_query, top_k=2, memory_types=["evidence"])
+    raw_experience_hits = search_memory(state["memory"], experience_query, top_k=2, memory_types=["experience"])
+    experience_hits = _rerank_experience_hits(question, raw_experience_hits, top_k=2)
+    combined_hits = evidence_hits + [
+        hit for hit in experience_hits if hit.get("memory_id") not in {item.get("memory_id") for item in evidence_hits}
+    ]
+    hits = combined_hits[:4]
     memory_context = _compact_memory_context(hits)
+    experience_rules = _build_experience_rules(experience_hits)
     evidence = [
         *retrieved_context_evidence,
         "Current memory retrieval uses hypergraph structural matching plus embedding similarity fusion ranking.",
@@ -385,6 +522,9 @@ def retriever_agent(state: CompetitionState) -> dict:
                 "hits": len(hits),
                 "memory_context": memory_context,
                 "planner_focus": planner_focus,
+                "evidence_hits": len(evidence_hits),
+                "experience_hits": len(experience_hits),
+                "experience_rules": experience_rules,
             },
             state_refs=[latent_ref],
             memory_refs=[hit["memory_id"] for hit in hits],
@@ -405,6 +545,8 @@ def retriever_agent(state: CompetitionState) -> dict:
     return {
         "evidence": evidence,
         "memory_hits": hits,
+        "experience_hits": experience_hits,
+        "experience_rules": experience_rules,
         "memory_context": memory_context,
         "latent_states": latent_states,
         "state_refs": {**state.get("state_refs", {}), "evidence": latent_ref},
@@ -415,11 +557,39 @@ def retriever_agent(state: CompetitionState) -> dict:
             {
                 "agent": "RetrieverAgent",
                 "retrieval_query": retrieval_query,
+                "experience_query": experience_query,
                 "planner_focus": planner_focus,
                 "context_source": context_source,
                 "context_hit_ids": [hit.get("context_id") for hit in context_hits],
                 "context_hits": context_hits,
                 "memory_hit_ids": [hit.get("memory_id") for hit in hits],
+                "evidence_hit_ids": [hit.get("memory_id") for hit in evidence_hits],
+                "experience_hit_ids": [hit.get("memory_id") for hit in experience_hits],
+                "evidence_hits": [
+                    {
+                        "memory_id": hit.get("memory_id"),
+                        "summary": hit.get("summary"),
+                        "retrieval_score": hit.get("retrieval_score"),
+                    }
+                    for hit in evidence_hits
+                ],
+                "experience_hits": [
+                    {
+                        "memory_id": hit.get("memory_id"),
+                        "summary": hit.get("summary"),
+                        "problem_pattern": hit.get("problem_pattern", ""),
+                        "solution_pattern": hit.get("solution_pattern", ""),
+                        "failure_pattern": hit.get("failure_pattern", ""),
+                        "trigger_conditions": hit.get("trigger_conditions", []),
+                        "supporting_evidence": hit.get("supporting_evidence", []),
+                        "confidence": hit.get("confidence", 0.0),
+                        "retrieval_score": hit.get("retrieval_score"),
+                        "reuse_count": hit.get("reuse_count", 0),
+                        "reuse_success_count": hit.get("reuse_success_count", 0),
+                    }
+                    for hit in experience_hits
+                ],
+                "experience_rules": experience_rules,
                 "context_evidence": retrieved_context_evidence,
             },
         ],

@@ -199,6 +199,7 @@ class OpenAICompatibleClient:
         memory_hits: int,
         mode: str,
         memory_hit_details: list[dict[str, Any]] | None = None,
+        experience_rules: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         # Reasoner 是主答案生成者；没有检索证据时也必须直接回答任务。
         prompt = (
@@ -210,6 +211,15 @@ class OpenAICompatibleClient:
             "Return exactly one answer span, not a list and not multiple titles joined together. "
             "If evidence contains multiple candidate entities or positions, choose the single one most directly supported by the reasoning chain; do not choose based only on which string is shorter. "
             "If one evidence sentence lists several roles, do not concatenate them into the final answer. "
+            "Use Experience rules only as decision guidance, not as substitute facts. "
+            "Experience rules are reusable strategy cards. "
+            "Use solution_pattern to decide how to extract the answer span. "
+            "Use failure_pattern to avoid historically common mistakes. "
+            "Use trigger_conditions only to judge whether the rule matches the current question. "
+            "Never copy trigger_conditions or pattern names into the final answer. "
+            "If an experience rule conflicts with evidence, trust evidence. "
+            "If an experience rule says to avoid a known error pattern, obey it when selecting the final answer span. "
+            "In reasoning_summary, briefly state whether an experience rule changed your answer selection strategy. "
             "If evidence is empty, solve from the task and plan only. "
             "Return JSON with keys answer_candidate, reasoning_summary, limitations.\n"
             f"Task: {task}\n"
@@ -218,6 +228,7 @@ class OpenAICompatibleClient:
             f"Evidence: {json.dumps((evidence or [])[:4], ensure_ascii=False)}\n"
             f"Memory hits: {memory_hits}\n"
             f"Memory hit details: {json.dumps((memory_hit_details or [])[:2], ensure_ascii=False)}\n"
+            f"Experience rules: {json.dumps((experience_rules or [])[:3], ensure_ascii=False)}\n"
         )
         raw = self.generate(prompt)
         parsed = _loads_json_object(raw)

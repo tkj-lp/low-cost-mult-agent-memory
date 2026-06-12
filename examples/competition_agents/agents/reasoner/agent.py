@@ -43,6 +43,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
     # RetrieverAgent 会在前一节点写入 evidence、memory_hits 和裁剪后的 memory_context。
     memory_hits = state.get("memory_hits", [])
     memory_context = state.get("memory_context", [])
+    experience_hits = state.get("experience_hits", [])
+    experience_rules = state.get("experience_rules", [])
     evidence = state.get("evidence", [])
     plan = state.get("plan", [])
     task_text = _reasoner_task_text(state)
@@ -68,6 +70,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
         evidence=evidence,
         memory_hits=len(memory_hits),
         memory_hit_details=memory_context,
+        experience_rules=experience_rules,
         mode=state["mode"],
     )
     cognitive_gap = make_cognitive_gap(
@@ -86,6 +89,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             f"answer_candidate: {result.get('answer_candidate', '')}\n"
             f"reasoning_summary: {result.get('reasoning_summary', '')}\n"
             f"memory_refs: {[hit.get('memory_id') for hit in memory_hits]}\n"
+            f"experience_rule_refs: {[rule.get('memory_id') for rule in experience_rules]}\n"
             f"memory_context_count: {len(memory_context)}\n"
             f"limitations: {result.get('limitations', [])}"
         )
@@ -120,6 +124,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             payload = (
                 f"ReasonerAgent received {len(evidence)} evidence items and "
                 f"{len(memory_hits)} memory hits from RetrieverAgent. "
+                f"It also received {len(experience_rules)} experience rules for answer selection. "
                 f"It generated an answer_candidate from the task, plan, evidence, and memory. "
                 f"Answer candidate: {result.get('answer_candidate', '')}"
             )
@@ -171,6 +176,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
     return {
         "evidence": evidence,
         "memory_hits": memory_hits,
+        "experience_hits": experience_hits,
+        "experience_rules": experience_rules,
         "memory_context": memory_context,
         "latent_states": latent_states,
         "state_refs": {**state.get("state_refs", {}), **({"answer": answer_ref} if answer_ref else {})},
@@ -180,6 +187,9 @@ def reasoner_agent(state: CompetitionState) -> dict:
             "retrieval_mode": "hypergraph_memory" if memory_hits else "retrieved_no_hit",
             "memory_hit_details": memory_context,
             "memory_context": memory_context,
+            "experience_rules": experience_rules,
+            "experience_used_count": len(experience_rules),
+            "experience_used_memory_ids": [rule.get("memory_id") for rule in experience_rules],
             "plan_ref": plan_ref,
             "evidence_ref": evidence_ref,
             "answer_ref": answer_ref,
