@@ -154,13 +154,42 @@
                   <pre>{{ activeAgentDetail.structuredText }}</pre>
                 </section>
 
-                <section v-if="activeAgentDetail.retrievalQuery || activeAgentDetail.memoryContextText !== '[]'" class="detail-section">
+                <section
+                  v-if="activeAgentDetail.agentKey === 'retriever' && activeAgentDetail.retrievalSummaryText"
+                  class="detail-section"
+                >
                   <h3>检索与记忆</h3>
-                  <p v-if="activeAgentDetail.retrievalQuery">query: {{ activeAgentDetail.retrievalQuery }}</p>
-                  <pre v-if="activeAgentDetail.memoryContextText !== '[]'">{{ activeAgentDetail.memoryContextText }}</pre>
+                  <pre>{{ activeAgentDetail.retrievalSummaryText }}</pre>
                 </section>
 
-                <section v-if="activeAgentDetail.executionResultText" class="detail-section">
+                <section
+                  v-if="activeAgentDetail.agentKey === 'reasoner' && activeAgentDetail.executionResultText"
+                  class="detail-section"
+                >
+                  <h3>推理结果</h3>
+                  <pre>{{ activeAgentDetail.executionResultText }}</pre>
+                </section>
+
+                <section
+                  v-if="activeAgentDetail.agentKey === 'summarizer' && activeAgentDetail.summaryResultText"
+                  class="detail-section"
+                >
+                  <h3>答案与记忆写回</h3>
+                  <pre>{{ activeAgentDetail.summaryResultText }}</pre>
+                </section>
+
+                <section
+                  v-if="activeAgentDetail.agentKey === 'summarizer' && activeAgentDetail.memoryRefineText"
+                  class="detail-section"
+                >
+                  <h3>经验提炼</h3>
+                  <pre>{{ activeAgentDetail.memoryRefineText }}</pre>
+                </section>
+
+                <section
+                  v-if="activeAgentDetail.agentKey === 'executor' && activeAgentDetail.executionResultText"
+                  class="detail-section"
+                >
                   <h3>执行结果</h3>
                   <pre>{{ activeAgentDetail.executionResultText }}</pre>
                 </section>
@@ -177,11 +206,6 @@
                   <p v-else>暂无与该 Agent 相关的 messages。</p>
                 </section>
 
-                <section v-if="activeAgentDetail.finalAnswer || activeAgentDetail.gold" class="detail-section">
-                  <h3>答案</h3>
-                  <p v-if="activeAgentDetail.finalAnswer">final: {{ activeAgentDetail.finalAnswer }}</p>
-                  <p v-if="activeAgentDetail.gold">gold: {{ activeAgentDetail.gold }}</p>
-                </section>
               </div>
             </aside>
           </div>
@@ -356,6 +380,9 @@ interface BackendTaskResult {
   retrieval_debug?: Record<string, unknown>;
   memory_hits?: unknown[];
   memory_context?: unknown[];
+  latest_evidence_write?: Record<string, unknown> | null;
+  latest_experience_write?: Record<string, unknown> | null;
+  latest_memory_write?: Record<string, unknown> | null;
   latent_states?: Record<string, unknown>;
   state_refs?: Record<string, string>;
   execution_result?: Record<string, unknown> | null;
@@ -399,6 +426,7 @@ interface AgentViewPayload {
 }
 
 interface AgentDetailView {
+  agentKey: string;
   taskLabel: string;
   agentLabel: string;
   status: "done" | "running" | "waiting";
@@ -416,6 +444,9 @@ interface AgentDetailView {
   memoryHitIds: string[];
   memoryContextText: string;
   memoryHitsText: string;
+  retrievalSummaryText: string;
+  summaryResultText: string;
+  memoryRefineText: string;
   messages: Array<{
     id: string;
     from: string;
@@ -442,10 +473,18 @@ interface GainSnapshot {
 interface BackendRunPayload {
   ok?: boolean;
   error?: string;
+  canceled?: boolean;
   result?: {
     runs?: BackendRunSummary[];
   };
   stdout_tail?: string;
+}
+
+interface BackendStopPayload {
+  ok?: boolean;
+  stopped?: boolean;
+  message?: string;
+  error?: string;
 }
 
 interface BackendExperimentModeOption {
@@ -608,18 +647,18 @@ const fallbackDatasets = [
   {
     value: "codeact_20",
     label: "CodeAct 20 题",
-    default_limit: 0,
-    preview_task_count: 20,
+    default_limit: 10,
+    preview_task_count: 10,
     script_dataset_type: "codeact",
     dataset_file: "examples/competition_agents/data/codeact_tasks.json",
   },
 ] satisfies BackendDatasetOption[];
 
 const fallbackDatasetMap: Record<ExperimentMode, Dataset[]> = {
-  baseline_text: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"],
-  protocol_api: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"],
-  protocol_api_embedding: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"],
-  latent_hidden: ["hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous"],
+  baseline_text: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"],
+  protocol_api: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"],
+  protocol_api_embedding: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"],
+  latent_hidden: ["hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous", "codeact_20"],
   codeact_tools: ["codeact_20"],
 };
 
@@ -709,6 +748,13 @@ const availableDatasets = computed(() =>
 );
 
 const activeComparisonRuns = computed(() => comparisonRuns.value[selectedDataset.value]);
+
+const requestLimit = computed(() => {
+  if (selectedDataset.value === "codeact_20") {
+    return 10;
+  }
+  return 1;
+});
 
 watch(selectedMode, () => {
   if (!datasetMap.value[selectedMode.value].includes(selectedDataset.value)) {
@@ -823,6 +869,28 @@ const extractAgentKeys = (run: BackendRunSummary | null) => {
   const keys: string[] = [];
   const ignored = new Set(["", "user", "system", "task", "memory"]);
 
+  const hasVisibleExecutorView = (view: unknown) => {
+    if (!view || typeof view !== "object" || Array.isArray(view)) {
+      return false;
+    }
+
+    const candidate = view as {
+      display_text?: unknown;
+      structured?: unknown;
+      state_ref?: unknown;
+    };
+    const displayText = String(candidate.display_text ?? "").trim();
+    const stateRef = String(candidate.state_ref ?? "").trim();
+    const structured = candidate.structured;
+    const hasStructuredObject =
+      !!structured &&
+      typeof structured === "object" &&
+      !Array.isArray(structured) &&
+      Object.keys(structured as Record<string, unknown>).length > 0;
+
+    return Boolean(displayText || stateRef || hasStructuredObject);
+  };
+
   run?.task_results?.forEach((task) => {
     task.messages?.forEach((message) => {
       [message.from, message.to].forEach((value) => {
@@ -834,7 +902,30 @@ const extractAgentKeys = (run: BackendRunSummary | null) => {
     });
   });
 
-  if (run?.task_results?.some((task) => task.metrics?.tool_execution_count || "execution_result" in task)) {
+  const hasExecutorOutput = run?.task_results?.some((task) => {
+    const views = task.agent_views;
+    if (
+      views &&
+      typeof views === "object" &&
+      !Array.isArray(views) &&
+      hasVisibleExecutorView((views as Record<string, unknown>).executor)
+    ) {
+      return true;
+    }
+
+    const outputs = task.agent_outputs;
+    if (outputs && typeof outputs === "object" && !Array.isArray(outputs) && outputs.executor) {
+      return true;
+    }
+
+    if (Array.isArray(outputs)) {
+      return outputs.some((output) => normalizeAgentOutputKey(output.agent) === "executor");
+    }
+
+    return false;
+  });
+
+  if (hasExecutorOutput && !keys.includes("executor")) {
     keys.push("executor");
   }
 
@@ -1002,8 +1093,26 @@ const activeAgentDetail = computed<AgentDetailView>(() => {
   const retrievalDebug = task?.retrieval_debug ?? {};
   const plannerFocus = getArrayField(retrievalDebug.planner_focus);
   const memoryHitIds = getArrayField(retrievalDebug.memory_hit_ids ?? retrievalDebug.context_hit_ids).map(String);
+  const retrievalSummaryText = safeStringify({
+    retrieval_query: retrievalDebug.retrieval_query ?? "",
+    planner_focus: plannerFocus,
+    context_source: retrievalDebug.context_source ?? "",
+    context_hit_ids: retrievalDebug.context_hit_ids ?? [],
+    context_hits: retrievalDebug.context_hits ?? [],
+    memory_hit_ids: retrievalDebug.memory_hit_ids ?? [],
+    memory_context: task?.memory_context ?? [],
+    memory_hits: task?.memory_hits ?? [],
+  });
+  const summaryResultText = safeStringify({
+    final_answer: task?.final_answer ?? "",
+    latest_evidence_write: task?.latest_evidence_write ?? null,
+    latest_experience_write: task?.latest_experience_write ?? null,
+    execution_result: task?.execution_result ?? null,
+  });
+  const memoryRefineText = safeStringify(task?.memory_refine_debug ?? null);
 
   return {
+    agentKey,
     taskLabel: `task ${taskIndex + 1}`,
     agentLabel: agent?.label ?? agentKey,
     status: task ? "done" : isRunning.value ? "running" : "waiting",
@@ -1021,6 +1130,9 @@ const activeAgentDetail = computed<AgentDetailView>(() => {
     memoryHitIds,
     memoryContextText: safeStringify(task?.memory_context ?? []),
     memoryHitsText: safeStringify(task?.memory_hits ?? []),
+    retrievalSummaryText,
+    summaryResultText,
+    memoryRefineText,
     messages: normalizeMessagesForAgent(task, agentKey),
     executionResultText: safeStringify(task?.execution_result),
   };
@@ -1116,7 +1228,7 @@ const timelineTasks = computed<TimelineTask[]>(() => {
   const taskResults = run?.task_results ?? [];
   const previewTaskCount =
     Number(datasetInfoMap.value[selectedDataset.value]?.preview_task_count) ||
-    (selectedDataset.value === "codeact_20" ? 20 : 10);
+    10;
 
   if (taskResults.length > 0) {
     return taskResults.map((task, index) => ({
@@ -1510,7 +1622,7 @@ const toggleRunning = async () => {
       body: JSON.stringify({
         experiment_mode: mode,
         dataset,
-        limit: 1,
+        limit: requestLimit.value,
         timeout_seconds: RUN_TIMEOUT_SECONDS,
         ...(USE_DEVELOPER_MODE ? { developer_mode: true } : {}),
         base_url: apiBaseUrl.value,
@@ -1521,6 +1633,9 @@ const toggleRunning = async () => {
     const payload = (await response.json()) as BackendRunPayload;
 
     if (!response.ok || !payload.ok) {
+      if (payload.canceled) {
+        throw new DOMException("实验已停止", "AbortError");
+      }
       const stdoutSummary = summarizeStdoutTail(payload.stdout_tail);
       throw new Error(
         [payload.error || `实验运行失败，HTTP ${response.status}`, stdoutSummary]
@@ -1558,13 +1673,33 @@ const toggleRunning = async () => {
   }
 };
 
-const stopRun = () => {
-  activeRunController.value?.abort();
-  isRunning.value = false;
+const stopRun = async () => {
+  const controller = activeRunController.value;
+  if (!controller) {
+    return;
+  }
+
   closeRunMessage();
-  if (activeRunController.value && !stopMessageShown) {
-    stopMessageShown = true;
-    ElMessage.warning("已停止本次前端请求");
+
+  try {
+    const response = await fetch(`${FRONTEND_SERVER_URL}/api/stop`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    const payload = (await response.json()) as BackendStopPayload;
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || `停止实验失败，HTTP ${response.status}`);
+    }
+    if (!stopMessageShown) {
+      stopMessageShown = true;
+      ElMessage.warning(payload.message || "已请求停止后端实验进程");
+    }
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : String(error));
+  } finally {
+    controller.abort();
+    isRunning.value = false;
   }
 };
 
