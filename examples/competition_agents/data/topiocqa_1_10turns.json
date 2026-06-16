@@ -1,0 +1,322 @@
+[
+  {
+    "group_id": "chain-001",
+    "source_dataset": "topiocqa_two_chains_10turns_refined",
+    "topic": "Dunkirk (2017 film) -> Urk -> North Sea",
+    "context": [
+      {
+        "title": "Dunkirk (2017 film)",
+        "sentences": [
+          "\"Dunkirk\" was released digitally on 12 December 2017, and on 4K Ultra HD, Blu-ray, and DVD on 18 December in the United Kingdom and 19 December in the United States.",
+          "Dunkirk is a 2017 war film written, directed, and produced by Christopher Nolan that depicts the Dunkirk evacuation of World War II.",
+          "Its ensemble cast includes Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, Harry Styles, Aneurin Barnard, James D'Arcy, Barry Keoghan, Kenneth Branagh, Cillian Murphy, Mark Rylance, and Tom Hardy.",
+          "Principal photography commenced on 23 May 2016 in Dunkirk, France. Production then continued for four weeks in Urk, Netherlands."
+        ]
+      },
+      {
+        "title": "Urk",
+        "sentences": [
+          "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family.",
+          "The important economic pillar of the village is the fishery.",
+          "After the IJsselmeer was formed, the people of Urk continued to fish on the North Sea."
+        ]
+      },
+      {
+        "title": "North Sea",
+        "sentences": [
+          "Cod, haddock, whiting, saithe, plaice, sole, mackerel, herring, pouting, sprat, and sandeel are all very common in the North Sea and are fished commercially.",
+          "The North Sea yields millions of cubic metres of sand and gravel from the ocean floor each year, and rolled pieces of amber may also be found on nearby coasts.",
+          "Storm surges threaten, in particular, the coasts around the North Sea, especially those of the Netherlands, Belgium, Germany, and Denmark."
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "Dunkirk (2017 film)",
+        "\"Dunkirk\" was released digitally on 12 December 2017, and on 4K Ultra HD, Blu-ray, and DVD on 18 December in the United Kingdom and 19 December in the United States."
+      ],
+      [
+        "Dunkirk (2017 film)",
+        "Dunkirk is a 2017 war film written, directed, and produced by Christopher Nolan that depicts the Dunkirk evacuation of World War II."
+      ],
+      [
+        "Dunkirk (2017 film)",
+        "Its ensemble cast includes Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, Harry Styles, Aneurin Barnard, James D'Arcy, Barry Keoghan, Kenneth Branagh, Cillian Murphy, Mark Rylance, and Tom Hardy."
+      ],
+      [
+        "Dunkirk (2017 film)",
+        "Principal photography commenced on 23 May 2016 in Dunkirk, France. Production then continued for four weeks in Urk, Netherlands."
+      ],
+      [
+        "Urk",
+        "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family."
+      ],
+      [
+        "Urk",
+        "The important economic pillar of the village is the fishery."
+      ],
+      [
+        "Urk",
+        "After the IJsselmeer was formed, the people of Urk continued to fish on the North Sea."
+      ],
+      [
+        "North Sea",
+        "Cod, haddock, whiting, saithe, plaice, sole, mackerel, herring, pouting, sprat, and sandeel are all very common in the North Sea and are fished commercially."
+      ],
+      [
+        "North Sea",
+        "The North Sea yields millions of cubic metres of sand and gravel from the ocean floor each year, and rolled pieces of amber may also be found on nearby coasts."
+      ],
+      [
+        "North Sea",
+        "Storm surges threaten, in particular, the coasts around the North Sea, especially those of the Netherlands, Belgium, Germany, and Denmark."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "task_type": "Release",
+        "question": "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+        "expected_answer": "18 December 2017",
+        "expected_reuse": [],
+        "topic": "Dunkirk (2017 film)",
+        "topic_section": "Release",
+        "conversation_context": [],
+        "supporting_passage": "\"Dunkirk\" was released digitally on 12 December 2017, and on 4K Ultra HD, Blu-ray, and DVD on 18 December in the United Kingdom and 19 December in the United States."
+      },
+      {
+        "turn_id": "turn-2",
+        "task_type": "Introduction",
+        "question": "what is the film about?",
+        "expected_answer": "The Dunkirk evacuation of World War II",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Dunkirk (2017 film)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017"
+        ],
+        "supporting_passage": "Dunkirk is a 2017 war film written, directed, and produced by Christopher Nolan that depicts the Dunkirk evacuation of World War II."
+      },
+      {
+        "turn_id": "turn-3",
+        "task_type": "Introduction",
+        "question": "can you mention a few members of the cast?",
+        "expected_answer": "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Dunkirk (2017 film)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II"
+        ],
+        "supporting_passage": "Its ensemble cast includes Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, Harry Styles, Aneurin Barnard, James D'Arcy, Barry Keoghan, Kenneth Branagh, Cillian Murphy, Mark Rylance, and Tom Hardy."
+      },
+      {
+        "turn_id": "turn-4",
+        "task_type": "Filming",
+        "question": "where was it filmed?",
+        "expected_answer": "Dunkirk, France, and Urk, Netherlands",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Dunkirk (2017 film)",
+        "topic_section": "Filming",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II",
+          "can you mention a few members of the cast?",
+          "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles"
+        ],
+        "supporting_passage": "Principal photography commenced on 23 May 2016 in Dunkirk, France. Production then continued for four weeks in Urk, Netherlands."
+      },
+      {
+        "turn_id": "turn-5",
+        "task_type": "History / Lordship of Urk en Emmeloord",
+        "question": "can you tell me anything about the latter place's past?",
+        "expected_answer": "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Urk",
+        "topic_section": "History / Lordship of Urk en Emmeloord",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II",
+          "can you mention a few members of the cast?",
+          "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles",
+          "where was it filmed?",
+          "Dunkirk, France, and Urk, Netherlands"
+        ],
+        "supporting_passage": "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family."
+      },
+      {
+        "turn_id": "turn-6",
+        "task_type": "Economy",
+        "question": "what does the economy of this place depend on?",
+        "expected_answer": "Fishery",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Urk",
+        "topic_section": "Economy",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II",
+          "can you mention a few members of the cast?",
+          "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles",
+          "where was it filmed?",
+          "Dunkirk, France, and Urk, Netherlands",
+          "can you tell me anything about the latter place's past?",
+          "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family"
+        ],
+        "supporting_passage": "The important economic pillar of the village is the fishery."
+      },
+      {
+        "turn_id": "turn-7",
+        "task_type": "Economy",
+        "question": "which nearby sea did local people fish in?",
+        "expected_answer": "North Sea",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Urk",
+        "topic_section": "Economy",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II",
+          "can you mention a few members of the cast?",
+          "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles",
+          "where was it filmed?",
+          "Dunkirk, France, and Urk, Netherlands",
+          "can you tell me anything about the latter place's past?",
+          "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family",
+          "what does the economy of this place depend on?",
+          "Fishery"
+        ],
+        "supporting_passage": "After the IJsselmeer was formed, the people of Urk continued to fish on the North Sea."
+      },
+      {
+        "turn_id": "turn-8",
+        "task_type": "Fish and shellfish",
+        "question": "what kinds of fish are commonly found in this sea?",
+        "expected_answer": "Cod, haddock, whiting, saithe, plaice, sole, mackerel, herring, pouting, sprat, and sandeel",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "North Sea",
+        "topic_section": "Fish and shellfish",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II",
+          "can you mention a few members of the cast?",
+          "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles",
+          "where was it filmed?",
+          "Dunkirk, France, and Urk, Netherlands",
+          "can you tell me anything about the latter place's past?",
+          "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family",
+          "what does the economy of this place depend on?",
+          "Fishery",
+          "which nearby sea did local people fish in?",
+          "North Sea"
+        ],
+        "supporting_passage": "Cod, haddock, whiting, saithe, plaice, sole, mackerel, herring, pouting, sprat, and sandeel are all very common in the North Sea and are fished commercially."
+      },
+      {
+        "turn_id": "turn-9",
+        "task_type": "Mineral resources",
+        "question": "what mineral resources are found in this sea?",
+        "expected_answer": "Sand, gravel, and rolled pieces of amber",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "North Sea",
+        "topic_section": "Mineral resources",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II",
+          "can you mention a few members of the cast?",
+          "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles",
+          "where was it filmed?",
+          "Dunkirk, France, and Urk, Netherlands",
+          "can you tell me anything about the latter place's past?",
+          "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family",
+          "what does the economy of this place depend on?",
+          "Fishery",
+          "which nearby sea did local people fish in?",
+          "North Sea",
+          "what kinds of fish are commonly found in this sea?",
+          "Cod, haddock, whiting, saithe, plaice, sole, mackerel, herring, pouting, sprat, and sandeel"
+        ],
+        "supporting_passage": "The North Sea yields millions of cubic metres of sand and gravel from the ocean floor each year, and rolled pieces of amber may also be found on nearby coasts."
+      },
+      {
+        "turn_id": "turn-10",
+        "task_type": "Storm tides",
+        "question": "what natural hazard affects this sea and its coasts?",
+        "expected_answer": "Storm surges",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "North Sea",
+        "topic_section": "Storm tides",
+        "conversation_context": [
+          "when was the 2017 film dunkirk released on dvd in the united kingdom?",
+          "18 December 2017",
+          "what is the film about?",
+          "The Dunkirk evacuation of World War II",
+          "can you mention a few members of the cast?",
+          "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, and Harry Styles",
+          "where was it filmed?",
+          "Dunkirk, France, and Urk, Netherlands",
+          "can you tell me anything about the latter place's past?",
+          "Until 1475, the High and Low Lordship of Urk and Emmeloord was in the hands of the Van Kuinre family",
+          "what does the economy of this place depend on?",
+          "Fishery",
+          "which nearby sea did local people fish in?",
+          "North Sea",
+          "what kinds of fish are commonly found in this sea?",
+          "Cod, haddock, whiting, saithe, plaice, sole, mackerel, herring, pouting, sprat, and sandeel",
+          "what mineral resources are found in this sea?",
+          "Sand, gravel, and rolled pieces of amber"
+        ],
+        "supporting_passage": "Storm surges threaten, in particular, the coasts around the North Sea, especially those of the Netherlands, Belgium, Germany, and Denmark."
+      }
+    ]
+  }
+]

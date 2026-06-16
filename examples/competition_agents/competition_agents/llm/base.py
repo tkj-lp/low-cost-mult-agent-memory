@@ -25,6 +25,7 @@ class LLMClient(Protocol):
         mode: str,
         memory_hit_details: list[dict[str, Any]] | None = None,
         experience_rules: list[dict[str, Any]] | None = None,
+        answer_rules: list[str] | None = None,
     ) -> dict[str, Any]:
         """为 ReasonerAgent 生成候选答案和推理摘要。"""
 

@@ -132,3 +132,42 @@ hidden state 只是在 `latent_states` 中新增一种类型：
 3. 增加 hidden state 与 memory embedding 的相似度分析。
 4. 尝试 KV cache / `past_key_values` 传递实验。
 5. 研究 adapter，把 hidden state 转成下游模型可消费的 prefix embedding。
+
+## 当前实现状态补充（2026-06-15）
+
+### 已完成的对齐
+
+当前 hidden 连续问答链路已经完成以下对齐：
+
+- `TopiOCQA` 连续任务改为复用统一的 `refine_memory(...)`
+- 经验卡里的 `trigger_conditions` 不再使用 `question:when` 这类旧格式，而是统一使用主链路稳定枚举
+- `supporting_evidence` 已走统一清洗逻辑，不再混入问句或 planner 调试文本
+- hidden 结果 JSON 已补齐：
+  - `latest_evidence_write`
+  - `latest_experience_write`
+  - `memory_refine_case`
+  - `memory_refine_debug`
+- hidden 连续问答的 `memory_hits` / `experience_hits` 已改为真实召回口径
+
+### 当前结论
+
+因此，当前 hidden 路径已经不是一套独立的经验写回方案，而是：
+
+```text
+hidden state 负责状态传递实验
++ 统一 memory.py 负责经验提炼口径
+```
+
+也就是说：
+
+- hidden 保留自己的本地模型推理和 hidden tensor 传递
+- experience memory 的 schema、trigger、supporting_evidence 清洗、结果字段结构，与主链路保持一致
+
+### 尚未统一的范围
+
+当前未完全统一的部分是 hidden CodeAct 路径。
+
+具体来说：
+
+- hidden continuous：已对齐
+- hidden CodeAct：仍保留本地经验写回逻辑，后续再切到统一 `refine_memory(...)`

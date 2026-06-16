@@ -1,0 +1,337 @@
+[
+  {
+    "group_id": "chain-002",
+    "source_dataset": "topiocqa_two_chains_10turns_refined",
+    "topic": "Metabolism -> Catabolism -> Adrenaline -> Cortisol -> Insulin -> Melatonin",
+    "context": [
+      {
+        "title": "Metabolism",
+        "sentences": [
+          "One central coenzyme is adenosine triphosphate (ATP), the universal energy currency of cells.",
+          "Catabolism is the set of metabolic processes that break down large molecules."
+        ]
+      },
+      {
+        "title": "Catabolism",
+        "sentences": [
+          "Classic catabolic hormones include cortisol, glucagon, and adrenaline. Additional hormones with catabolic effects include cytokines, orexin, and melatonin."
+        ]
+      },
+      {
+        "title": "Adrenaline",
+        "sentences": [
+          "The major emotion studied in relation to adrenaline is fear."
+        ]
+      },
+      {
+        "title": "Cortisol",
+        "sentences": [
+          "In general, cortisol stimulates the synthesis of new glucose from non-carbohydrate sources; this process is known as gluconeogenesis."
+        ]
+      },
+      {
+        "title": "Insulin",
+        "sentences": [
+          "Insulin lowers blood glucose by promoting glucose uptake and storage, thereby opposing processes such as gluconeogenesis that raise blood glucose.",
+          "Frederick Banting and Charles Herbert Best were the first to isolate insulin from dog pancreas in 1921.",
+          "Researchers later succeeded in extracting insulin from the adult cow pancreas.",
+          "Researchers succeeded in extracting insulin from the adult cow pancreas."
+        ]
+      },
+      {
+        "title": "Melatonin",
+        "sentences": [
+          "Melatonin has been found in all plants that have been investigated."
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "Metabolism",
+        "One central coenzyme is adenosine triphosphate (ATP), the universal energy currency of cells."
+      ],
+      [
+        "Metabolism",
+        "Catabolism is the set of metabolic processes that break down large molecules."
+      ],
+      [
+        "Catabolism",
+        "Classic catabolic hormones include cortisol, glucagon, and adrenaline. Additional hormones with catabolic effects include cytokines, orexin, and melatonin."
+      ],
+      [
+        "Adrenaline",
+        "The major emotion studied in relation to adrenaline is fear."
+      ],
+      [
+        "Cortisol",
+        "In general, cortisol stimulates the synthesis of new glucose from non-carbohydrate sources; this process is known as gluconeogenesis."
+      ],
+      [
+        "Insulin",
+        "Insulin lowers blood glucose by promoting glucose uptake and storage, thereby opposing processes such as gluconeogenesis that raise blood glucose."
+      ],
+      [
+        "Insulin",
+        "Frederick Banting and Charles Herbert Best were the first to isolate insulin from dog pancreas in 1921."
+      ],
+      [
+        "Insulin",
+        "Researchers later succeeded in extracting insulin from the adult cow pancreas."
+      ],
+      [
+        "Insulin",
+        "Researchers succeeded in extracting insulin from the adult cow pancreas."
+      ],
+      [
+        "Melatonin",
+        "Melatonin has been found in all plants that have been investigated."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "task_type": "Coenzymes",
+        "question": "what is the primary high-energy molecule in human metabolism?",
+        "expected_answer": "Adenosine triphosphate (ATP)",
+        "expected_reuse": [],
+        "topic": "Metabolism",
+        "topic_section": "Coenzymes",
+        "conversation_context": [],
+        "supporting_passage": "One central coenzyme is adenosine triphosphate (ATP), the universal energy currency of cells."
+      },
+      {
+        "turn_id": "turn-2",
+        "task_type": "Catabolism",
+        "question": "what is catabolism?",
+        "expected_answer": "The set of metabolic processes that break down large molecules",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Metabolism",
+        "topic_section": "Catabolism",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)"
+        ],
+        "supporting_passage": "Catabolism is the set of metabolic processes that break down large molecules."
+      },
+      {
+        "turn_id": "turn-3",
+        "task_type": "Catabolic hormones",
+        "question": "which hormones are related to catabolism?",
+        "expected_answer": "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Catabolism",
+        "topic_section": "Catabolic hormones",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules"
+        ],
+        "supporting_passage": "Classic catabolic hormones include cortisol, glucagon, and adrenaline. Additional hormones with catabolic effects include cytokines, orexin, and melatonin."
+      },
+      {
+        "turn_id": "turn-4",
+        "task_type": "Emotional response",
+        "question": "what emotional response is strongly associated with the third hormone on that list?",
+        "expected_answer": "Fear",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Adrenaline",
+        "topic_section": "Emotional response",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules",
+          "which hormones are related to catabolism?",
+          "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin"
+        ],
+        "supporting_passage": "The major emotion studied in relation to adrenaline is fear."
+      },
+      {
+        "turn_id": "turn-5",
+        "task_type": "Metabolism of glucose",
+        "question": "how does the first hormone on that list affect glucose metabolism?",
+        "expected_answer": "It stimulates gluconeogenesis from non-carbohydrate sources",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Cortisol",
+        "topic_section": "Metabolism of glucose",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules",
+          "which hormones are related to catabolism?",
+          "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin",
+          "what emotional response is strongly associated with the third hormone on that list?",
+          "Fear"
+        ],
+        "supporting_passage": "In general, cortisol stimulates the synthesis of new glucose from non-carbohydrate sources; this process is known as gluconeogenesis."
+      },
+      {
+        "turn_id": "turn-6",
+        "task_type": "Glucose regulation",
+        "question": "is that process opposed by insulin?",
+        "expected_answer": "Yes",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Insulin",
+        "topic_section": "Glucose regulation",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules",
+          "which hormones are related to catabolism?",
+          "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin",
+          "what emotional response is strongly associated with the third hormone on that list?",
+          "Fear",
+          "how does the first hormone on that list affect glucose metabolism?",
+          "It stimulates gluconeogenesis from non-carbohydrate sources"
+        ],
+        "supporting_passage": "Insulin lowers blood glucose by promoting glucose uptake and storage, thereby opposing processes such as gluconeogenesis that raise blood glucose."
+      },
+      {
+        "turn_id": "turn-7",
+        "task_type": "Introduction",
+        "question": "when was the substance that opposes that process first isolated?",
+        "expected_answer": "1921",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Insulin",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules",
+          "which hormones are related to catabolism?",
+          "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin",
+          "what emotional response is strongly associated with the third hormone on that list?",
+          "Fear",
+          "how does the first hormone on that list affect glucose metabolism?",
+          "It stimulates gluconeogenesis from non-carbohydrate sources",
+          "is that process opposed by insulin?",
+          "Yes"
+        ],
+        "supporting_passage": "Frederick Banting and Charles Herbert Best were the first to isolate insulin from dog pancreas in 1921."
+      },
+      {
+        "turn_id": "turn-8",
+        "task_type": "Extraction and purification",
+        "question": "could that substance also be extracted from an animal organ?",
+        "expected_answer": "Yes",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Insulin",
+        "topic_section": "Extraction and purification",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules",
+          "which hormones are related to catabolism?",
+          "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin",
+          "what emotional response is strongly associated with the third hormone on that list?",
+          "Fear",
+          "how does the first hormone on that list affect glucose metabolism?",
+          "It stimulates gluconeogenesis from non-carbohydrate sources",
+          "is that process opposed by insulin?",
+          "Yes",
+          "when was the substance that opposes that process first isolated?",
+          "1921"
+        ],
+        "supporting_passage": "Researchers later succeeded in extracting insulin from the adult cow pancreas."
+      },
+      {
+        "turn_id": "turn-9",
+        "task_type": "Extraction and purification",
+        "question": "from which organ was it extracted in that experiment?",
+        "expected_answer": "Adult cow pancreas",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Insulin",
+        "topic_section": "Extraction and purification",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules",
+          "which hormones are related to catabolism?",
+          "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin",
+          "what emotional response is strongly associated with the third hormone on that list?",
+          "Fear",
+          "how does the first hormone on that list affect glucose metabolism?",
+          "It stimulates gluconeogenesis from non-carbohydrate sources",
+          "is that process opposed by insulin?",
+          "Yes",
+          "when was the substance that opposes that process first isolated?",
+          "1921",
+          "could that substance also be extracted from an animal organ?",
+          "Yes"
+        ],
+        "supporting_passage": "Researchers succeeded in extracting insulin from the adult cow pancreas."
+      },
+      {
+        "turn_id": "turn-10",
+        "task_type": "Plants",
+        "question": "can the last hormone from that earlier catabolic-hormone list also be found in plants?",
+        "expected_answer": "Yes, melatonin can be found in plants",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Melatonin",
+        "topic_section": "Plants",
+        "conversation_context": [
+          "what is the primary high-energy molecule in human metabolism?",
+          "Adenosine triphosphate (ATP)",
+          "what is catabolism?",
+          "The set of metabolic processes that break down large molecules",
+          "which hormones are related to catabolism?",
+          "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin",
+          "what emotional response is strongly associated with the third hormone on that list?",
+          "Fear",
+          "how does the first hormone on that list affect glucose metabolism?",
+          "It stimulates gluconeogenesis from non-carbohydrate sources",
+          "is that process opposed by insulin?",
+          "Yes",
+          "when was the substance that opposes that process first isolated?",
+          "1921",
+          "could that substance also be extracted from an animal organ?",
+          "Yes",
+          "from which organ was it extracted in that experiment?",
+          "Adult cow pancreas"
+        ],
+        "supporting_passage": "Melatonin has been found in all plants that have been investigated."
+      }
+    ]
+  }
+]

@@ -19,6 +19,100 @@ def _summarizer_task_text(state: CompetitionState) -> str:
     return state["task"]
 
 
+def _locate_latest_experience_write(
+    memory: list[dict],
+    *,
+    refined: dict,
+) -> dict:
+    """在 merge 场景下定位本轮真正写入或更新的 experience record。"""
+
+    problem_pattern = str(refined.get("problem_pattern") or "")
+    solution_pattern = str(refined.get("solution_pattern") or "")
+    failure_pattern = str(refined.get("failure_pattern") or "")
+    source_case = refined.get("distillation_case", {}) or {}
+    source_question = str(source_case.get("question") or "")
+
+    for record in reversed(memory):
+        if str(record.get("memory_type", "evidence")) != "experience":
+            continue
+        if (
+            str(record.get("problem_pattern") or "") == problem_pattern
+            and str(record.get("solution_pattern") or "") == solution_pattern
+            and str(record.get("failure_pattern") or "") == failure_pattern
+        ):
+            return record
+        record_case = record.get("source_case", {}) or {}
+        if source_question and str(record_case.get("question") or "") == source_question:
+            return record
+    return {}
+
+
+def _normalize_latest_experience_write(latest: dict, refined: dict) -> dict:
+    """补齐前端展示最关心的经验外层字段，避免只在内层 rule card 中可见。"""
+
+    if not latest:
+        return {}
+    rule_card = latest.get("experience_rule_card", {}) or {}
+    refined_rule_card = refined.get("experience_rule_card", {}) or {}
+    return {
+        **latest,
+        "problem_pattern": str(
+            latest.get("problem_pattern")
+            or rule_card.get("problem_pattern")
+            or refined.get("problem_pattern")
+            or refined_rule_card.get("problem_pattern")
+            or ""
+        ),
+        "solution_pattern": str(
+            latest.get("solution_pattern")
+            or rule_card.get("solution_pattern")
+            or refined.get("solution_pattern")
+            or refined_rule_card.get("solution_pattern")
+            or ""
+        ),
+        "failure_pattern": str(
+            latest.get("failure_pattern")
+            or rule_card.get("failure_pattern")
+            or refined.get("failure_pattern")
+            or refined_rule_card.get("failure_pattern")
+            or ""
+        ),
+        "trigger_conditions": list(
+            latest.get("trigger_conditions")
+            or rule_card.get("trigger_conditions")
+            or refined.get("trigger_conditions")
+            or refined_rule_card.get("trigger_conditions")
+            or []
+        ),
+        "supporting_evidence": list(
+            latest.get("supporting_evidence")
+            or rule_card.get("supporting_evidence")
+            or refined.get("supporting_evidence")
+            or refined_rule_card.get("supporting_evidence")
+            or []
+        ),
+        "confidence": float(
+            latest.get("confidence")
+            or rule_card.get("confidence")
+            or refined.get("confidence")
+            or refined_rule_card.get("confidence")
+            or 0.0
+        ),
+        "abstraction_note": str(
+            latest.get("abstraction_note")
+            or rule_card.get("abstraction_note")
+            or refined.get("abstraction_note")
+            or refined_rule_card.get("abstraction_note")
+            or ""
+        ),
+        "experience_source": str(
+            latest.get("experience_source")
+            or refined.get("experience_source")
+            or ""
+        ),
+    }
+
+
 def summarizer_agent(state: CompetitionState) -> dict:
     """生成最终答案，并沉淀为可复用共享记忆。"""
 
@@ -127,7 +221,8 @@ def summarizer_agent(state: CompetitionState) -> dict:
             distillation_mode=refined.get("distillation_mode", ""),
             distillation_raw_output=refined.get("distillation_raw_output", ""),
         )
-        latest_experience_write = memory[-1] if memory else {}
+        latest_experience_write = _locate_latest_experience_write(memory, refined=refined)
+        latest_experience_write = _normalize_latest_experience_write(latest_experience_write, refined)
     cognitive_gap = make_cognitive_gap(
         agent="summarizer",
         known=["plan", "evidence", "execution_result", "latent_state_refs"],
