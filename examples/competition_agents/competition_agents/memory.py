@@ -68,20 +68,25 @@ def _build_distillation_case(task_topic: str, summary: str, trace: dict[str, Any
     execution_result = trace.get("execution_result", {}) if isinstance(trace, dict) else {}
     outcome, outcome_note, exact_match = _case_feedback(trace, summary)
     answer_candidate = str(execution_result.get("answer_candidate") or "").strip()
+    if not answer_candidate and execution_result.get("result") is not None:
+        answer_candidate = json.dumps(execution_result.get("result"), ensure_ascii=False, sort_keys=True)
     evidence = trace.get("evidence", []) if isinstance(trace, dict) else []
     memory_hits = trace.get("memory_hits", []) if isinstance(trace, dict) else []
+    question = _question_text(task_topic, trace)
 
     return {
-        "question": _question_text(task_topic, trace),
+        "question": question,
         "dataset_type": task_meta.get("dataset_type"),
         "group_id": task_meta.get("group_id"),
+        "task_type": task_meta.get("task_type"),
+        "tags": task_meta.get("tags", []),
         "gold": task_meta.get("expected_answer") if task_meta.get("expected_answer") is not None else task_meta.get("expected"),
         "answer_candidate": answer_candidate,
         "reasoning_summary": execution_result.get("reasoning_summary", ""),
         "experience_hit_count": len(
             [hit for hit in memory_hits if str(hit.get("memory_type", "evidence")) == "experience"]
         ),
-        "evidence": [str(item) for item in evidence[:3]],
+        "evidence": _clean_supporting_evidence(evidence, question=question)[:3],
         "limitations": execution_result.get("limitations", []),
         "exact_match": exact_match,
         "case_outcome": outcome,
@@ -242,6 +247,195 @@ def _sanitize_triggers(value: Any) -> list[str]:
     return triggers[:6]
 
 
+_STABLE_TRIGGER_ENUMS = {
+    "temporal_query",
+    "format_constraint",
+    "region_constraint",
+    "entity_list_query",
+    "multi_location_query",
+    "definition_or_topic_query",
+    "attribute_lookup_query",
+    "reference_resolution_query",
+    "statistical_computation_query",
+    "summary_statistics_query",
+    "formula_computation_query",
+    "table_aggregation_query",
+    "table_transformation_query",
+    "string_extraction_query",
+    "date_computation_query",
+    "evidence_extraction_query",
+    "evidence_span_extraction_query",
+    "memory_reuse_query",
+}
+
+
+def _looks_like_question_text(text: str) -> bool:
+    stripped = str(text or "").strip()
+    if not stripped:
+        return False
+    lowered = stripped.lower()
+    return stripped.endswith("?") or lowered.startswith(
+        (
+            "what ",
+            "when ",
+            "where ",
+            "which ",
+            "who ",
+            "whom ",
+            "whose ",
+            "can you ",
+            "does ",
+            "do ",
+            "did ",
+            "is ",
+            "are ",
+            "was ",
+            "were ",
+        )
+    )
+
+
+def _clean_supporting_evidence(evidence: Iterable[Any], *, question: str) -> list[str]:
+    cleaned: list[str] = []
+    question_norm = _normalized_text(question)
+    noise_markers = (
+        "planner guided retrieval focus",
+        "planner-guided retrieval focus",
+        "current memory retrieval uses",
+        "question:",
+        "task:",
+        "answer:",
+    )
+    for item in evidence:
+        text = str(item or "").strip()
+        if not text:
+            continue
+        normalized = _normalized_text(text)
+        if not normalized:
+            continue
+        if any(marker in normalized for marker in noise_markers):
+            continue
+        rhs = text.split(":", 1)[1].strip() if ":" in text else text
+        rhs_norm = _normalized_text(rhs)
+        if _looks_like_question_text(rhs):
+            continue
+        if rhs_norm and rhs_norm == question_norm:
+            continue
+        if len(rhs_norm.split()) < 3:
+            continue
+        cleaned.append(text)
+    return _unique_keep_order(cleaned)
+
+
+def _normalize_trigger_label(trigger: str) -> str:
+    raw = str(trigger or "").strip()
+    if not raw:
+        return ""
+    compact = raw.replace(":", "_").replace("-", "_").strip().lower()
+    if compact in _STABLE_TRIGGER_ENUMS:
+        return compact
+
+    text = _normalized_text(trigger).replace("-", " ")
+    if not text:
+        return ""
+    if any(token in text for token in ("when", "date", "time", "temporal")):
+        return "temporal_query"
+    if any(token in text for token in ("dvd", "digital", "blu ray", "format", "medium")):
+        return "format_constraint"
+    if any(token in text for token in ("united kingdom", "united states", "uk", "region", "country")):
+        return "region_constraint"
+    if any(token in text for token in ("people", "person", "cast", "members", "person list", "entity list")):
+        return "entity_list_query"
+    if any(token in text for token in ("location", "filmed", "place", "multiple locations")):
+        return "multi_location_query"
+    if any(token in text for token in ("main topic", "definition", "depiction", "subject", "film about")):
+        return "definition_or_topic_query"
+    if any(token in text for token in ("economy", "depend on", "mineral", "resource", "hazard", "fish", "attribute")):
+        return "attribute_lookup_query"
+    if any(
+        token in text
+        for token in (
+            "latter",
+            "former",
+            "reference",
+            "pronoun",
+            "that list",
+            "that process",
+            "that substance",
+            "that experiment",
+            "earlier list",
+            "first hormone",
+            "third hormone",
+            "last hormone",
+            "ordinal",
+        )
+    ):
+        return "reference_resolution_query"
+    if any(token in text for token in ("summary statistics", "multiple statistical", "mean", "median", "variance", "stddev")):
+        return "summary_statistics_query"
+    if any(token in text for token in ("formula", "growth rate", "saving rate", "hit rate", "derive", "ratio")):
+        return "formula_computation_query"
+    if any(token in text for token in ("statistic", "variance", "median", "mean", "average", "stddev", "arithmetic")):
+        return "statistical_computation_query"
+    if any(token in text for token in ("table transformation", "group by", "filter sort", "max row")):
+        return "table_transformation_query"
+    if any(token in text for token in ("table", "rows", "group", "aggregate", "sort", "filter")):
+        return "table_aggregation_query"
+    if any(token in text for token in ("text", "string", "keyword", "word count", "extract numbers")):
+        return "string_extraction_query"
+    if any(token in text for token in ("date", "days between", "weekday", "isoformat")):
+        return "date_computation_query"
+    if any(token in text for token in ("evidence span", "answer span", "span extraction")):
+        return "evidence_span_extraction_query"
+    if any(token in text for token in ("evidence list", "supported", "answer key", "served as")):
+        return "evidence_extraction_query"
+    if any(token in text for token in ("reuse", "memory hits", "hit rate", "source id", "threshold")):
+        return "memory_reuse_query"
+    return ""
+
+
+def _derive_codeact_triggers(case: dict[str, Any]) -> list[str]:
+    question = _normalized_text(str(case.get("question") or ""))
+    task_type = _normalized_text(str(case.get("task_type") or ""))
+    tags = [_normalized_text(str(tag)) for tag in case.get("tags", []) if str(tag).strip()]
+    evidence = [_normalized_text(str(item)) for item in case.get("evidence", []) if str(item).strip()]
+
+    derived: list[str] = []
+    if any(tag in {"statistics"} for tag in tags) or any(
+        token in task_type for token in ("stats_summary", "population_variance", "sum_average")
+    ):
+        derived.append("summary_statistics_query")
+    if any(tag in {"metrics"} for tag in tags) or any(
+        token in task_type for token in ("saving_rate", "growth_rate", "hit_rate")
+    ):
+        derived.append("formula_computation_query")
+    if any(tag in {"statistics", "metrics"} for tag in tags) or any(
+        token in task_type for token in ("stats", "variance", "average", "hit_rate", "saving_rate")
+    ):
+        derived.append("statistical_computation_query")
+    if any(tag in {"table", "aggregation"} for tag in tags) or any(
+        token in task_type for token in ("group_sum", "filter_sort", "max_row")
+    ):
+        derived.append("table_transformation_query")
+        derived.append("table_aggregation_query")
+    if any(tag in {"string", "keyword"} for tag in tags) or any(
+        token in task_type for token in ("word_count", "top_keywords", "extract_numbers_sum")
+    ):
+        derived.append("string_extraction_query")
+    if "date" in tags or any(token in task_type for token in ("days_between", "weekday")):
+        derived.append("date_computation_query")
+    if "evidence" in tags or "evidence_answer" in task_type:
+        derived.append("evidence_span_extraction_query")
+        derived.append("evidence_extraction_query")
+    if "memory_reuse" in tags or any(token in task_type for token in ("reuse", "hit_rate", "trend")):
+        derived.append("memory_reuse_query")
+    if any("memory[" in item for item in evidence):
+        derived.append("memory_reuse_query")
+    if "served as" in question or "series" in question:
+        derived.append("evidence_extraction_query")
+    return [item for item in _unique_keep_order(derived) if item][:6]
+
+
 def _generic_trigger_only(triggers: Iterable[str]) -> bool:
     normalized = [str(item or "").strip() for item in triggers if str(item or "").strip()]
     return not normalized or set(normalized) <= {"memory_grounded_qa"}
@@ -252,7 +446,11 @@ def _effective_trigger_conditions(
     current: list[str],
     hint_catalog: dict[str, Any],
 ) -> list[str]:
-    normalized = _unique_keep_order(str(item) for item in current if str(item or "").strip())
+    normalized = _unique_keep_order(
+        _normalize_trigger_label(str(item))
+        for item in current
+        if _normalize_trigger_label(str(item))
+    )
     if _generic_trigger_only(normalized):
         normalized = list(hint_catalog.get("trigger_candidates", []) or [])
 
@@ -264,7 +462,7 @@ def _effective_trigger_conditions(
         derived.append("format_constraint")
     if any(token in question for token in ("united kingdom", "uk", "united states", "region")):
         derived.append("region_constraint")
-    if any(token in question for token in ("what is", "about")):
+    if "what is" in question or "film about" in question or "main topic" in question:
         derived.append("definition_or_topic_query")
     if any(token in question for token in ("cast", "members")):
         derived.append("entity_list_query")
@@ -272,11 +470,189 @@ def _effective_trigger_conditions(
         derived.append("multi_location_query")
     if any(token in question for token in ("economy", "depend on", "mineral", "resource", "hazard", "fish")):
         derived.append("attribute_lookup_query")
-    return _unique_keep_order([*normalized, *derived])[:8]
+    if any(
+        token in question
+        for token in (
+            "latter",
+            "former",
+            "that list",
+            "that process",
+            "that substance",
+            "that experiment",
+            "earlier catabolic-hormone list",
+            "first hormone",
+            "third hormone",
+            "last hormone",
+        )
+    ):
+        derived.append("reference_resolution_query")
+    if str(case.get("dataset_type") or "") == "codeact":
+        derived.extend(_derive_codeact_triggers(case))
+    merged = [
+        *[label for label in _unique_keep_order(_normalize_trigger_label(item) for item in normalized) if label],
+        *[label for label in derived if label],
+    ]
+    return _unique_keep_order(merged)[:8]
+
+
+def _normalize_trigger_conditions(triggers: Iterable[str] | None) -> list[str]:
+    if not triggers:
+        return []
+    normalized: list[str] = []
+    for item in triggers:
+        label = _normalize_trigger_label(str(item))
+        if label:
+            normalized.append(label)
+    return _unique_keep_order(normalized)[:8]
 
 
 def _experience_hint_catalog(case: dict[str, Any]) -> dict[str, Any]:
     question = _normalized_text(str(case.get("question") or ""))
+    task_type = _normalized_text(str(case.get("task_type") or ""))
+    tags = [_normalized_text(str(tag)) for tag in case.get("tags", []) if str(tag).strip()]
+
+    if str(case.get("dataset_type") or "") == "codeact":
+        if any(tag in {"statistics"} for tag in tags) or any(
+            token in task_type for token in ("stats_summary", "population_variance", "sum_average")
+        ):
+            return {
+                "family": "codeact_summary_statistics",
+                "problem_candidates": [
+                    "numerical_summary_with_multiple_metrics",
+                    "multi_metric_statistics_from_shared_input",
+                ],
+                "solution_candidates": [
+                    "compute_all_metrics_in_one_execution_step",
+                    "reuse_single_dataset_for_joint_statistics",
+                ],
+                "failure_candidates": [
+                    "compute_metrics_separately_without_consistency_check",
+                    "drop_required_metric_from_structured_result",
+                ],
+                "trigger_candidates": [
+                    "summary_statistics_query",
+                    "statistical_computation_query",
+                ],
+            }
+        if any(tag in {"metrics"} for tag in tags) or any(
+            token in task_type for token in ("saving_rate", "growth_rate", "hit_rate")
+        ):
+            return {
+                "family": "codeact_formula_computation",
+                "problem_candidates": [
+                    "evidence_based_calculation_with_formula",
+                    "formula_application_under_structured_constraints",
+                ],
+                "solution_candidates": [
+                    "verify_formula_against_evidence_before_computation",
+                    "compute_from_declared_variables_only",
+                ],
+                "failure_candidates": [
+                    "compute_without_verifying_formula_source",
+                    "mix_formula_inputs_or_denominator",
+                ],
+                "trigger_candidates": [
+                    "formula_computation_query",
+                    "statistical_computation_query",
+                ],
+            }
+        if any(tag in {"table", "aggregation"} for tag in tags) or any(
+            token in task_type for token in ("group_sum", "filter_sort", "max_row")
+        ):
+            return {
+                "family": "codeact_table_transformation",
+                "problem_candidates": [
+                    "structured_table_transformation_with_selection_rules",
+                    "row_level_filter_sort_or_group_aggregation",
+                ],
+                "solution_candidates": [
+                    "apply_transformation_rules_before_projection",
+                    "preserve_requested_ordering_and_grouping_constraints",
+                ],
+                "failure_candidates": [
+                    "return_unordered_or_partial_table_result",
+                    "project_fields_before_finishing_transformation",
+                ],
+                "trigger_candidates": [
+                    "table_transformation_query",
+                    "table_aggregation_query",
+                ],
+            }
+        if any(tag in {"string", "keyword"} for tag in tags) or any(
+            token in task_type for token in ("word_count", "top_keywords", "extract_numbers_sum")
+        ):
+            return {
+                "family": "codeact_string_extraction",
+                "problem_candidates": [
+                    "string_token_extraction_with_count_or_rank",
+                    "text_to_structured_value_extraction",
+                ],
+                "solution_candidates": [
+                    "normalize_text_before_token_selection",
+                    "extract_then_rank_or_aggregate_tokens",
+                ],
+                "failure_candidates": [
+                    "count_raw_surface_forms_without_normalization",
+                    "rank_before_finishing_extraction",
+                ],
+                "trigger_candidates": ["string_extraction_query"],
+            }
+        if "date" in tags or any(token in task_type for token in ("days_between", "weekday")):
+            return {
+                "family": "codeact_date_computation",
+                "problem_candidates": [
+                    "calendar_value_computation_from_structured_date_input",
+                    "date_arithmetic_or_calendar_lookup",
+                ],
+                "solution_candidates": [
+                    "convert_to_date_object_before_computation",
+                    "apply_calendar_operation_on_normalized_date_values",
+                ],
+                "failure_candidates": [
+                    "treat_date_as_plain_string_during_computation",
+                    "skip_date_normalization_before_calendar_lookup",
+                ],
+                "trigger_candidates": ["date_computation_query"],
+            }
+        if "evidence" in tags or "evidence_answer" in task_type:
+            return {
+                "family": "codeact_evidence_span_extraction",
+                "problem_candidates": [
+                    "evidence_span_selection_under_pattern_constraint",
+                    "supported_answer_extraction_from_evidence_list",
+                ],
+                "solution_candidates": [
+                    "match_answer_span_to_target_pattern",
+                    "extract_only_supported_span_from_evidence",
+                ],
+                "failure_candidates": [
+                    "return_full_evidence_sentence_instead_of_span",
+                    "choose_unsupported_span_from_related_evidence",
+                ],
+                "trigger_candidates": [
+                    "evidence_span_extraction_query",
+                    "evidence_extraction_query",
+                ],
+            }
+        if "memory_reuse" in tags or any(
+            token in task_type for token in ("reuse_previous_result", "reuse_threshold_check", "reuse_trend")
+        ):
+            return {
+                "family": "codeact_memory_reuse",
+                "problem_candidates": [
+                    "cross_task_value_reuse_with_structured_lookup",
+                    "prior_result_reuse_under_threshold_or_scale_constraint",
+                ],
+                "solution_candidates": [
+                    "resolve_source_result_before_post_processing",
+                    "reuse_prior_structured_value_then_apply_local_check",
+                ],
+                "failure_candidates": [
+                    "compute_from_current_input_without_loading_memory",
+                    "reuse_wrong_field_from_prior_result",
+                ],
+                "trigger_candidates": ["memory_reuse_query"],
+            }
 
     if "when" in question and any(token in question for token in ("dvd", "release", "digital", "blu ray")):
         return {
@@ -294,9 +670,9 @@ def _experience_hint_catalog(case: dict[str, Any]) -> dict[str, Any]:
                 "ignore_medium_or_region_constraint",
             ],
             "trigger_candidates": [
-                "question_involves_time",
-                "medium_constraint_present",
-                "region_constraint_present",
+                "temporal_query",
+                "format_constraint",
+                "region_constraint",
             ],
         }
     if "cast" in question or "members" in question:
@@ -315,8 +691,8 @@ def _experience_hint_catalog(case: dict[str, Any]) -> dict[str, Any]:
                 "drop_required_entities_from_list_answer",
             ],
             "trigger_candidates": [
-                "question_requests_people",
-                "supporting_span_contains_person_list",
+                "entity_list_query",
+                "person_list_evidence",
             ],
         }
     if "where was it filmed" in question or ("where" in question and "filmed" in question):
@@ -335,8 +711,8 @@ def _experience_hint_catalog(case: dict[str, Any]) -> dict[str, Any]:
                 "drop_secondary_location_from_joint_answer",
             ],
             "trigger_candidates": [
-                "question_requests_location",
-                "supporting_span_contains_multiple_locations",
+                "multi_location_query",
+                "multiple_location_evidence",
             ],
         }
     if "what is the film about" in question or ("what" in question and "film" in question and "about" in question):
@@ -355,8 +731,8 @@ def _experience_hint_catalog(case: dict[str, Any]) -> dict[str, Any]:
                 "select_release_or_production_information",
             ],
             "trigger_candidates": [
-                "question_requests_main_topic",
-                "supporting_span_contains_definition_or_depiction",
+                "definition_or_topic_query",
+                "definition_sentence_evidence",
             ],
         }
     if any(marker in question for marker in ("economy", "depend on", "mineral", "resources", "hazard", "fish")):
@@ -375,8 +751,8 @@ def _experience_hint_catalog(case: dict[str, Any]) -> dict[str, Any]:
                 "return_related_fact_instead_of_target_attribute",
             ],
             "trigger_candidates": [
-                "question_targets_single_attribute",
-                "supporting_fact_contains_attribute_value",
+                "attribute_lookup_query",
+                "attribute_value_evidence",
             ],
         }
     return {
@@ -384,11 +760,56 @@ def _experience_hint_catalog(case: dict[str, Any]) -> dict[str, Any]:
         "problem_candidates": ["memory_grounded_question_answering_pattern"],
         "solution_candidates": ["select_evidence_backed_answer_span"],
         "failure_candidates": ["overfit_to_surface_task_description"],
-        "trigger_candidates": ["memory_grounded_qa"],
+        "trigger_candidates": [],
+    }
+
+
+def _hint_based_rule_card(case: dict[str, Any], hint_catalog: dict[str, Any]) -> dict[str, Any]:
+    outcome = str(case.get("case_outcome") or "unknown")
+    problem_candidates = list(hint_catalog.get("problem_candidates", []) or [])
+    solution_candidates = list(hint_catalog.get("solution_candidates", []) or [])
+    failure_candidates = list(hint_catalog.get("failure_candidates", []) or [])
+    trigger_candidates = list(hint_catalog.get("trigger_candidates", []) or [])
+
+    problem_pattern = problem_candidates[0] if problem_candidates else "memory_grounded_qa_case"
+    solution_pattern = solution_candidates[0] if solution_candidates else "reason_from_retrieved_evidence"
+    if outcome == "failure" and len(failure_candidates) >= 2:
+        failure_pattern = failure_candidates[1]
+    else:
+        failure_pattern = failure_candidates[0] if failure_candidates else "overfit_to_surface_question_words"
+
+    abstraction_note = {
+        "temporal_constraint_selection": "遇到多个候选时间槽位时，先按介质和地区约束过滤，再选择最终日期。",
+        "entity_list_extraction": "遇到实体列表题时，先按目标实体类型过滤，再检查是否遗漏必要项。",
+        "multi_location_selection": "遇到联合地点答案时，先确认是否需要多个地点共同构成答案，再保持完整返回。",
+        "topic_summary_selection": "遇到“是什么/讲什么”类问题时，优先定义句，不要被元数据或背景信息带偏。",
+        "attribute_lookup_with_context": "遇到属性抽取题时，先锁定被问属性，再只返回与该属性直接匹配的事实短语。",
+        "codeact_summary_statistics": "一次执行里完成同一输入上的多个统计量，避免拆散计算导致结构不一致。",
+        "codeact_formula_computation": "先确认公式和变量来源，再按声明变量执行计算，避免直接套用错误分母或字段。",
+        "codeact_table_transformation": "先完成筛选、排序、分组等变换，再做字段投影和结果输出。",
+        "codeact_string_extraction": "先规范化文本或数字片段，再做计数、排序或聚合，避免基于原始表面形式直接统计。",
+        "codeact_date_computation": "先把日期转成可计算对象，再做日期差值或星期判断。",
+        "codeact_evidence_span_extraction": "先匹配目标模式，再从证据里截取最小支持答案片段，不返回整句。",
+        "codeact_memory_reuse": "先加载历史结构化结果，再读取正确字段并做本地缩放、阈值判断或后处理。",
+        "memory_grounded_question_answering": "优先依据证据做答案选择，不要直接复述题面或表面词。",
+    }.get(
+        str(hint_catalog.get("family") or ""),
+        "从当前任务案例中提炼可复用的策略，并明确它规避的历史错误模式。",
+    )
+
+    return {
+        "should_write": True,
+        "problem_pattern": problem_pattern,
+        "solution_pattern": solution_pattern,
+        "failure_pattern": failure_pattern,
+        "trigger_conditions": trigger_candidates,
+        "abstraction_note": abstraction_note,
     }
 
 
 def _fallback_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[str, Any]:
+    hint_catalog = _experience_hint_catalog(case)
+    hint_rule = _hint_based_rule_card(case, hint_catalog)
     question = _normalized_text(str(case.get("question") or ""))
     if "when" in question and any(token in question for token in ("dvd", "release", "digital", "blu ray")):
         return {
@@ -396,7 +817,7 @@ def _fallback_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict
             "problem_pattern": "multiple_temporal_candidates_with_constraints",
             "solution_pattern": "choose_date_matching_all_constraints",
             "failure_pattern": "confuse_digital_release_with_disc_release",
-            "trigger_conditions": ["question_when", "release_date", "medium_constraint"],
+            "trigger_conditions": ["temporal_query", "format_constraint", "region_constraint"],
             "abstraction_note": "When multiple release dates exist, follow the medium and region constraint before selecting a date.",
         }
     if "cast" in question:
@@ -405,7 +826,7 @@ def _fallback_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict
             "problem_pattern": "entity_list_question_with_target_type",
             "solution_pattern": "extract_complete_person_entities_only",
             "failure_pattern": "return_title_instead_of_people",
-            "trigger_conditions": ["question_cast", "person_list"],
+            "trigger_conditions": ["entity_list_query"],
             "abstraction_note": "For cast questions, prioritize the sentence enumerating people and output person names only.",
         }
     if "what is the film about" in question or ("what" in question and "film" in question and "about" in question):
@@ -414,17 +835,43 @@ def _fallback_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict
             "problem_pattern": "definition_sentence_vs_metadata_conflict",
             "solution_pattern": "prefer_definition_sentence_over_metadata",
             "failure_pattern": "select_release_or_production_information",
-            "trigger_conditions": ["question_main_topic", "definition_sentence_present"],
+            "trigger_conditions": ["definition_or_topic_query"],
             "abstraction_note": "When the question asks what something is about, prefer the defining sentence over release, production, or setting metadata.",
         }
-    return {
-        "should_write": True,
-        "problem_pattern": "memory_grounded_qa_case",
-        "solution_pattern": "reason_from_retrieved_evidence",
-        "failure_pattern": "overfit_to_surface_question_words",
-        "trigger_conditions": ["memory_grounded_qa"],
-        "abstraction_note": "Prefer evidence-backed answer selection over repeating surface phrasing from the question.",
-    }
+    return hint_rule
+
+
+def _case_lacks_transferable_lesson(case: dict[str, Any], hint_catalog: dict[str, Any]) -> bool:
+    family = str(hint_catalog.get("family") or "")
+    evidence = list(case.get("evidence", []) or [])
+    experience_hit_count = int(case.get("experience_hit_count") or 0)
+    outcome = str(case.get("case_outcome") or "unknown")
+    question = _normalized_text(str(case.get("question") or ""))
+    triggers = set(_derive_codeact_triggers(case) if str(case.get("dataset_type") or "") == "codeact" else [])
+    if str(case.get("dataset_type") or "") != "codeact":
+        triggers |= {
+            label
+            for label in _effective_trigger_conditions(case, [], hint_catalog)
+            if label
+        }
+
+    if str(case.get("dataset_type") or "") == "codeact":
+        return False
+    if outcome != "success":
+        return False
+    if experience_hit_count > 0:
+        return False
+    if len(evidence) > 1:
+        return False
+    if family == "temporal_constraint_selection" and not any(
+        token in question for token in ("dvd", "digital", "blu ray", "blu-ray", "format", "medium", "disc")
+    ):
+        return True
+    if family != "memory_grounded_question_answering":
+        return False
+    if any(token in question for token in ("when", "where", "who", "which", "what year", "what date")):
+        return True
+    return False
 
 
 def _distill_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[str, Any]:
@@ -457,8 +904,11 @@ def _distill_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[
         "If case_outcome is success, focus on a reusable strategy and the main error it avoids.\n"
         "Use gold and exact_match as feedback signals when deciding whether the lesson is reliable.\n"
         "If the result was correct only because the answer was directly copied and no reusable reasoning lesson is visible, return should_write=false.\n"
+        "If the case is a simple fact lookup with one obvious evidence span and no reusable strategy beyond copying, return should_write=false.\n"
         "Prefer strategic verbs such as prefer, avoid, choose, verify, match, constrain, filter, disambiguate.\n"
         "Prefer one of the hinted abstract families when it truly matches the case, but infer from the case itself.\n"
+        "The final rule should read like a reusable decision rule, not like a task title.\n"
+        "If your candidate patterns look like a task name, replace them with a more strategic abstraction.\n"
         "Return strict JSON with keys:\n"
         "should_write, problem_pattern, solution_pattern, failure_pattern, trigger_conditions, abstraction_note\n"
         "Use short English snake_case labels for the pattern fields.\n"
@@ -470,11 +920,18 @@ def _distill_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[
     parsed = _extract_json_object(raw)
     if parsed is None:
         fallback = _fallback_rule_card(case, distilled)
-        return {
+        result = {
             **fallback,
             "distillation_raw_output": raw,
             "distillation_mode": "fallback",
         }
+        if _case_lacks_transferable_lesson(case, hint_catalog):
+            result["should_write"] = False
+            if not result.get("abstraction_note"):
+                result["abstraction_note"] = (
+                    "This case is too close to direct evidence copying and does not add a stable reusable strategy."
+                )
+        return result
 
     should_write = bool(parsed.get("should_write", True))
     result = {
@@ -506,6 +963,10 @@ def _distill_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[
     if not result["trigger_conditions"]:
         result["trigger_conditions"] = list(hint_catalog.get("trigger_candidates", []) or [])
     result["trigger_conditions"] = _effective_trigger_conditions(case, result["trigger_conditions"], hint_catalog)
+    if _case_lacks_transferable_lesson(case, hint_catalog):
+        result["should_write"] = False
+        if not result["abstraction_note"]:
+            result["abstraction_note"] = "This case is too close to direct evidence copying and does not add a stable reusable strategy."
     if not result["abstraction_note"]:
         result["abstraction_note"] = "Reusable lesson distilled from the current task case."
     return result
@@ -603,6 +1064,8 @@ def _find_mergeable_experience(
             return index
         if solution == target_signature[1] and _trigger_overlap(record.get("trigger_conditions", []), trigger_conditions) >= 1:
             return index
+        if problem == target_signature[0] and solution == target_signature[1]:
+            return index
         if problem == target_signature[0] and _trigger_overlap(record.get("trigger_conditions", []), trigger_conditions) >= 2:
             return index
     return None
@@ -643,7 +1106,10 @@ def _merge_experience_record(
     merged["solution_pattern"] = solution_pattern or record.get("solution_pattern", "")
     merged["failure_pattern"] = failure_pattern or record.get("failure_pattern", "")
     merged["trigger_conditions"] = _unique_keep_order(
-        [*(record.get("trigger_conditions", []) or []), *trigger_conditions]
+        [
+            *_normalize_trigger_conditions(record.get("trigger_conditions", []) or []),
+            *_normalize_trigger_conditions(trigger_conditions),
+        ]
     )[:8]
     merged["confidence"] = max(float(record.get("confidence", 0.0) or 0.0), float(confidence or 0.0))
     merged["archive_scope"] = archive_scope or record.get("archive_scope", "task")
@@ -683,7 +1149,7 @@ def _merge_experience_record(
 
 
 def _rule_card_summary(experience_rule_card: dict[str, Any]) -> str:
-    trigger_text = ", ".join(experience_rule_card["trigger_conditions"]) if experience_rule_card["trigger_conditions"] else "general"
+    trigger_text = ", ".join(experience_rule_card["trigger_conditions"]) if experience_rule_card["trigger_conditions"] else "none"
     return (
         "experience_rule_card: "
         f"problem={experience_rule_card['problem_pattern']}; "
@@ -811,7 +1277,7 @@ def add_memory(
 ) -> list[dict]:
     """向共享记忆追加一条记录，兼容 evidence 与 experience 两类记忆。"""
 
-    normalized_trigger_conditions = trigger_conditions or []
+    normalized_trigger_conditions = _normalize_trigger_conditions(trigger_conditions or [])
     if memory_type == "experience":
         merge_index = _find_mergeable_experience(
             memory,
@@ -941,6 +1407,63 @@ def increment_reuse_counts(
     return updated
 
 
+def _extract_query_structure(query: str) -> tuple[str, set[str], set[str]]:
+    task_type = ""
+    tags: set[str] = set()
+    triggers: set[str] = set()
+    for raw_line in str(query or "").splitlines():
+        line = raw_line.strip()
+        lowered = line.lower()
+        if lowered.startswith("task type:"):
+            task_type = line.split(":", 1)[1].strip().lower()
+        elif lowered.startswith("tags:"):
+            payload = line.split(":", 1)[1].strip()
+            try:
+                parsed = json.loads(payload)
+                if isinstance(parsed, list):
+                    tags |= {str(item).strip().lower() for item in parsed if str(item).strip()}
+            except json.JSONDecodeError:
+                tags |= {token.strip().lower() for token in payload.split(",") if token.strip()}
+    triggers |= set(_normalize_trigger_conditions(_sanitize_triggers(query)))
+    return task_type, tags, triggers
+
+
+def _rerank_memory_hits(hits: list[dict], query: str) -> list[dict]:
+    query_task_type, query_tags, query_triggers = _extract_query_structure(query)
+    if not query_task_type and not query_tags and not query_triggers:
+        return hits
+
+    rescored: list[tuple[float, dict[str, Any]]] = []
+    for index, hit in enumerate(hits):
+        score = float(hit.get("retrieval_score", 0.0) or 0.0)
+        memory_task_type = str(hit.get("task_type") or "").strip().lower()
+        memory_tags = {
+            str(item).strip().lower()
+            for item in hit.get("tags", []) or []
+            if str(item).strip()
+        }
+        memory_triggers = {
+            str(item).strip()
+            for item in hit.get("trigger_conditions", []) or []
+            if str(item).strip()
+        }
+        if query_task_type and memory_task_type == query_task_type:
+            score += 8.0
+        if query_tags and memory_tags:
+            score += len(query_tags & memory_tags) * 3.0
+        if query_triggers and memory_triggers:
+            score += len(query_triggers & memory_triggers) * 4.0
+        rescored.append((score, {**hit, "retrieval_score": round(score, 4), "_rank_index": index}))
+
+    rescored.sort(
+        key=lambda item: (
+            -item[0],
+            item[1]["_rank_index"],
+        )
+    )
+    return [{k: v for k, v in hit.items() if k != "_rank_index"} for _, hit in rescored]
+
+
 def search_memory(
     memory: list[dict],
     query: str,
@@ -962,4 +1485,5 @@ def search_memory(
     if not searchable_memory:
         return []
 
-    return search_hypergraph_memory(searchable_memory, query, top_k=top_k)
+    hits = search_hypergraph_memory(searchable_memory, query, top_k=top_k)
+    return _rerank_memory_hits(hits, query)[:top_k]

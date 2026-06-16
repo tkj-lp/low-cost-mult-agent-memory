@@ -33,6 +33,7 @@ class MockLLMClient:
         mode: str,
         memory_hit_details: list[dict[str, Any]] | None = None,
         experience_rules: list[dict[str, Any]] | None = None,
+        answer_rules: list[str] | None = None,
     ) -> dict[str, Any]:
         return {
             "answer_candidate": (

@@ -7,7 +7,7 @@ from __future__ import annotations
 """
 
 from competition_agents.hypergraph_memory import build_hypergraph_view, search_hypergraph_memory
-from competition_agents.memory import add_memory, increment_reuse_counts, refine_memory, search_memory
+from competition_agents.memory import _rule_card_summary, add_memory, increment_reuse_counts, refine_memory, search_memory
 from hypergraph_memory_method.distill import distill_experience
 
 
@@ -182,7 +182,11 @@ def test_refine_memory_generates_experience_fields() -> None:
         },
         "messages": [{"from": "planner", "to": "retriever", "action": "retrieve", "payload": {"s": ["state-0001"]}}],
         "memory_hits": [{"memory_id": "mem-0001"}],
-        "evidence": ["Dunkirk (2017 film): DVD on 18 December in the United Kingdom."],
+        "evidence": [
+            "Dunkirk (2017 film): DVD on 18 December in the United Kingdom.",
+            "North Sea: what is the film about?",
+            "Planner-guided retrieval focus: verify the medium and region before selecting the date.",
+        ],
         "state_refs": {"plan": "state-0001", "evidence": "state-0002", "answer": "state-0003"},
     }
 
@@ -196,8 +200,8 @@ def test_refine_memory_generates_experience_fields() -> None:
     assert refined["problem_pattern"] == "multiple_temporal_candidates_with_constraints"
     assert refined["solution_pattern"] == "choose_date_matching_all_constraints"
     assert refined["failure_pattern"] == "confuse_digital_release_with_disc_release"
-    assert refined["trigger_conditions"]
-    assert refined["supporting_evidence"]
+    assert refined["trigger_conditions"] == ["temporal_query", "format_constraint", "region_constraint"]
+    assert refined["supporting_evidence"] == ["Dunkirk (2017 film): DVD on 18 December in the United Kingdom."]
     assert refined["experience_source"] in {"success-derived", "failure-derived", "outcome-unknown"}
     assert refined["distillation_case"]["question"]
     assert refined["experience_rule_card"]["problem_pattern"] == "multiple_temporal_candidates_with_constraints"
@@ -243,7 +247,7 @@ def test_add_memory_merges_similar_experience_records() -> None:
         problem_pattern="attribute_selection_among_related_facts",
         solution_pattern="pick_fact_matching_requested_attribute",
         failure_pattern="return_related_fact_instead_of_target_attribute",
-        trigger_conditions=["question_targets_single_attribute"],
+        trigger_conditions=["attribute_lookup_query"],
         supporting_evidence=["Urk: The important economic pillar of the village is the fishery."],
         confidence=0.7,
         abstraction_note="先解析目标属性，再从相关事实中只选匹配该属性的答案短语。",
@@ -259,7 +263,7 @@ def test_add_memory_merges_similar_experience_records() -> None:
         problem_pattern="attribute_selection_among_related_facts",
         solution_pattern="pick_fact_matching_requested_attribute",
         failure_pattern="return_related_fact_instead_of_target_attribute",
-        trigger_conditions=["question_targets_single_attribute", "supporting_fact_contains_attribute_value"],
+        trigger_conditions=["attribute_lookup_query", "reference_resolution_query"],
         supporting_evidence=["North Sea: Storm surges threaten the coasts around the North Sea."],
         confidence=0.8,
         abstraction_note="遇到隐式指代后的属性题，先锁定实体，再只返回被问属性的事实短语。",
@@ -268,11 +272,89 @@ def test_add_memory_merges_similar_experience_records() -> None:
     assert len(merged) == 1
     assert merged[0]["merge_count"] == 1
     assert set(merged[0]["trigger_conditions"]) == {
-        "question_targets_single_attribute",
-        "supporting_fact_contains_attribute_value",
+        "attribute_lookup_query",
+        "reference_resolution_query",
     }
     assert len(merged[0]["supporting_evidence"]) == 2
     assert merged[0]["confidence"] == 0.8
+
+
+def test_refine_memory_skips_simple_direct_copy_case() -> None:
+    """单条直接证据即可完成的简单事实题，不应稳定产出泛化价值很弱的经验。"""
+
+    trace = {
+        "task_meta": {
+            "dataset_type": "continuous",
+            "group_id": "chain-simple",
+            "question": "when was dunkirk released in the united kingdom?",
+            "expected_answer": "18 December 2017",
+        },
+        "memory_hits": [],
+        "evidence": [
+            "Dunkirk (2017 film): DVD on 18 December in the United Kingdom.",
+        ],
+        "execution_result": {
+            "answer_candidate": "18 December 2017",
+            "reasoning_summary": "The evidence directly states the date.",
+        },
+    }
+
+    refined = refine_memory(
+        task_topic="Question: when was dunkirk released in the united kingdom?",
+        summary="18 December 2017",
+        trace=trace,
+    )
+
+    assert refined["should_write"] is False
+
+
+def test_rule_card_summary_does_not_fall_back_to_general() -> None:
+    """经验摘要里不应再出现过泛的 general 触发条件占位。"""
+
+    summary = _rule_card_summary(
+        {
+            "problem_pattern": "attribute_selection_among_related_facts",
+            "solution_pattern": "pick_fact_matching_requested_attribute",
+            "failure_pattern": "return_related_fact_instead_of_target_attribute",
+            "trigger_conditions": [],
+        }
+    )
+
+    assert "general" not in summary
+    assert "triggers=none" in summary
+
+
+def test_add_memory_merges_same_problem_and_solution_with_different_failure_wording() -> None:
+    """相近经验即使 failure_pattern 写法略有差异，也应优先合并而不是继续膨胀。"""
+
+    memory = add_memory(
+        [],
+        source_agent="summarizer",
+        task_topic="Question: what does the economy of this place depend on?",
+        summary="experience_rule_card: problem=attribute_selection_among_related_facts; solution=pick_fact_matching_requested_attribute; avoid=return_related_fact_instead_of_target_attribute; triggers=attribute_lookup_query",
+        tags=["experience"],
+        memory_type="experience",
+        problem_pattern="attribute_selection_among_related_facts",
+        solution_pattern="pick_fact_matching_requested_attribute",
+        failure_pattern="return_related_fact_instead_of_target_attribute",
+        trigger_conditions=["attribute_lookup_query"],
+    )
+
+    merged = add_memory(
+        memory,
+        source_agent="summarizer",
+        task_topic="Question: what natural hazard affects this sea and its coasts?",
+        summary="experience_rule_card: problem=attribute_selection_among_related_facts; solution=pick_fact_matching_requested_attribute; avoid=mix_multiple_attributes_into_one_answer; triggers=attribute_lookup_query, reference_resolution_query",
+        tags=["experience", "continuous"],
+        memory_type="experience",
+        problem_pattern="attribute_selection_among_related_facts",
+        solution_pattern="pick_fact_matching_requested_attribute",
+        failure_pattern="mix_multiple_attributes_into_one_answer",
+        trigger_conditions=["attribute_lookup_query", "reference_resolution_query"],
+    )
+
+    assert len(merged) == 1
+    assert merged[0]["merge_count"] == 1
 
 
 def test_search_memory_can_filter_by_memory_type() -> None:
@@ -294,13 +376,19 @@ def test_search_memory_can_filter_by_memory_type() -> None:
         summary="经验记忆：先锁定影片与地区，再选满足介质约束的日期槽位。",
         tags=["experience"],
         memory_type="experience",
-        problem_pattern="temporal_slot_selection",
-        solution_pattern="choose_date_matching_constraints",
-        trigger_conditions=["question:when", "constraint:dvd_release"],
+        problem_pattern="multiple_temporal_candidates_with_constraints",
+        solution_pattern="choose_date_matching_all_constraints",
+        failure_pattern="confuse_digital_release_with_disc_release",
+        trigger_conditions=["temporal_query", "format_constraint", "region_constraint"],
     )
 
     evidence_hits = search_memory(memory, "dvd release date in united kingdom", top_k=2, memory_types=["evidence"])
-    experience_hits = search_memory(memory, "dvd release date in united kingdom", top_k=2, memory_types=["experience"])
+    experience_hits = search_memory(
+        memory,
+        "temporal_query format_constraint region_constraint",
+        top_k=2,
+        memory_types=["experience"],
+    )
 
     assert evidence_hits
     assert experience_hits

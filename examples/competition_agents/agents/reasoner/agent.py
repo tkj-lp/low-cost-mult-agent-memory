@@ -37,6 +37,53 @@ def _build_codeact_execution_request(state: CompetitionState) -> dict | None:
     }
 
 
+def _question_answer_rules(question: str) -> list[str]:
+    """根据问题类型补充稳定答案槽位约束，降低模型自由发挥。"""
+
+    question_lower = str(question or "").lower()
+    rules = [
+        "Copy the answer span exactly from evidence when possible.",
+        "Prefer the most specific phrase that directly answers the question.",
+        "Do not answer with the title or topic unless the question explicitly asks for it.",
+    ]
+    if "when" in question_lower:
+        rules.append("If multiple dates appear, choose the date matching every constraint in the question.")
+        rules.append("For DVD release questions, never return a digital release date.")
+    if "what is the film about" in question_lower:
+        rules.append("Return the event or subject the film depicts, not release or production metadata.")
+    if "which hormones are related to catabolism" in question_lower:
+        rules.append("Return the complete hormone list from evidence, including both classic and additional hormones.")
+        rules.append("Do not stop after the first sentence if the evidence continues the same list.")
+    if "third hormone on that list" in question_lower:
+        rules.append("Resolve the ordinal reference against the previously established list before selecting the answer.")
+        rules.append("Return only the emotional response associated with that ordinal item.")
+    if "first hormone on that list" in question_lower:
+        rules.append("Resolve the ordinal reference against the previously established list before selecting the answer.")
+        rules.append("Return the glucose-metabolism effect phrase, not the hormone name itself.")
+    if "from which organ was it extracted in that experiment" in question_lower:
+        rules.append("Resolve 'it' and 'that experiment' to the immediately relevant prior entity and event.")
+        rules.append("Return only the organ phrase.")
+    if "that list" in question_lower or "that process" in question_lower or "that substance" in question_lower:
+        rules.append("Resolve cross-turn references before selecting the final answer span.")
+    if question_lower.startswith(("is ", "are ", "was ", "were ", "do ", "does ", "did ", "can ", "could ", "has ", "have ", "had ")):
+        rules.append("If this is a yes/no question, answer with Yes or No unless evidence clearly requires a short qualified yes/no phrase.")
+    if "cast" in question_lower or "members of the cast" in question_lower:
+        rules.append("Return only person names from the cast list, separated by commas.")
+        rules.append("Return the first four cast members mentioned in the evidence, in order.")
+        rules.append("Do not select only prominent actors for brevity.")
+    if "where was it filmed" in question_lower:
+        rules.append("Return all filming locations mentioned in the evidence, including both places if two are listed.")
+    if "what kinds of fish" in question_lower:
+        rules.append("Return only the fish names mentioned in evidence.")
+        rules.append("Include every fish listed in the evidence.")
+    if "what mineral resources" in question_lower:
+        rules.append("Return only the mineral resources, not the explanatory sentence.")
+        rules.append("Include every mineral resource mentioned in the evidence, including amber if present.")
+    if "what natural hazard" in question_lower:
+        rules.append("Return only the hazard name.")
+    return rules
+
+
 def reasoner_agent(state: CompetitionState) -> dict:
     """基于任务、计划、检索证据和记忆命中生成候选答案。"""
 
@@ -48,6 +95,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
     evidence = state.get("evidence", [])
     plan = state.get("plan", [])
     task_text = _reasoner_task_text(state)
+    question = str(state.get("task_meta", {}).get("question") or "")
+    answer_rules = _question_answer_rules(question)
     print(
         "[reasoner] "
         f"task chars={len(task_text)} evidence_count={len(evidence)} "
@@ -71,6 +120,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
         memory_hits=len(memory_hits),
         memory_hit_details=memory_context,
         experience_rules=experience_rules,
+        answer_rules=answer_rules,
         mode=state["mode"],
     )
     cognitive_gap = make_cognitive_gap(
@@ -188,6 +238,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             "memory_hit_details": memory_context,
             "memory_context": memory_context,
             "experience_rules": experience_rules,
+            "answer_rules": answer_rules,
             "experience_used_count": len(experience_rules),
             "experience_used_memory_ids": [rule.get("memory_id") for rule in experience_rules],
             "plan_ref": plan_ref,

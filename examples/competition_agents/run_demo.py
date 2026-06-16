@@ -709,13 +709,19 @@ def build_task_result(
     metrics = result.get("metrics", {})
     memory_hits = result.get("memory_hits", [])
     experience_hits = result.get("experience_hits", [])
-    latest_memory = result.get("memory", [])[-1] if result.get("memory") else {}
-    latest_evidence_write = result.get("latest_evidence_write", {})
-    latest_experience_write = result.get("latest_experience_write", {})
+    all_memory = result.get("memory", [])
+    latest_memory = all_memory[-1] if all_memory else {}
+    latest_evidence_write = result.get("latest_evidence_write", {}) or {}
+    latest_experience_write = result.get("latest_experience_write", {}) or {}
+    if not latest_evidence_write:
+        latest_evidence_write = next(
+            (item for item in reversed(all_memory) if item.get("memory_type", "evidence") == "evidence"),
+            {},
+        )
+    has_latest_experience_write = bool(latest_experience_write and latest_experience_write.get("memory_id"))
     execution_result = result.get("execution_result", {})
     is_codeact = task_item.get("dataset_type") == "codeact"
     codeact_display = codeact_result_text(execution_result)
-    all_memory = result.get("memory", [])
     evidence_memory_count = sum(1 for item in all_memory if item.get("memory_type", "evidence") == "evidence")
     experience_memory_count = sum(1 for item in all_memory if item.get("memory_type") == "experience")
     task_metrics = {
@@ -776,22 +782,26 @@ def build_task_result(
             }
         ),
         "latest_experience_write": _frontend_safe(
-            {
-                "memory_id": latest_experience_write.get("memory_id"),
-                "memory_type": latest_experience_write.get("memory_type", "experience"),
-                "source_agent": latest_experience_write.get("source_agent"),
-                "summary": latest_experience_write.get("summary"),
-                "tags": latest_experience_write.get("tags"),
-                "state_refs": latest_experience_write.get("state_refs"),
-                "experience_source": latest_experience_write.get("experience_source", ""),
-                "abstraction_note": latest_experience_write.get("abstraction_note", ""),
-                "reuse_count": latest_experience_write.get("reuse_count", 0),
-                "reuse_success_count": latest_experience_write.get("reuse_success_count", 0),
-                "merge_count": latest_experience_write.get("merge_count", 0),
-                "source_case": latest_experience_write.get("source_case", {}),
-                "experience_rule_card": latest_experience_write.get("experience_rule_card", {}),
-                "has_trace": "trace" in latest_experience_write,
-            }
+            (
+                {
+                    "memory_id": latest_experience_write.get("memory_id"),
+                    "memory_type": latest_experience_write.get("memory_type", "experience"),
+                    "source_agent": latest_experience_write.get("source_agent"),
+                    "summary": latest_experience_write.get("summary"),
+                    "tags": latest_experience_write.get("tags"),
+                    "state_refs": latest_experience_write.get("state_refs"),
+                    "experience_source": latest_experience_write.get("experience_source", ""),
+                    "abstraction_note": latest_experience_write.get("abstraction_note", ""),
+                    "reuse_count": latest_experience_write.get("reuse_count", 0),
+                    "reuse_success_count": latest_experience_write.get("reuse_success_count", 0),
+                    "merge_count": latest_experience_write.get("merge_count", 0),
+                    "source_case": latest_experience_write.get("source_case", {}),
+                    "experience_rule_card": latest_experience_write.get("experience_rule_card", {}),
+                    "has_trace": "trace" in latest_experience_write,
+                }
+                if has_latest_experience_write
+                else {}
+            )
         ),
         "latest_memory_write": _frontend_safe(
             {
