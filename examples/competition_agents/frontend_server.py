@@ -5,9 +5,12 @@ import json
 import os
 import subprocess
 import sys
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+
+from hypergraph_memory_method.reuse_metrics import evaluate_run_reuse
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -17,6 +20,18 @@ DEFAULT_ENV_FILE = "examples/competition_agents/.env.local"
 FALLBACK_ENV_FILE = "examples/competition_agents/.env.example"
 ECHO_RUN_OUTPUT = False
 DEFAULT_RUN_TIMEOUT_SECONDS = 3600
+RUN_RESULT_DIR = REPO_ROOT / "run_result"
+RUN_LOCK = threading.Lock()
+CURRENT_RUN_PROCESS: subprocess.Popen[str] | None = None
+CURRENT_RUN_META: dict[str, Any] | None = None
+STOP_REQUESTED = False
+
+TOPIOCQA_RESULT_FILES = {
+    "baseline_text": "baseline_topiocqa_run.txt",
+    "protocol_api": "api_topiocqa_run.txt",
+    "protocol_api_embedding": "api_embedding_TopiOCQA_run.txt",
+    "latent_hidden": "hidden_pooled_only_TopiOCQA_run.txt",
+}
 
 
 DATASETS: dict[str, dict[str, Any]] = {
@@ -66,8 +81,8 @@ DATASETS: dict[str, dict[str, Any]] = {
         "label": "CodeAct 20 题",
         "script_dataset_type": "codeact",
         "dataset_file": "examples/competition_agents/data/codeact_tasks.json",
-        "default_limit": 0,
-        "preview_task_count": 20,
+        "default_limit": 10,
+        "preview_task_count": 10,
     },
 }
 
@@ -76,22 +91,22 @@ EXPERIMENT_MODES: dict[str, dict[str, Any]] = {
     "baseline_text": {
         "label": "纯文本协作基线",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"},
     },
     "protocol_api": {
         "label": "结构化协议协作",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"},
     },
     "protocol_api_embedding": {
         "label": "协议 + API embedding",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"},
     },
     "latent_hidden": {
         "label": "Hidden state 引用传递",
         "script": "run_hidden_latent_samples.py",
-        "datasets": {"hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous"},
+        "datasets": {"hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous", "codeact_20"},
     },
     "codeact_tools": {
         "label": "受限工具执行",
@@ -162,6 +177,99 @@ def _extract_run_result(stdout: str) -> dict[str, Any]:
     return result
 
 
+def _result_file_stem(experiment_mode: str, dataset: str) -> str:
+    if dataset == "topiocqa_continuous" and experiment_mode in TOPIOCQA_RESULT_FILES:
+        return Path(TOPIOCQA_RESULT_FILES[experiment_mode]).stem
+    return f"frontend_{experiment_mode}_{dataset}"
+
+
+def _result_output_paths(experiment_mode: str, dataset: str) -> tuple[Path, Path]:
+    stem = _result_file_stem(experiment_mode, dataset)
+    stdout_path = RUN_RESULT_DIR / f"{stem}.txt"
+    json_path = RUN_RESULT_DIR / f"{stem}.json"
+    return stdout_path, json_path
+
+
+def _persist_run_output(
+    *,
+    experiment_mode: str,
+    dataset: str,
+    stdout: str,
+    result: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    RUN_RESULT_DIR.mkdir(parents=True, exist_ok=True)
+    stdout_path, json_path = _result_output_paths(experiment_mode, dataset)
+    stdout_path.write_text(stdout, encoding="utf-8")
+    saved = {"stdout_path": str(stdout_path.relative_to(REPO_ROOT))}
+    if result is not None:
+        json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        saved["json_path"] = str(json_path.relative_to(REPO_ROOT))
+    return saved
+
+
+def _set_current_run(
+    process: subprocess.Popen[str],
+    *,
+    experiment_mode: str,
+    dataset: str,
+    command: list[str],
+) -> None:
+    global CURRENT_RUN_PROCESS, CURRENT_RUN_META, STOP_REQUESTED
+    with RUN_LOCK:
+        CURRENT_RUN_PROCESS = process
+        CURRENT_RUN_META = {
+            "experiment_mode": experiment_mode,
+            "dataset": dataset,
+            "command": command,
+            "pid": process.pid,
+        }
+        STOP_REQUESTED = False
+
+
+def _clear_current_run(process: subprocess.Popen[str] | None = None) -> None:
+    global CURRENT_RUN_PROCESS, CURRENT_RUN_META
+    with RUN_LOCK:
+        if process is not None and CURRENT_RUN_PROCESS is not process:
+            return
+        CURRENT_RUN_PROCESS = None
+        CURRENT_RUN_META = None
+
+
+def stop_current_run() -> dict[str, Any]:
+    global STOP_REQUESTED
+    with RUN_LOCK:
+        process = CURRENT_RUN_PROCESS
+        meta = dict(CURRENT_RUN_META or {})
+        if process is None or process.poll() is not None:
+            CURRENT_RUN_PROCESS = None
+            CURRENT_RUN_META = None
+            STOP_REQUESTED = False
+            return {
+                "ok": True,
+                "stopped": False,
+                "message": "当前没有正在运行的实验进程。",
+            }
+        STOP_REQUESTED = True
+
+    try:
+        process.terminate()
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait(timeout=5)
+    finally:
+        _clear_current_run(process)
+
+    return {
+        "ok": True,
+        "stopped": True,
+        "message": "已请求停止后端实验进程。",
+        "pid": meta.get("pid"),
+        "experiment_mode": meta.get("experiment_mode"),
+        "dataset": meta.get("dataset"),
+    }
+
+
 def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
 
@@ -173,6 +281,7 @@ def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
         "question",
         "final_answer",
         "gold",
+        "expected_reuse",
     ):
         if key in task:
             summary[key] = task.get(key)
@@ -207,6 +316,9 @@ def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
         "retrieval_debug",
         "memory_hits",
         "memory_context",
+        "latest_evidence_write",
+        "latest_experience_write",
+        "latest_memory_write",
         "latent_states",
         "state_refs",
     ):
@@ -227,6 +339,12 @@ def _summarize_run(run: dict[str, Any]) -> dict[str, Any]:
     metrics = run.get("metrics")
     if isinstance(metrics, dict):
         summary["metrics"] = metrics
+
+    try:
+        summary["memory_evaluation"] = evaluate_run_reuse(run)
+    except (TypeError, ValueError, KeyError):
+        # The dashboard remains backward compatible with runs that omit task-level memory data.
+        pass
 
     task_results = run.get("task_results")
     if isinstance(task_results, list):
@@ -352,6 +470,8 @@ def _build_env(
     if existing_pythonpath:
         pythonpath_parts.append(existing_pythonpath)
     env["PYTHONPATH"] = os.pathsep.join(pythonpath_parts)
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
     if env_file:
         env["COMPETITION_AGENTS_ENV_FILE"] = env_file
         for name, value in _read_env_file(_repo_path(env_file)).items():
@@ -413,6 +533,8 @@ def _build_command(
             command.extend(["--dataset-file", dataset_config["dataset_file"]])
         if effective_limit:
             command.extend(["--limit", str(effective_limit)])
+        if dataset == "topiocqa_continuous":
+            command.extend(["--context-source", "hypergraph", "--answer-mode", "generate"])
         return command
 
     command = [sys.executable, "examples/competition_agents/run_demo.py"]
@@ -426,6 +548,8 @@ def _build_command(
         command.extend(["--dataset-file", dataset_config["dataset_file"]])
     if effective_limit:
         command.extend(["--limit", str(effective_limit)])
+    if experiment_mode == "protocol_api_embedding" and dataset == "topiocqa_continuous":
+        command.extend(["--context-source", "hypergraph"])
     if dataset in {"hotpot_continuous", "topiocqa_continuous", "codeact_20"} or experiment_mode in {
         "protocol_api",
         "protocol_api_embedding",
@@ -444,6 +568,7 @@ def _mask_secret(value: str | None) -> str:
 
 
 def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
+    global STOP_REQUESTED
     experiment_mode, dataset, limit = _validate_run_request(payload)
     env_file = _resolve_env_file(str(payload.get("env_file") or DEFAULT_ENV_FILE))
     developer_mode = bool(payload.get("developer_mode", False))
@@ -486,7 +611,11 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         env_file,
         developer_mode=developer_mode,
     )
-    completed = subprocess.run(
+    with RUN_LOCK:
+        if CURRENT_RUN_PROCESS is not None and CURRENT_RUN_PROCESS.poll() is None:
+            raise RuntimeError("已有实验正在运行，请先等待完成或点击停止。")
+
+    process = subprocess.Popen(
         command,
         cwd=REPO_ROOT,
         env=env,
@@ -495,18 +624,46 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        timeout=timeout_seconds,
-        check=False,
     )
-    stdout = completed.stdout or ""
+    _set_current_run(
+        process,
+        experiment_mode=experiment_mode,
+        dataset=dataset,
+        command=command,
+    )
+
+    try:
+        stdout, _ = process.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired as exc:
+        process.kill()
+        timeout_stdout, _ = process.communicate()
+        output = timeout_stdout or ((exc.stdout or "") if isinstance(exc.stdout, str) else "")
+        _clear_current_run(process)
+        STOP_REQUESTED = False
+        raise subprocess.TimeoutExpired(exc.cmd, exc.timeout, output, exc.stderr) from exc
+    finally:
+        _clear_current_run(process)
+
+    stdout = stdout or ""
+    saved_paths = _persist_run_output(
+        experiment_mode=experiment_mode,
+        dataset=dataset,
+        stdout=stdout,
+    )
     if ECHO_RUN_OUTPUT:
         print("\n[frontend_server] experiment command:", " ".join(command), flush=True)
         print(stdout, end="" if stdout.endswith("\n") else "\n", flush=True)
-    if completed.returncode != 0:
+    if process.returncode != 0:
+        stopped_by_user = STOP_REQUESTED
+        STOP_REQUESTED = False
         return {
             "ok": False,
-            "error": f"Experiment process exited with code {completed.returncode}.",
+            "canceled": stopped_by_user,
+            "error": "实验已被停止。"
+            if stopped_by_user
+            else f"Experiment process exited with code {process.returncode}.",
             "command": command,
+            **saved_paths,
             "stdout_tail": _stdout_tail(stdout),
         }
 
@@ -517,13 +674,22 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "error": str(exc),
             "command": command,
+            **saved_paths,
             "stdout_tail": _stdout_tail(stdout),
         }
+    saved_paths = _persist_run_output(
+        experiment_mode=experiment_mode,
+        dataset=dataset,
+        stdout=stdout,
+        result=result,
+    )
+    STOP_REQUESTED = False
     return {
         "ok": True,
         "command": command,
         "developer_mode": developer_mode,
         "result": _summarize_result_for_frontend(result),
+        **saved_paths,
         "stdout_tail": _stdout_tail(stdout),
     }
 
@@ -572,6 +738,10 @@ class CompetitionAgentsHandler(BaseHTTPRequestHandler):
         _json_response(self, 404, {"ok": False, "error": f"Not found: {self.path}"})
 
     def do_POST(self) -> None:
+        if self.path in {"/api/stop", "/stop"}:
+            response = stop_current_run()
+            _json_response(self, 200, response)
+            return
         if self.path not in {"/api/run", "/run"}:
             _json_response(self, 404, {"ok": False, "error": f"Not found: {self.path}"})
             return
