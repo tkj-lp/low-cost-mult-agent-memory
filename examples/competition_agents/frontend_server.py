@@ -56,10 +56,17 @@ DATASETS: dict[str, dict[str, Any]] = {
         "default_limit": 1,
         "preview_task_count": 3,
     },
-    "topiocqa_continuous": {
-        "label": "TopiOCQA 连续追问",
+    "topiocqa_1_10turns": {
+        "label": "TopiOCQA 第 1 组（10 轮）",
         "script_dataset_type": "continuous",
-        "dataset_file": "examples/competition_agents/data/topiocqa_two_chains_10turns_refined.json",
+        "dataset_file": "examples/competition_agents/data/topiocqa_1_10turns.json",
+        "default_limit": 1,
+        "preview_task_count": 10,
+    },
+    "topiocqa_2_10turns": {
+        "label": "TopiOCQA 第 2 组（10 轮）",
+        "script_dataset_type": "continuous",
+        "dataset_file": "examples/competition_agents/data/topiocqa_2_10turns.json",
         "default_limit": 1,
         "preview_task_count": 10,
     },
@@ -77,10 +84,17 @@ DATASETS: dict[str, dict[str, Any]] = {
         "default_limit": 1,
         "preview_task_count": 10,
     },
-    "codeact_20": {
-        "label": "CodeAct 20 题",
+    "codeact_1_10tasks": {
+        "label": "CodeAct 第 1 组（10 题）",
         "script_dataset_type": "codeact",
-        "dataset_file": "examples/competition_agents/data/codeact_tasks.json",
+        "dataset_file": "examples/competition_agents/data/codeact_1_10tasks.json",
+        "default_limit": 10,
+        "preview_task_count": 10,
+    },
+    "codeact_2_10tasks": {
+        "label": "CodeAct 第 2 组（10 题）",
+        "script_dataset_type": "codeact",
+        "dataset_file": "examples/competition_agents/data/codeact_2_10tasks.json",
         "default_limit": 10,
         "preview_task_count": 10,
     },
@@ -91,27 +105,27 @@ EXPERIMENT_MODES: dict[str, dict[str, Any]] = {
     "baseline_text": {
         "label": "纯文本协作基线",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_1_10turns", "topiocqa_2_10turns", "codeact_1_10tasks", "codeact_2_10tasks"},
     },
     "protocol_api": {
         "label": "结构化协议协作",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_1_10turns", "topiocqa_2_10turns", "codeact_1_10tasks", "codeact_2_10tasks"},
     },
     "protocol_api_embedding": {
         "label": "协议 + API embedding",
         "script": "run_demo.py",
-        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"},
+        "datasets": {"hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_1_10turns", "topiocqa_2_10turns", "codeact_1_10tasks", "codeact_2_10tasks"},
     },
     "latent_hidden": {
         "label": "Hidden state 引用传递",
         "script": "run_hidden_latent_samples.py",
-        "datasets": {"hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous", "codeact_20"},
+        "datasets": {"hidden_hotpot_5", "hidden_continuous", "topiocqa_1_10turns", "topiocqa_2_10turns", "codeact_1_10tasks", "codeact_2_10tasks"},
     },
     "codeact_tools": {
         "label": "受限工具执行",
         "script": "run_codeact_samples.py",
-        "datasets": {"codeact_20"},
+        "datasets": {"codeact_1_10tasks", "codeact_2_10tasks"},
     },
 }
 
@@ -533,7 +547,7 @@ def _build_command(
             command.extend(["--dataset-file", dataset_config["dataset_file"]])
         if effective_limit:
             command.extend(["--limit", str(effective_limit)])
-        if dataset == "topiocqa_continuous":
+        if dataset.startswith("topiocqa_"):
             command.extend(["--context-source", "hypergraph", "--answer-mode", "generate"])
         return command
 
@@ -548,9 +562,9 @@ def _build_command(
         command.extend(["--dataset-file", dataset_config["dataset_file"]])
     if effective_limit:
         command.extend(["--limit", str(effective_limit)])
-    if experiment_mode == "protocol_api_embedding" and dataset == "topiocqa_continuous":
+    if experiment_mode == "protocol_api_embedding" and dataset.startswith("topiocqa_"):
         command.extend(["--context-source", "hypergraph"])
-    if dataset in {"hotpot_continuous", "topiocqa_continuous", "codeact_20"} or experiment_mode in {
+    if dataset in {"hotpot_continuous", "codeact_1_10tasks", "codeact_2_10tasks"} or dataset.startswith("topiocqa_") or experiment_mode in {
         "protocol_api",
         "protocol_api_embedding",
         "codeact_tools",

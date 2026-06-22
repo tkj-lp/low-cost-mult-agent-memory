@@ -339,10 +339,12 @@ type Dataset =
   | "hotpot_multihop"
   | "hotpot_continuous"
   | "hotpot_continuous_3turn"
-  | "topiocqa_continuous"
+  | "topiocqa_1_10turns"
+  | "topiocqa_2_10turns"
   | "hidden_hotpot_5"
   | "hidden_continuous"
-  | "codeact_20";
+  | "codeact_1_10tasks"
+  | "codeact_2_10tasks";
 
 interface RunComparison {
   mode: ExperimentMode;
@@ -381,6 +383,7 @@ interface BackendTaskResult {
   retrieval_debug?: Record<string, unknown>;
   memory_hits?: unknown[];
   memory_context?: unknown[];
+  memory_refine_debug?: unknown;
   latest_evidence_write?: Record<string, unknown> | null;
   latest_experience_write?: Record<string, unknown> | null;
   latest_memory_write?: Record<string, unknown> | null;
@@ -541,71 +544,56 @@ const fallbackExperimentModes = [
   { value: "codeact_tools", label: "codeact_tools" },
 ] satisfies Array<{ value: ExperimentMode; label: string }>;
 
+const visibleDatasetValues: Dataset[] = [
+  "topiocqa_1_10turns",
+  "topiocqa_2_10turns",
+  "codeact_1_10tasks",
+  "codeact_2_10tasks",
+];
+
+const isVisibleDataset = (value: Dataset) => visibleDatasetValues.includes(value);
+
 const fallbackDatasets = [
   {
-    value: "hotpot_multihop",
-    label: "HotpotQA 多跳问答",
-    default_limit: 5,
-    preview_task_count: 5,
-    script_dataset_type: "multihop",
-    dataset_file: "examples/competition_agents/data/hotpot_multihop_sample.json",
-  },
-  {
-    value: "hotpot_continuous",
-    label: "continuous HotpotQA",
+    value: "topiocqa_1_10turns",
+    label: "TopiOCQA 第 1 组（10 轮）",
     default_limit: 1,
     preview_task_count: 10,
     script_dataset_type: "continuous",
-    dataset_file: "examples/competition_agents/data/hotpot_continuous_tasks.json",
+    dataset_file: "examples/competition_agents/data/topiocqa_1_10turns.json",
   },
   {
-    value: "hotpot_continuous_3turn",
-    label: "continuous HotpotQA 3-turn",
-    default_limit: 1,
-    preview_task_count: 3,
-    script_dataset_type: "continuous",
-    dataset_file: "examples/competition_agents/data/hotpot_continuous_tasks_3turn.json",
-  },
-  {
-    value: "topiocqa_continuous",
-    label: "TopiOCQA 连续追问",
+    value: "topiocqa_2_10turns",
+    label: "TopiOCQA 第 2 组（10 轮）",
     default_limit: 1,
     preview_task_count: 10,
     script_dataset_type: "continuous",
-    dataset_file: "examples/competition_agents/data/topiocqa_two_chains_10turns_refined.json",
+    dataset_file: "examples/competition_agents/data/topiocqa_2_10turns.json",
   },
   {
-    value: "hidden_hotpot_5",
-    label: "Hidden Hotpot 样例",
-    default_limit: 0,
-    preview_task_count: 5,
-    script_dataset_type: "samples",
-    dataset_file: "",
-  },
-  {
-    value: "hidden_continuous",
-    label: "Hidden 连续任务",
-    default_limit: 1,
-    preview_task_count: 10,
-    script_dataset_type: "continuous",
-    dataset_file: "examples/competition_agents/data/hotpot_continuous_tasks.json",
-  },
-  {
-    value: "codeact_20",
-    label: "CodeAct 20 题",
+    value: "codeact_1_10tasks",
+    label: "CodeAct 第 1 组（10 题）",
     default_limit: 10,
     preview_task_count: 10,
     script_dataset_type: "codeact",
-    dataset_file: "examples/competition_agents/data/codeact_tasks.json",
+    dataset_file: "examples/competition_agents/data/codeact_1_10tasks.json",
+  },
+  {
+    value: "codeact_2_10tasks",
+    label: "CodeAct 第 2 组（10 题）",
+    default_limit: 10,
+    preview_task_count: 10,
+    script_dataset_type: "codeact",
+    dataset_file: "examples/competition_agents/data/codeact_2_10tasks.json",
   },
 ] satisfies BackendDatasetOption[];
 
 const fallbackDatasetMap: Record<ExperimentMode, Dataset[]> = {
-  baseline_text: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"],
-  protocol_api: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"],
-  protocol_api_embedding: ["hotpot_multihop", "hotpot_continuous", "hotpot_continuous_3turn", "topiocqa_continuous", "codeact_20"],
-  latent_hidden: ["hidden_hotpot_5", "hidden_continuous", "topiocqa_continuous", "codeact_20"],
-  codeact_tools: ["codeact_20"],
+  baseline_text: [...visibleDatasetValues],
+  protocol_api: [...visibleDatasetValues],
+  protocol_api_embedding: [...visibleDatasetValues],
+  latent_hidden: [...visibleDatasetValues],
+  codeact_tools: [...visibleDatasetValues],
 };
 
 const modeMeta: Record<ExperimentMode, { label: string; color: string }> = {
@@ -617,7 +605,7 @@ const modeMeta: Record<ExperimentMode, { label: string; color: string }> = {
 };
 
 const selectedMode = ref<ExperimentMode>("baseline_text");
-const selectedDataset = ref<Dataset>("hotpot_continuous");
+const selectedDataset = ref<Dataset>("topiocqa_1_10turns");
 const apiBaseUrl = ref("");
 const modelName = ref("");
 const apiKey = ref("");
@@ -634,28 +622,34 @@ const runResults = ref<Record<Dataset, Partial<Record<ExperimentMode, BackendRun
   hotpot_multihop: {},
   hotpot_continuous: {},
   hotpot_continuous_3turn: {},
-  topiocqa_continuous: {},
+  topiocqa_1_10turns: {},
+  topiocqa_2_10turns: {},
   hidden_hotpot_5: {},
   hidden_continuous: {},
-  codeact_20: {},
+  codeact_1_10tasks: {},
+  codeact_2_10tasks: {},
 });
 const comparisonRuns = ref<Record<Dataset, RunComparison[]>>({
   hotpot_multihop: [],
   hotpot_continuous: [],
   hotpot_continuous_3turn: [],
-  topiocqa_continuous: [],
+  topiocqa_1_10turns: [],
+  topiocqa_2_10turns: [],
   hidden_hotpot_5: [],
   hidden_continuous: [],
-  codeact_20: [],
+  codeact_1_10tasks: [],
+  codeact_2_10tasks: [],
 });
 const gainSnapshots = ref<Record<Dataset, Partial<Record<ExperimentMode, GainSnapshot>>>>({
   hotpot_multihop: {},
   hotpot_continuous: {},
   hotpot_continuous_3turn: {},
-  topiocqa_continuous: {},
+  topiocqa_1_10turns: {},
+  topiocqa_2_10turns: {},
   hidden_hotpot_5: {},
   hidden_continuous: {},
-  codeact_20: {},
+  codeact_1_10tasks: {},
+  codeact_2_10tasks: {},
 });
 
 const experimentModes = computed(() =>
@@ -665,7 +659,9 @@ const experimentModes = computed(() =>
   })) ?? fallbackExperimentModes,
 );
 
-const datasetOptions = computed(() => backendOptions.value?.datasets ?? fallbackDatasets);
+const datasetOptions = computed(() =>
+  (backendOptions.value?.datasets ?? fallbackDatasets).filter((dataset) => isVisibleDataset(dataset.value)),
+);
 
 const datasetMap = computed<Record<ExperimentMode, Dataset[]>>(() => {
   const options = backendOptions.value?.experiment_modes;
@@ -674,7 +670,7 @@ const datasetMap = computed<Record<ExperimentMode, Dataset[]>>(() => {
   }
   const nextMap = { ...fallbackDatasetMap };
   options.forEach((mode) => {
-    nextMap[mode.value] = mode.datasets;
+    nextMap[mode.value] = mode.datasets.filter(isVisibleDataset);
   });
   return nextMap;
 });
@@ -696,7 +692,7 @@ const availableDatasets = computed(() =>
 const activeComparisonRuns = computed(() => comparisonRuns.value[selectedDataset.value]);
 
 const requestLimit = computed(() => {
-  if (selectedDataset.value === "codeact_20") {
+  if (selectedDataset.value.startsWith("codeact_")) {
     return 10;
   }
   return 1;
