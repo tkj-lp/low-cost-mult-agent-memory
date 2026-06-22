@@ -62,3 +62,22 @@ def test_coerce_answer_candidate_prefers_yes_for_yes_no_reference_question() -> 
         evidence,
         question="could that substance also be extracted from an animal organ?",
     ) == "Yes"
+
+
+def test_coerce_answer_candidate_does_not_treat_information_request_as_yes_no() -> None:
+    """can you / could you 这类信息请求不应被当成是非题。"""
+
+    answer_candidate = "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, Harry Styles"
+    evidence = [
+        (
+            "Dunkirk (2017 film): Its ensemble cast includes Fionn Whitehead, Tom Glynn-Carney, "
+            "Jack Lowden, Harry Styles, Aneurin Barnard, James D'Arcy, Barry Keoghan, Kenneth Branagh, "
+            "Cillian Murphy, Mark Rylance, and Tom Hardy."
+        )
+    ]
+
+    assert _coerce_answer_candidate(
+        answer_candidate,
+        evidence,
+        question="can you mention a few members of the cast?",
+    ) == "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, Harry Styles"

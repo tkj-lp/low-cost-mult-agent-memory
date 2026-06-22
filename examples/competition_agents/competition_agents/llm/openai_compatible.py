@@ -91,6 +91,28 @@ def _extract_question_from_task(task: str) -> str:
 
 def _is_yes_no_question(question: str) -> bool:
     question_lower = str(question or "").strip().lower()
+    if not question_lower:
+        return False
+    if question_lower.startswith(("can you ", "could you ", "would you ", "will you ", "do you ", "did you ")):
+        return False
+    if any(
+        phrase in question_lower
+        for phrase in (
+            "can you tell me",
+            "can you mention",
+            "can you list",
+            "can you name",
+            "can you describe",
+            "can you explain",
+            "could you tell me",
+            "could you mention",
+            "could you list",
+            "could you name",
+            "could you describe",
+            "could you explain",
+        )
+    ):
+        return False
     return question_lower.startswith(
         ("is ", "are ", "was ", "were ", "do ", "does ", "did ", "can ", "could ", "has ", "have ", "had ")
     )
