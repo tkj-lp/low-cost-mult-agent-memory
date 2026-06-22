@@ -212,75 +212,83 @@
         </article>
 
         <article class="panel memory-panel">
-          <div class="section-title">记忆检索解释</div>
+          <div class="section-title memory-card-title">
+            <span>记忆检索模块</span>
+            <div class="memory-task-controls">
+              <button type="button" aria-label="上一任务" :disabled="memoryTaskIndex <= 0" @click="moveMemoryTask(-1)">‹</button>
+              <select v-model.number="memoryTaskIndex" aria-label="选择任务问题">
+                <option v-for="(task, index) in memoryTaskOptions" :key="task.task_id ?? index" :value="index">
+                  任务 {{ index + 1 }}
+                </option>
+              </select>
+              <button type="button" aria-label="下一任务" :disabled="memoryTaskIndex >= memoryTaskOptions.length - 1" @click="moveMemoryTask(1)">›</button>
+            </div>
+          </div>
           <div class="memory-body">
-            <div class="query-card">
-              <strong>当前 query</strong>
-              <p>{{ activeMemoryPanel.query }}</p>
-            </div>
-            <div class="memory-hit">
-              <strong>命中记忆</strong>
-              <div>
-                <span class="pill blue">{{ activeMemoryPanel.firstHitId }}</span>
-                <span class="pill green">相关度 {{ activeMemoryPanel.firstHitScore }}</span>
+            <div class="memory-question-row">
+              <div class="memory-question">
+                <span>当前问题</span>
+                <p>{{ activeMemoryPanel.question }}</p>
               </div>
+              <details class="retrieval-query">
+                <summary>检索词</summary>
+                <p>{{ activeMemoryPanel.query }}</p>
+              </details>
             </div>
-            <div class="memory-hit memory-counts">
-              <strong>上下文</strong>
-              <div>
-                <span class="pill purple">context {{ activeMemoryPanel.contextCount }}</span>
-                <span class="pill orange">hits {{ activeMemoryPanel.hitCount }}</span>
-              </div>
+            <div class="memory-summary-grid">
+              <div><span>返回候选</span><strong>{{ activeMemoryPanel.hitCount }}</strong></div>
+              <div><span>实际使用</span><strong>{{ activeMemoryPanel.usedCount }}</strong></div>
+              <div><span>证据记忆</span><strong>{{ activeMemoryPanel.evidenceCount }}</strong></div>
+              <div><span>经验记忆</span><strong>{{ activeMemoryPanel.experienceCount }}</strong></div>
             </div>
-            <div class="reason-table">
-              <div
-                v-for="item in memoryReasonRows"
-                :key="item.tag"
-                class="reason-row"
-              >
-                <span class="pill" :class="item.className">{{ item.tag }}</span>
-                <span>命中</span>
-                <strong>{{ item.score }}</strong>
-                <span>⌄</span>
+            <div class="candidate-section">
+              <div class="candidate-heading"><span>候选记忆</span><small>来源、类型、命中原因、分数与使用状态</small></div>
+              <div v-if="activeMemoryPanel.candidates.length" class="candidate-scroll">
+                <button
+                  v-for="candidate in activeMemoryPanel.candidates"
+                  :key="candidate.memoryId"
+                  type="button"
+                  class="memory-candidate"
+                  :class="{ selected: candidate.memoryId === activeMemoryPanel.selected.memoryId, used: candidate.used }"
+                  @click="selectedMemoryId = candidate.memoryId"
+                >
+                  <span class="candidate-id">{{ candidate.memoryId }}</span>
+                  <span class="candidate-source">{{ candidate.source }} · {{ candidate.typeLabel }}</span>
+                  <span class="candidate-signals">{{ candidate.signals.join(" · ") }}</span>
+                  <strong>{{ candidate.score }}</strong>
+                  <span class="candidate-status">{{ candidate.used ? "已使用" : "未使用" }}</span>
+                </button>
               </div>
+              <div v-else class="candidate-empty">本轮没有命中可展示的历史记忆。</div>
+            </div>
+            <div class="selected-memory-detail">
+              <span>当前解释</span>
+              <p>{{ activeMemoryPanel.selected.explanation }}</p>
             </div>
           </div>
         </article>
 
-        <article class="panel graph-panel">
-          <div class="section-title">超图局部视图</div>
-          <div class="legend">
-            <span v-for="item in graphLegend" :key="item.name">
-              <i :style="{ borderColor: item.color }"></i>{{ item.name }}
-            </span>
-          </div>
-          <div class="graph-canvas" aria-label="hypergraph local view">
-            <svg viewBox="0 0 760 290" role="img">
-              <g class="grid-lines">
-                <line v-for="x in graphColumns" :key="x" :x1="x" y1="24" :x2="x" y2="264" />
-              </g>
-              <g class="edges">
-                <path d="M58 153 L158 76 L260 92 L360 50" />
-                <path d="M58 153 L158 126 L260 145 L360 110" />
-                <path d="M58 153 L158 181 L260 188 L360 178" />
-                <path d="M58 153 L158 232 L260 218 L360 235" />
-                <path d="M360 50 L476 92 L596 92 L696 153" />
-                <path d="M360 178 L476 218 L596 218 L696 153" />
-                <path d="M596 92 L596 218" />
-              </g>
-              <circle cx="58" cy="153" r="24" class="node task" />
-              <text x="58" y="158" text-anchor="middle">{{ activeAgentDetail.taskLabel }}</text>
-              <GraphNode
-                v-for="node in activeGraphNodes"
-                :key="node.label"
-                v-bind="node"
-              />
-              <GraphDiamond :x="318" :y="96" label="e1" />
-              <GraphDiamond :x="318" :y="184" label="e2" />
-              <GraphDiamond :x="472" :y="92" label="e4" />
-              <GraphDiamond :x="472" :y="218" label="e3" />
-              <GraphDiamond :x="596" :y="153" label="e6" />
-            </svg>
+        <article class="panel memory-metric-panel">
+          <div class="section-title">超图记忆指标</div>
+          <div class="memory-metric-body">
+            <div class="memory-metric-grid">
+              <div v-for="metric in memoryPerformance.metrics" :key="metric.label" class="memory-metric-tile">
+                <span>{{ metric.label }}</span>
+                <strong :style="{ color: metric.color }">{{ metric.value }}</strong>
+                <small>{{ metric.caption }}</small>
+              </div>
+            </div>
+            <div class="memory-quality-summary">
+              <div class="quality-heading"><span>命中质量</span><small>有效 {{ memoryPerformance.relevantHits }} · 无关 {{ memoryPerformance.irrelevantHits }}</small></div>
+              <div class="quality-bar"><i :style="{ width: `${memoryPerformance.relevantPercent}%` }"></i></div>
+            </div>
+            <div class="memory-type-summary">
+              <div v-for="item in memoryPerformance.typeRows" :key="item.label">
+                <span>{{ item.label }}</span>
+                <small>命中 {{ item.hits }} · 使用 {{ item.used }} · 有效 {{ item.relevant }}</small>
+              </div>
+            </div>
+            <p class="memory-metric-note">{{ memoryPerformance.note }}</p>
           </div>
         </article>
 
@@ -316,8 +324,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import type { PropType } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import * as echarts from "echarts";
 import { ElMessage } from "element-plus";
 
@@ -336,13 +343,6 @@ type Dataset =
   | "hidden_hotpot_5"
   | "hidden_continuous"
   | "codeact_20";
-
-interface GraphNodeSpec {
-  x: number;
-  y: number;
-  label: string;
-  kind: "agent" | "evidence" | "state" | "memory" | "outcome";
-}
 
 interface RunComparison {
   mode: ExperimentMode;
@@ -366,6 +366,7 @@ interface BackendTaskResult {
   turn_id?: string | null;
   dataset_type?: string;
   question?: string;
+  expected_reuse?: unknown[];
   final_answer?: string;
   gold?: string;
   messages?: Array<{
@@ -397,6 +398,29 @@ interface BackendRunSummary {
   memory_hit_rate?: number | string;
   exact_match?: number | string | null;
   elapsed_ms?: number | string;
+  memory_evaluation?: MemoryEvaluation;
+}
+
+interface MemoryEvaluationSummary {
+  expected_reuse_task_count?: number;
+  memory_hit_count?: number;
+  relevant_memory_hit_count?: number;
+  memory_precision?: number;
+  memory_complete_retrieval_rate?: number;
+  correct_reuse_count?: number;
+  correct_reuse_rate?: number;
+}
+
+interface MemoryEvaluation {
+  summary?: MemoryEvaluationSummary;
+  rows?: Array<{
+    hit_details?: Array<{
+      memory_id?: string;
+      memory_type?: string;
+      relevant?: boolean;
+      used?: boolean;
+    }>;
+  }>;
 }
 
 interface AgentSpec {
@@ -508,84 +532,6 @@ interface BackendOptionsPayload {
   experiment_modes?: BackendExperimentModeOption[];
   datasets?: BackendDatasetOption[];
 }
-
-const GraphNode = defineComponent({
-  name: "GraphNode",
-  props: {
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
-    label: { type: String, required: true },
-    kind: {
-      type: String as PropType<GraphNodeSpec["kind"]>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const palette = {
-      agent: ["#e8f7eb", "#21a854"],
-      evidence: ["#fff2d8", "#f5a623"],
-      state: ["#f1e7ff", "#8e5ad7"],
-      memory: ["#dff7f7", "#35b6b6"],
-      outcome: ["#ffe5ef", "#ef5a8a"],
-    } as const;
-
-    return () => {
-      const [fill, stroke] = palette[props.kind];
-      return h("g", [
-        h("rect", {
-          x: props.x - 35,
-          y: props.y - 17,
-          width: 70,
-          height: 34,
-          rx: 6,
-          fill,
-          stroke,
-          "stroke-width": 1.8,
-        }),
-        h(
-          "text",
-          {
-            x: props.x,
-            y: props.y + 5,
-            "text-anchor": "middle",
-            class: "graph-label",
-          },
-          props.label,
-        ),
-      ]);
-    };
-  },
-});
-
-const GraphDiamond = defineComponent({
-  name: "GraphDiamond",
-  props: {
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
-    label: { type: String, required: true },
-  },
-  setup(props) {
-    return () =>
-      h("g", [
-        h("polygon", {
-          points: `${props.x},${props.y - 18} ${props.x + 18},${props.y} ${props.x},${props.y + 18} ${props.x - 18},${props.y}`,
-          fill: "#ffffff",
-          stroke: "#7e8996",
-          "stroke-width": 1.8,
-        }),
-        h(
-          "text",
-          {
-            x: props.x,
-            y: props.y + 5,
-            "text-anchor": "middle",
-            class: "graph-label",
-          },
-          props.label,
-        ),
-      ]);
-  },
-});
 
 const fallbackExperimentModes = [
   { value: "baseline_text", label: "baseline_text" },
@@ -781,42 +727,6 @@ const defaultAgentKeysByMode: Record<ExperimentMode, string[]> = {
   latent_hidden: ["planner", "retriever", "reasoner", "summarizer"],
   codeact_tools: ["planner", "retriever", "reasoner", "executor", "summarizer"],
 };
-
-const memoryReasons = [
-  { tag: "expected_reuse", score: "0.93", className: "blue" },
-  { tag: "supporting_fact", score: "0.91", className: "green" },
-  { tag: "state_ref", score: "0.89", className: "purple" },
-  { tag: "strategy", score: "0.86", className: "orange" },
-];
-
-const graphLegend = [
-  { name: "task", color: "#2d7cff" },
-  { name: "agent", color: "#21a854" },
-  { name: "evidence", color: "#f5a623" },
-  { name: "state_ref", color: "#8e5ad7" },
-  { name: "memory", color: "#35b6b6" },
-  { name: "outcome", color: "#ef5a8a" },
-  { name: "超边", color: "#7e8996" },
-];
-
-const graphColumns = [115, 245, 365, 495, 625];
-
-const graphNodes: GraphNodeSpec[] = [
-  { x: 158, y: 76, label: "planner", kind: "agent" },
-  { x: 158, y: 126, label: "retriever", kind: "agent" },
-  { x: 158, y: 181, label: "reasoner", kind: "agent" },
-  { x: 158, y: 232, label: "summarizer", kind: "agent" },
-  { x: 260, y: 92, label: "ev-0012", kind: "evidence" },
-  { x: 260, y: 145, label: "ev-0045", kind: "evidence" },
-  { x: 260, y: 188, label: "ev-0078", kind: "evidence" },
-  { x: 260, y: 218, label: "ev-0090", kind: "evidence" },
-  { x: 548, y: 92, label: "memory-0003", kind: "memory" },
-  { x: 548, y: 218, label: "memory-0011", kind: "memory" },
-  { x: 548, y: 153, label: "", kind: "memory" },
-  { x: 410, y: 92, label: "state-003", kind: "state" },
-  { x: 410, y: 218, label: "state-007", kind: "state" },
-  { x: 696, y: 153, label: "outcome-3", kind: "outcome" },
-];
 
 const timeChartRef = ref<HTMLDivElement | null>(null);
 const charChartRef = ref<HTMLDivElement | null>(null);
@@ -1143,76 +1053,162 @@ const selectedTaskResult = computed(() => {
   return getTaskResult(taskIndex);
 });
 
+const selectedMemoryId = ref("");
+const memoryTaskOptions = computed(() => activeRunForSelection.value?.task_results ?? []);
+const memoryTaskIndex = computed<number>({
+  get: () => selectedTimelineCell.value?.taskIndex ?? 0,
+  set: (taskIndex) => {
+    if (taskIndex < 0 || taskIndex >= memoryTaskOptions.value.length) {
+      return;
+    }
+    selectedTimelineCell.value = {
+      taskIndex,
+      agentKey: selectedTimelineCell.value?.agentKey ?? activeAgents.value[0]?.key ?? "retriever",
+    };
+  },
+});
+
+const moveMemoryTask = (offset: number) => {
+  memoryTaskIndex.value = memoryTaskIndex.value + offset;
+};
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+
+const formatMemoryScore = (value: unknown) => {
+  const score = Number(value);
+  return Number.isFinite(score) ? score.toFixed(2) : "—";
+};
+
+const formatMemoryPercent = (value: unknown) => {
+  const ratio = Number(value);
+  return Number.isFinite(ratio) ? `${(ratio * 100).toFixed(ratio === 1 ? 0 : 2)}%` : "待评估";
+};
+
+const shortNodeLabel = (value: unknown) => {
+  const text = String(value ?? "").replace(/^[^:]+:/, "").replace(/-/g, " ");
+  return text.length > 18 ? `${text.slice(0, 16)}…` : text;
+};
+
 const activeMemoryPanel = computed(() => {
   const task = selectedTaskResult.value;
   const retrievalDebug = task?.retrieval_debug ?? {};
   const hitIds = getArrayField(retrievalDebug.memory_hit_ids ?? retrievalDebug.context_hit_ids).map(String);
-  const hits = Array.isArray(task?.memory_hits) ? task.memory_hits : [];
-  const context = Array.isArray(task?.memory_context) ? task.memory_context : [];
-  const firstHit = hits[0];
-  const firstHitRecord = firstHit && typeof firstHit === "object" ? (firstHit as Record<string, unknown>) : null;
-  const score = firstHitRecord?.retrieval_score ?? firstHitRecord?.hypergraph_score ?? firstHitRecord?.embedding_score;
+  const hits = getArrayField(task?.memory_hits).map(asRecord).filter((item) => Object.keys(item).length > 0);
+  const context = getArrayField(task?.memory_context).map(asRecord);
+  const usedIds = new Set(context.map((item) => String(item.memory_id ?? "")).filter(Boolean));
+  const candidates = hits.map((record, index) => {
+    const memoryId = String(record.memory_id ?? hitIds[index] ?? `memory-${index + 1}`);
+    const memoryType = String(record.memory_type ?? "evidence");
+    const trace = asRecord(record.trace);
+    const taskMeta = asRecord(trace.task_meta);
+    const sourceCase = asRecord(record.source_case);
+    const source = String(taskMeta.turn_id ?? sourceCase.turn_id ?? record.source_agent ?? "历史记录");
+    const matchedNodes = getArrayField(record.matched_nodes).map(String);
+    const artifact = matchedNodes.find((node) => node.startsWith("artifact:"));
+    const signals = [
+      artifact ? `产物：${shortNodeLabel(artifact)}` : "结构命中",
+      Number.isFinite(Number(record.trigger_compatibility_score))
+        ? `触发 ${formatMemoryScore(record.trigger_compatibility_score)}`
+        : "触发未评估",
+      Number.isFinite(Number(record.topic_compatibility_score))
+        ? `主题 ${formatMemoryScore(record.topic_compatibility_score)}`
+        : `结构 ${formatMemoryScore(record.structural_score)}`,
+    ];
+    const path = asRecord(getArrayField(record.reasoning_path)[0]);
+    const pathText = path.query_node
+      ? `${shortNodeLabel(path.query_node)} → ${shortNodeLabel(path.hyperedge_id)} → ${memoryId}`
+      : getArrayField(record.candidate_gate_reasons).map(shortNodeLabel).join(" · ") || "命中说明暂不可用";
+
+    return {
+      memoryId,
+      typeLabel: memoryType === "experience" ? "经验记忆" : "证据记忆",
+      source,
+      score: formatMemoryScore(record.retrieval_score ?? record.hypergraph_score ?? record.embedding_score),
+      used: usedIds.has(memoryId),
+      signals,
+      explanation: `路径：${pathText}`,
+      memoryType,
+    };
+  });
+  const selected = candidates.find((item) => item.memoryId === selectedMemoryId.value) ?? candidates[0] ?? {
+    memoryId: "",
+    typeLabel: "",
+    source: "",
+    score: "—",
+    used: false,
+    signals: [],
+    explanation: "选择已完成任务后，这里将显示实际命中记忆的解释路径。",
+    memoryType: "",
+  };
 
   return {
-    query: String(retrievalDebug.retrieval_query ?? "点击时间线中的 retriever / reasoner 圆圈查看本轮检索词。"),
-    hitIds,
-    contextCount: context.length,
-    hitCount: hits.length,
-    firstHitId: String(firstHitRecord?.memory_id ?? hitIds[0] ?? "暂无命中"),
-    firstHitScore: score === undefined || score === null ? "N/A" : String(score),
-    plannerFocus: getArrayField(retrievalDebug.planner_focus).slice(0, 4).map(String),
+    question: String(task?.question ?? "请选择已完成任务。"),
+    query: String(retrievalDebug.retrieval_query ?? "本轮未返回检索词。"),
+    hitCount: candidates.length,
+    usedCount: candidates.filter((item) => item.used).length,
+    evidenceCount: candidates.filter((item) => item.memoryType !== "experience").length,
+    experienceCount: candidates.filter((item) => item.memoryType === "experience").length,
+    candidates,
+    selected,
   };
 });
 
-const memoryReasonRows = computed(() => {
-  const focusRows = activeMemoryPanel.value.plannerFocus.map((tag, index) => ({
-    tag,
-    score: index === 0 ? "focus" : "plan",
-    className: index % 2 === 0 ? "blue" : "purple",
-  }));
-  if (focusRows.length > 0) {
-    return focusRows;
-  }
-  return memoryReasons;
-});
+const memoryPerformance = computed(() => {
+  const run = activeRunForSelection.value;
+  const evaluation = run?.memory_evaluation;
+  const summary = evaluation?.summary;
+  const tasks = run?.task_results ?? [];
+  const exactMatches = tasks.filter((task) => task.exact_match === true).length;
+  const answerRate = tasks.length ? exactMatches / tasks.length : Number.NaN;
+  const details = (evaluation?.rows ?? []).flatMap((row) => row.hit_details ?? []);
+  const totalHits = Number(summary?.memory_hit_count ?? details.length);
+  const relevantHits = Number(summary?.relevant_memory_hit_count ?? details.filter((item) => item.relevant).length);
+  const typeRow = (memoryType: string, label: string) => {
+    const rows = details.filter((item) => item.memory_type === memoryType);
+    return {
+      label,
+      hits: rows.length || "—",
+      used: rows.length ? rows.filter((item) => item.used).length : "—",
+      relevant: rows.length ? rows.filter((item) => item.relevant).length : "—",
+    };
+  };
 
-const truncateGraphLabel = (value: string, fallback: string) => {
-  const text = value.trim() || fallback;
-  return text.length > 12 ? `${text.slice(0, 10)}...` : text;
-};
-
-const activeGraphNodes = computed<GraphNodeSpec[]>(() => {
-  const task = selectedTaskResult.value;
-  if (!task) {
-    return graphNodes;
-  }
-
-  const memoryIds = activeMemoryPanel.value.hitIds;
-  const stateRefs = Object.values(task.state_refs ?? {});
-
-  return graphNodes.map((node) => {
-    if (node.kind === "memory") {
-      const memoryIndex = node.y < 120 ? 0 : node.y > 190 ? 1 : 2;
-      return {
-        ...node,
-        label: truncateGraphLabel(memoryIds[memoryIndex] ?? node.label, node.label || "memory"),
-      };
-    }
-    if (node.kind === "state") {
-      const stateIndex = node.y < 120 ? 0 : 1;
-      return {
-        ...node,
-        label: truncateGraphLabel(stateRefs[stateIndex] ?? node.label, node.label || "state"),
-      };
-    }
-    if (node.kind === "outcome") {
-      return {
-        ...node,
-        label: truncateGraphLabel(task.final_answer ?? node.label, node.label),
-      };
-    }
-    return node;
-  });
+  return {
+    metrics: [
+      {
+        label: "正确复用率",
+        value: formatMemoryPercent(summary?.correct_reuse_rate),
+        caption: summary ? `${summary.correct_reuse_count} / ${summary.expected_reuse_task_count}` : "运行接口待评估",
+        color: "#18a45e",
+      },
+      {
+        label: "记忆准确率",
+        value: formatMemoryPercent(summary?.memory_precision),
+        caption: summary ? `${summary.relevant_memory_hit_count} / ${summary.memory_hit_count}` : "运行接口待评估",
+        color: "#2377f7",
+      },
+      {
+        label: "完整产物召回",
+        value: formatMemoryPercent(summary?.memory_complete_retrieval_rate),
+        caption: summary ? "需要复用的任务完整覆盖" : "运行接口待评估",
+        color: "#8551d1",
+      },
+      {
+        label: "回答正确率",
+        value: formatMemoryPercent(answerRate),
+        caption: tasks.length ? `${exactMatches} / ${tasks.length}` : "暂无任务结果",
+        color: "#df8600",
+      },
+    ],
+    relevantHits,
+    irrelevantHits: Math.max(totalHits - relevantHits, 0),
+    relevantPercent: totalHits ? Math.round((relevantHits / totalHits) * 100) : 0,
+    typeRows: [typeRow("evidence", "证据记忆"), typeRow("experience", "经验记忆")],
+    note: summary
+      ? "指标依据：来源轮次、产物类型和实际使用状态。"
+      : "完成一次新运行后，接口将返回正式超图记忆评估指标。",
+  };
 });
 
 const formatElapsed = (value: unknown) => {

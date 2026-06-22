@@ -10,6 +10,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
+from hypergraph_memory_method.reuse_metrics import evaluate_run_reuse
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE_DIR = Path(__file__).resolve().parent
@@ -279,6 +281,7 @@ def _summarize_task_result(task: dict[str, Any]) -> dict[str, Any]:
         "question",
         "final_answer",
         "gold",
+        "expected_reuse",
     ):
         if key in task:
             summary[key] = task.get(key)
@@ -336,6 +339,12 @@ def _summarize_run(run: dict[str, Any]) -> dict[str, Any]:
     metrics = run.get("metrics")
     if isinstance(metrics, dict):
         summary["metrics"] = metrics
+
+    try:
+        summary["memory_evaluation"] = evaluate_run_reuse(run)
+    except (TypeError, ValueError, KeyError):
+        # The dashboard remains backward compatible with runs that omit task-level memory data.
+        pass
 
     task_results = run.get("task_results")
     if isinstance(task_results, list):
