@@ -7,18 +7,25 @@ from .schema import (
     NODE_ARTIFACT,
     NODE_ARCHIVE_SCOPE,
     NODE_EXPERIENCE,
+    NODE_EXPERIENCE_RULE,
     NODE_EXPECTED_REUSE,
+    NODE_FAILURE_PATTERN,
     NODE_GAP,
     NODE_INTENT,
     NODE_KEYWORD,
+    NODE_MEMORY_LAYER,
     NODE_MEMORY_REF,
+    NODE_PROBLEM_PATTERN,
     NODE_REUSE_BENEFIT,
+    NODE_SOLUTION_PATTERN,
     NODE_STRATEGY,
     NODE_STATE,
     NODE_STATE_REF,
     NODE_TAG,
+    NODE_TRIGGER,
 )
 from .text import limited_tokens, node_id, normalize_text
+from .gating import infer_trigger_families
 
 
 ARTIFACT_HINTS = {
@@ -31,7 +38,8 @@ ARTIFACT_HINTS = {
     "metrics": {"metrics", "cost", "performance", "elapsed"},
     "execution": {"execution", "codeact", "sandbox", "tool"},
     "strategy": {"strategy", "plan", "handoff", "coordination"},
-    "experience": {"experience", "episodic", "insight", "distill"},
+    "experience": {"experience", "episodic", "insight", "distill", "rule"},
+    "trajectory": {"trajectory", "trace", "message", "handoff", "agent"},
     "reuse-benefit": {"benefit", "reuse", "saving", "cost"},
 }
 
@@ -78,6 +86,8 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
         gaps.add("tool-execution")
     if {"experience", "distill", "insight"} & tokens:
         gaps.add("experience-distillation")
+    if {"trace", "trajectory", "handoff", "message"} & tokens:
+        gaps.add("agent-trajectory")
 
     intent = "reuse" if {"reuse", "previous", "prior", "history"} & tokens else "lookup"
     if {"summarize", "summary"} & tokens:
@@ -107,6 +117,43 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
     if {"memory", "reuse", "previous", "prior"} & tokens:
         experiences.add("memory-grounded-reasoning")
 
+    memory_layers = set()
+    if {"evidence", "facts", "fact", "answer"} & tokens:
+        memory_layers.add("evidence")
+    if {"experience", "rule", "strategy", "failure", "trigger"} & tokens:
+        memory_layers.add("experience")
+    if {"trace", "trajectory", "message", "handoff", "agent"} & tokens:
+        memory_layers.add("trajectory")
+    if {"outcome", "metric", "metrics", "benefit", "saving", "cost"} & tokens:
+        memory_layers.add("outcome")
+
+    rule_nodes = {
+        "problem_patterns": set(),
+        "solution_patterns": set(),
+        "failure_patterns": set(),
+        "triggers": set(),
+    }
+    trigger_families = infer_trigger_families(query)
+    if "temporal" in trigger_families:
+        rule_nodes["problem_patterns"].add("multiple-temporal-candidates-with-constraints")
+        rule_nodes["solution_patterns"].add("choose-date-matching-all-constraints")
+        rule_nodes["triggers"].add("temporal-query")
+    if "attribute" in trigger_families:
+        rule_nodes["problem_patterns"].add("attribute-selection-among-related-facts")
+        rule_nodes["solution_patterns"].add("pick-fact-matching-requested-attribute")
+        rule_nodes["triggers"].add("attribute-lookup-query")
+    if "location" in trigger_families:
+        rule_nodes["triggers"].add("multi-location-query")
+    if "entity-list" in trigger_families:
+        rule_nodes["triggers"].add("entity-list-query")
+    if "reference" in trigger_families:
+        rule_nodes["triggers"].add("reference-resolution-query")
+    if {"failure", "avoid", "wrong", "mistake"} & tokens:
+        rule_nodes["failure_patterns"].add("avoid-historical-error")
+    for token in tokens:
+        if token.endswith("_query") or token.endswith("-query") or token in {"temporal", "attribute", "reference"}:
+            rule_nodes["triggers"].add(token.replace("_", "-"))
+
     reuse_benefits = set()
     if {"cost", "communication", "chars"} & tokens:
         reuse_benefits.add("communication-cost-accounted")
@@ -125,6 +172,9 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
         "strategies": sorted(strategies),
         "experiences": sorted(experiences),
         "reuse_benefits": sorted(reuse_benefits),
+        "memory_layers": sorted(memory_layers),
+        "trigger_families": sorted(trigger_families),
+        **{key: sorted(value) for key, value in rule_nodes.items()},
     }
 
 
@@ -151,6 +201,18 @@ def profile_nodes(profile: dict[str, Any]) -> set[str]:
         nodes.add(node_id(NODE_STRATEGY, str(value)))
     for value in profile.get("experiences", []):
         nodes.add(node_id(NODE_EXPERIENCE, str(value)))
+    for value in profile.get("memory_layers", []):
+        nodes.add(node_id(NODE_MEMORY_LAYER, str(value)))
+    for value in profile.get("problem_patterns", []):
+        nodes.add(node_id(NODE_PROBLEM_PATTERN, str(value)))
+    for value in profile.get("solution_patterns", []):
+        nodes.add(node_id(NODE_SOLUTION_PATTERN, str(value)))
+    for value in profile.get("failure_patterns", []):
+        nodes.add(node_id(NODE_FAILURE_PATTERN, str(value)))
+    for value in profile.get("triggers", []):
+        nodes.add(node_id(NODE_TRIGGER, str(value)))
+    if profile.get("memory_layers") or profile.get("experiences"):
+        nodes.add(node_id(NODE_EXPERIENCE_RULE, "rule-card"))
     for value in profile.get("reuse_benefits", []):
         nodes.add(node_id(NODE_REUSE_BENEFIT, str(value)))
     for value in profile.get("archive_scopes", []):

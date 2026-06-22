@@ -42,6 +42,49 @@ def archive_scope(trace: dict[str, Any]) -> str:
     return "task"
 
 
+def reuse_success_rate(record: dict[str, Any]) -> float:
+    """Return successful reuse ratio for a memory record."""
+
+    reuse_count = int(record.get("reuse_count", 0) or 0)
+    if reuse_count <= 0:
+        return 0.0
+    return max(0.0, min(1.0, float(record.get("reuse_success_count", 0) or 0) / reuse_count))
+
+
+def lifecycle_stage(record: dict[str, Any], trace: dict[str, Any] | None = None) -> str:
+    """Infer the current lifecycle stage of a reusable memory.
+
+    The thresholds are intentionally conservative so one lucky reuse cannot turn
+    an episodic memory into a long-term rule.
+    """
+
+    reuse_count = int(record.get("reuse_count", 0) or 0)
+    reuse_success_count = int(record.get("reuse_success_count", 0) or 0)
+    success_rate = reuse_success_rate(record)
+    stored_stage = str(record.get("lifecycle_stage") or "").strip()
+
+    if reuse_count >= 3 and success_rate < 0.4:
+        return "deprecated"
+    if reuse_count >= 4 and success_rate >= 0.75:
+        return "generalized"
+    if reuse_count >= 2 and reuse_success_count >= 1:
+        return "validated"
+    if stored_stage in {"validated", "generalized", "deprecated", "needs-validation"}:
+        return stored_stage
+
+    trace = trace if isinstance(trace, dict) else record.get("trace")
+    execution_result = trace.get("execution_result", {}) if isinstance(trace, dict) and isinstance(trace.get("execution_result"), dict) else {}
+    task_meta = trace.get("task_meta", {}) if isinstance(trace, dict) and isinstance(trace.get("task_meta"), dict) else {}
+    memory_hits = trace.get("memory_hits", []) if isinstance(trace, dict) else []
+    expected_reuse = task_meta.get("expected_reuse", []) if isinstance(task_meta, dict) else []
+
+    if execution_result.get("limitations"):
+        return "needs-validation"
+    if memory_hits or expected_reuse:
+        return "promoted-candidate"
+    return stored_stage or "episodic"
+
+
 def distill_experience(record: dict[str, Any]) -> dict[str, Any]:
     """Distill an episodic trace into reusable strategy and experience labels."""
 
@@ -112,13 +155,10 @@ def distill_experience(record: dict[str, Any]) -> dict[str, Any]:
     if retrieval_mode:
         reuse_benefits.add(f"retrieval-mode:{_clean_label(retrieval_mode)}")
 
-    lifecycle_stage = "promoted-candidate" if memory_hits or expected_reuse else "episodic"
-    if execution_result.get("limitations"):
-        lifecycle_stage = "needs-validation"
-
     return {
         "archive_scope": archive_scope(trace),
-        "lifecycle_stage": lifecycle_stage,
+        "lifecycle_stage": lifecycle_stage(record, trace),
+        "experience_success_rate": round(reuse_success_rate(record), 4),
         "strategies": sorted(strategies),
         "experiences": sorted(experiences),
         "reuse_benefits": sorted(reuse_benefits),

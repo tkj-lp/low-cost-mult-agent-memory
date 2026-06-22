@@ -7,16 +7,18 @@ from typing import Any
 from competition_agents.embedding import embed_text
 
 from .builder import ensure_hypergraph_view
+from .gating import evaluate_candidate_gate
+from .evolution import prepare_searchable_memory
 from .query_profile import build_query_profile, profile_nodes
 from .schema import NODE_KEYWORD, NODE_TAG, STRUCTURED_NODE_KINDS
 from .scoring import node_kind, score_components
 from .text import node_id, tokenize
 
 
-def query_nodes(query: str) -> set[str]:
+def query_nodes(query: str, profile: dict[str, Any] | None = None) -> set[str]:
     """Return graph nodes activated by the current query."""
 
-    nodes = profile_nodes(build_query_profile(query))
+    nodes = profile_nodes(profile or build_query_profile(query))
     for token in tokenize(query):
         nodes.add(node_id(NODE_KEYWORD, token))
         nodes.add(node_id(NODE_TAG, token))
@@ -101,7 +103,7 @@ class HypergraphIndex:
         node_to_hyperedge_ids: dict[str, set[str]] = defaultdict(set)
         hyperedge_to_memory_id: dict[str, str] = {}
 
-        for record in memory:
+        for record in prepare_searchable_memory(memory):
             memory_id = record["memory_id"]
             hypergraph = ensure_hypergraph_view(record)
             memory_by_id[memory_id] = record
@@ -123,9 +125,10 @@ class HypergraphIndex:
     def search(self, query: str, *, top_k: int) -> list[dict[str, Any]]:
         """Activate query nodes, aggregate paths to memory, and return top hits."""
 
+        profile = build_query_profile(query)
         query_embedding = embed_text(query).vector
         matched_by_memory: dict[str, dict[str, Any]] = {}
-        for node in query_nodes(query):
+        for node in query_nodes(query, profile):
             for memory_id in self.node_to_memory_ids.get(node, set()):
                 entry = matched_by_memory.setdefault(
                     memory_id,
@@ -153,8 +156,12 @@ class HypergraphIndex:
         for memory_id, entry in matched_by_memory.items():
             record = self.memory_by_id[memory_id]
             matched_nodes = entry["matched_nodes"]
+            gate = evaluate_candidate_gate(query, profile, record)
+            if not gate.accepted:
+                continue
             embedding_score = _embedding_score(query_embedding, record)
             scores = score_components(record, matched_nodes, embedding_score=embedding_score)
+            scores["retrieval_score"] = round(scores["retrieval_score"] + gate.score, 4)
             if scores["retrieval_score"] <= 0:
                 continue
 
@@ -170,6 +177,7 @@ class HypergraphIndex:
                 {
                     **record,
                     **scores,
+                    **gate.as_dict(),
                     "matched_nodes": sorted(matched_nodes, key=_node_sort_key),
                     "matched_hyperedges": sorted(entry["matched_hyperedges"]),
                     "reasoning_path": reasoning_path,
@@ -179,12 +187,18 @@ class HypergraphIndex:
         return sorted(
             ranked_hits,
             key=lambda hit: (
-                -hit["retrieval_score"],
-                -hit["reuse_score"],
-                -hit["experience_score"],
-                -hit["strategy_score"],
                 -hit["gap_coverage_score"],
+                -hit["structural_score"],
+                -hit["experience_score"],
+                -hit["lifecycle_score"],
+                -hit["retention_score"],
+                -hit["reuse_score"],
+                -hit["strategy_score"],
                 -hit["evidence_score"],
+                -hit["tag_score"],
+                -hit["candidate_gate_score"],
+                -hit["retrieval_score"],
+                hit["keyword_score"],
                 hit["memory_id"],
             ),
         )[:top_k]
