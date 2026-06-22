@@ -214,14 +214,22 @@
         <article class="panel memory-panel">
           <div class="section-title memory-card-title">
             <span>记忆检索模块</span>
-            <div class="memory-task-controls">
-              <button type="button" aria-label="上一任务" :disabled="memoryTaskIndex <= 0" @click="moveMemoryTask(-1)">‹</button>
-              <select v-model.number="memoryTaskIndex" aria-label="选择任务问题">
-                <option v-for="(task, index) in memoryTaskOptions" :key="task.task_id ?? index" :value="index">
-                  任务 {{ index + 1 }}
+            <div class="memory-card-controls">
+              <select v-model="selectedMemoryRunKey" class="memory-run-select" aria-label="选择当前页面会话运行结果">
+                <option value="" disabled>当前页面没有已完成运行</option>
+                <option v-for="item in sessionMemoryRuns" :key="item.key" :value="item.key">
+                  {{ item.label }}
                 </option>
               </select>
-              <button type="button" aria-label="下一任务" :disabled="memoryTaskIndex >= memoryTaskOptions.length - 1" @click="moveMemoryTask(1)">›</button>
+              <div class="memory-task-controls">
+                <button type="button" aria-label="上一任务" :disabled="memoryTaskIndex <= 0" @click="moveMemoryTask(-1)">‹</button>
+                <select v-model.number="memoryTaskIndex" aria-label="选择任务问题" :disabled="memoryTaskOptions.length === 0">
+                  <option v-for="(task, index) in memoryTaskOptions" :key="task.task_id ?? index" :value="index">
+                    任务 {{ index + 1 }}
+                  </option>
+                </select>
+                <button type="button" aria-label="下一任务" :disabled="memoryTaskIndex >= memoryTaskOptions.length - 1" @click="moveMemoryTask(1)">›</button>
+              </div>
             </div>
           </div>
           <div class="memory-body">
@@ -269,7 +277,10 @@
         </article>
 
         <article class="panel memory-metric-panel">
-          <div class="section-title">超图记忆指标</div>
+          <div class="section-title memory-metric-title">
+            <span>超图记忆指标</span>
+            <small>{{ activeMemoryRunLabel }}</small>
+          </div>
           <div class="memory-metric-body">
             <div class="memory-metric-grid">
               <div v-for="metric in memoryPerformance.metrics" :key="metric.label" class="memory-metric-tile">
@@ -402,6 +413,14 @@ interface BackendRunSummary {
   exact_match?: number | string | null;
   elapsed_ms?: number | string;
   memory_evaluation?: MemoryEvaluation;
+}
+
+interface MemorySessionRun {
+  key: string;
+  dataset: Dataset;
+  mode: ExperimentMode;
+  run: BackendRunSummary;
+  label: string;
 }
 
 interface MemoryEvaluationSummary {
@@ -760,6 +779,65 @@ const activeRunForSelection = computed(
   () => runResults.value[selectedDataset.value]?.[selectedMode.value] ?? null,
 );
 
+const selectedMemoryRunKey = ref("");
+const memoryTaskIndex = ref(0);
+const memoryRunKey = (dataset: Dataset, mode: ExperimentMode) => `${dataset}::${mode}`;
+const currentMemoryRunKey = computed(() => memoryRunKey(selectedDataset.value, selectedMode.value));
+const sessionMemoryRuns = computed<MemorySessionRun[]>(() => {
+  const records: MemorySessionRun[] = [];
+
+  (Object.keys(runResults.value) as Dataset[]).forEach((dataset) => {
+    const runsForDataset = runResults.value[dataset];
+    (Object.keys(runsForDataset) as ExperimentMode[]).forEach((mode) => {
+      const run = runsForDataset[mode];
+      if (!run) {
+        return;
+      }
+      const datasetLabel = datasetInfoMap.value[dataset]?.label ?? dataset;
+      records.push({
+        key: memoryRunKey(dataset, mode),
+        dataset,
+        mode,
+        run,
+        label: `${datasetLabel} / ${modeMeta[mode].label}`,
+      });
+    });
+  });
+
+  return records;
+});
+const activeMemoryRun = computed(() =>
+  sessionMemoryRuns.value.find((item) => item.key === selectedMemoryRunKey.value)?.run ?? null,
+);
+const activeMemoryRunLabel = computed(() => {
+  const active = sessionMemoryRuns.value.find((item) => item.key === selectedMemoryRunKey.value);
+  return active?.label ?? "当前页面会话暂无结果";
+});
+
+const resetMemoryCardSelection = () => {
+  memoryTaskIndex.value = 0;
+  selectedMemoryId.value = "";
+};
+
+watch([selectedDataset, selectedMode], () => {
+  selectedMemoryRunKey.value = sessionMemoryRuns.value.some((item) => item.key === currentMemoryRunKey.value)
+    ? currentMemoryRunKey.value
+    : "";
+  resetMemoryCardSelection();
+});
+
+watch(sessionMemoryRuns, () => {
+  if (sessionMemoryRuns.value.some((item) => item.key === selectedMemoryRunKey.value)) {
+    return;
+  }
+  selectedMemoryRunKey.value = sessionMemoryRuns.value.some((item) => item.key === currentMemoryRunKey.value)
+    ? currentMemoryRunKey.value
+    : "";
+  resetMemoryCardSelection();
+});
+
+watch(selectedMemoryRunKey, resetMemoryCardSelection);
+
 const toAgentSpec = (key: string, index: number): AgentSpec => {
   const normalizedKey = key.trim().toLowerCase();
   const palette = agentPalette[normalizedKey];
@@ -1044,28 +1122,15 @@ const activeAgentDetail = computed<AgentDetailView>(() => {
   };
 });
 
-const selectedTaskResult = computed(() => {
-  const taskIndex = selectedTimelineCell.value?.taskIndex ?? 0;
-  return getTaskResult(taskIndex);
-});
-
 const selectedMemoryId = ref("");
-const memoryTaskOptions = computed(() => activeRunForSelection.value?.task_results ?? []);
-const memoryTaskIndex = computed<number>({
-  get: () => selectedTimelineCell.value?.taskIndex ?? 0,
-  set: (taskIndex) => {
-    if (taskIndex < 0 || taskIndex >= memoryTaskOptions.value.length) {
-      return;
-    }
-    selectedTimelineCell.value = {
-      taskIndex,
-      agentKey: selectedTimelineCell.value?.agentKey ?? activeAgents.value[0]?.key ?? "retriever",
-    };
-  },
-});
+const memoryTaskOptions = computed(() => activeMemoryRun.value?.task_results ?? []);
+const selectedMemoryTask = computed(() => memoryTaskOptions.value[memoryTaskIndex.value] ?? null);
 
 const moveMemoryTask = (offset: number) => {
-  memoryTaskIndex.value = memoryTaskIndex.value + offset;
+  const nextIndex = memoryTaskIndex.value + offset;
+  if (nextIndex >= 0 && nextIndex < memoryTaskOptions.value.length) {
+    memoryTaskIndex.value = nextIndex;
+  }
 };
 
 const asRecord = (value: unknown): Record<string, unknown> =>
@@ -1087,7 +1152,7 @@ const shortNodeLabel = (value: unknown) => {
 };
 
 const activeMemoryPanel = computed(() => {
-  const task = selectedTaskResult.value;
+  const task = selectedMemoryTask.value;
   const retrievalDebug = task?.retrieval_debug ?? {};
   const hitIds = getArrayField(retrievalDebug.memory_hit_ids ?? retrievalDebug.context_hit_ids).map(String);
   const hits = getArrayField(task?.memory_hits).map(asRecord).filter((item) => Object.keys(item).length > 0);
@@ -1151,7 +1216,7 @@ const activeMemoryPanel = computed(() => {
 });
 
 const memoryPerformance = computed(() => {
-  const run = activeRunForSelection.value;
+  const run = activeMemoryRun.value;
   const evaluation = run?.memory_evaluation;
   const summary = evaluation?.summary;
   const tasks = run?.task_results ?? [];

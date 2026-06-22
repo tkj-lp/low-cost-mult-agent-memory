@@ -643,9 +643,47 @@ button {
   padding-bottom: 10px;
 }
 
+.memory-metric-title {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.memory-metric-title small {
+  min-width: 0;
+  overflow: hidden;
+  color: #7890aa;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .memory-card-title {
   justify-content: space-between;
   gap: 12px;
+}
+
+.memory-card-controls {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 7px;
+}
+
+.memory-run-select {
+  width: 188px;
+  height: 26px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 24px 0 7px;
+  border: 1px solid #d6e2ee;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #38516d;
+  font: 600 11px var(--console-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .memory-task-controls {
