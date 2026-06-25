@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 from .base import LLMClient
+from .local_hf import LocalHFClient
 from .mock import MockLLMClient
 from .openai_compatible import OpenAICompatibleClient
 
@@ -32,6 +33,9 @@ def get_llm_client(role: str | None = None) -> LLMClient:
     if provider in {"openai", "openai_compatible", "api"}:
         # openai_compatible 也覆盖阿里云 DashScope 兼容模式接口。
         return OpenAICompatibleClient()
+    if provider in {"local", "local_hf", "hf", "huggingface"}:
+        # local_hf 使用本机 HuggingFace causal LM，便于和 hidden-state 路径做同模型对比。
+        return LocalHFClient()
     if provider == "mock":
         # mock 不依赖网络，便于演示和可复现实验。
         return MockLLMClient()

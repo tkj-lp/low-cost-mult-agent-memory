@@ -131,12 +131,25 @@ def _embed_local(text: str) -> EmbeddingResult:
     )
 
 
+def _embed_local_hidden(text: str) -> EmbeddingResult:
+    from competition_agents.latent_hidden.hidden_state import extract_last_hidden_state
+
+    result, _ = extract_last_hidden_state(text)
+    return EmbeddingResult(
+        vector=[float(value) for value in result.pooled_vector],
+        provider="local_hidden",
+        model=result.model_name,
+    )
+
+
 def embed_text(text: str) -> EmbeddingResult:
     provider = get_embedding_provider()
     if provider in {"openai", "openai_compatible", "api"}:
         return _embed_openai_compatible(text)
     if provider == "local":
         return _embed_local(text)
+    if provider in {"local_hidden", "local_hf", "hidden"}:
+        return _embed_local_hidden(text)
     if provider == "hash":
         return EmbeddingResult(
             vector=hash_embedding(text),

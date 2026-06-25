@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import datetime, timezone
 from typing import Any, Iterable
@@ -876,6 +877,26 @@ def _case_lacks_transferable_lesson(case: dict[str, Any], hint_catalog: dict[str
 
 def _distill_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[str, Any]:
     hint_catalog = _experience_hint_catalog(case)
+    if os.environ.get("COMPETITION_MEMORY_DISTILLATION_MODE", "").strip().lower() in {
+        "fallback",
+        "local",
+        "local_fallback",
+        "rule",
+        "rule_based",
+    }:
+        fallback = _fallback_rule_card(case, distilled)
+        if _case_lacks_transferable_lesson(case, hint_catalog):
+            fallback["should_write"] = False
+            if not fallback.get("abstraction_note"):
+                fallback["abstraction_note"] = (
+                    "This case is too close to direct evidence copying and does not add a stable reusable strategy."
+                )
+        return {
+            **fallback,
+            "distillation_raw_output": "",
+            "distillation_mode": "local_fallback",
+        }
+
     prompt = (
         "You are an experience distillation module for self-evolving multi-agent memory.\n"
         "Your job is to distill one reusable experience rule from a single finished task case.\n"
@@ -916,7 +937,23 @@ def _distill_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[
         f"Trace meta: {json.dumps({'strategies': distilled.get('strategies', []), 'experiences': distilled.get('experiences', [])}, ensure_ascii=False)}\n"
         f"Hint family: {json.dumps(hint_catalog, ensure_ascii=False)}\n"
     )
-    raw = get_llm_client("summarizer").generate(prompt)
+    try:
+        raw = get_llm_client("summarizer").generate(prompt)
+    except Exception as exc:
+        fallback = _fallback_rule_card(case, distilled)
+        result = {
+            **fallback,
+            "distillation_raw_output": f"{type(exc).__name__}: {exc}",
+            "distillation_mode": "llm_error_fallback",
+        }
+        if _case_lacks_transferable_lesson(case, hint_catalog):
+            result["should_write"] = False
+            if not result.get("abstraction_note"):
+                result["abstraction_note"] = (
+                    "This case is too close to direct evidence copying and does not add a stable reusable strategy."
+                )
+        return result
+
     parsed = _extract_json_object(raw)
     if parsed is None:
         fallback = _fallback_rule_card(case, distilled)

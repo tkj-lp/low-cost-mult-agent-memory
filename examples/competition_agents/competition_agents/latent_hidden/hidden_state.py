@@ -114,6 +114,24 @@ def _build_hidden_result(bundle, hidden_tensor, token_count: int) -> HiddenState
     )
 
 
+def _build_pooled_hidden_result(bundle, hidden_tensor, token_count: int, shape: list[int]) -> HiddenStateResult:
+    """只基于最后一个 token 的 hidden 构造轻量结果，避免完整 tensor 搬回 CPU。"""
+
+    pooled = hidden_tensor[:, -1, :].squeeze(0).to("cpu").float()
+    checksum = hashlib.sha256(pooled.contiguous().numpy().tobytes()).hexdigest()[:16]
+    return HiddenStateResult(
+        model_name=bundle.model_name,
+        layer="last",
+        shape=shape,
+        pooling="last_token",
+        pooled_vector=[float(value) for value in pooled.tolist()],
+        checksum=checksum,
+        token_count=token_count,
+        dtype=str(hidden_tensor.dtype),
+        device=str(hidden_tensor.device),
+    )
+
+
 def _should_stop_generation(bundle, generated_token_ids: list[int]) -> bool:
     """检测是否已经生成出明显的串台标记，尽早停止解码。"""
 
@@ -177,7 +195,10 @@ def generate_text_with_last_hidden_state(
             use_cache=True,
         )
 
-    all_hidden = [outputs.hidden_states[-1].detach().to("cpu")]
+    store_full_hidden = should_store_full_hidden_tensor()
+    first_hidden = outputs.hidden_states[-1].detach()
+    all_hidden = [first_hidden.to("cpu")] if store_full_hidden else []
+    latest_hidden = first_hidden
     past_key_values = outputs.past_key_values
     attention_mask = inputs.get("attention_mask")
     next_token = select_next_token(outputs.logits[:, -1, :])
@@ -205,7 +226,9 @@ def generate_text_with_last_hidden_state(
                 use_cache=True,
             )
 
-        all_hidden.append(step_outputs.hidden_states[-1].detach().to("cpu"))
+        latest_hidden = step_outputs.hidden_states[-1].detach()
+        if store_full_hidden:
+            all_hidden.append(latest_hidden.to("cpu"))
         past_key_values = step_outputs.past_key_values
         next_token = select_next_token(step_outputs.logits[:, -1, :])
 
@@ -221,8 +244,14 @@ def generate_text_with_last_hidden_state(
 
     generated_text = bundle.tokenizer.decode(generated_token_ids, skip_special_tokens=True).strip()
     full_text = bundle.tokenizer.decode(full_ids[0], skip_special_tokens=True)
-    full_hidden = bundle.torch.cat(all_hidden, dim=1)
-    hidden = _build_hidden_result(bundle, full_hidden, int(full_ids.shape[-1]))
+    full_shape = [int(full_ids.shape[0]), int(full_ids.shape[-1]), int(latest_hidden.shape[-1])]
+    if store_full_hidden:
+        hidden_tensor = bundle.torch.cat(all_hidden, dim=1)
+        hidden = _build_hidden_result(bundle, hidden_tensor, int(full_ids.shape[-1]))
+        returned_tensor = hidden_tensor.to("cpu")
+    else:
+        hidden = _build_pooled_hidden_result(bundle, latest_hidden, int(full_ids.shape[-1]), full_shape)
+        returned_tensor = latest_hidden[:, -1, :].detach().to("cpu")
     return (
         GeneratedHiddenResult(
             prompt=prompt,
@@ -230,5 +259,5 @@ def generate_text_with_last_hidden_state(
             full_text=full_text,
             hidden=hidden,
         ),
-        full_hidden.to("cpu"),
+        returned_tensor,
     )

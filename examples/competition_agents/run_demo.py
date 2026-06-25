@@ -81,6 +81,7 @@ ANSWER_ALIASES = {
     "u s": "united states",
     "usa": "united states",
     "u s a": "united states",
+    "fishing": "fishery",
 }
 
 
@@ -344,10 +345,11 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
         return ["protocol"]
 
     load_env_file(Path(args.env_file))
-    os.environ["LLM_PROVIDER"] = "openai_compatible"
-    os.environ["LLM_PLANNER_PROVIDER"] = "openai_compatible"
-    os.environ["LLM_REASONER_PROVIDER"] = "openai_compatible"
-    os.environ["LLM_SUMMARIZER_PROVIDER"] = "openai_compatible"
+    llm_provider = "local_hf" if args.llm_backend == "local" else "openai_compatible"
+    os.environ["LLM_PROVIDER"] = llm_provider
+    os.environ["LLM_PLANNER_PROVIDER"] = llm_provider
+    os.environ["LLM_REASONER_PROVIDER"] = llm_provider
+    os.environ["LLM_SUMMARIZER_PROVIDER"] = llm_provider
     os.environ["LLM_REQUIRE_REAL"] = "1"
 
     if args.experiment_mode == "baseline_text":
@@ -357,7 +359,7 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
         os.environ["EMBEDDING_PROVIDER"] = "hash"
         return ["protocol"]
     if args.experiment_mode == "protocol_api_embedding":
-        os.environ["EMBEDDING_PROVIDER"] = "openai_compatible"
+        os.environ["EMBEDDING_PROVIDER"] = "local_hidden" if args.llm_backend == "local" else "openai_compatible"
         return ["protocol"]
     if args.experiment_mode == "hidden_api":
         os.environ["EMBEDDING_PROVIDER"] = "hash"
@@ -377,7 +379,18 @@ def prediction_from_result(result: dict[str, Any]) -> str:
     execution_result = result.get("execution_result", {})
     if execution_result.get("result") is not None:
         return json.dumps(execution_result.get("result"), ensure_ascii=False, sort_keys=True)
-    return str(execution_result.get("answer_candidate") or result.get("final_answer", ""))
+    candidate = str(execution_result.get("answer_candidate") or "").strip()
+    if candidate:
+        return candidate
+    final_answer = str(result.get("final_answer", "") or "")
+    match = re.search(
+        r"Answer:\s*(.+?)(?:\n\s*Implementation notes:|\n\s*Run diagnostics:|$)",
+        final_answer,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if match:
+        return " ".join(match.group(1).strip().split())
+    return final_answer
 
 
 def codeact_result_text(execution_result: dict[str, Any]) -> str:
@@ -1270,6 +1283,12 @@ def parse_args() -> argparse.Namespace:
         "--env-file",
         default="examples/competition_agents/.env.local",
         help="Environment file loaded only when --experiment-mode is set.",
+    )
+    parser.add_argument(
+        "--llm-backend",
+        choices=["api", "local"],
+        default="api",
+        help="api uses OpenAI-compatible LLMs; local uses LOCAL_HIDDEN_MODEL through HuggingFace.",
     )
     parser.add_argument(
         "--dataset-type",

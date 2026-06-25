@@ -520,6 +520,7 @@ def _build_command(
     env_file: str,
     *,
     developer_mode: bool = False,
+    llm_backend: str = "api",
 ) -> list[str]:
     mode_config = EXPERIMENT_MODES[experiment_mode]
     dataset_config = DATASETS[dataset]
@@ -557,6 +558,8 @@ def _build_command(
         command.extend(["--modes", mode])
     else:
         command.extend(["--experiment-mode", experiment_mode, "--env-file", env_file])
+        if llm_backend == "local":
+            command.extend(["--llm-backend", "local"])
     command.extend(["--dataset-type", dataset_config["script_dataset_type"]])
     if dataset_config["dataset_file"]:
         command.extend(["--dataset-file", dataset_config["dataset_file"]])
@@ -586,6 +589,9 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
     experiment_mode, dataset, limit = _validate_run_request(payload)
     env_file = _resolve_env_file(str(payload.get("env_file") or DEFAULT_ENV_FILE))
     developer_mode = bool(payload.get("developer_mode", False))
+    llm_backend = str(payload.get("llm_backend") or os.environ.get("COMPETITION_LLM_BACKEND") or "api").strip().lower()
+    if llm_backend not in {"api", "local"}:
+        raise ValueError("llm_backend must be 'api' or 'local'.")
     timeout_value = payload.get("timeout_seconds", DEFAULT_RUN_TIMEOUT_SECONDS)
     try:
         timeout_seconds = int(timeout_value)
@@ -600,11 +606,13 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         limit,
         env_file,
         developer_mode=developer_mode,
+        llm_backend=llm_backend,
     )
     env = _build_env(env_file, payload, developer_mode=developer_mode)
     print(
         "[frontend_server] received run request: "
-        f"mode={experiment_mode}, dataset={dataset}, limit={limit}, developer_mode={developer_mode}",
+        f"mode={experiment_mode}, dataset={dataset}, limit={limit}, "
+        f"developer_mode={developer_mode}, llm_backend={llm_backend}",
         flush=True,
     )
     print(

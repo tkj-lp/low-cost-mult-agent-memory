@@ -41,6 +41,14 @@
             </select>
           </label>
 
+          <label class="field">
+            <span>模型后端 <b>ⓘ</b></span>
+            <select v-model="selectedLlmBackend" :disabled="!supportsLlmBackendSwitch">
+              <option value="api">API</option>
+              <option value="local">本地模型</option>
+            </select>
+          </label>
+
           <label class="field api-field api-url">
             <span><em>API 配置</em> base_url <b>ⓘ</b></span>
             <input v-model="apiBaseUrl" aria-label="base_url" />
@@ -345,6 +353,7 @@ type ExperimentMode =
   | "protocol_api_embedding"
   | "latent_hidden"
   | "codeact_tools";
+type LlmBackend = "api" | "local";
 
 type Dataset =
   | "hotpot_multihop"
@@ -612,7 +621,7 @@ const fallbackDatasetMap: Record<ExperimentMode, Dataset[]> = {
   protocol_api: [...visibleDatasetValues],
   protocol_api_embedding: [...visibleDatasetValues],
   latent_hidden: [...visibleDatasetValues],
-  codeact_tools: [...visibleDatasetValues],
+  codeact_tools: ["codeact_1_10tasks", "codeact_2_10tasks"],
 };
 
 const modeMeta: Record<ExperimentMode, { label: string; color: string }> = {
@@ -625,6 +634,7 @@ const modeMeta: Record<ExperimentMode, { label: string; color: string }> = {
 
 const selectedMode = ref<ExperimentMode>("baseline_text");
 const selectedDataset = ref<Dataset>("topiocqa_1_10turns");
+const selectedLlmBackend = ref<LlmBackend>("api");
 const apiBaseUrl = ref("");
 const modelName = ref("");
 const apiKey = ref("");
@@ -710,6 +720,14 @@ const availableDatasets = computed(() =>
 
 const activeComparisonRuns = computed(() => comparisonRuns.value[selectedDataset.value]);
 
+const llmBackendSwitchModes = new Set<ExperimentMode>([
+  "baseline_text",
+  "protocol_api",
+  "protocol_api_embedding",
+]);
+
+const supportsLlmBackendSwitch = computed(() => llmBackendSwitchModes.has(selectedMode.value));
+
 const requestLimit = computed(() => {
   if (selectedDataset.value.startsWith("codeact_")) {
     return 10;
@@ -720,6 +738,18 @@ const requestLimit = computed(() => {
 watch(selectedMode, () => {
   if (!datasetMap.value[selectedMode.value].includes(selectedDataset.value)) {
     selectedDataset.value = datasetMap.value[selectedMode.value][0];
+  }
+});
+
+watch(selectedDataset, () => {
+  if (datasetMap.value[selectedMode.value].includes(selectedDataset.value)) {
+    return;
+  }
+  const compatibleMode = experimentModes.value.find((mode) =>
+    datasetMap.value[mode.value]?.includes(selectedDataset.value),
+  );
+  if (compatibleMode) {
+    selectedMode.value = compatibleMode.value;
   }
 });
 
@@ -1681,6 +1711,7 @@ const toggleRunning = async () => {
         dataset,
         limit: requestLimit.value,
         timeout_seconds: RUN_TIMEOUT_SECONDS,
+        ...(supportsLlmBackendSwitch.value ? { llm_backend: selectedLlmBackend.value } : {}),
         ...(USE_DEVELOPER_MODE ? { developer_mode: true } : {}),
         base_url: apiBaseUrl.value,
         model: modelName.value,

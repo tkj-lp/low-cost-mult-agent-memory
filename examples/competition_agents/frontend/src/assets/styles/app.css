@@ -164,7 +164,7 @@ button {
 
 .config-grid {
   display: grid;
-  grid-template-columns: minmax(190px, 0.95fr) minmax(190px, 0.95fr) minmax(250px, 1.25fr) minmax(170px, 0.8fr) minmax(200px, 0.95fr);
+  grid-template-columns: minmax(180px, 0.9fr) minmax(180px, 0.9fr) minmax(150px, 0.7fr) minmax(250px, 1.2fr) minmax(160px, 0.75fr) minmax(190px, 0.9fr);
   gap: 14px 26px;
   align-items: start;
   padding: 0 18px 16px 20px;
@@ -210,6 +210,12 @@ button {
 .field > input,
 .field > select {
   padding: 0 13px;
+}
+
+.field > select:disabled {
+  cursor: not-allowed;
+  background-color: #f3f6fa;
+  color: #8a98aa;
 }
 
 .field > select {
