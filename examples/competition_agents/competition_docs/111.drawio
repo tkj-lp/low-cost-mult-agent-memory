@@ -1,0 +1,286 @@
+<mxfile host="65bd71144e">
+    <diagram name="English version" id="ZDoiaKvkJXSK7gtOhSs3">
+        <mxGraphModel dx="1566" dy="635" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-74" value="Multi-Agent Framework with Hypergraph Memory Retrieval" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=28;fontStyle=1;fontColor=#111111;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1620" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-76" value="Current Task&lt;br&gt;&lt;br&gt;Actual task text:&lt;br&gt;Continuous HotpotQA-style task. Reuse prior memory in the same group when helpful.&lt;br&gt;&lt;br&gt;Question:&lt;br&gt;what mineral resources are found in this sea?&lt;br&gt;&lt;br&gt;Unresolved reference:&lt;br&gt;this sea = ?" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EEFDFF;strokeColor=#8DA3AE;strokeWidth=1.5;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#3f2a00;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="62" width="280" height="158" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-77" value="PlannerAgent&lt;br&gt;&lt;br&gt;Actual planner output:&lt;br&gt;1. Recall information about minerals present in the sea.&lt;br&gt;2. Identify specific types of minerals known to be abundant in that particular sea area.&lt;br&gt;3. Summarize details on the identified mineral resources.&lt;br&gt;&lt;br&gt;Output to Retriever:&lt;br&gt;question + planner focus" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ecf2fe, #0c1d21);strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="240" width="280" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-78" value="RetrieverAgent&lt;br&gt;&lt;br&gt;Internal retrieval calls in this turn:&lt;br&gt;1. context hypergraph search&lt;br&gt;2. evidence memory search&lt;br&gt;3. experience memory search&lt;br&gt;&lt;br&gt;Then combine results into one package:&lt;br&gt;context hit + mem-0012 + mem-0011 + mem-0010" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#F0F2FF,#18202C);strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#102a56;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="430" width="280" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-79" value="ReasonerAgent&lt;br&gt;&lt;br&gt;Input package:&lt;br&gt;North Sea mineral passage + history evidence + experience rule&lt;br&gt;&lt;br&gt;Resolved reference:&lt;br&gt;this sea → North Sea&lt;br&gt;&lt;br&gt;Actual candidate:&lt;br&gt;sand and gravel, amber&lt;br&gt;&lt;br&gt;Rule used:&lt;br&gt;pick requested attribute only" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EBEBFF;strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#102a56;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="640" width="280" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-80" value="SummarizerAgent&lt;br&gt;&lt;br&gt;Actual final answer:&lt;br&gt;The mineral resources found in the North Sea include sand, gravel, and rolled pieces of amber.&lt;br&gt;&lt;br&gt;Experience distilled:&lt;br&gt;For attribute lookup with context, identify the requested attribute and extract only relevant entities.&lt;br&gt;&lt;br&gt;Write back:&lt;br&gt;evidence mem-0013 + experience mem-0010" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#102a56;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="870" width="280" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-81" value="Single-turn Metrics&lt;br&gt;&lt;br&gt;exact_match = true&lt;br&gt;memory_hits = 3&lt;br&gt;memory_hit_rate = 1.0&lt;br&gt;experience_hit_count = 1&lt;br&gt;experience_used_count = 1&lt;br&gt;latent_transfer_count = 3&lt;br&gt;text_chars = 2978" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f4f5f7;strokeColor=#777777;strokeWidth=1.5;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#333333;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="910" width="160" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-83" value="Hypergraph Memory Retrieval" style="swimlane;html=1;startSize=36;rounded=0;whiteSpace=wrap;fillColor=#eff9f0;strokeColor=#6B766F;strokeWidth=2;fontSize=18;fontStyle=1;fontColor=#123d22;align=center;verticalAlign=middle;fontFamily=Helvetica;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="62" width="910" height="835" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-84" value="Step 1. Actual Retrieval Query&lt;br&gt;&lt;br&gt;Question:&lt;br&gt;what mineral resources are found in this sea?&lt;br&gt;&lt;br&gt;Planner retrieval focus:&lt;br&gt;- Recall information about minerals present in the sea&lt;br&gt;- Identify specific mineral types&lt;br&gt;- Summarize mineral resources&lt;br&gt;&lt;br&gt;Experience family:&lt;br&gt;attribute_lookup_with_context" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#6B766F;strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="15" y="48" width="255" height="182" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-88" value="Step 2. Retrieval Order inside RetrieverAgent&lt;br&gt;&lt;br&gt;Call 1: Context hypergraph search&lt;br&gt;search_context(...) returns candidate context hits&lt;br&gt;&lt;br&gt;Then Retriever local rerank:&lt;br&gt;_rerank_hypergraph_hits(...)&lt;br&gt;+20 if text equals supporting_passage&lt;br&gt;+10 if kind=supporting_passage&lt;br&gt;+4 if title matches topic&lt;br&gt;+5 if section matches topic_section&lt;br&gt;&lt;br&gt;Call 2: Evidence memory search&lt;br&gt;Call 3: Experience memory search" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#123d22;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="610" y="58" width="280" height="172" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-85" value="Step 3a. Context Hypergraph Result&lt;br&gt;&lt;br&gt;Store searched:&lt;br&gt;task context hypergraph&lt;br&gt;&lt;br&gt;Top result:&lt;br&gt;North Sea / Mineral resources&lt;br&gt;context_score = 12.0&lt;br&gt;&lt;br&gt;Why it hits:&lt;br&gt;title/topic = North Sea; section = Mineral resources; keywords overlap with mineral/resources/found/sea&lt;br&gt;&lt;br&gt;Content:&lt;br&gt;sand, gravel, rolled pieces of amber" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E5F1E5;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="15" y="278" width="285" height="212" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-96" value="context search" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=1.8;fontSize=12;fontColor=#123d22;verticalAlign=middle;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" source="aZ0WrSyEC6EXh-_T1yL0-84" target="aZ0WrSyEC6EXh-_T1yL0-85" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-86" value="Step 3b. Evidence Memory Result&lt;br&gt;&lt;br&gt;Store searched:&lt;br&gt;shared evidence memory&lt;br&gt;&lt;br&gt;mem-0011｜score 88.0139&lt;br&gt;Answer: The local people fished in the North Sea.&lt;br&gt;&lt;br&gt;mem-0012｜score 89.7714&lt;br&gt;Answer: Commonly found fish in the North Sea include cod, haddock, ... sandeel.&lt;br&gt;&lt;br&gt;Role:&lt;br&gt;these hits support the reference resolution this sea → North Sea" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D9E7E2;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#123d22;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="315" y="278" width="280" height="212" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-97" value="evidence search" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=1.8;fontSize=12;fontColor=#123d22;exitX=1;exitY=0.5;exitDx=0;exitDy=0;verticalAlign=middle;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" source="aZ0WrSyEC6EXh-_T1yL0-84" target="aZ0WrSyEC6EXh-_T1yL0-86" edge="1">
+                    <mxGeometry x="0.2915" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="340" y="228"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-87" value="Step 3c. Experience Memory Result&lt;br&gt;&lt;br&gt;mem-0010｜score 98.6334&lt;br&gt;&lt;br&gt;Reusable experience:&lt;br&gt;When a question asks for an attribute of a context-dependent entity, first resolve the entity from history, then answer only the requested attribute.&lt;br&gt;&lt;br&gt;In this case:&lt;br&gt;resolve this sea → North Sea&lt;br&gt;requested attribute = mineral resources&lt;br&gt;keep = sand, gravel, rolled pieces of amber&lt;br&gt;avoid = fish/economy facts&lt;br&gt;&lt;br&gt;Internal tag: attribute_lookup_with_context" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DBE9EB;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.5;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#332061;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="610" y="278" width="280" height="212" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-98" value="experience search" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=1.8;fontSize=12;fontColor=#332061;entryX=0;entryY=0;entryDx=0;entryDy=0;verticalAlign=middle;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" source="aZ0WrSyEC6EXh-_T1yL0-84" target="aZ0WrSyEC6EXh-_T1yL0-87" edge="1">
+                    <mxGeometry x="0.3705" y="-6" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="430" y="139"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-95" value="search_memory" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=2;fontSize=12;fontColor=#123d22;verticalAlign=middle;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" source="aZ0WrSyEC6EXh-_T1yL0-78" target="aZ0WrSyEC6EXh-_T1yL0-84" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-50" y="458"/>
+                            <mxPoint x="-50" y="139"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-89" value="Step 5. Summarizer Memory Write-back&lt;br&gt;&lt;br&gt;Evidence write:&lt;br&gt;mem-0013 = this question answer about North Sea mineral resources&lt;br&gt;&lt;br&gt;Experience written into mem-0010:&lt;br&gt;Reusable rule: For context-dependent attribute questions, resolve the entity first and keep only facts matching the requested attribute.&lt;br&gt;&lt;br&gt;Concrete lesson from this case:&lt;br&gt;this sea → North Sea; answer mineral resources only; exclude fish/economy facts.&lt;br&gt;&lt;br&gt;Internal labels: attribute_lookup_with_context / pick_requested_attribute / avoid_mixed_attributes" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#939A96;strokeColor=#959D98;strokeWidth=1.4;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#123d22;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="15" y="668" width="870" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="retrieved-package-step4" value="Step 4. Retrieved Package to Reasoner&lt;br&gt;&lt;br&gt;One Retriever → Reasoner message contains:&lt;br&gt;1 context result: North Sea / Mineral resources&lt;br&gt;2 evidence results: mem-0011, mem-0012&lt;br&gt;1 experience rule: mem-0010&lt;br&gt;&lt;br&gt;Reasoner uses the package to infer:&lt;br&gt;this sea → North Sea; answer = sand, gravel, rolled pieces of amber." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F0F2FF;strokeColor=#8DA3AE;strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#102a56;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="15" y="510" width="870" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-103" value="experience write&lt;br&gt;rule card → mem-0010" style="endArrow=block;html=1;rounded=0;strokeColor=#8167c8;strokeWidth=1.8;fontSize=12;fontColor=#332061;dashed=1;exitX=0.881;exitY=0.007;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.608;entryY=0.989;entryDx=0;entryDy=0;entryPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" source="aZ0WrSyEC6EXh-_T1yL0-89" target="aZ0WrSyEC6EXh-_T1yL0-87" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="554" y="668" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-104" value="evidence write&lt;br&gt;new mem-0013" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=1.8;fontSize=12;fontColor=#123d22;dashed=1;entryX=0.287;entryY=0.995;entryDx=0;entryDy=0;entryPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="aZ0WrSyEC6EXh-_T1yL0-83" target="aZ0WrSyEC6EXh-_T1yL0-86" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="395" y="668" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-90" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#2f6fdd;strokeWidth=2;verticalAlign=middle;fontFamily=Helvetica;" parent="1" source="aZ0WrSyEC6EXh-_T1yL0-76" target="aZ0WrSyEC6EXh-_T1yL0-77" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-91" value="retrieval request&lt;br&gt;question + focus" style="endArrow=block;html=1;rounded=0;strokeColor=#8DA3AE;strokeWidth=2;fontSize=12;fontColor=#102a56;verticalAlign=middle;fontFamily=Helvetica;" parent="1" source="aZ0WrSyEC6EXh-_T1yL0-77" target="aZ0WrSyEC6EXh-_T1yL0-78" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="70" y="420"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-92" value="retrieved package&lt;br&gt;context + evidence + experience" style="endArrow=block;html=1;rounded=0;strokeColor=#8DA3AE;strokeWidth=2;fontSize=12;fontColor=#102a56;verticalAlign=middle;fontFamily=Helvetica;" parent="1" source="aZ0WrSyEC6EXh-_T1yL0-78" target="aZ0WrSyEC6EXh-_T1yL0-79" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="70" y="640"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-93" value="answer candidate&lt;br&gt;draft + evidence" style="endArrow=block;html=1;rounded=0;strokeColor=#8DA3AE;strokeWidth=2;fontSize=12;fontColor=#102a56;verticalAlign=middle;fontFamily=Helvetica;" parent="1" source="aZ0WrSyEC6EXh-_T1yL0-79" target="aZ0WrSyEC6EXh-_T1yL0-80" edge="1">
+                    <mxGeometry x="0.066" y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="80" y="880"/>
+                        </Array>
+                        <mxPoint x="-6" y="-9" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-94" value="result" style="endArrow=block;html=1;rounded=0;strokeColor=#777777;strokeWidth=1.8;fontSize=12;fontColor=#333333;exitX=0.999;exitY=0.595;exitDx=0;exitDy=0;exitPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="1" source="aZ0WrSyEC6EXh-_T1yL0-80" target="aZ0WrSyEC6EXh-_T1yL0-81" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-99" value="retrieved content" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=2;fontSize=12;fontColor=#123d22;entryX=0.999;entryY=0.319;entryDx=0;entryDy=0;entryPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="1" target="aZ0WrSyEC6EXh-_T1yL0-79" edge="1">
+                    <mxGeometry x="0.3086" relative="1" as="geometry">
+                        <mxPoint x="702" y="554" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="702" y="580"/>
+                            <mxPoint x="510" y="580"/>
+                            <mxPoint x="510" y="700"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-100" value="evidence hits" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=2;fontSize=12;fontColor=#123d22;exitX=0.452;exitY=0.995;entryX=1.004;entryY=0.325;exitDx=0;exitDy=0;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="1" source="aZ0WrSyEC6EXh-_T1yL0-86" target="aZ0WrSyEC6EXh-_T1yL0-79" edge="1">
+                    <mxGeometry x="-0.1687" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1000" y="580"/>
+                            <mxPoint x="790" y="580"/>
+                            <mxPoint x="790" y="700"/>
+                        </Array>
+                        <mxPoint y="-1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-101" value="experience rule" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=2;fontSize=12;fontColor=#332061;entryX=1.018;entryY=0.332;entryDx=0;entryDy=0;entryPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="1" target="aZ0WrSyEC6EXh-_T1yL0-79" edge="1">
+                    <mxGeometry x="-0.437" relative="1" as="geometry">
+                        <mxPoint x="1310" y="552" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="1310" y="580"/>
+                            <mxPoint x="1110" y="580"/>
+                            <mxPoint x="1110" y="700"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="aZ0WrSyEC6EXh-_T1yL0-102" value="evidence write + experience write&lt;br&gt;add_memory / refine_memory" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=2;fontSize=12;fontColor=#123d22;exitX=0.999;exitY=0.447;exitDx=0;exitDy=0;exitPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="1" source="aZ0WrSyEC6EXh-_T1yL0-80" target="aZ0WrSyEC6EXh-_T1yL0-89" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="430" y="977" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="510" y="955"/>
+                            <mxPoint x="510" y="805"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram name="中文翻译版" id="translated-cn-page-v2">
+        <mxGraphModel dx="2085" dy="648" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="cn-0"/>
+                <mxCell id="cn-1" parent="cn-0"/>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-74" value="多智能体框架与超图记忆检索" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=28;fontStyle=1;fontColor=#111111;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="-80" y="20" width="1550" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="OeCNlGIX_QXZG6yH0eOE-0" value="" style="edgeStyle=none;html=1;" edge="1" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-76" target="cn-aZ0WrSyEC6EXh-_T1yL0-77">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-76" value="当前任务&lt;br&gt;&lt;br&gt;实际任务指令：&lt;br&gt;连续 HotpotQA 风格任务；需要时复用同一组内的历史记忆。&lt;br&gt;&lt;br&gt;问题：&lt;br&gt;what mineral resources are found in this sea?&lt;br&gt;&lt;br&gt;待解析指代：&lt;br&gt;this sea = ?" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EEFDFF;strokeColor=#8DA3AE;strokeWidth=1.5;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#3f2a00;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="30" y="62" width="400" height="178" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-77" value="规划智能体（PlannerAgent）&lt;br&gt;&lt;br&gt;实际规划输出：&lt;br&gt;1. 回忆该海域中存在的矿物信息。&lt;br&gt;2. 识别该海域常见或丰富的具体矿产类型。&lt;br&gt;3. 汇总已识别的矿产资源细节。&lt;br&gt;&lt;br&gt;发送给检索智能体：&lt;br&gt;问题 + 检索焦点" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ecf2fe, #0c1d21);strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="30" y="250" width="400" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-78" value="检索智能体（RetrieverAgent）&lt;br&gt;&lt;br&gt;本轮内部检索调用：&lt;br&gt;1. 上下文超图检索&lt;br&gt;2. 事实记忆检索&lt;br&gt;3. 经验记忆检索&lt;br&gt;&lt;br&gt;随后合并成一个检索包：&lt;br&gt;上下文命中 + mem-0012 + mem-0011 + mem-0010" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#F0F2FF,#18202C);strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#102a56;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="30" y="430" width="400" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-79" value="推理智能体（ReasonerAgent）&lt;br&gt;&lt;br&gt;输入包：&lt;br&gt;North Sea 矿产段落 + 历史事实证据 + 经验规则&lt;br&gt;&lt;br&gt;指代解析：&lt;br&gt;this sea → North Sea&lt;br&gt;&lt;br&gt;实际候选答案：&lt;br&gt;sand and gravel, amber&lt;br&gt;&lt;br&gt;使用规则：&lt;br&gt;只抽取当前问题要求的属性" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EBEBFF;strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#102a56;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="30" y="620" width="400" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-80" value="总结智能体（SummarizerAgent）&lt;br&gt;&lt;br&gt;实际最终答案：&lt;br&gt;North Sea 中发现的矿产资源包括 sand、gravel 和 rolled pieces of amber。&lt;br&gt;&lt;br&gt;总结出的经验：&lt;br&gt;遇到带上下文指代的属性查询，要先确认问题问的属性，再只抽取该属性对应的答案。&lt;br&gt;&lt;br&gt;写回：&lt;br&gt;事实 mem-0013 + 经验 mem-0010" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8DA3AE;strokeWidth=1.8;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#102a56;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="30" y="870" width="400" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-81" value="单题指标&lt;br&gt;&lt;br&gt;精确匹配 = true&lt;br&gt;记忆命中数 = 3&lt;br&gt;记忆命中率 = 1.0&lt;br&gt;经验命中数 = 1&lt;br&gt;经验使用数 = 1&lt;br&gt;隐状态传输次数 = 3&lt;br&gt;文本字符数 = 2978" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f4f5f7;strokeColor=#777777;strokeWidth=1.5;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#333333;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="740" y="930" width="160" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-83" value="超图记忆检索" style="swimlane;html=1;startSize=36;rounded=0;whiteSpace=wrap;fillColor=#eff9f0;strokeColor=#6B766F;strokeWidth=2;fontSize=18;fontStyle=1;fontColor=#123d22;align=center;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="560" y="62" width="910" height="748" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-84" value="步骤 1：实际检索查询&lt;br&gt;&lt;br&gt;问题：&lt;br&gt;what mineral resources are found in this sea?&lt;br&gt;&lt;br&gt;Planner 检索焦点：&lt;br&gt;- 回忆该海域中的矿物信息&lt;br&gt;- 识别具体矿产类型&lt;br&gt;- 汇总矿产资源答案&lt;br&gt;&lt;br&gt;经验类型：&lt;br&gt;attribute_lookup_with_context" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#6B766F;strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="15" y="48" width="285" height="202" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-88" value="步骤 2：RetrieverAgent 内部检索顺序&lt;br&gt;&lt;br&gt;第 1 次：上下文超图检索&lt;br&gt;search_context(...) 返回候选上下文&lt;br&gt;&lt;br&gt;然后由 Retriever 本地重排：&lt;br&gt;_rerank_hypergraph_hits(...)&lt;br&gt;文本等于 supporting_passage：+20&lt;br&gt;类型为 supporting_passage：+10&lt;br&gt;title 匹配 topic：+4&lt;br&gt;section 匹配 topic_section：+5&lt;br&gt;&lt;br&gt;第 2 次：事实记忆检索&lt;br&gt;第 3 次：经验记忆检索" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F1F1;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#123d22;fontFamily=Helvetica;glass=0;shadow=0;perimeterSpacing=0;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="550" y="48" width="350" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-85" value="步骤 3a：上下文超图检索&lt;br&gt;&lt;br&gt;检索位置：&lt;br&gt;任务上下文超图&lt;br&gt;&lt;br&gt;最高命中：&lt;br&gt;North Sea / Mineral resources&lt;br&gt;上下文得分 = 12.0&lt;br&gt;&lt;br&gt;为什么命中：&lt;br&gt;title/topic = North Sea；section = Mineral resources；关键词与 mineral/resources/found/sea 重合&lt;br&gt;&lt;br&gt;内容：&lt;br&gt;sand、gravel、rolled pieces of amber" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E5F1E5;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="15" y="320" width="285" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-96" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=1.8;fontSize=12;fontColor=#123d22;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" source="cn-aZ0WrSyEC6EXh-_T1yL0-84" target="cn-aZ0WrSyEC6EXh-_T1yL0-85" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-86" value="步骤 3b：事实记忆检索&lt;br&gt;&lt;br&gt;检索位置：&lt;br&gt;共享事实记忆 evidence memory&lt;br&gt;&lt;br&gt;mem-0011｜得分 88.0139&lt;br&gt;答案：当地人在 North Sea 捕鱼。&lt;br&gt;&lt;br&gt;mem-0012｜得分 89.7714&lt;br&gt;答案：North Sea 中常见鱼类包括 cod、haddock、...、sandeel。&lt;br&gt;&lt;br&gt;作用：&lt;br&gt;这些命中辅助确认 this sea → North Sea" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D9E7E2;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#123d22;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="315" y="320" width="280" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-97" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=1.8;fontSize=12;fontColor=#123d22;exitX=1;exitY=0.5;exitDx=0;exitDy=0;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" source="cn-aZ0WrSyEC6EXh-_T1yL0-84" target="cn-aZ0WrSyEC6EXh-_T1yL0-86" edge="1">
+                    <mxGeometry x="0.2915" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="340" y="228"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-87" value="步骤 3c：经验记忆检索&lt;br&gt;&lt;br&gt;mem-0010｜得分 98.6334&lt;br&gt;&lt;br&gt;可复用经验：&lt;br&gt;当问题要求回答“某个上下文实体的某个属性”时，先从历史中解析实体，再只回答当前问题要求的属性。&lt;br&gt;&lt;br&gt;本题对应：&lt;br&gt;this sea → North Sea&lt;br&gt;当前属性 = 矿产资源&lt;br&gt;保留 = sand、gravel、rolled pieces of amber&lt;br&gt;排除 = 鱼类 / 经济来源等事实&lt;br&gt;&lt;br&gt;内部标签：attribute_lookup_with_context" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DBE9EB;strokeColor=light-dark(#6B766F,#967FD3);strokeWidth=1.5;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#332061;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="610" y="320" width="280" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-98" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=1.8;fontSize=12;fontColor=#332061;entryX=0;entryY=0;entryDx=0;entryDy=0;verticalAlign=middle;fontFamily=Helvetica;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" source="cn-aZ0WrSyEC6EXh-_T1yL0-84" target="cn-aZ0WrSyEC6EXh-_T1yL0-87" edge="1">
+                    <mxGeometry x="0.3705" y="-6" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-95" value="检索记忆" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=2;fontSize=12;fontColor=#123d22;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" source="cn-aZ0WrSyEC6EXh-_T1yL0-78" target="cn-aZ0WrSyEC6EXh-_T1yL0-84" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-50" y="458"/>
+                            <mxPoint x="-50" y="148"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cn-retrieved-package-step4" value="步骤 4：检索包送入推理智能体&lt;br&gt;&lt;br&gt;一条 Retriever → Reasoner 消息包含：&lt;br&gt;1 条上下文结果：North Sea / Mineral resources&lt;br&gt;2 条事实记忆结果：mem-0011, mem-0012&lt;br&gt;1 条经验规则：mem-0010&lt;br&gt;&lt;br&gt;Reasoner 用这个包推出：&lt;br&gt;this sea → North Sea；答案 = sand、gravel、rolled pieces of amber。" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#9EA9A9;strokeColor=#6B766F;strokeWidth=1.4;fontSize=13;align=left;verticalAlign=middle;spacing=10;fontColor=#102a56;fontFamily=Helvetica;" parent="cn-aZ0WrSyEC6EXh-_T1yL0-83" vertex="1">
+                    <mxGeometry x="15" y="588" width="870" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-90" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#2f6fdd;strokeWidth=2;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-76" target="cn-aZ0WrSyEC6EXh-_T1yL0-77" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-91" value="检索请求&lt;br&gt;问题 + 焦点" style="endArrow=block;html=1;rounded=0;strokeColor=#8DA3AE;strokeWidth=2;fontSize=12;fontColor=#102a56;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-77" target="cn-aZ0WrSyEC6EXh-_T1yL0-78" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-40" y="420"/>
+                            <mxPoint x="30" y="450"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-92" value="检索结果包&lt;br&gt;上下文 + 事实 + 经验" style="endArrow=block;html=1;rounded=0;strokeColor=#8DA3AE;strokeWidth=2;fontSize=12;fontColor=#102a56;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-78" target="cn-aZ0WrSyEC6EXh-_T1yL0-79" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-40" y="610"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-93" value="候选答案&lt;br&gt;答案草稿 + 依据" style="endArrow=block;html=1;rounded=0;strokeColor=#8DA3AE;strokeWidth=2;fontSize=12;fontColor=#102a56;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-79" target="cn-aZ0WrSyEC6EXh-_T1yL0-80" edge="1">
+                    <mxGeometry x="0.066" y="-10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-30" y="870"/>
+                        </Array>
+                        <mxPoint x="-6" y="-9" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-94" value="结果指标" style="endArrow=block;html=1;rounded=0;strokeColor=#777777;strokeWidth=1.8;fontSize=12;fontColor=#333333;exitX=0.999;exitY=0.619;exitDx=0;exitDy=0;exitPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-80" target="cn-aZ0WrSyEC6EXh-_T1yL0-81" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-102" value="事实写回 + 经验写回&lt;br&gt;add_memory / refine_memory" style="endArrow=block;html=1;rounded=0;strokeColor=#6B766F;strokeWidth=2;fontSize=12;fontColor=#123d22;exitX=0.999;exitY=0.447;exitDx=0;exitDy=0;exitPerimeter=0;verticalAlign=middle;fontFamily=Helvetica;entryX=-0.004;entryY=0.167;entryDx=0;entryDy=0;entryPerimeter=0;" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-80" target="cn-aZ0WrSyEC6EXh-_T1yL0-89" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="430" y="977" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="520" y="964"/>
+                            <mxPoint x="520" y="880"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="OeCNlGIX_QXZG6yH0eOE-1" value="" style="edgeStyle=none;html=1;" edge="1" parent="cn-1" source="cn-aZ0WrSyEC6EXh-_T1yL0-89">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1200" y="810" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cn-aZ0WrSyEC6EXh-_T1yL0-89" value="事实写回：&lt;br&gt;mem-0013 = 本题关于 North Sea 矿产资源的答案&lt;br&gt;&lt;br&gt;写入 mem-0010 的经验规则：&lt;br&gt;问题模式：先从上下文解析被指代实体，再回答该实体的指定属性&lt;br&gt;解决策略：只保留与当前属性匹配的证据事实&lt;br&gt;失败模式：避免把其他属性混入同一个答案&lt;br&gt;触发条件：以后遇到类似上下文属性查询时触发复用&lt;br&gt;&lt;br&gt;本题对应：&lt;br&gt;this sea → North Sea；保留 sand、gravel、rolled pieces of amber；排除鱼类/经济信息" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BDC7C1;strokeColor=#959D98;strokeWidth=1.4;fontSize=14;align=left;verticalAlign=middle;spacing=12;fontColor=#213B2B;fontFamily=Helvetica;" parent="cn-1" vertex="1">
+                    <mxGeometry x="930" y="840" width="540" height="240" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
