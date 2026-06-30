@@ -8,7 +8,7 @@
         </div>
         <div class="top-actions">
           <button class="ghost-button">▦ 实验记录</button>
-          <button class="user-button">♟ 研究员⌄</button>
+          <button class="user-button" type="button" @click="openImportDialog">⇪ 导入结果</button>
         </div>
       </header>
 
@@ -338,6 +338,45 @@
           <div class="updated-at">更新时间： {{ activeGainUpdatedAt }}  ↻</div>
         </article>
       </section>
+
+      <div v-if="importDialogOpen" class="import-overlay" @click.self="closeImportDialog">
+        <section class="import-dialog">
+          <div class="import-head">
+            <div>
+              <h2>导入实验结果</h2>
+              <p>{{ resultFileDirectory || "D:\\qq\\low-cost-memory-integrate\\run_result" }}</p>
+            </div>
+            <button type="button" class="icon-button" aria-label="关闭导入结果窗口" @click="closeImportDialog">×</button>
+          </div>
+
+          <div class="import-toolbar">
+            <button type="button" class="ghost-button compact" :disabled="importLoading" @click="loadResultFiles">刷新</button>
+            <button type="button" class="ghost-button compact" :disabled="resultFiles.length === 0" @click="selectAllResultFiles">全选</button>
+            <button type="button" class="ghost-button compact" :disabled="selectedImportFiles.length === 0" @click="selectedImportFiles = []">取消全选</button>
+            <span>已选择 {{ selectedImportFiles.length }} 个文件</span>
+          </div>
+
+          <div class="import-file-list">
+            <label v-for="file in resultFiles" :key="file.path" class="import-file-row">
+              <input v-model="selectedImportFiles" type="checkbox" :value="file.path" />
+              <span class="import-file-name">{{ file.name }}</span>
+              <span class="import-file-time">{{ file.modified_label }}</span>
+              <span class="import-file-size">{{ formatFileSize(file.size) }}</span>
+            </label>
+            <div v-if="!importLoading && resultFiles.length === 0" class="import-empty">
+              run_result 目录下暂无可导入的 JSON 结果文件。
+            </div>
+            <div v-if="importLoading" class="import-empty">正在读取结果文件列表...</div>
+          </div>
+
+          <div class="import-actions">
+            <button type="button" class="stop-button enabled" @click="closeImportDialog">取消</button>
+            <button type="button" class="run-button" :disabled="selectedImportFiles.length === 0 || importLoading" @click="importSelectedResults">
+              导入所选
+            </button>
+          </div>
+        </section>
+      </div>
     </main>
   </el-config-provider>
 </template>
@@ -535,6 +574,37 @@ interface BackendRunPayload {
   stdout_tail?: string;
 }
 
+interface BackendResultFile {
+  name: string;
+  path: string;
+  modified_time: number;
+  modified_label: string;
+  size: number;
+}
+
+interface BackendResultFilesPayload {
+  ok?: boolean;
+  directory?: string;
+  files?: BackendResultFile[];
+  error?: string;
+}
+
+interface BackendImportedResult {
+  file: string;
+  experiment_mode: ExperimentMode;
+  dataset: Dataset;
+  result: {
+    runs?: BackendRunSummary[];
+  };
+}
+
+interface BackendImportResultsPayload {
+  ok?: boolean;
+  results?: BackendImportedResult[];
+  errors?: Array<{ file?: string; error?: string }>;
+  error?: string;
+}
+
 interface BackendStopPayload {
   ok?: boolean;
   stopped?: boolean;
@@ -645,6 +715,11 @@ const lastRunResult = ref<BackendRunSummary | null>(null);
 const backendOptions = ref<BackendOptionsPayload | null>(null);
 const activeRunController = ref<AbortController | null>(null);
 const selectedTimelineCell = ref<TimelineCell | null>(null);
+const importDialogOpen = ref(false);
+const importLoading = ref(false);
+const resultFiles = ref<BackendResultFile[]>([]);
+const selectedImportFiles = ref<string[]>([]);
+const resultFileDirectory = ref("");
 let runMessage: { close: () => void } | null = null;
 let stopMessageShown = false;
 const runResults = ref<Record<Dataset, Partial<Record<ExperimentMode, BackendRunSummary>>>>({
@@ -1666,6 +1741,93 @@ const addRunResultToComparison = (
     refreshDatasetGainSnapshots(dataset, updatedAt);
   }
   updateCharts();
+};
+
+const formatFileSize = (size: number) => {
+  if (!Number.isFinite(size) || size <= 0) {
+    return "0 KB";
+  }
+  if (size < 1024 * 1024) {
+    return `${Math.max(1, Math.round(size / 1024))} KB`;
+  }
+  return `${(size / 1024 / 1024).toFixed(1)} MB`;
+};
+
+const loadResultFiles = async () => {
+  importLoading.value = true;
+  try {
+    const response = await fetch(`${FRONTEND_SERVER_URL}/api/result-files`);
+    const payload = (await response.json()) as BackendResultFilesPayload;
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || `读取结果文件失败，HTTP ${response.status}`);
+    }
+    resultFiles.value = payload.files ?? [];
+    resultFileDirectory.value = payload.directory ?? "";
+    selectedImportFiles.value = selectedImportFiles.value.filter((file) =>
+      resultFiles.value.some((item) => item.path === file),
+    );
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : String(error));
+  } finally {
+    importLoading.value = false;
+  }
+};
+
+const openImportDialog = async () => {
+  importDialogOpen.value = true;
+  selectedImportFiles.value = [];
+  await loadResultFiles();
+};
+
+const closeImportDialog = () => {
+  importDialogOpen.value = false;
+};
+
+const selectAllResultFiles = () => {
+  selectedImportFiles.value = resultFiles.value.map((file) => file.path);
+};
+
+const importSelectedResults = async () => {
+  if (selectedImportFiles.value.length === 0) {
+    return;
+  }
+  importLoading.value = true;
+  try {
+    const response = await fetch(`${FRONTEND_SERVER_URL}/api/import-results`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ files: selectedImportFiles.value }),
+    });
+    const payload = (await response.json()) as BackendImportResultsPayload;
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || `导入结果失败，HTTP ${response.status}`);
+    }
+
+    const updatedAt = new Date().toLocaleString();
+    const imported = payload.results ?? [];
+    imported.forEach((item) => {
+      const run = item.result.runs?.[0];
+      if (!run) {
+        return;
+      }
+      addRunResultToComparison(run, item.experiment_mode, item.dataset, updatedAt);
+    });
+
+    const first = imported[0];
+    if (first) {
+      selectedMode.value = first.experiment_mode;
+      selectedDataset.value = first.dataset;
+      lastRunResult.value = first.result.runs?.[0] ?? null;
+    }
+
+    const failedCount = payload.errors?.length ?? 0;
+    closeImportDialog();
+    ElMessage.success(`已导入 ${imported.length} 个结果${failedCount ? `，${failedCount} 个文件失败` : ""}`);
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : String(error));
+  } finally {
+    importLoading.value = false;
+  }
 };
 
 const loadBackendOptions = async () => {

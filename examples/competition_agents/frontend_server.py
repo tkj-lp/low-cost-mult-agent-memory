@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import json
 import os
 import subprocess
@@ -742,6 +743,107 @@ def options_payload() -> dict[str, Any]:
     }
 
 
+def _safe_result_file_path(relative_path: str) -> Path:
+    path = (RUN_RESULT_DIR / relative_path).resolve()
+    result_root = RUN_RESULT_DIR.resolve()
+    if result_root not in path.parents or path.suffix.lower() != ".json":
+        raise ValueError(f"Invalid result file path: {relative_path}")
+    if not path.exists() or not path.is_file():
+        raise ValueError(f"Result file does not exist: {relative_path}")
+    return path
+
+
+def _infer_import_target(file_name: str, payload: dict[str, Any]) -> tuple[str, str]:
+    result = payload.get("result") if isinstance(payload.get("result"), dict) else payload
+    runs = result.get("runs") if isinstance(result, dict) else None
+    first_run = runs[0] if isinstance(runs, list) and runs and isinstance(runs[0], dict) else {}
+
+    raw_mode = first_run.get("experiment_mode") or first_run.get("mode") or result.get("experiment_mode")
+    mode = str(raw_mode or "").strip()
+    if mode not in EXPERIMENT_MODES:
+        for candidate in sorted(EXPERIMENT_MODES, key=len, reverse=True):
+            if candidate in file_name:
+                mode = candidate
+                break
+
+    dataset = ""
+    for candidate in sorted(DATASETS, key=len, reverse=True):
+        if candidate in file_name:
+            dataset = candidate
+            break
+
+    if mode not in EXPERIMENT_MODES:
+        raise ValueError(f"Cannot infer experiment mode from {file_name}")
+    if dataset not in DATASETS:
+        raise ValueError(f"Cannot infer dataset from {file_name}")
+    if dataset not in EXPERIMENT_MODES[mode]["datasets"]:
+        raise ValueError(f"Imported result combination is unsupported: {mode} + {dataset}")
+    return mode, dataset
+
+
+def _normalize_imported_result(file_name: str, payload: dict[str, Any]) -> dict[str, Any]:
+    result = payload.get("result") if isinstance(payload.get("result"), dict) else payload
+    if not isinstance(result, dict):
+        raise ValueError(f"Imported result is not a JSON object: {file_name}")
+    mode, dataset = _infer_import_target(file_name, payload)
+    summary = _summarize_result_for_frontend(result)
+    runs = summary.get("runs")
+    if not isinstance(runs, list) or not runs:
+        raise ValueError(f"Imported result has no runs: {file_name}")
+    return {
+        "file": file_name,
+        "experiment_mode": mode,
+        "dataset": dataset,
+        "result": summary,
+    }
+
+
+def result_files_payload() -> dict[str, Any]:
+    RUN_RESULT_DIR.mkdir(parents=True, exist_ok=True)
+    files = []
+    for path in sorted(RUN_RESULT_DIR.glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
+        stat = path.stat()
+        files.append(
+            {
+                "name": path.name,
+                "path": path.name,
+                "modified_time": stat.st_mtime,
+                "modified_label": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+                "size": stat.st_size,
+            }
+        )
+    return {"ok": True, "directory": str(RUN_RESULT_DIR), "files": files}
+
+
+def import_results(payload: dict[str, Any]) -> dict[str, Any]:
+    raw_files = payload.get("files")
+    if not isinstance(raw_files, list) or not raw_files:
+        raise ValueError("files must be a non-empty list.")
+    if len(raw_files) > 50:
+        raise ValueError("Too many result files selected; import 50 or fewer at a time.")
+
+    imported = []
+    errors = []
+    for raw_file in raw_files:
+        relative_path = str(raw_file or "").strip()
+        try:
+            path = _safe_result_file_path(relative_path)
+            with path.open("r", encoding="utf-8") as handle:
+                loaded = json.load(handle)
+            if not isinstance(loaded, dict):
+                raise ValueError("JSON root must be an object.")
+            imported.append(_normalize_imported_result(path.name, loaded))
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            errors.append({"file": relative_path, "error": str(exc)})
+
+    return {
+        "ok": bool(imported),
+        "results": imported,
+        "errors": errors,
+        "error": "No valid result files imported." if not imported else "",
+    }
+
+
 class CompetitionAgentsHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self) -> None:
         self.send_response(204)
@@ -757,12 +859,25 @@ class CompetitionAgentsHandler(BaseHTTPRequestHandler):
         if self.path in {"/api/options", "/options"}:
             _json_response(self, 200, options_payload())
             return
+        if self.path in {"/api/result-files", "/result-files"}:
+            _json_response(self, 200, result_files_payload())
+            return
         _json_response(self, 404, {"ok": False, "error": f"Not found: {self.path}"})
 
     def do_POST(self) -> None:
         if self.path in {"/api/stop", "/stop"}:
             response = stop_current_run()
             _json_response(self, 200, response)
+            return
+        if self.path in {"/api/import-results", "/import-results"}:
+            try:
+                payload = _read_json_request(self)
+                response = import_results(payload)
+            except ValueError as exc:
+                _json_response(self, 400, {"ok": False, "error": str(exc)})
+                return
+            status = 200 if response.get("ok") else 400
+            _json_response(self, status, response)
             return
         if self.path not in {"/api/run", "/run"}:
             _json_response(self, 404, {"ok": False, "error": f"Not found: {self.path}"})
@@ -810,6 +925,7 @@ def main() -> None:
     ECHO_RUN_OUTPUT = args.echo_run_output
     server = ThreadingHTTPServer((args.host, args.port), CompetitionAgentsHandler)
     print(f"competition agents frontend server listening on http://{args.host}:{args.port}")
+    print(f"[frontend_server] python={sys.executable} prefix={sys.prefix} cwd={os.getcwd()}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

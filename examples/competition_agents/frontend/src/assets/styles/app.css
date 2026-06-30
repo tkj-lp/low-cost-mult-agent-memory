@@ -1158,6 +1158,147 @@ button {
   white-space: nowrap;
 }
 
+.import-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.import-dialog {
+  display: grid;
+  grid-template-rows: auto auto minmax(260px, 1fr) auto;
+  width: min(860px, calc(100vw - 48px));
+  max-height: min(680px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid var(--console-border-strong);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.24);
+}
+
+.import-head,
+.import-toolbar,
+.import-actions,
+.import-file-row {
+  display: flex;
+  align-items: center;
+}
+
+.import-head {
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--console-border);
+}
+
+.import-head h2 {
+  margin: 0 0 4px;
+  color: #182230;
+  font-size: 18px;
+}
+
+.import-head p {
+  margin: 0;
+  color: var(--console-muted);
+  font-size: 12px;
+}
+
+.icon-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--console-border);
+  border-radius: 7px;
+  background: #ffffff;
+  color: #475467;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.import-toolbar {
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.ghost-button.compact {
+  height: 28px;
+  padding: 0 10px;
+}
+
+.import-toolbar span {
+  margin-left: auto;
+  color: var(--console-muted);
+  font-size: 12px;
+}
+
+.import-file-list {
+  overflow: auto;
+  padding: 8px 12px;
+}
+
+.import-file-row {
+  min-height: 42px;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #edf2f7;
+  color: #26364a;
+}
+
+.import-file-row:hover {
+  background: #f7fbff;
+}
+
+.import-file-row input {
+  width: 16px;
+  height: 16px;
+}
+
+.import-file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-file-time {
+  flex: 0 0 150px;
+  color: var(--console-muted);
+  font-size: 12px;
+}
+
+.import-file-size {
+  flex: 0 0 72px;
+  color: var(--console-subtle);
+  font-size: 12px;
+  text-align: right;
+}
+
+.import-empty {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  color: var(--console-muted);
+}
+
+.import-actions {
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--console-border);
+}
+
+.import-actions .run-button,
+.import-actions .stop-button {
+  width: 128px;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
