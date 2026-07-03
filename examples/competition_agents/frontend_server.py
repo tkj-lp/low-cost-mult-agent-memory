@@ -4,6 +4,7 @@ import argparse
 from datetime import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -198,10 +199,33 @@ def _result_file_stem(experiment_mode: str, dataset: str) -> str:
     return f"frontend_{experiment_mode}_{dataset}"
 
 
-def _result_output_paths(experiment_mode: str, dataset: str) -> tuple[Path, Path]:
+def _safe_folder_name(value: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", value.strip())
+    cleaned = cleaned.strip("._-")
+    return cleaned or "unknown"
+
+
+def _result_folder_name(
+    env: dict[str, str],
+    *,
+    experiment_mode: str,
+    llm_backend: str,
+    developer_mode: bool,
+) -> str:
+    if developer_mode:
+        return "mock"
+    if llm_backend == "local" or experiment_mode == "latent_hidden":
+        model_name = env.get("LOCAL_HIDDEN_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+        return _safe_folder_name(model_name.split("/")[-1])
+    model_name = env.get("LLM_MODEL", "api")
+    return f"api_{_safe_folder_name(model_name)}"
+
+
+def _result_output_paths(experiment_mode: str, dataset: str, result_folder: str = "") -> tuple[Path, Path]:
     stem = _result_file_stem(experiment_mode, dataset)
-    stdout_path = RUN_RESULT_DIR / f"{stem}.txt"
-    json_path = RUN_RESULT_DIR / f"{stem}.json"
+    output_dir = RUN_RESULT_DIR / result_folder if result_folder else RUN_RESULT_DIR
+    stdout_path = output_dir / f"{stem}.txt"
+    json_path = output_dir / f"{stem}.json"
     return stdout_path, json_path
 
 
@@ -210,10 +234,12 @@ def _persist_run_output(
     experiment_mode: str,
     dataset: str,
     stdout: str,
+    result_folder: str = "",
     result: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     RUN_RESULT_DIR.mkdir(parents=True, exist_ok=True)
-    stdout_path, json_path = _result_output_paths(experiment_mode, dataset)
+    stdout_path, json_path = _result_output_paths(experiment_mode, dataset, result_folder)
+    stdout_path.parent.mkdir(parents=True, exist_ok=True)
     stdout_path.write_text(stdout, encoding="utf-8")
     saved = {"stdout_path": str(stdout_path.relative_to(REPO_ROOT))}
     if result is not None:
@@ -610,6 +636,12 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         llm_backend=llm_backend,
     )
     env = _build_env(env_file, payload, developer_mode=developer_mode)
+    result_folder = _result_folder_name(
+        env,
+        experiment_mode=experiment_mode,
+        llm_backend=llm_backend,
+        developer_mode=developer_mode,
+    )
     print(
         "[frontend_server] received run request: "
         f"mode={experiment_mode}, dataset={dataset}, limit={limit}, "
@@ -672,6 +704,7 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         experiment_mode=experiment_mode,
         dataset=dataset,
         stdout=stdout,
+        result_folder=result_folder,
     )
     if ECHO_RUN_OUTPUT:
         print("\n[frontend_server] experiment command:", " ".join(command), flush=True)
@@ -704,6 +737,7 @@ def run_experiment(payload: dict[str, Any]) -> dict[str, Any]:
         experiment_mode=experiment_mode,
         dataset=dataset,
         stdout=stdout,
+        result_folder=result_folder,
         result=result,
     )
     STOP_REQUESTED = False
@@ -801,12 +835,14 @@ def _normalize_imported_result(file_name: str, payload: dict[str, Any]) -> dict[
 def result_files_payload() -> dict[str, Any]:
     RUN_RESULT_DIR.mkdir(parents=True, exist_ok=True)
     files = []
-    for path in sorted(RUN_RESULT_DIR.glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
+    for path in sorted(RUN_RESULT_DIR.rglob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
         stat = path.stat()
+        relative_path = path.relative_to(RUN_RESULT_DIR)
         files.append(
             {
                 "name": path.name,
-                "path": path.name,
+                "path": relative_path.as_posix(),
+                "folder": relative_path.parent.as_posix() if str(relative_path.parent) != "." else "",
                 "modified_time": stat.st_mtime,
                 "modified_label": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
                 "size": stat.st_size,

@@ -1182,6 +1182,7 @@ button {
 .import-head,
 .import-toolbar,
 .import-actions,
+.import-folder-row,
 .import-file-row {
   display: flex;
   align-items: center;
@@ -1238,24 +1239,73 @@ button {
 
 .import-file-list {
   overflow: auto;
-  padding: 8px 12px;
+  padding: 8px 12px 12px;
+}
+
+.import-folder {
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid #e6edf5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.import-folder-row {
+  min-height: 44px;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid #e6edf5;
+  background: #f7fbff;
+  color: #24364a;
+}
+
+.import-folder-row input,
+.import-file-row input {
+  width: 16px;
+  height: 16px;
+}
+
+.import-folder-icon {
+  color: #5b6f88;
+  font-size: 13px;
+}
+
+.import-folder-row strong {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-folder-row small {
+  flex: 0 0 auto;
+  color: var(--console-muted);
+  font-size: 12px;
 }
 
 .import-file-row {
   min-height: 42px;
-  gap: 12px;
-  padding: 8px 10px;
+  gap: 10px;
+  padding: 8px 12px 8px 40px;
   border-bottom: 1px solid #edf2f7;
   color: #26364a;
+}
+
+.import-file-row:last-child {
+  border-bottom: 0;
 }
 
 .import-file-row:hover {
   background: #f7fbff;
 }
 
-.import-file-row input {
-  width: 16px;
-  height: 16px;
+.import-tree-line {
+  flex: 0 0 12px;
+  height: 18px;
+  border-bottom: 1px solid #c7d3e1;
+  border-left: 1px solid #c7d3e1;
 }
 
 .import-file-name {

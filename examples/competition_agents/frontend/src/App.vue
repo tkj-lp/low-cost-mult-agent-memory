@@ -357,12 +357,25 @@
           </div>
 
           <div class="import-file-list">
-            <label v-for="file in resultFiles" :key="file.path" class="import-file-row">
-              <input v-model="selectedImportFiles" type="checkbox" :value="file.path" />
-              <span class="import-file-name">{{ file.name }}</span>
-              <span class="import-file-time">{{ file.modified_label }}</span>
-              <span class="import-file-size">{{ formatFileSize(file.size) }}</span>
-            </label>
+            <section v-for="group in importFileGroups" :key="group.folder" class="import-folder">
+              <label class="import-folder-row">
+                <input
+                  type="checkbox"
+                  :checked="isImportFolderSelected(group)"
+                  @change="toggleImportFolder(group)"
+                />
+                <span class="import-folder-icon">▾</span>
+                <strong>{{ group.label }}</strong>
+                <small>{{ group.files.length }} 个文件 · {{ formatFileSize(group.size) }}</small>
+              </label>
+              <label v-for="file in group.files" :key="file.path" class="import-file-row">
+                <input v-model="selectedImportFiles" type="checkbox" :value="file.path" />
+                <span class="import-tree-line"></span>
+                <span class="import-file-name">{{ file.name }}</span>
+                <span class="import-file-time">{{ file.modified_label }}</span>
+                <span class="import-file-size">{{ formatFileSize(file.size) }}</span>
+              </label>
+            </section>
             <div v-if="!importLoading && resultFiles.length === 0" class="import-empty">
               run_result 目录下暂无可导入的 JSON 结果文件。
             </div>
@@ -577,8 +590,16 @@ interface BackendRunPayload {
 interface BackendResultFile {
   name: string;
   path: string;
+  folder?: string;
   modified_time: number;
   modified_label: string;
+  size: number;
+}
+
+interface ImportFileGroup {
+  folder: string;
+  label: string;
+  files: BackendResultFile[];
   size: number;
 }
 
@@ -1751,6 +1772,36 @@ const formatFileSize = (size: number) => {
     return `${Math.max(1, Math.round(size / 1024))} KB`;
   }
   return `${(size / 1024 / 1024).toFixed(1)} MB`;
+};
+
+const importFileGroups = computed<ImportFileGroup[]>(() => {
+  const groups = new Map<string, BackendResultFile[]>();
+  resultFiles.value.forEach((file) => {
+    const folder = file.folder || "未分组";
+    groups.set(folder, [...(groups.get(folder) ?? []), file]);
+  });
+  return Array.from(groups.entries()).map(([folder, files]) => ({
+    folder,
+    label: folder,
+    files,
+    size: files.reduce((total, file) => total + file.size, 0),
+  }));
+});
+
+const isImportFolderSelected = (group: ImportFileGroup) =>
+  group.files.length > 0 && group.files.every((file) => selectedImportFiles.value.includes(file.path));
+
+const toggleImportFolder = (group: ImportFileGroup) => {
+  const selected = new Set(selectedImportFiles.value);
+  const shouldSelect = !isImportFolderSelected(group);
+  group.files.forEach((file) => {
+    if (shouldSelect) {
+      selected.add(file.path);
+    } else {
+      selected.delete(file.path);
+    }
+  });
+  selectedImportFiles.value = Array.from(selected);
 };
 
 const loadResultFiles = async () => {

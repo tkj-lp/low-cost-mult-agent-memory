@@ -19,6 +19,18 @@ class LocalHFClient(OpenAICompatibleClient):
     def _prepare_inputs(self, prompt: str) -> dict[str, Any]:
         tokenizer = self.bundle.tokenizer
         messages = [{"role": "user", "content": prompt}]
+        if "deepseek-coder" in self.model.lower():
+            messages.insert(
+                0,
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a general question-answering assistant in a multi-agent experiment. "
+                        "Answer the user's task directly and concisely. Do not refuse non-programming "
+                        "questions and do not describe implementation details unless explicitly asked."
+                    ),
+                },
+            )
         apply_template = getattr(tokenizer, "apply_chat_template", None)
         if callable(apply_template):
             try:
