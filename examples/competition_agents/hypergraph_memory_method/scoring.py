@@ -9,38 +9,42 @@ from .schema import (
     NODE_ARCHIVE_SCOPE,
     NODE_ARTIFACT,
     NODE_CAPABILITY,
+    NODE_CLAIM,
     NODE_DATASET,
     NODE_ENTITY,
     NODE_EVIDENCE,
+    NODE_EVIDENCE_CHAIN,
+    NODE_EVIDENCE_SOURCE,
     NODE_EXECUTION,
     NODE_EXPECTED_REUSE,
-    NODE_GAP,
     NODE_EXPERIENCE,
-    NODE_GROUP,
-    NODE_KEYWORD,
-    NODE_MEMORY_REF,
-    NODE_MESSAGE,
-    NODE_METRIC,
-    NODE_OUTCOME,
-    NODE_LIFECYCLE,
-    NODE_REUSE_BENEFIT,
     NODE_EXPERIENCE_RULE,
     NODE_EXPERIENCE_SIGNATURE,
     NODE_FAILURE_PATTERN,
+    NODE_GAP,
+    NODE_GROUP,
+    NODE_KEYWORD,
+    NODE_LIFECYCLE,
+    NODE_MEMORY_LAYER,
+    NODE_MEMORY_REF,
+    NODE_MEMORY_TYPE,
+    NODE_MESSAGE,
+    NODE_METRIC,
+    NODE_OUTCOME,
+    NODE_PROBLEM_PATTERN,
+    NODE_RELATION,
+    NODE_REUSE_BENEFIT,
+    NODE_SOLUTION_PATTERN,
     NODE_STATE,
     NODE_STATE_REF,
-    NODE_MEMORY_LAYER,
-    NODE_MEMORY_TYPE,
-    NODE_PROBLEM_PATTERN,
-    NODE_SOLUTION_PATTERN,
     NODE_STRATEGY,
     NODE_SUPPORTING_FACT,
     NODE_TAG,
     NODE_TOOL,
-    NODE_TURN,
     NODE_TRIGGER,
+    NODE_TURN,
+    NODE_VERSION,
 )
-
 
 NODE_WEIGHTS = {
     NODE_EXPECTED_REUSE: 8.0,
@@ -62,6 +66,11 @@ NODE_WEIGHTS = {
     NODE_STATE_REF: 4.5,
     NODE_SUPPORTING_FACT: 4.5,
     NODE_EVIDENCE: 4.0,
+    NODE_EVIDENCE_CHAIN: 8.5,
+    NODE_CLAIM: 7.0,
+    NODE_EVIDENCE_SOURCE: 6.0,
+    NODE_RELATION: 5.5,
+    NODE_VERSION: 0.5,
     NODE_ENTITY: 3.5,
     NODE_TAG: 3.0,
     NODE_AGENT: 2.0,
@@ -111,6 +120,7 @@ def score_components(
     state_ref_score = 0.0
     strategy_score = 0.0
     experience_score = 0.0
+    evidence_chain_score = 0.0
     tag_score = 0.0
     keyword_score = 0.0
 
@@ -124,6 +134,13 @@ def score_components(
             reuse_score += weight
         elif kind in {NODE_ARTIFACT, NODE_SUPPORTING_FACT, NODE_EVIDENCE, NODE_ENTITY}:
             evidence_score += weight
+        if kind in {
+            NODE_EVIDENCE_CHAIN,
+            NODE_CLAIM,
+            NODE_EVIDENCE_SOURCE,
+            NODE_RELATION,
+        }:
+            evidence_chain_score += weight
         elif kind in {NODE_STATE, NODE_STATE_REF}:
             state_ref_score += weight
         elif kind == NODE_STRATEGY:
@@ -146,12 +163,24 @@ def score_components(
         elif kind == NODE_KEYWORD:
             keyword_score += weight
 
-    structural_score = gap_score + reuse_score + evidence_score + state_ref_score + strategy_score + experience_score
-    embedding_component = max(0.0, float(embedding_score or 0.0)) * EMBEDDING_SCORE_WEIGHT
+    structural_score = (
+        gap_score
+        + reuse_score
+        + evidence_score
+        + evidence_chain_score
+        + state_ref_score
+        + strategy_score
+        + experience_score
+    )
+    embedding_component = (
+        max(0.0, float(embedding_score or 0.0)) * EMBEDDING_SCORE_WEIGHT
+    )
     summary_bonus = min(len(record.get("summary", "")) / 1000.0, 0.25)
     hypergraph_score = base_score + summary_bonus
     structure_priority_bonus = min(structural_score, 36.0) * 0.6
-    keyword_penalty = keyword_score * 0.35 if structural_score == 0 else keyword_score * 0.15
+    keyword_penalty = (
+        keyword_score * 0.35 if structural_score == 0 else keyword_score * 0.15
+    )
     reuse_count = float(record.get("reuse_count", 0) or 0)
     reuse_success_count = float(record.get("reuse_success_count", 0) or 0)
     success_rate = reuse_success_rate(record)
@@ -161,8 +190,17 @@ def score_components(
     reuse_count_bonus = min(reuse_count, 8.0) * 0.2
     success_rate_bonus = success_rate * 3.0 if reuse_count > 0 else 0.0
     retention_value = record.get("retention_score", 0.5)
-    retention_score = max(0.0, min(1.0, float(0.5 if retention_value is None else retention_value)))
+    retention_score = max(
+        0.0, min(1.0, float(0.5 if retention_value is None else retention_value))
+    )
     retention_component = (retention_score - 0.5) * 4.0
+    chain_completeness = max(
+        0.0,
+        min(1.0, float(record.get("evidence_chain_completeness", 0.0) or 0.0)),
+    )
+    chain_quality_component = chain_completeness * 4.0
+    if record.get("evidence_chain_valid") is False and record.get("evidence_chain_id"):
+        chain_quality_component -= 1.0
     retrieval_score = (
         hypergraph_score
         + structure_priority_bonus
@@ -172,6 +210,7 @@ def score_components(
         + success_rate_bonus
         + lifecycle_score
         + retention_component
+        + chain_quality_component
         - keyword_penalty
     )
 
@@ -185,6 +224,8 @@ def score_components(
         "lifecycle_score": round(lifecycle_score, 4),
         "retention_score": round(retention_score, 4),
         "retention_component": round(retention_component, 4),
+        "evidence_chain_completeness": round(chain_completeness, 4),
+        "evidence_chain_quality_score": round(chain_quality_component, 4),
         "experience_lifecycle_stage": current_lifecycle,
         "experience_success_rate": round(success_rate, 4),
         "experience_feedback": {
@@ -200,6 +241,7 @@ def score_components(
         "state_ref_score": round(state_ref_score, 4),
         "strategy_score": round(strategy_score, 4),
         "experience_score": round(experience_score, 4),
+        "evidence_chain_score": round(evidence_chain_score, 4),
     }
 
 

@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 from typing import Any
 
 from .text import normalize_text, tokenize
-
 
 GENERIC_TOPIC_TOKENS = {
     "answer",
@@ -127,9 +126,7 @@ def infer_trigger_families(text: str) -> set[str]:
     normalized = normalize_text(text)
     tokens = set(tokenize(normalized))
     families = {
-        family
-        for family, hints in TRIGGER_FAMILY_HINTS.items()
-        if tokens & hints
+        family for family, hints in TRIGGER_FAMILY_HINTS.items() if tokens & hints
     }
     for label, family in TRIGGER_LABEL_FAMILIES.items():
         if label in normalized:
@@ -140,7 +137,11 @@ def infer_trigger_families(text: str) -> set[str]:
 def extract_retrieval_question(query: str) -> str:
     """Extract the real task question from a planner-expanded retrieval query."""
 
-    match = re.search(r"(?:^|\n)question:\s*(.+?)(?:\n\s*\n|\Z)", str(query), flags=re.IGNORECASE | re.DOTALL)
+    match = re.search(
+        r"(?:^|\n)question:\s*(.+?)(?:\n\s*\n|\Z)",
+        str(query),
+        flags=re.IGNORECASE | re.DOTALL,
+    )
     return match.group(1).strip() if match else str(query)
 
 
@@ -168,7 +169,9 @@ def query_primary_trigger_families(text: str) -> set[str]:
     if tokens & location_hints:
         primary.add("location")
     first_word = normalized.split(maxsplit=1)[0] if normalized else ""
-    if not primary and ("?" in str(text) or first_word in {"how", "what", "which", "who", "why"}):
+    if not primary and (
+        "?" in str(text) or first_word in {"how", "what", "which", "who", "why"}
+    ):
         primary.add("other")
     return primary
 
@@ -184,7 +187,10 @@ def record_primary_trigger_families(record: dict[str, Any]) -> set[str]:
         label = normalize_text(str(value))
         if "temporal-query" in label:
             primary.add("temporal")
-        elif "attribute-lookup-query" in label or "question-targets-single-attribute" in label:
+        elif (
+            "attribute-lookup-query" in label
+            or "question-targets-single-attribute" in label
+        ):
             primary.add("attribute")
         elif "multi-location-query" in label:
             primary.add("location")
@@ -199,7 +205,9 @@ def record_primary_trigger_families(record: dict[str, Any]) -> set[str]:
 
 def _record_topic_tokens(record: dict[str, Any]) -> set[str]:
     trace = record.get("trace") if isinstance(record.get("trace"), dict) else {}
-    task_meta = trace.get("task_meta") if isinstance(trace.get("task_meta"), dict) else {}
+    task_meta = (
+        trace.get("task_meta") if isinstance(trace.get("task_meta"), dict) else {}
+    )
     values = [
         task_meta.get("topic", ""),
         task_meta.get("group_topic", ""),
@@ -225,27 +233,41 @@ def evaluate_candidate_gate(
     with a pronoun and therefore lack enough lexical topic information.
     """
 
-    effective_query = extract_retrieval_question(query)
-    query_families = infer_trigger_families(effective_query)
+    retrieval_question = extract_retrieval_question(query)
+    query_families = infer_trigger_families(retrieval_question)
     record_families = record_trigger_families(record)
     trigger_overlap = query_families & record_families
-    query_primary = query_primary_trigger_families(effective_query)
+    query_primary = query_primary_trigger_families(retrieval_question)
     record_primary = record_primary_trigger_families(record)
     primary_overlap = query_primary & record_primary
     memory_type = str(record.get("memory_type", "evidence") or "evidence")
 
     reasons: list[str] = []
     accepted = True
-    if memory_type == "experience" and query_primary and record_primary and not primary_overlap:
+    if (
+        memory_type == "experience"
+        and query_primary
+        and record_primary
+        and not primary_overlap
+    ):
         accepted = False
         reasons.append("experience-primary-trigger-mismatch")
-    elif memory_type == "experience" and query_families and record_families and not trigger_overlap:
+    elif (
+        memory_type == "experience"
+        and query_families
+        and record_families
+        and not trigger_overlap
+    ):
         accepted = False
         reasons.append("experience-trigger-mismatch")
 
-    effective_query = query_primary if query_primary and record_primary else query_families
-    effective_record = record_primary if query_primary and record_primary else record_families
-    effective_overlap = effective_query & effective_record
+    effective_query_families = (
+        query_primary if query_primary and record_primary else query_families
+    )
+    effective_record_families = (
+        record_primary if query_primary and record_primary else record_families
+    )
+    effective_overlap = effective_query_families & effective_record_families
     if not record_families:
         trigger_score = 0.0
         reasons.append("record-has-no-explicit-trigger")
@@ -253,13 +275,17 @@ def evaluate_candidate_gate(
         trigger_score = 0.0
         reasons.append("query-trigger-unknown")
     else:
-        trigger_score = len(effective_overlap) / max(1, len(effective_record))
-        reasons.append("trigger-compatible" if effective_overlap else "trigger-incompatible")
+        trigger_score = len(effective_overlap) / max(1, len(effective_record_families))
+        reasons.append(
+            "trigger-compatible" if effective_overlap else "trigger-incompatible"
+        )
 
-    query_topics = set(tokenize(effective_query)) - GENERIC_TOPIC_TOKENS
+    query_topics = set(tokenize(retrieval_question)) - GENERIC_TOPIC_TOKENS
     record_topics = _record_topic_tokens(record)
     topic_overlap = query_topics & record_topics
-    topic_score = len(topic_overlap) / max(1, min(len(query_topics), len(record_topics)))
+    topic_score = len(topic_overlap) / max(
+        1, min(len(query_topics), len(record_topics))
+    )
     if topic_overlap:
         reasons.append("topic-overlap")
     else:

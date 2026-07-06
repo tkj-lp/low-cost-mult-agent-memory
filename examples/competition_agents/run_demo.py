@@ -9,9 +9,21 @@ import time
 from pathlib import Path
 from typing import Any
 
+from competition_agents.capabilities import build_capability_registry
 from competition_agents.graph import build_graph
 from competition_agents.llm.client import get_llm_provider
+from competition_agents.runtime_events import (
+    DEFAULT_EVENT_LOG_FILE,
+    configure_event_log,
+    emit_runtime_event,
+    emit_task_result_events,
+)
 from competition_agents.state import initial_state
+from hypergraph_memory_method import (
+    RETRIEVAL_MODE_VALUES,
+    memory_organization_for_mode,
+)
+from hypergraph_memory_method.reuse_metrics import evaluate_run_reuse
 
 
 DEFAULT_MULTIHOP_DATASET = "examples/competition_agents/data/hotpot_multihop_sample.json"
@@ -347,10 +359,19 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
     load_env_file(Path(args.env_file))
     llm_provider = "local_hf" if args.llm_backend == "local" else "openai_compatible"
     os.environ["LLM_PROVIDER"] = llm_provider
-    os.environ["LLM_PLANNER_PROVIDER"] = llm_provider
-    os.environ["LLM_REASONER_PROVIDER"] = llm_provider
-    os.environ["LLM_SUMMARIZER_PROVIDER"] = llm_provider
-    os.environ["LLM_REQUIRE_REAL"] = "1"
+    local_fast_mode = args.llm_backend == "local" and os.environ.get(
+        "LOCAL_FAST_MODE", ""
+    ).lower() in {"1", "true", "yes"}
+    if local_fast_mode:
+        os.environ["LLM_PLANNER_PROVIDER"] = "mock"
+        os.environ["LLM_REASONER_PROVIDER"] = "local_hf"
+        os.environ["LLM_SUMMARIZER_PROVIDER"] = "mock"
+        os.environ["LLM_REQUIRE_REAL"] = "0"
+    else:
+        os.environ["LLM_PLANNER_PROVIDER"] = llm_provider
+        os.environ["LLM_REASONER_PROVIDER"] = llm_provider
+        os.environ["LLM_SUMMARIZER_PROVIDER"] = llm_provider
+        os.environ["LLM_REQUIRE_REAL"] = "1"
 
     if args.experiment_mode == "baseline_text":
         os.environ["EMBEDDING_PROVIDER"] = "hash"
@@ -433,6 +454,30 @@ def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
         ]
         if key in task_item
     }
+
+
+def dashboard_task_title(task_item: dict[str, Any]) -> str:
+    """给运行面板展示的真实任务标题，只来自已加载数据集。"""
+
+    return str(task_item.get("question") or task_item.get("task_type") or task_item.get("task_id") or "任务")
+
+
+def dashboard_task_queue(tasks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """把已加载任务队列压成前端可展示字段。"""
+
+    return [
+        {
+            "task_index": index,
+            "task_id": task_item.get("task_id") or str(index),
+            "group_id": task_item.get("group_id"),
+            "turn_id": task_item.get("turn_id"),
+            "dataset_type": task_item.get("dataset_type"),
+            "task_type": task_item.get("task_type"),
+            "task_title": dashboard_task_title(task_item),
+            "expected_reuse": task_item.get("expected_reuse", []),
+        }
+        for index, task_item in enumerate(tasks, start=1)
+    ]
 
 
 def _shorten(value: Any, limit: int = 240) -> str:
@@ -749,6 +794,7 @@ def build_task_result(
         "evidence_memory_count": evidence_memory_count,
         "experience_memory_count": experience_memory_count,
         "elapsed_ms": elapsed_ms,
+        "adjusted_elapsed_ms": max(0.0, elapsed_ms - float(metrics.get("state_generation_ms", 0.0) or 0.0)),
         "exact_match": exact_match,
     }
     task_result = {
@@ -757,6 +803,8 @@ def build_task_result(
         "group_id": task_item.get("group_id"),
         "turn_id": task_item.get("turn_id"),
         "dataset_type": task_item.get("dataset_type"),
+        "memory_retrieval_mode": os.environ.get("MEMORY_RETRIEVAL_MODE", "hypergraph"),
+        "memory_organization": os.environ.get("MEMORY_ORGANIZATION", "hypergraph"),
         "task_type": task_item.get("task_type"),
         "task": task_item.get("task"),
         "question": task_item.get("question", ""),
@@ -1033,6 +1081,7 @@ def run_mode(
         "latent_transfer_count": 0,
         "latent_bytes": 0,
         "transfer_latency_ms": 0.0,
+        "state_generation_ms": 0.0,
         "memory_write_count": 0,
         "experience_write_count": 0,
         "experience_hit_count": 0,
@@ -1044,11 +1093,127 @@ def run_mode(
     for index, task_item in enumerate(tasks, start=1):
         group_id = task_item.get("group_id", "default")
         memory = group_memory.get(group_id, []) if dataset_type == "continuous" else global_memory
+        task_meta = {**task_meta_from_item(task_item), "task_index": index}
+        emit_runtime_event(
+            {
+                "event_type": "task_start",
+                "mode": mode,
+                "task_index": index,
+                "task_id": task_meta.get("task_id"),
+                "group_id": task_meta.get("group_id"),
+                "turn_id": task_meta.get("turn_id"),
+                "dataset_type": dataset_type,
+                "task_title": dashboard_task_title(task_item),
+                "from_agent": "runtime",
+                "to_agent": "planner",
+                "action_type": "start_task",
+                "state_refs": [],
+                "memory_refs": [],
+                "text_chars": 0,
+                "elapsed_ms": 0,
+            }
+        )
+        emit_runtime_event(
+            {
+                "event_type": "handshake",
+                "mode": mode,
+                "task_index": index,
+                "task_id": task_meta.get("task_id"),
+                "group_id": task_meta.get("group_id"),
+                "turn_id": task_meta.get("turn_id"),
+                "dataset_type": dataset_type,
+                "task_title": dashboard_task_title(task_item),
+                "from_agent": "runtime",
+                "to_agent": "planner",
+                "action_type": "open_session",
+                "input_params": {
+                    "mode": mode,
+                    "dataset_type": dataset_type,
+                    "dataset_file": dataset_file,
+                    "limit": limit,
+                },
+                "return_result": {
+                    "accepted": True,
+                    "protocol_version": "0.2" if mode != "text" else "text-v1",
+                    "task_index": index,
+                    "task_id": task_meta.get("task_id"),
+                },
+                "state_refs": [],
+                "memory_refs": [],
+                "text_chars": 0,
+                "elapsed_ms": 0,
+            }
+        )
+        capability_registry = build_capability_registry()
+        emit_runtime_event(
+            {
+                "event_type": "capability_discovery",
+                "mode": mode,
+                "task_index": index,
+                "task_id": task_meta.get("task_id"),
+                "group_id": task_meta.get("group_id"),
+                "turn_id": task_meta.get("turn_id"),
+                "dataset_type": dataset_type,
+                "task_title": dashboard_task_title(task_item),
+                "from_agent": "planner",
+                "to_agent": "runtime",
+                "action_type": "discover_capability",
+                "input_params": {
+                    "required_roles": ["planner", "retriever", "reasoner", "executor", "summarizer"],
+                    "task_type": task_item.get("task_type"),
+                },
+                "return_result": capability_registry,
+                "capability": {
+                    agent: profile.get("capabilities", [])
+                    for agent, profile in capability_registry.items()
+                },
+                "state_refs": [],
+                "memory_refs": [],
+                "text_chars": 0,
+                "elapsed_ms": 0,
+            }
+        )
+        emit_runtime_event(
+            {
+                "event_type": "protocol_mapping",
+                "mode": mode,
+                "task_index": index,
+                "task_id": task_meta.get("task_id"),
+                "group_id": task_meta.get("group_id"),
+                "turn_id": task_meta.get("turn_id"),
+                "dataset_type": dataset_type,
+                "task_title": dashboard_task_title(task_item),
+                "from_agent": "runtime",
+                "to_agent": "planner",
+                "action_type": "map_protocol",
+                "input_params": {
+                    "task_title": dashboard_task_title(task_item),
+                    "mode": mode,
+                },
+                "return_result": {
+                    "first_action": "retrieve",
+                    "route": ["planner", "retriever", "reasoner", "executor?", "summarizer"],
+                    "message_contract": ["action_type", "input_params", "return_result", "capability", "state_refs", "memory_refs"],
+                },
+                "state_refs": [],
+                "memory_refs": [],
+                "text_chars": 0,
+                "elapsed_ms": 0,
+            }
+        )
+        print(
+            f"[progress] task_start index={index} id={task_item.get('task_id', index)}",
+            flush=True,
+        )
         started = time.perf_counter()
         result = graph.invoke(
-            initial_state(task_item["task"], mode, memory, task_meta=task_meta_from_item(task_item))
+            initial_state(task_item["task"], mode, memory, task_meta=task_meta)
         )
         elapsed = time.perf_counter() - started
+        print(
+            f"[progress] task_done index={index} elapsed_ms={elapsed * 1000:.2f}",
+            flush=True,
+        )
         total_elapsed += elapsed
 
         if dataset_type == "continuous":
@@ -1082,6 +1247,15 @@ def run_mode(
             correct += int(exact_match)
         if exact_match and int(result.get("execution_result", {}).get("experience_used_count", 0)) > 0:
             total_metrics["reuse_success_count"] += 1
+
+        emit_task_result_events(
+            mode=mode,
+            task_index=index,
+            task_item=task_item,
+            result=result,
+            elapsed_ms=elapsed * 1000,
+            exact_match=exact_match,
+        )
 
         print(f"task {index}: {task_item['task_id']}")
         if task_item.get("question"):
@@ -1159,24 +1333,30 @@ def run_mode(
     print(summary)
 
     elapsed_ms = total_elapsed * 1000
+    adjusted_elapsed_ms = max(0.0, elapsed_ms - float(total_metrics.get("state_generation_ms", 0.0) or 0.0))
     aggregate_metrics = {
         **total_metrics,
         "memory_hits": total_memory_hits,
         "memory_hit_rate": memory_hit_rate,
         "elapsed_ms": elapsed_ms,
+        "adjusted_elapsed_ms": adjusted_elapsed_ms,
         "exact_match": exact_match_rate,
         "task_count": len(tasks),
     }
+    reuse_report = evaluate_run_reuse({"task_results": task_results})
 
     run_result = {
         "mode": mode,
         "experiment_mode": experiment_mode or mode,
+        "memory_retrieval_mode": os.environ.get("MEMORY_RETRIEVAL_MODE", "hypergraph"),
+        "memory_organization": os.environ.get("MEMORY_ORGANIZATION", "hypergraph"),
         "dataset_type": dataset_type,
         "dataset_file": dataset_file,
         "limit": limit,
         "tasks": len(tasks),
         "task_count": len(tasks),
         "metrics": aggregate_metrics,
+        "reuse_report": reuse_report,
         "memory_hits": total_memory_hits,
         "memory_hit_rate": memory_hit_rate,
         "elapsed_ms": elapsed_ms,
@@ -1248,6 +1428,8 @@ def print_run_result_json(args: argparse.Namespace, tasks: list[dict[str, Any]],
     payload = {
         "schema_version": 1,
         "experiment_mode": args.experiment_mode or "<developer-modes>",
+        "memory_retrieval_mode": args.memory_retrieval_mode,
+        "memory_organization": memory_organization_for_mode(args.memory_retrieval_mode),
         "dataset_type": args.dataset_type,
         "dataset_file": args.dataset_file,
         "context_source": args.context_source,
@@ -1308,6 +1490,12 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--memory-retrieval-mode",
+        choices=RETRIEVAL_MODE_VALUES,
+        default=os.environ.get("MEMORY_RETRIEVAL_MODE", "hypergraph"),
+        help="Shared-memory retrieval mode. keyword/tag/semantic use text memory; hypergraph/fusion use hypergraph memory.",
+    )
+    parser.add_argument(
         "--modes",
         default="text,protocol",
         help="Developer/self-test only. Comma-separated modes: text,protocol,hidden. Ignored when --experiment-mode is set.",
@@ -1316,6 +1504,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--show-memory", action="store_true", help="Print hypergraph memory hits and reasoning paths.")
     parser.add_argument("--show-latent", action="store_true", help="Print state refs and latent state metadata.")
     parser.add_argument("--show-state", action="store_true", help="Print state snapshot fields needed by hypergraph tracing.")
+    parser.add_argument(
+        "--event-log-file",
+        default=os.environ.get("AGENT_EVENT_LOG_PATH", DEFAULT_EVENT_LOG_FILE),
+        help="JSONL file for dashboard runtime events. Empty string disables event logging.",
+    )
     return parser.parse_args()
 
 
@@ -1323,8 +1516,47 @@ def main() -> None:
     configure_stdout()
     force_utf8_stdout()
     args = parse_args()
+    os.environ["MEMORY_RETRIEVAL_MODE"] = args.memory_retrieval_mode
+    os.environ["MEMORY_ORGANIZATION"] = memory_organization_for_mode(args.memory_retrieval_mode)
     modes = configure_experiment_mode(args)
     tasks = load_tasks(args)
+    configure_event_log(
+        args.event_log_file,
+        {
+            "experiment_mode": args.experiment_mode or "<developer-modes>",
+            "dataset_type": args.dataset_type,
+            "dataset_file": args.dataset_file,
+            "context_source": args.context_source,
+            "memory_retrieval_mode": args.memory_retrieval_mode,
+            "memory_organization": memory_organization_for_mode(args.memory_retrieval_mode),
+            "task_count": len(tasks),
+            "modes": modes,
+            "from_agent": "runtime",
+            "to_agent": "dashboard",
+            "action_type": "start_run",
+            "state_refs": [],
+            "memory_refs": [],
+            "text_chars": 0,
+            "elapsed_ms": 0,
+        },
+    )
+    emit_runtime_event(
+        {
+            "event_type": "task_queue",
+            "experiment_mode": args.experiment_mode or "<developer-modes>",
+            "dataset_type": args.dataset_type,
+            "dataset_file": args.dataset_file,
+            "task_count": len(tasks),
+            "tasks": dashboard_task_queue(tasks),
+            "from_agent": "runtime",
+            "to_agent": "dashboard",
+            "action_type": "load_task_queue",
+            "state_refs": [],
+            "memory_refs": [],
+            "text_chars": 0,
+            "elapsed_ms": 0,
+        }
+    )
     print(
         "LLM providers: "
         f"default={get_llm_provider()}, "
@@ -1338,6 +1570,8 @@ def main() -> None:
         f"type={args.dataset_type}, "
         f"file={args.dataset_file}, "
         f"context_source={args.context_source}, "
+        f"memory_retrieval_mode={args.memory_retrieval_mode}, "
+        f"memory_organization={memory_organization_for_mode(args.memory_retrieval_mode)}, "
         f"tasks={len(tasks)}, "
         f"modes={','.join(modes)}"
     )
@@ -1356,6 +1590,30 @@ def main() -> None:
         )
         for mode in modes
     ]
+    emit_runtime_event(
+        {
+            "event_type": "run_done",
+            "experiment_mode": args.experiment_mode or "<developer-modes>",
+            "dataset_type": args.dataset_type,
+            "dataset_file": args.dataset_file,
+            "memory_retrieval_mode": args.memory_retrieval_mode,
+            "memory_organization": memory_organization_for_mode(args.memory_retrieval_mode),
+            "task_count": len(tasks),
+            "modes": modes,
+            "from_agent": "runtime",
+            "to_agent": "dashboard",
+            "action_type": "finish_run",
+            "state_refs": [],
+            "memory_refs": [],
+            "text_chars": sum((result.get("metrics", {}) or {}).get("text_chars", 0) for result in results),
+            "elapsed_ms": sum((result.get("metrics", {}) or {}).get("elapsed_ms", 0) for result in results),
+            "return_result": {
+                "runs": len(results),
+                "messages": sum((result.get("metrics", {}) or {}).get("message_count", 0) for result in results),
+                "memory_hits": sum((result.get("metrics", {}) or {}).get("memory_hits", 0) for result in results),
+            },
+        }
+    )
     print_readable_run_summaries(results)
     print_comparison(results)
     print_run_result_json(args, tasks, results)

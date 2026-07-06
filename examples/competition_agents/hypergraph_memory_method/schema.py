@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Final
 
-
 NODE_MEMORY: Final = "memory"
 NODE_MEMORY_TYPE: Final = "memory_type"
 NODE_MEMORY_LAYER: Final = "memory_layer"
@@ -41,6 +40,11 @@ NODE_TRIGGER: Final = "trigger"
 NODE_REUSE_BENEFIT: Final = "reuse_benefit"
 NODE_ARCHIVE_SCOPE: Final = "archive_scope"
 NODE_LIFECYCLE: Final = "lifecycle"
+NODE_EVIDENCE_CHAIN: Final = "evidence_chain"
+NODE_CLAIM: Final = "claim"
+NODE_EVIDENCE_SOURCE: Final = "evidence_source"
+NODE_RELATION: Final = "relation"
+NODE_VERSION: Final = "version"
 
 EDGE_MEMORY_EVENT: Final = "memory_event"
 EDGE_MEMORY_LAYER: Final = "memory_layer"
@@ -63,6 +67,11 @@ EDGE_EXPERIENCE_RULE: Final = "experience_rule"
 EDGE_EXPERIENCE_SIGNATURE: Final = "experience_signature"
 EDGE_REUSE_BENEFIT: Final = "reuse_benefit"
 EDGE_ARCHIVE_SCOPE: Final = "archive_scope"
+EDGE_EVIDENCE_CHAIN: Final = "evidence_chain"
+EDGE_CLAIM_SUPPORT: Final = "claim_support"
+EDGE_CLAIM_DEPENDENCY: Final = "claim_dependency"
+EDGE_EVIDENCE_PROVENANCE: Final = "evidence_provenance"
+EDGE_CLAIM_CONTRADICTION: Final = "claim_contradiction"
 
 STRUCTURED_NODE_KINDS: Final = {
     NODE_MEMORY_TYPE,
@@ -99,6 +108,11 @@ STRUCTURED_NODE_KINDS: Final = {
     NODE_REUSE_BENEFIT,
     NODE_ARCHIVE_SCOPE,
     NODE_LIFECYCLE,
+    NODE_EVIDENCE_CHAIN,
+    NODE_CLAIM,
+    NODE_EVIDENCE_SOURCE,
+    NODE_RELATION,
+    NODE_VERSION,
 }
 
 PROFILE_FIELDS: Final = (

@@ -15,6 +15,7 @@ from competition_agents.latent_hidden import (
     stored_hidden_bytes,
     stored_hidden_shape,
 )
+from competition_agents.runtime_events import emit_message_event, emit_state_transfer_event
 
 
 class Metrics(TypedDict):
@@ -25,6 +26,7 @@ class Metrics(TypedDict):
     latent_transfer_count: int
     latent_bytes: int
     transfer_latency_ms: float
+    state_generation_ms: float
 
 
 class CompetitionState(TypedDict):
@@ -96,6 +98,7 @@ def initial_state(
             "latent_transfer_count": 0,
             "latent_bytes": 0,
             "transfer_latency_ms": 0.0,
+            "state_generation_ms": 0.0,
         },
     }
 
@@ -117,7 +120,9 @@ def put_latent_state(
 ) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
     """创建非文本 latent state，并更新状态传递指标。"""
 
+    started = time.perf_counter()
     embedding = embed_text(text)
+    generation_elapsed_ms = (time.perf_counter() - started) * 1000
     vector = embedding.vector
     state_id = f"state-{len(state['latent_states']) + 1:04d}"
     checksum = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
@@ -144,6 +149,17 @@ def put_latent_state(
     # 简化估算：把向量按 32 位浮点数统计数据规模。
     metrics["latent_transfer_count"] += 1
     metrics["latent_bytes"] += len(vector) * 4
+    metrics["state_generation_ms"] = metrics.get("state_generation_ms", 0.0) + generation_elapsed_ms
+    emit_state_transfer_event(
+        state,
+        state_id=state_id,
+        producer=producer,
+        consumers=consumers or [],
+        content_type=latent_state["content_type"],
+        summary=latent_state["summary"],
+        shape=latent_state["shape"],
+        bytes_size=len(vector) * 4,
+    )
     return state_id, {**state["latent_states"], state_id: latent_state}, metrics
 
 
@@ -159,7 +175,9 @@ def put_hidden_state(
 ) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
     """创建本地 LLM hidden state，并复用现有 latent_state 容器输出 state_ref。"""
 
+    started = time.perf_counter()
     result, tensor = extract_last_hidden_state(text)
+    generation_elapsed_ms = (time.perf_counter() - started) * 1000
     state_id = f"hidden-{len(state['latent_states']) + 1:04d}"
     latent_state = {
         "state_id": state_id,
@@ -193,6 +211,17 @@ def put_hidden_state(
     metrics = dict(state["metrics"])
     metrics["latent_transfer_count"] += 1
     metrics["latent_bytes"] += stored_hidden_bytes(result)
+    metrics["state_generation_ms"] = metrics.get("state_generation_ms", 0.0) + generation_elapsed_ms
+    emit_state_transfer_event(
+        state,
+        state_id=state_id,
+        producer=producer,
+        consumers=consumers or [],
+        content_type=latent_state["content_type"],
+        summary=latent_state["summary"],
+        shape=latent_state["stored_shape"],
+        bytes_size=stored_hidden_bytes(result),
+    )
     return state_id, {**state["latent_states"], state_id: latent_state}, metrics
 
 
@@ -225,4 +254,13 @@ def record_message(
         "char_cost": len(serialized),
         "transfer_latency_ms": transfer_elapsed_ms,
     }
+    emit_message_event(
+        state,
+        sender=sender,
+        receiver=receiver,
+        action=action,
+        payload=payload,
+        char_cost=len(serialized),
+        transfer_elapsed_ms=transfer_elapsed_ms,
+    )
     return [*state["messages"], message], next_metrics

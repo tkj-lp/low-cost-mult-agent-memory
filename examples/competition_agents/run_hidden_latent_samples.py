@@ -19,7 +19,13 @@ from competition_agents.latent_hidden.hidden_state import HiddenStateResult
 from competition_agents.latent_hidden.adapter import cosine_similarity
 from competition_agents.memory import refine_memory
 from competition_agents.restricted_python_codeact import run_restricted_python
-from hypergraph_memory_method import search_context
+from hypergraph_memory_method import (
+    RETRIEVAL_MODE_VALUES,
+    configured_retrieval_mode,
+    memory_organization_for_mode,
+    search_context,
+    search_memory_by_mode,
+)
 from run_hotpot_samples import SAMPLES, answers_match, normalize_answer
 
 
@@ -483,64 +489,17 @@ def _retrieve_hidden_memory(
     planner_focus: list[str],
     top_k: int = 3,
 ) -> list[dict[str, Any]]:
-    """在 hidden 路径中对历史记忆做轻量真实召回，而不是把全部历史记忆都算命中。"""
+    """让隐状态路径与其他协作路径使用相同的五种记忆检索实现。"""
 
     if not prior_memory:
         return []
-
-    query_tokens = _tokenize(question) | _tokenize(retrieval_query)
-    for step in planner_focus:
-        query_tokens |= _tokenize(step)
-    query_metadata_text = "\n".join([question, retrieval_query, *planner_focus])
-    query_triggers = set(_derive_hidden_query_triggers(question, query_metadata_text))
-    query_task_type, query_tags = _extract_hidden_codeact_query_metadata(query_metadata_text)
-    query_tags_set = set(query_tags)
-
-    scored: list[tuple[float, dict[str, Any]]] = []
-    for memory in prior_memory:
-        summary = str(memory.get("summary") or "")
-        task_topic = str(memory.get("task_topic") or "")
-        summary_tokens = _tokenize(summary) | _tokenize(task_topic)
-        overlap = len(query_tokens & summary_tokens)
-        score = float(overlap)
-        memory_task_type = str(memory.get("task_type") or "").strip().lower()
-        memory_tags = {
-            str(item).strip().lower()
-            for item in memory.get("tags", []) or []
-            if str(item).strip()
-        }
-        if memory.get("memory_type") == "experience":
-            trigger_overlap = len(query_triggers & set(memory.get("trigger_conditions", []) or []))
-            score += trigger_overlap * 4.0
-            if query_task_type and memory_task_type == query_task_type:
-                score += 5.0
-            tag_overlap = len(query_tags_set & memory_tags)
-            score += tag_overlap * 2.5
-            if trigger_overlap == 0 and query_triggers:
-                score -= 2.0
-            if query_task_type and memory_task_type and memory_task_type != query_task_type:
-                score -= 1.0
-        else:
-            if overlap:
-                score += 1.0
-            if query_task_type and memory_task_type == query_task_type:
-                score += 1.5
-            if query_tags_set and memory_tags:
-                score += len(query_tags_set & memory_tags) * 0.5
-        if score <= 0:
-            continue
-        ranked = dict(memory)
-        ranked["retrieval_score"] = round(score, 4)
-        scored.append((score, ranked))
-
-    scored.sort(
-        key=lambda item: (
-            -item[0],
-            0 if item[1].get("memory_type") == "evidence" else 1,
-            str(item[1].get("memory_id") or ""),
-        )
+    mode = configured_retrieval_mode()
+    query = "\n".join(
+        part.strip()
+        for part in [question, retrieval_query, *planner_focus]
+        if str(part).strip()
     )
-    return [memory for _, memory in scored[:top_k]]
+    return search_memory_by_mode(prior_memory, query, top_k=top_k, mode=mode)
 
 
 def evidence_from_hypergraph_sample(
@@ -2340,6 +2299,8 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
     return {
         "mode": "latent_hidden",
         "experiment_mode": "latent_hidden",
+        "memory_retrieval_mode": configured_retrieval_mode(),
+        "memory_organization": memory_organization_for_mode(configured_retrieval_mode()),
         "dataset_type": hidden_dataset_key(args),
         "dataset_file": args.dataset_file if args.dataset_type in {"continuous", "codeact"} else "",
         "context_source": args.context_source,
@@ -2360,6 +2321,8 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
                 "group_id": result.get("group_id"),
                 "turn_id": result.get("turn_id"),
                 "dataset_type": hidden_dataset_key(args),
+                "memory_retrieval_mode": configured_retrieval_mode(),
+                "memory_organization": memory_organization_for_mode(configured_retrieval_mode()),
                 "task_type": result.get("task_type"),
                 "question": result.get("question"),
                 "answer_mode": result.get("answer_mode", args.answer_mode),
@@ -2407,6 +2370,8 @@ def print_run_result_json(args: Namespace, results: list[dict[str, Any]]) -> Non
     payload = {
         "schema_version": 1,
         "experiment_mode": "latent_hidden",
+        "memory_retrieval_mode": configured_retrieval_mode(),
+        "memory_organization": memory_organization_for_mode(configured_retrieval_mode()),
         "dataset_type": dataset_type,
         "dataset_file": args.dataset_file if args.dataset_type in {"continuous", "codeact"} else "",
         "context_source": args.context_source,
@@ -2445,6 +2410,12 @@ def parse_args() -> Namespace:
         default="generate",
         help="generate 表示同一个本地模型生成答案并直接提取 hidden；extract 表示保留旧的确定性抽取模式。",
     )
+    parser.add_argument(
+        "--memory-retrieval-mode",
+        choices=RETRIEVAL_MODE_VALUES,
+        default=os.environ.get("MEMORY_RETRIEVAL_MODE", "hypergraph"),
+        help="Shared-memory retrieval mode. keyword/tag/semantic use text memory; hypergraph/fusion use hypergraph memory.",
+    )
     return parser.parse_args()
 
 
@@ -2452,11 +2423,15 @@ def main() -> None:
     force_utf8_stdout()
     os.environ.setdefault("COMPETITION_MEMORY_DISTILLATION_MODE", "local_fallback")
     args = parse_args()
+    os.environ["MEMORY_RETRIEVAL_MODE"] = args.memory_retrieval_mode
+    os.environ["MEMORY_ORGANIZATION"] = memory_organization_for_mode(args.memory_retrieval_mode)
     print("=== hidden latent samples ===")
     print("mode: local_llm_last_hidden_state")
     print(f"dataset_type: {args.dataset_type}")
     print(f"context_source: {args.context_source}")
     print(f"answer_mode: {args.answer_mode}")
+    print(f"memory_retrieval_mode: {args.memory_retrieval_mode}")
+    print(f"memory_organization: {memory_organization_for_mode(args.memory_retrieval_mode)}")
     if args.dataset_type == "continuous":
         groups = load_continuous_groups(Path(args.dataset_file), args.limit)
         for group in groups:

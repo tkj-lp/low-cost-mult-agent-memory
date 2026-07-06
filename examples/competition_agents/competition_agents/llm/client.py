@@ -35,7 +35,7 @@ def get_llm_client(role: str | None = None) -> LLMClient:
         return OpenAICompatibleClient()
     if provider in {"local", "local_hf", "hf", "huggingface"}:
         # local_hf 使用本机 HuggingFace causal LM，便于和 hidden-state 路径做同模型对比。
-        return LocalHFClient()
+        return LocalHFClient(role=role)
     if provider == "mock":
         # mock 不依赖网络，便于演示和可复现实验。
         return MockLLMClient()

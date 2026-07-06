@@ -3,12 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from .gating import infer_trigger_families
 from .schema import (
-    NODE_ARTIFACT,
     NODE_ARCHIVE_SCOPE,
+    NODE_ARTIFACT,
+    NODE_EVIDENCE_CHAIN,
+    NODE_EXPECTED_REUSE,
     NODE_EXPERIENCE,
     NODE_EXPERIENCE_RULE,
-    NODE_EXPECTED_REUSE,
     NODE_FAILURE_PATTERN,
     NODE_GAP,
     NODE_INTENT,
@@ -16,17 +18,16 @@ from .schema import (
     NODE_MEMORY_LAYER,
     NODE_MEMORY_REF,
     NODE_PROBLEM_PATTERN,
+    NODE_RELATION,
     NODE_REUSE_BENEFIT,
     NODE_SOLUTION_PATTERN,
-    NODE_STRATEGY,
     NODE_STATE,
     NODE_STATE_REF,
+    NODE_STRATEGY,
     NODE_TAG,
     NODE_TRIGGER,
 )
 from .text import limited_tokens, node_id, normalize_text
-from .gating import infer_trigger_families
-
 
 ARTIFACT_HINTS = {
     "answer": {"answer", "result", "final"},
@@ -49,7 +50,9 @@ def _artifact_from_expected_reuse(value: str) -> str:
     return normalize_text(artifact or value)
 
 
-def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_query_profile(
+    query: str, task_meta: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Build a lightweight query profile used by graph retrieval."""
 
     normalized_query = normalize_text(query)
@@ -70,7 +73,11 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
         if tokens & hints or any(hint in normalized_query for hint in hints):
             artifacts.add(artifact)
     artifacts.update(_artifact_from_expected_reuse(value) for value in expected_reuse)
-    if "previous" in normalized_query or "prior" in normalized_query or "reuse" in normalized_query:
+    if (
+        "previous" in normalized_query
+        or "prior" in normalized_query
+        or "reuse" in normalized_query
+    ):
         artifacts.add("memory")
     if "evidence chain" in normalized_query:
         artifacts.update({"evidence", "supporting-facts"})
@@ -135,7 +142,9 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
     }
     trigger_families = infer_trigger_families(query)
     if "temporal" in trigger_families:
-        rule_nodes["problem_patterns"].add("multiple-temporal-candidates-with-constraints")
+        rule_nodes["problem_patterns"].add(
+            "multiple-temporal-candidates-with-constraints"
+        )
         rule_nodes["solution_patterns"].add("choose-date-matching-all-constraints")
         rule_nodes["triggers"].add("temporal-query")
     if "attribute" in trigger_families:
@@ -151,7 +160,11 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
     if {"failure", "avoid", "wrong", "mistake"} & tokens:
         rule_nodes["failure_patterns"].add("avoid-historical-error")
     for token in tokens:
-        if token.endswith("_query") or token.endswith("-query") or token in {"temporal", "attribute", "reference"}:
+        if (
+            token.endswith("_query")
+            or token.endswith("-query")
+            or token in {"temporal", "attribute", "reference"}
+        ):
             rule_nodes["triggers"].add(token.replace("_", "-"))
 
     reuse_benefits = set()
@@ -160,10 +173,31 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
     if {"latent", "state"} & tokens:
         reuse_benefits.add("latent-transfer-accounted")
 
+    evidence_chain_requested = bool(
+        {
+            "evidence",
+            "fact",
+            "facts",
+            "chain",
+            "source",
+            "support",
+            "supported",
+            "proof",
+        }
+        & tokens
+    )
+    relations: set[str] = set()
+    if {"support", "supported", "evidence", "proof"} & tokens:
+        relations.add("supports")
+    if {"conflict", "contradict", "contradicts", "disagree"} & tokens:
+        relations.add("contradicts")
+
     return {
         "intent": intent,
         "expected_reuse": sorted(expected_reuse),
-        "question": task_meta.get("question", query) if isinstance(task_meta, dict) else query,
+        "question": (
+            task_meta.get("question", query) if isinstance(task_meta, dict) else query
+        ),
         "gaps": sorted(gaps),
         "artifacts": sorted(artifacts),
         "keywords": sorted(tokens),
@@ -172,6 +206,8 @@ def build_query_profile(query: str, task_meta: dict[str, Any] | None = None) -> 
         "strategies": sorted(strategies),
         "experiences": sorted(experiences),
         "reuse_benefits": sorted(reuse_benefits),
+        "evidence_chain_requested": evidence_chain_requested,
+        "relations": sorted(relations),
         "memory_layers": sorted(memory_layers),
         "trigger_families": sorted(trigger_families),
         **{key: sorted(value) for key, value in rule_nodes.items()},
@@ -215,6 +251,11 @@ def profile_nodes(profile: dict[str, Any]) -> set[str]:
         nodes.add(node_id(NODE_EXPERIENCE_RULE, "rule-card"))
     for value in profile.get("reuse_benefits", []):
         nodes.add(node_id(NODE_REUSE_BENEFIT, str(value)))
+    if profile.get("evidence_chain_requested"):
+        nodes.add(node_id(NODE_EVIDENCE_CHAIN, "requested"))
+        nodes.add(node_id(NODE_ARTIFACT, "evidence-chain"))
+    for value in profile.get("relations", []):
+        nodes.add(node_id(NODE_RELATION, str(value)))
     for value in profile.get("archive_scopes", []):
         nodes.add(node_id(NODE_ARCHIVE_SCOPE, str(value)))
     for token in profile.get("keywords", []):

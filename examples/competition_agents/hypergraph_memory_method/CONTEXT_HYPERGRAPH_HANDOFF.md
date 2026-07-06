@@ -383,3 +383,55 @@ from hypergraph_memory_method import search_context
 ```
 
 传入当前 `task_meta` 和 `question`，拿返回的 `context_hits` 作为紧凑证据上下文即可。超图节点、超边、字段归一化都在方法层内部完成，不需要改智能体内部逻辑。
+
+## 12. 记忆子系统 1.0 增量能力
+
+本次增强没有修改智能体侧已经使用的 `add_memory(...)`、`search_memory(...)`、`refine_memory(...)` 和 `search_hypergraph_memory(...)` 接口。
+
+新增能力如下：
+
+```text
+1. 统一记忆记录：补齐全局记忆编号、版本、细粒度记忆种类、来源、生命周期和检索文档。
+2. 显式证据链：记录有序证据、推理结论、最终结论、依赖、支持、反驳和来源。
+3. 证据链校验：检查空步骤、缺失来源、断裂依赖、循环依赖和无证据结论。
+4. 紧凑复用投影：后续智能体可以只读取记忆编号、摘要和必要证据链，不需要传递完整轨迹。
+5. 多路检索：关键词、标签、向量、超图和融合五种模式使用相同输入输出结构。
+6. 超图检索：独立多路召回后执行跨记忆关系扩展、证据链质量约束、生命周期和复用反馈重排。
+7. 持久化：提供带事务、增量索引、重启恢复、导入导出和显式复用反馈的本地数据库存储。
+8. 公平评测：提供证据链感知检索指标和有记忆/无记忆配对因果净增益指标。
+```
+
+可选的新接口：
+
+```python
+from hypergraph_memory_method import (
+    SQLiteHypergraphMemoryStore,
+    evaluate_paired_memory_gain,
+    evaluate_retrieval_modes,
+    normalize_memory_record,
+    search_memory_by_mode,
+    validate_evidence_chain,
+)
+```
+
+检索模式示例：
+
+```python
+hits = search_memory_by_mode(memory, query, top_k=3, mode="hypergraph")
+```
+
+当前两组十轮连续任务的离线公平检索结果中，超图模式均为最佳单路检索：第一组总体第一，第二组仅次于融合模式。正式报告仍应在目标操作系统和正式模型配置下重复运行并保留原始结果。
+
+### 12.1 不改调用接口的可选持久化
+
+原有写入和超图检索入口支持通过环境变量自动保存与加载：
+
+```powershell
+$env:HYPERGRAPH_MEMORY_DB='run_result/hypergraph_memory.sqlite3'
+$env:HYPERGRAPH_MEMORY_AUTOPERSIST='1'
+$env:HYPERGRAPH_MEMORY_AUTOLOAD='1'
+```
+
+配置后，`build_hypergraph_view(...)` 在原有记忆写入路径中自动写入数据库，`search_hypergraph_memory(...)` 会合并当前进程记忆和历史持久化记忆。未配置数据库路径时完全保持原来的纯内存行为。
+
+注意：智能体侧 `search_memory(...)` 在传入空列表时会在调用超图模块前直接返回。受“不修改智能体侧文件”的边界约束，冷启动后的第一条空记忆查询需要由调用侧先执行 `SQLiteHypergraphMemoryStore.list()`；从产生第一条当前运行记忆开始，原检索链路会自动合并历史持久化记忆。

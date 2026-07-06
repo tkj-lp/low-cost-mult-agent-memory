@@ -469,7 +469,7 @@ def retriever_agent(state: CompetitionState) -> dict:
         gap_type="missing_memory" if not hits else "partial_context",
         confidence=0.78 if hits else 0.64,
     )
-    # evidence 单独写入 latent state；记忆命中不再重新 embedding，只以 compact context 和 memory_ref 转发。
+    # Match the original behavior: evidence is written once as state and passed by reference.
     if state["mode"] == "hidden":
         latent_ref, latent_states, metrics = put_hidden_state(
             state,
@@ -533,7 +533,7 @@ def retriever_agent(state: CompetitionState) -> dict:
             confidence=0.78 if hits else 0.64,
         )
 
-    # 复用 put_latent_state 返回的 metrics，确保 latent 传递也被统计。
+    # Reuse state-write metrics so latent transfers are counted.
     messages, metrics = record_message(
         state,
         sender="retriever",

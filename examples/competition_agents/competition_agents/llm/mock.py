@@ -67,10 +67,13 @@ class MockLLMClient:
         gap_types = sorted({gap.get("gap_type", "unknown") for gap in cognitive_gaps or []})
         gap_text = ", ".join(gap_types) if gap_types else "none"
         execution = execution_result or {}
+        answer_candidate = str(execution.get("answer_candidate") or "").strip()
         task_lower = task.lower()
         evidence_text = evidence_text.rstrip(".")
 
-        if "performance" in task_lower:
+        if answer_candidate:
+            task_answer = answer_candidate
+        elif "performance" in task_lower:
             task_answer = (
                 "CodeAct execution memory can be reused for performance analysis by storing structured execution "
                 "metadata from previous runs, including execution_mode, sandbox_status, elapsed_ms, message_count, "

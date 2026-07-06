@@ -1,0 +1,605 @@
+<template>
+  <section class="page memory-page memory-flow-page">
+    <section class="memory-card memory-task-flow-card">
+      <header>
+        <span></span>
+        <h2>连续任务记忆流转</h2>
+        <div class="memory-run-badges">
+          <b>{{ collaborationLabel }}</b>
+          <b>{{ datasetLabel }}</b>
+          <b>{{ memoryRetrievalLabel }}</b>
+        </div>
+      </header>
+
+      <div v-if="!tasks.length" class="runtime-empty-panel">
+        <strong>暂无真实记忆流转数据</strong>
+        <span>启动实验后，这里会按任务展示检索、命中、复用和写回链路。</span>
+      </div>
+
+      <template v-else>
+        <div class="memory-task-tabs">
+          <button
+            v-for="task in tasks"
+            :key="task.key"
+            type="button"
+            :class="[task.status, { active: task.key === selectedTaskKey }]"
+            @click="selectTask(task.key)"
+          >
+            <strong>任务 {{ task.index }}</strong>
+            <span>{{ task.shortTitle }}</span>
+          </button>
+        </div>
+
+        <div class="memory-flow-timeline" :key="selectedTaskKey">
+          <article
+            v-for="(node, index) in timelineNodes"
+            :key="node.id"
+            class="memory-flow-node"
+            :class="node.tone"
+            :style="{ '--step-index': index }"
+          >
+            <div class="memory-flow-marker">
+              <i>{{ node.step }}</i>
+              <em v-if="node.edge">{{ node.edge }}</em>
+            </div>
+            <div class="memory-flow-content">
+              <strong>{{ node.title }}</strong>
+              <p>{{ node.detail }}</p>
+              <span>{{ node.meta }}</span>
+            </div>
+          </article>
+        </div>
+      </template>
+    </section>
+
+    <div class="memory-workspace">
+      <section class="memory-card memory-retrieval-panel">
+        <header>
+          <span></span>
+          <h2>检索情况</h2>
+        </header>
+
+        <div v-if="!selectedTask" class="runtime-empty-panel">
+          <strong>请选择任务</strong>
+          <span>选择上方任务后展示该任务的检索查询和候选记忆。</span>
+        </div>
+
+        <template v-else>
+          <div class="retrieval-question">
+            <span>当前任务问题</span>
+            <strong>{{ selectedTask.title }}</strong>
+          </div>
+
+          <div class="retrieval-list" v-if="retrievalRows.length">
+            <button
+              v-for="memory in retrievalRows"
+              :key="memory.id"
+              type="button"
+              class="retrieval-memory-row"
+              :class="{ active: memory.id === selectedMemoryId, adopted: memory.adopted }"
+              @click="selectMemory(memory.id)"
+            >
+              <div>
+                <strong>{{ memory.id }}</strong>
+                <em>{{ memory.adopted ? '已采用' : '候选' }}</em>
+              </div>
+              <div class="retrieval-memory-main">
+                <p>{{ memory.summary }}</p>
+                <span>选择理由：{{ memory.reason }}</span>
+              </div>
+              <dl>
+                <div><dt>命中方式</dt><dd>{{ memory.method }}</dd></div>
+                <div><dt>分数</dt><dd>{{ memory.score }}</dd></div>
+                <div><dt>采用状态</dt><dd>{{ memory.adopted ? '参与回答' : '候选排序' }}</dd></div>
+              </dl>
+            </button>
+          </div>
+
+          <div v-else class="runtime-empty-panel compact-empty-panel">
+            <strong>当前任务未命中记忆</strong>
+            <span>如果后续任务命中历史记忆，这里会展示候选列表和采用状态。</span>
+          </div>
+        </template>
+      </section>
+
+      <aside class="memory-side-stack">
+        <section class="memory-card memory-detail-panel">
+          <header>
+            <span></span>
+            <h2>记忆详情</h2>
+          </header>
+
+          <div v-if="!selectedMemory" class="runtime-empty-panel">
+            <strong>暂无选中记忆</strong>
+            <span>点击左侧候选记忆后展示详情。</span>
+          </div>
+
+          <dl v-else class="memory-detail-list">
+            <div><dt>记忆编号</dt><dd>{{ selectedMemory.id }}</dd></div>
+            <div><dt>来源 Agent</dt><dd>{{ selectedMemory.source }}</dd></div>
+            <div><dt>创建时间</dt><dd>{{ selectedMemory.time }}</dd></div>
+            <div><dt>任务主题</dt><dd>{{ selectedMemory.topic }}</dd></div>
+            <div><dt>摘要</dt><dd>{{ selectedMemory.summary }}</dd></div>
+            <div><dt>标签</dt><dd>{{ selectedMemory.tags }}</dd></div>
+            <div><dt>命中方式</dt><dd>{{ selectedMemory.method }}</dd></div>
+            <div><dt>命中分数</dt><dd>{{ selectedMemory.score }}</dd></div>
+            <div><dt>复用状态</dt><dd>{{ selectedMemory.adopted ? '已参与本轮回答' : '候选命中' }}</dd></div>
+            <div><dt>状态引用</dt><dd>{{ stateRefText }}</dd></div>
+          </dl>
+        </section>
+
+        <section class="memory-card evidence-detail-panel">
+          <header>
+            <span></span>
+            <h2>证据链</h2>
+          </header>
+
+          <div v-if="!selectedTask" class="runtime-empty-panel">
+            <strong>暂无证据链</strong>
+            <span>任务运行完成后会展示记忆如何参与回答。</span>
+          </div>
+
+          <div v-else class="evidence-node-chain">
+            <article
+              v-for="(item, index) in evidenceChain"
+              :key="item.label"
+              class="evidence-node"
+              :class="item.tone"
+              :style="{ '--step-index': index }"
+            >
+              <i>{{ index + 1 }}</i>
+              <div>
+                <strong>{{ item.label }}</strong>
+                <p>{{ item.value }}</p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+
+const EVENT_LOG_URL = '/runtime/run_events.jsonl'
+const selectedTaskKey = ref('')
+const selectedMemoryId = ref('')
+const runtimeEvents = ref([])
+let timer = null
+
+const runMeta = computed(() => runtimeEvents.value.find((event) => event.event_type === 'run_start') ?? {})
+const taskQueue = computed(() => {
+  const queue = runtimeEvents.value.find((event) => event.event_type === 'task_queue')
+  return Array.isArray(queue?.tasks) ? queue.tasks : []
+})
+
+const retrievalModeLabel = computed(() => runMeta.value.memory_retrieval_mode || '检索方式待运行')
+const collaborationLabel = computed(() => `协作模式：${modeLabel(runMeta.value.experiment_mode || runMeta.value.mode)}`)
+const datasetLabel = computed(() => `数据集：${datasetLabelFromMeta(runMeta.value)}`)
+const memoryRetrievalLabel = computed(() => {
+  const memory = memoryModeLabel(runMeta.value.memory_organization || runMeta.value.memory_retrieval_mode)
+  const retrieval = retrievalModeLabelText(runMeta.value.memory_retrieval_mode)
+  return `记忆组织：${memory}｜检索方式：${retrieval}`
+})
+
+const tasks = computed(() => {
+  const byIndex = new Map()
+  for (const item of taskQueue.value) {
+    const index = Number(item.task_index || byIndex.size + 1)
+    byIndex.set(index, {
+      key: String(index),
+      index,
+      id: item.task_id || String(index),
+      title: item.task_title || item.question || item.task_id || `任务 ${index}`,
+      shortTitle: shorten(item.task_title || item.question || item.task_id || `任务 ${index}`, 34),
+      expectedReuse: item.expected_reuse || []
+    })
+  }
+  for (const event of runtimeEvents.value) {
+    const index = Number(event.task_index || 0)
+    if (!index) continue
+    if (!byIndex.has(index)) {
+      byIndex.set(index, {
+        key: String(index),
+        index,
+        id: event.task_id || String(index),
+        title: event.task_title || event.task_id || `任务 ${index}`,
+        shortTitle: shorten(event.task_title || event.task_id || `任务 ${index}`, 34),
+        expectedReuse: []
+      })
+    }
+  }
+  return [...byIndex.values()]
+    .sort((a, b) => a.index - b.index)
+    .map((task) => ({ ...task, status: taskStatus(task.index) }))
+})
+
+const selectedTask = computed(() => tasks.value.find((task) => task.key === selectedTaskKey.value) ?? null)
+const selectedTaskEvents = computed(() => {
+  if (!selectedTask.value) return []
+  return runtimeEvents.value.filter((event) => Number(event.task_index || 0) === selectedTask.value.index)
+})
+
+const taskDoneEvent = computed(() => selectedTaskEvents.value.find((event) => event.event_type === 'task_done') ?? null)
+const memoryWriteEvents = computed(() => selectedTaskEvents.value.filter((event) => event.event_type === 'memory_write'))
+const stateTransferEvents = computed(() => selectedTaskEvents.value.filter((event) => event.event_type === 'state_transfer'))
+
+const retrievalQuery = computed(() => {
+  const retrieveEvent = selectedTaskEvents.value.find((event) =>
+    event.event_type === 'agent_message' &&
+    String(event.action_type || '').toLowerCase().includes('retrieve')
+  )
+  return shorten(eventPayloadText(retrieveEvent) || selectedTask.value?.title || '暂无检索查询', 260)
+})
+
+const retrievalRows = computed(() =>
+  selectedTaskEvents.value
+    .filter((event) => event.event_type === 'memory_hit')
+    .map((event, index) => {
+      const result = event.return_result || {}
+      const id = result.memory_id || event.memory_refs?.[0] || `memory-hit-${index + 1}`
+      return {
+        id,
+        summary: result.summary || '该记忆命中事件未提供摘要',
+        score: scoreText(result.retrieval_score),
+        scoreRaw: Number(result.retrieval_score || 0),
+        type: result.memory_type || 'memory',
+        method: retrievalModeLabel.value,
+        reason: selectionReason(result),
+        scoreComponents: scoreComponentText(result.score_components),
+        source: normalizeAgent(event.from_agent || 'Memory'),
+        time: formatTime(event.timestamp),
+        topic: event.task_title || selectedTask.value?.title || '--',
+        tags: tagText(result.tags),
+        adopted: adoptedMemoryIds.value.has(String(id)),
+        stateRefs: event.state_refs || []
+      }
+    })
+)
+
+const adoptedMemoryIds = computed(() => new Set((taskDoneEvent.value?.memory_refs || []).map((item) => String(item))))
+
+const selectedMemory = computed(() => {
+  const selected = retrievalRows.value.find((memory) => memory.id === selectedMemoryId.value)
+  if (selected) return selected
+  const firstAdopted = retrievalRows.value.find((memory) => memory.adopted)
+  if (firstAdopted) return firstAdopted
+  if (retrievalRows.value[0]) return retrievalRows.value[0]
+  const write = memoryWriteEvents.value[0]
+  if (!write) return null
+  const result = write.return_result || {}
+  return {
+    id: result.memory_id || write.memory_refs?.[0] || 'memory-write',
+    summary: result.summary || '该记忆写入事件未提供摘要',
+    score: '--',
+    type: result.memory_type || 'memory',
+    method: '写入',
+    source: normalizeAgent(write.from_agent || 'Summarizer'),
+    time: formatTime(write.timestamp),
+    topic: write.task_title || selectedTask.value?.title || '--',
+    tags: '--',
+    adopted: true,
+    stateRefs: write.state_refs || []
+  }
+})
+
+const stateRefText = computed(() => {
+  const directRefs = selectedMemory.value?.stateRefs || []
+  if (directRefs.length) return directRefs.join('，')
+  const state = stateTransferEvents.value[0]?.state
+  if (!state) return '本任务未记录关联状态引用'
+  const shape = Array.isArray(state.shape) && state.shape.length ? `${state.shape.join('×')} 维` : '维度未记录'
+  return `${state.state_ref || 'state_ref'} · ${state.content_type || 'state'} · ${shape} · ${byteText(state.bytes)}`
+})
+
+const timelineNodes = computed(() => {
+  if (!selectedTask.value) return []
+  const nodes = [
+    {
+      id: 'question',
+      step: '1',
+      title: '任务问题',
+      detail: selectedTask.value.title,
+      meta: selectedTask.value.expectedReuse.length
+        ? `期望复用：${selectedTask.value.expectedReuse.join('，')}`
+        : '首轮或无显式期望复用',
+      tone: 'blue',
+      edge: '生成查询'
+    },
+    {
+      id: 'query',
+      step: '2',
+      title: '检索查询',
+      detail: retrievalQuery.value,
+      meta: `检索方式：${retrievalModeLabel.value}`,
+      tone: 'green',
+      edge: '检索记忆库'
+    }
+  ]
+
+  if (retrievalRows.value.length) {
+    nodes.push({
+      id: 'hit',
+      step: '3',
+      title: '命中记忆',
+      detail: retrievalRows.value.map((memory) => `${memory.id}（${memory.score}）`).join('，'),
+      meta: `${retrievalRows.value.length} 条候选，${retrievalRows.value.filter((memory) => memory.adopted).length} 条被采用`,
+      tone: 'orange',
+      edge: '参与回答'
+    })
+  } else {
+    nodes.push({
+      id: 'hit-empty',
+      step: '3',
+      title: '命中记忆',
+      detail: '当前任务没有记录 memory_hit 事件',
+      meta: '等待后续任务或更高召回检索',
+      tone: 'gray',
+      edge: '参与回答'
+    })
+  }
+
+  nodes.push({
+    id: 'reuse',
+    step: '4',
+    title: '复用到回答',
+    detail: taskDoneEvent.value
+      ? shorten(taskDoneEvent.value.return_result?.final_answer || '任务已完成，但未记录最终回答', 180)
+      : '任务尚未完成',
+    meta: adoptedMemoryIds.value.size ? `复用记忆：${[...adoptedMemoryIds.value].join('，')}` : '未记录被复用记忆',
+    tone: taskDoneEvent.value ? 'purple' : 'gray',
+    edge: '写回共享记忆'
+  })
+
+  nodes.push({
+    id: 'write',
+    step: '5',
+    title: '写入新记忆',
+    detail: memoryWriteEvents.value.length
+      ? memoryWriteEvents.value.map((event) => event.return_result?.memory_id || event.memory_refs?.[0]).filter(Boolean).join('，')
+      : '当前任务未记录 memory_write 事件',
+    meta: memoryWriteEvents.value.length ? '写回共享记忆库' : '无新增记忆',
+    tone: memoryWriteEvents.value.length ? 'blue' : 'gray'
+  })
+  return nodes
+})
+
+const evidenceChain = computed(() => [
+  { label: '原问题', value: selectedTask.value?.title || '--', tone: 'blue' },
+  { label: '生成查询', value: retrievalQuery.value, tone: 'green' },
+  {
+    label: '选中记忆',
+    value: selectedMemory.value ? `${selectedMemory.value.id}：${selectedMemory.value.summary}` : '未命中记忆',
+    tone: selectedMemory.value ? 'orange' : 'gray'
+  },
+  {
+    label: '支撑依据',
+    value: selectedMemory.value
+      ? `${selectedMemory.value.reason}${selectedMemory.value.scoreComponents ? `；${selectedMemory.value.scoreComponents}` : ''}`
+      : '没有可用记忆支撑本轮回答',
+    tone: adoptedMemoryIds.value.size ? 'purple' : 'gray'
+  },
+  {
+    label: '最终回答',
+    value: taskDoneEvent.value?.return_result?.final_answer || '任务尚未完成或未记录最终回答',
+    tone: taskDoneEvent.value ? 'blue' : 'gray'
+  }
+])
+
+watch(tasks, (nextTasks) => {
+  if (!nextTasks.length) {
+    selectedTaskKey.value = ''
+    selectedMemoryId.value = ''
+    return
+  }
+  if (!nextTasks.some((task) => task.key === selectedTaskKey.value)) {
+    const runningTask = nextTasks.find((task) => task.status === 'running')
+    const firstHitTask = nextTasks.find((task) =>
+      runtimeEvents.value.some((event) => event.event_type === 'memory_hit' && Number(event.task_index || 0) === task.index)
+    )
+    selectedTaskKey.value = runningTask?.key ?? firstHitTask?.key ?? nextTasks[0].key
+  }
+}, { immediate: true })
+
+watch(retrievalRows, (rows) => {
+  if (!rows.length) {
+    selectedMemoryId.value = ''
+    return
+  }
+  if (!rows.some((memory) => memory.id === selectedMemoryId.value)) {
+    selectedMemoryId.value = (rows.find((memory) => memory.adopted) ?? rows[0]).id
+  }
+}, { immediate: true })
+
+onMounted(() => {
+  refreshRuntimeEvents()
+  timer = window.setInterval(refreshRuntimeEvents, 1200)
+})
+
+onBeforeUnmount(() => {
+  if (timer) window.clearInterval(timer)
+})
+
+function selectTask(taskKey) {
+  selectedTaskKey.value = taskKey
+}
+
+function selectMemory(memoryId) {
+  selectedMemoryId.value = memoryId
+}
+
+async function refreshRuntimeEvents() {
+  try {
+    const response = await fetch(`${EVENT_LOG_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) {
+      runtimeEvents.value = []
+      return
+    }
+    runtimeEvents.value = parseEventLog(await response.text())
+  } catch {
+    runtimeEvents.value = []
+  }
+}
+
+function parseEventLog(text) {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      try {
+        return JSON.parse(line)
+      } catch {
+        return null
+      }
+    })
+    .filter(Boolean)
+}
+
+function taskStatus(index) {
+  const events = runtimeEvents.value.filter((event) => Number(event.task_index || 0) === index)
+  if (events.some((event) => event.event_type === 'task_done')) return 'done'
+  if (events.some((event) => event.event_type === 'task_start')) return 'running'
+  return 'waiting'
+}
+
+function eventPayloadText(event) {
+  if (!event) return ''
+  return stringifyShort(event.input_params || event.payload || event.return_result || event.action_type || '', 300)
+}
+
+function stringifyShort(value, limit = 240) {
+  if (value == null) return ''
+  if (typeof value === 'string') return shorten(value, limit)
+  try {
+    return shorten(JSON.stringify(value, null, 0), limit)
+  } catch {
+    return shorten(String(value), limit)
+  }
+}
+
+function shorten(value, limit = 80) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim()
+  if (text.length <= limit) return text || '--'
+  return `${text.slice(0, limit)}...`
+}
+
+function scoreText(value) {
+  const number = Number(value)
+  return Number.isFinite(number) && value !== null && value !== undefined ? number.toFixed(3) : '--'
+}
+
+function formatTime(value) {
+  if (!value) return '--'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '--'
+  return date.toLocaleTimeString('zh-CN', { hour12: false })
+}
+
+function normalizeAgent(value) {
+  const text = String(value || '')
+  const map = {
+    planner: 'Planner',
+    retriever: 'Retriever',
+    reasoner: 'Reasoner',
+    executor: 'Executor',
+    summarizer: 'Summarizer',
+    memory: 'Memory',
+    runtime: 'Runtime'
+  }
+  return map[text.toLowerCase()] || text || '--'
+}
+
+function selectionReason(result) {
+  if (result.selection_reason) return shorten(result.selection_reason, 140)
+  const terms = Array.isArray(result.matched_terms) ? result.matched_terms.filter(Boolean).slice(0, 5) : []
+  if (terms.length) return `匹配查询词：${terms.join('、')}`
+  const path = Array.isArray(result.reasoning_path) ? result.reasoning_path[0] : null
+  if (path && typeof path === 'object') {
+    const parts = [path.query_node, path.relation || path.hyperedge_id, path.memory_id || path.target_id || path.context_id]
+      .filter(Boolean)
+      .map(String)
+    if (parts.length) return `检索路径：${parts.join(' → ')}`
+  }
+  if (result.retrieval_score != null) return `综合检索分数靠前：${result.retrieval_score}`
+  return '由当前检索器排序返回'
+}
+
+function scoreComponentText(components) {
+  if (!components || typeof components !== 'object') return ''
+  const labels = {
+    text_score: '文本',
+    semantic_score: '语义',
+    embedding_score: '向量',
+    hypergraph_score: '超图',
+    fusion_score: '融合',
+    lexical_overlap_score: '词项',
+    tag_overlap_score: '标签',
+    graph_expansion_score: '图扩展',
+    evidence_chain_query_score: '证据链'
+  }
+  return Object.entries(components)
+    .filter(([key, value]) => key !== 'retrieval_score' && value != null)
+    .slice(0, 3)
+    .map(([key, value]) => `${labels[key] || key}=${value}`)
+    .join('，')
+}
+
+function tagText(value) {
+  if (Array.isArray(value)) {
+    const tags = value.filter(Boolean).map(String)
+    return tags.length ? tags.join('，') : '--'
+  }
+  return value ? String(value) : '--'
+}
+
+function modeLabel(value) {
+  const map = {
+    baseline_text: '纯文本',
+    text: '纯文本',
+    protocol_api: '结构化协议',
+    protocol: '结构化协议',
+    protocol_api_embedding: '协议 + 向量',
+    hidden_api: '隐状态传递',
+    hidden: '隐状态传递',
+    latent_hidden: '隐状态传递'
+  }
+  return map[String(value || '').toLowerCase()] || value || '等待运行'
+}
+
+function datasetLabelFromMeta(meta) {
+  const file = String(meta.dataset_file || '')
+  if (file.includes('topiocqa_1_10turns')) return 'TopiOCQA 第 1 组（10轮）'
+  if (file.includes('topiocqa_2_10turns')) return 'TopiOCQA 第 2 组（10轮）'
+  if (file.includes('hotpot_continuous_tasks_3turn')) return 'Hotpot 连续任务（3轮）'
+  if (file.includes('codeact_1_10tasks')) return 'CodeAct 第 1 组（10题）'
+  return meta.dataset_type || '等待运行'
+}
+
+function memoryModeLabel(value) {
+  const normalized = String(value || '').toLowerCase()
+  if (['hypergraph', 'fusion'].includes(normalized)) return '超图记忆'
+  if (['text', 'keyword', 'tag', 'semantic'].includes(normalized)) return '普通文本记忆'
+  return value || '等待运行'
+}
+
+function retrievalModeLabelText(value) {
+  const map = {
+    keyword: '关键词',
+    tag: '标签',
+    semantic: '语义相似度',
+    hypergraph: '超图跳跃',
+    fusion: '融合检索'
+  }
+  return map[String(value || '').toLowerCase()] || value || '等待运行'
+}
+
+function byteText(value) {
+  const bytes = Number(value || 0)
+  if (!bytes) return '大小未记录'
+  if (bytes < 1024) return `${bytes} B`
+  return `${(bytes / 1024).toFixed(1)} KB`
+}
+</script>
