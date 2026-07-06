@@ -26,7 +26,7 @@ from .schema import (
     STRUCTURED_NODE_KINDS,
 )
 from .scoring import node_kind, score_components
-from .text import node_id, tokenize
+from .text import node_id, normalize_text, tokenize
 
 EXPANSION_NODE_KINDS = {
     NODE_ENTITY,
@@ -102,6 +102,44 @@ def _embedding_score(query_embedding: list[float], record: dict[str, Any]) -> fl
     except (TypeError, ValueError):
         return 0.0
     return _cosine_similarity(query_embedding, vector)
+
+
+def _continuous_reuse_score(profile: dict[str, Any], record: dict[str, Any]) -> tuple[float, dict[str, Any]]:
+    """Boost records that satisfy the current continuous-task reuse contract."""
+
+    group_ids = {normalize_text(str(value)) for value in profile.get("group_ids", []) if str(value).strip()}
+    expected_turns = {normalize_text(str(value)) for value in profile.get("expected_turns", []) if str(value).strip()}
+    artifacts = {normalize_text(str(value)) for value in profile.get("artifacts", []) if str(value).strip()}
+    record_group = normalize_text(str(record.get("group_id") or ""))
+    record_turn = normalize_text(str(record.get("turn_id") or ""))
+    record_artifacts = {
+        normalize_text(str(value))
+        for value in record.get("artifact_types", []) or []
+        if str(value).strip()
+    }
+
+    score = 0.0
+    reasons: list[str] = []
+    if group_ids and record_group in group_ids:
+        score += 4.0
+        reasons.append("same_group")
+    if expected_turns and record_turn in expected_turns:
+        score += 12.0
+        reasons.append("expected_turn")
+    artifact_overlap = artifacts & record_artifacts
+    if artifact_overlap:
+        score += min(len(artifact_overlap) * 4.0, 10.0)
+        reasons.append("artifact_match")
+    if expected_turns and record_turn in expected_turns and artifact_overlap:
+        score += 6.0
+        reasons.append("expected_turn_artifact")
+
+    return round(score, 4), {
+        "record_group": record_group,
+        "record_turn": record_turn,
+        "record_artifacts": sorted(record_artifacts),
+        "matched_reuse_reasons": reasons,
+    }
 
 
 class HypergraphIndex:
@@ -319,13 +357,15 @@ class HypergraphIndex:
                 if profile.get("evidence_chain_requested")
                 else 0.0
             )
+            continuous_reuse_score, continuous_reuse_debug = _continuous_reuse_score(profile, record)
             scores["retrieval_score"] = round(
                 scores["retrieval_score"]
                 + gate.score
                 + lexical_component
                 + tag_component
                 + expansion_component
-                + chain_query_component,
+                + chain_query_component
+                + continuous_reuse_score,
                 4,
             )
             if scores["retrieval_score"] <= 0:
@@ -350,6 +390,8 @@ class HypergraphIndex:
                     "tag_overlap_score": round(tag_component, 4),
                     "graph_expansion_score": round(expansion_component, 4),
                     "evidence_chain_query_score": round(chain_query_component, 4),
+                    "continuous_reuse_score": continuous_reuse_score,
+                    "continuous_reuse_debug": continuous_reuse_debug,
                     "matched_nodes": sorted(matched_nodes, key=_node_sort_key),
                     "matched_hyperedges": sorted(entry["matched_hyperedges"]),
                     "reasoning_path": reasoning_path,
@@ -364,6 +406,7 @@ class HypergraphIndex:
                 -hit["gap_coverage_score"],
                 -hit["structural_score"],
                 -hit["evidence_chain_quality_score"],
+                -hit["continuous_reuse_score"],
                 -hit["experience_score"],
                 -hit["lifecycle_score"],
                 -hit["retention_score"],

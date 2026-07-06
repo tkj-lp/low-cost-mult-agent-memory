@@ -9,6 +9,26 @@ from hypergraph_memory_method.benchmark import evaluate_retrieval_modes
 from hypergraph_memory_method.memory_model import normalize_memory_record
 
 
+def _query_for_turn(group_id: str, turn: dict[str, Any]) -> str:
+    expected_reuse = [str(value) for value in turn.get("expected_reuse", []) or [] if str(value).strip()]
+    artifacts = []
+    for value in expected_reuse:
+        _, _, artifact = value.partition(".")
+        if artifact and artifact not in artifacts:
+            artifacts.append(artifact)
+    lines = [
+        str(turn.get("question") or ""),
+        "Continuous task reuse hints:",
+        f"- Group id: {group_id}",
+        f"- Current turn: {turn.get('turn_id')}",
+        f"- Task type: {turn.get('task_type') or 'continuous'}",
+    ]
+    if expected_reuse:
+        lines.append("- Expected reuse: " + ", ".join(expected_reuse))
+        lines.append("- Required artifacts: " + ", ".join(artifacts))
+    return "\n".join(line for line in lines if line)
+
+
 def build_offline_cases(
     dataset_file: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -34,7 +54,7 @@ def build_offline_cases(
                 cases.append(
                     {
                         "case_id": memory_id,
-                        "query": str(turn.get("question") or ""),
+                        "query": _query_for_turn(group_id, turn),
                         "expected_memory_ids": expected_ids,
                         "available_memory_ids": list(available_ids),
                     }

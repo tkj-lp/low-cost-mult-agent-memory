@@ -26,6 +26,9 @@ def _text_document(record: dict[str, Any]) -> str:
     values = [
         record.get("task_topic", ""),
         record.get("summary", ""),
+        record.get("group_id", ""),
+        record.get("turn_id", ""),
+        " ".join(str(value) for value in record.get("artifact_types", []) or []),
         " ".join(str(value) for value in record.get("tags", []) or []),
         record.get("problem_pattern", ""),
         record.get("solution_pattern", ""),
@@ -250,11 +253,13 @@ def search_memory_by_mode(
     fused_scores: defaultdict[str, float] = defaultdict(float)
     candidates: dict[str, dict[str, Any]] = {}
     channels: defaultdict[str, list[str]] = defaultdict(list)
-    weights = {"keyword": 0.8, "tag": 0.8, "semantic": 1.0, "hypergraph": 2.0}
+    weights = {"keyword": 0.5, "tag": 0.2, "semantic": 0.8, "hypergraph": 4.5}
     for channel, hits in rankings.items():
         for rank, hit in enumerate(hits, start=1):
             memory_id = str(hit["memory_id"])
             fused_scores[memory_id] += weights[channel] / (60 + rank)
+            if channel == "hypergraph":
+                fused_scores[memory_id] += min(float(hit.get("continuous_reuse_score", 0.0) or 0.0), 30.0) / 200.0
             channels[memory_id].append(channel)
             if memory_id not in candidates or channel == "hypergraph":
                 candidates[memory_id] = hit

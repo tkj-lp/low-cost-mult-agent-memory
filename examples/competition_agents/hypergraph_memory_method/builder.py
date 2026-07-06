@@ -513,6 +513,20 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
     agent_node = node_id(NODE_AGENT, record.get("source_agent", "unknown"))
     tag_nodes = [node_id(NODE_TAG, tag) for tag in tags]
     keyword_nodes = _keyword_nodes(task_topic, keyword_source, " ".join(tags), limit=48)
+    record_context_nodes = []
+    for key, kind in (
+        ("group_id", NODE_GROUP),
+        ("turn_id", NODE_TURN),
+        ("dataset_type", NODE_DATASET),
+    ):
+        value = record.get(key)
+        if value:
+            record_context_nodes.append(node_id(kind, str(value)))
+    artifact_nodes = [
+        node_id(NODE_ARTIFACT, str(value))
+        for value in record.get("artifact_types", []) or []
+        if str(value).strip()
+    ]
     layer_nodes, layer_edge = _memory_layer_edge(record)
     gap_coverage_nodes = [
         node_id(NODE_GAP, value) for value in _gap_coverage_values(record)
@@ -541,6 +555,8 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
             agent_node,
             *tag_nodes,
             *keyword_nodes,
+            *record_context_nodes,
+            *artifact_nodes,
             *layer_nodes,
             *gap_coverage_nodes,
             *signature_nodes,
@@ -564,6 +580,8 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
         "task_label": task_topic,
         "agent_node": agent_node,
         "tag_nodes": tag_nodes,
+        "record_context_nodes": record_context_nodes,
+        "artifact_nodes": artifact_nodes,
         "layer_nodes": layer_nodes,
         "gap_coverage_nodes": gap_coverage_nodes,
         "experience_signature_nodes": signature_nodes,
@@ -678,9 +696,15 @@ def build_hypergraph_view(
         ("turn_id", NODE_TURN),
         ("dataset_type", NODE_DATASET),
     ):
-        value = task_meta.get(key)
+        value = task_meta.get(key) or record.get(key)
         if value:
             task_context_nodes.append(node_id(kind, str(value)))
+    for value in record.get("artifact_types", []) or []:
+        if not str(value).strip():
+            continue
+        artifact_node = node_id(NODE_ARTIFACT, str(value))
+        structured_nodes.append(artifact_node)
+        task_context_nodes.append(artifact_node)
     for value in task_meta.get("expected_reuse", []):
         if not value:
             continue

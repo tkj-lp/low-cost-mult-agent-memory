@@ -13,6 +13,7 @@ from .schema import (
     NODE_EXPERIENCE_RULE,
     NODE_FAILURE_PATTERN,
     NODE_GAP,
+    NODE_GROUP,
     NODE_INTENT,
     NODE_KEYWORD,
     NODE_MEMORY_LAYER,
@@ -26,6 +27,7 @@ from .schema import (
     NODE_STRATEGY,
     NODE_TAG,
     NODE_TRIGGER,
+    NODE_TURN,
 )
 from .text import limited_tokens, node_id, normalize_text
 
@@ -50,6 +52,22 @@ def _artifact_from_expected_reuse(value: str) -> str:
     return normalize_text(artifact or value)
 
 
+def _expected_turn_from_reuse(value: str) -> str:
+    source, _, _ = str(value or "").partition(".")
+    return normalize_text(source)
+
+
+def _line_values(normalized_query: str, labels: tuple[str, ...]) -> set[str]:
+    values: set[str] = set()
+    for label in labels:
+        pattern = rf"^{re.escape(label)}\s*:\s*(.+)$"
+        for match in re.finditer(pattern, normalized_query, flags=re.MULTILINE):
+            raw = match.group(1).strip()
+            if raw:
+                values.add(normalize_text(raw))
+    return values
+
+
 def build_query_profile(
     query: str, task_meta: dict[str, Any] | None = None
 ) -> dict[str, Any]:
@@ -58,6 +76,7 @@ def build_query_profile(
     normalized_query = normalize_text(query)
     tokens = set(limited_tokens(query, limit=32))
     task_meta = task_meta or {}
+    raw_query = str(query or "").lower()
 
     expected_reuse = {
         normalize_text(match)
@@ -67,6 +86,19 @@ def build_query_profile(
         for value in task_meta.get("expected_reuse", []):
             if value:
                 expected_reuse.add(normalize_text(str(value)))
+
+    group_ids = _line_values(raw_query, ("group id", "group_id", "conversation group"))
+    turn_ids = _line_values(raw_query, ("current turn", "turn id", "turn_id"))
+    if isinstance(task_meta, dict):
+        if task_meta.get("group_id"):
+            group_ids.add(normalize_text(str(task_meta["group_id"])))
+        if task_meta.get("turn_id"):
+            turn_ids.add(normalize_text(str(task_meta["turn_id"])))
+    expected_turns = {
+        turn
+        for turn in (_expected_turn_from_reuse(value) for value in expected_reuse)
+        if turn
+    }
 
     artifacts: set[str] = set()
     for artifact, hints in ARTIFACT_HINTS.items():
@@ -195,6 +227,9 @@ def build_query_profile(
     return {
         "intent": intent,
         "expected_reuse": sorted(expected_reuse),
+        "expected_turns": sorted(expected_turns),
+        "group_ids": sorted(group_ids),
+        "turn_ids": sorted(turn_ids),
         "question": (
             task_meta.get("question", query) if isinstance(task_meta, dict) else query
         ),
@@ -223,6 +258,12 @@ def profile_nodes(profile: dict[str, Any]) -> set[str]:
         nodes.add(node_id(NODE_INTENT, str(intent)))
     for value in profile.get("expected_reuse", []):
         nodes.add(node_id(NODE_EXPECTED_REUSE, str(value)))
+    for value in profile.get("expected_turns", []):
+        nodes.add(node_id(NODE_TURN, str(value)))
+    for value in profile.get("group_ids", []):
+        nodes.add(node_id(NODE_GROUP, str(value)))
+    for value in profile.get("turn_ids", []):
+        nodes.add(node_id(NODE_TURN, str(value)))
     for value in profile.get("gaps", []):
         nodes.add(node_id(NODE_GAP, str(value)))
     for value in profile.get("artifacts", []):

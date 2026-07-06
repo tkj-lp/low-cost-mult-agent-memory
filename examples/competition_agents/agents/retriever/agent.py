@@ -24,6 +24,9 @@ def _compact_memory_context(hits: list[dict]) -> list[dict]:
             {
                 "memory_id": hit.get("memory_id"),
                 "memory_type": hit.get("memory_type", "evidence"),
+                "group_id": hit.get("group_id", ""),
+                "turn_id": hit.get("turn_id", ""),
+                "artifact_types": hit.get("artifact_types", []),
                 "summary": _shorten(hit.get("summary", ""), 160),
                 "retrieval_score": hit.get("retrieval_score"),
                 "problem_pattern": _shorten(hit.get("problem_pattern", ""), 120),
@@ -70,18 +73,54 @@ def _planner_focus(plan: list[str], limit: int = 3) -> list[str]:
     return focus
 
 
-def _build_retrieval_query(task: str, plan: list[str]) -> tuple[str, list[str]]:
+def _reuse_specs(task_meta: dict) -> list[str]:
+    return [str(value) for value in task_meta.get("expected_reuse", []) or [] if str(value).strip()]
+
+
+def _reuse_artifacts(expected_reuse: list[str]) -> list[str]:
+    artifacts: list[str] = []
+    for value in expected_reuse:
+        _, _, artifact = value.partition(".")
+        if artifact and artifact not in artifacts:
+            artifacts.append(artifact)
+    return artifacts
+
+
+def _build_continuous_task_hints(task_meta: dict) -> list[str]:
+    expected_reuse = _reuse_specs(task_meta)
+    tags = task_meta.get("tags", [])
+    if not isinstance(tags, list):
+        tags = [tags]
+    hints = [
+        f"Group id: {task_meta.get('group_id')}",
+        f"Current turn: {task_meta.get('turn_id')}",
+        f"Task type: {task_meta.get('task_type') or task_meta.get('dataset_type')}",
+        f"Tags: {tags}",
+    ]
+    if expected_reuse:
+        hints.append("Expected reuse: " + ", ".join(expected_reuse))
+        hints.append("Required artifacts: " + ", ".join(_reuse_artifacts(expected_reuse)))
+    return [hint for hint in hints if hint and not hint.endswith(": None")]
+
+
+def _memory_top_k(task_meta: dict, *, base: int = 2, limit: int = 6) -> int:
+    concrete_specs = [value for value in _reuse_specs(task_meta) if value.startswith("turn-")]
+    return max(base, min(limit, len(concrete_specs) + 1))
+
+
+def _build_retrieval_query(task: str, plan: list[str], task_meta: dict | None = None) -> tuple[str, list[str]]:
     """把 Planner 的计划并入检索查询，让规划信号真正影响记忆召回。"""
 
+    task_meta = task_meta or {}
     focus = _planner_focus(plan)
-    if not focus:
-        return task, []
+    hint_lines = _build_continuous_task_hints(task_meta)
+    sections = [task]
 
-    query = (
-        f"{task}\n"
-        "Planner retrieval focus:\n"
-        + "\n".join(f"- {step}" for step in focus)
-    )
+    if hint_lines:
+        sections.append("Continuous task reuse hints:\n" + "\n".join(f"- {hint}" for hint in hint_lines))
+    if focus:
+        sections.append("Planner retrieval focus:\n" + "\n".join(f"- {step}" for step in focus))
+    query = "\n".join(sections)
     return query, focus
 
 
@@ -108,11 +147,11 @@ def _experience_family(question: str) -> str:
     return "memory_grounded_question_answering"
 
 
-def _build_experience_query(task: str, plan: list[str], question: str) -> str:
-    retrieval_query, planner_focus = _build_retrieval_query(task, plan)
+def _build_experience_query(task: str, plan: list[str], question: str, task_meta: dict | None = None) -> str:
+    retrieval_query, planner_focus = _build_retrieval_query(task, plan, task_meta)
     family = _experience_family(question)
     hint = f"\nExperience retrieval family: {family}"
-    return retrieval_query + hint if planner_focus else f"{question}\nExperience retrieval family: {family}"
+    return retrieval_query + hint
 
 
 def _experience_match_score(question: str, hit: dict) -> float:
@@ -434,10 +473,10 @@ def _task_specific_evidence(task: str) -> list[str]:
 def retriever_agent(state: CompetitionState) -> dict:
     """检索可复用记忆，并生成非文本状态引用。"""
 
-    retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []))
     task_meta = state.get("task_meta", {})
+    retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []), task_meta)
     question = str(task_meta.get("question") or state["task"])
-    experience_query = _build_experience_query(state["task"], state.get("plan", []), question)
+    experience_query = _build_experience_query(state["task"], state.get("plan", []), question, task_meta)
     context_source = str(task_meta.get("context_source") or "inline")
     context_hits: list[dict] = []
     if context_source == "hypergraph":
@@ -446,13 +485,14 @@ def retriever_agent(state: CompetitionState) -> dict:
         retrieved_context_evidence = _extract_context_evidence(task_meta, planner_focus)
 
     # 把 Planner 的显式计划并入 query，让检索不再只依赖原始任务文本。
-    evidence_hits = search_memory(state["memory"], retrieval_query, top_k=2, memory_types=["evidence"])
+    evidence_top_k = _memory_top_k(task_meta, base=2, limit=6)
+    evidence_hits = search_memory(state["memory"], retrieval_query, top_k=evidence_top_k, memory_types=["evidence"])
     raw_experience_hits = search_memory(state["memory"], experience_query, top_k=2, memory_types=["experience"])
     experience_hits = _rerank_experience_hits(question, raw_experience_hits, top_k=2)
     combined_hits = evidence_hits + [
         hit for hit in experience_hits if hit.get("memory_id") not in {item.get("memory_id") for item in evidence_hits}
     ]
-    hits = combined_hits[:4]
+    hits = combined_hits[: max(4, evidence_top_k)]
     memory_context = _compact_memory_context(hits)
     experience_rules = _build_experience_rules(experience_hits)
     evidence = [
@@ -559,6 +599,7 @@ def retriever_agent(state: CompetitionState) -> dict:
                 "retrieval_query": retrieval_query,
                 "experience_query": experience_query,
                 "planner_focus": planner_focus,
+                "expected_reuse": _reuse_specs(task_meta),
                 "context_source": context_source,
                 "context_hit_ids": [hit.get("context_id") for hit in context_hits],
                 "context_hits": context_hits,

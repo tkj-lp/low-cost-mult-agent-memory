@@ -1315,6 +1315,11 @@ def add_memory(
     """向共享记忆追加一条记录，兼容 evidence 与 experience 两类记忆。"""
 
     normalized_trigger_conditions = _normalize_trigger_conditions(trigger_conditions or [])
+    task_meta = trace.get("task_meta", {}) if isinstance(trace, dict) and isinstance(trace.get("task_meta"), dict) else {}
+    artifact_types = ["experience", "strategy"] if memory_type == "experience" else ["answer", "evidence"]
+    if task_meta.get("supporting_facts") or supporting_evidence:
+        artifact_types.append("supporting-facts")
+    artifact_types = list(dict.fromkeys(artifact_types))
     if memory_type == "experience":
         merge_index = _find_mergeable_experience(
             memory,
@@ -1379,6 +1384,12 @@ def add_memory(
         "reasoning_path": [],
         "state_refs": [],
         "answer": summary,
+        "artifact_types": artifact_types,
+        "task_id": str(task_meta.get("task_id") or ""),
+        "group_id": str(task_meta.get("group_id") or task_meta.get("chain_id") or ""),
+        "turn_id": str(task_meta.get("turn_id") or ""),
+        "dataset_type": str(task_meta.get("dataset_type") or ""),
+        "task_type": str(task_meta.get("task_type") or ""),
         "reuse_count": 0,
         "reuse_success_count": 0,
         "problem_pattern": problem_pattern,
@@ -1403,7 +1414,18 @@ def add_memory(
         ),
         "experience_source": experience_source,
         "abstraction_note": abstraction_note,
-        "source_case": _source_case(distillation_case),
+        "source_case": _source_case(distillation_case)
+        or {
+            key: value
+            for key, value in {
+                "task_id": task_meta.get("task_id"),
+                "group_id": task_meta.get("group_id") or task_meta.get("chain_id"),
+                "turn_id": task_meta.get("turn_id"),
+                "dataset_type": task_meta.get("dataset_type"),
+                "question": task_meta.get("question"),
+            }.items()
+            if value not in (None, "", [], {})
+        },
     }
     if trace is not None:
         record["trace"] = trace

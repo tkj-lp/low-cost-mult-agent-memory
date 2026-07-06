@@ -37,6 +37,18 @@ def _build_codeact_execution_request(state: CompetitionState) -> dict | None:
     }
 
 
+def _unique_memory_ids(items: list[dict]) -> list[str]:
+    ids: list[str] = []
+    seen: set[str] = set()
+    for item in items:
+        memory_id = str(item.get("memory_id") or "").strip()
+        if not memory_id or memory_id in seen:
+            continue
+        seen.add(memory_id)
+        ids.append(memory_id)
+    return ids
+
+
 def _question_answer_rules(question: str) -> list[str]:
     """根据问题类型补充稳定答案槽位约束，降低模型自由发挥。"""
 
@@ -223,6 +235,11 @@ def reasoner_agent(state: CompetitionState) -> dict:
         payload=payload,
         metrics=metrics,
     )
+    evidence_used_memory_ids = _unique_memory_ids(
+        [hit for hit in memory_hits if str(hit.get("memory_type", "evidence") or "evidence") != "experience"]
+    )
+    experience_used_memory_ids = _unique_memory_ids(experience_rules)
+    memory_used_ids = _unique_memory_ids([*memory_hits, *experience_rules])
     return {
         "evidence": evidence,
         "memory_hits": memory_hits,
@@ -240,7 +257,9 @@ def reasoner_agent(state: CompetitionState) -> dict:
             "experience_rules": experience_rules,
             "answer_rules": answer_rules,
             "experience_used_count": len(experience_rules),
-            "experience_used_memory_ids": [rule.get("memory_id") for rule in experience_rules],
+            "memory_used_ids": memory_used_ids,
+            "evidence_used_memory_ids": evidence_used_memory_ids,
+            "experience_used_memory_ids": experience_used_memory_ids,
             "plan_ref": plan_ref,
             "evidence_ref": evidence_ref,
             "answer_ref": answer_ref,

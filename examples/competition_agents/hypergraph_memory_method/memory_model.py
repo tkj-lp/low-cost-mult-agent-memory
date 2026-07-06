@@ -487,6 +487,9 @@ def canonical_search_document(record: dict[str, Any]) -> str:
     parts = [
         record.get("task_topic", ""),
         record.get("summary", ""),
+        record.get("group_id", ""),
+        record.get("turn_id", ""),
+        " ".join(str(value) for value in _as_list(record.get("artifact_types"))),
         " ".join(str(tag) for tag in _as_list(record.get("tags"))),
         record.get("problem_pattern", ""),
         record.get("solution_pattern", ""),
@@ -544,6 +547,17 @@ def normalize_memory_record(
     task_meta = (
         trace.get("task_meta") if isinstance(trace.get("task_meta"), dict) else {}
     )
+    artifact_types = _as_list(normalized.get("artifact_types"))
+    if not artifact_types:
+        artifact_types = ["experience", "strategy"] if normalized["memory_type"] == "experience" else ["answer", "evidence"]
+        if normalized.get("supporting_facts") or normalized.get("supporting_evidence") or task_meta.get("supporting_facts"):
+            artifact_types.append("supporting-facts")
+    normalized["artifact_types"] = sorted({str(value).strip().lower().replace("_", "-") for value in artifact_types if str(value).strip()})
+    normalized["task_id"] = str(normalized.get("task_id") or task_meta.get("task_id") or "")
+    normalized["group_id"] = str(normalized.get("group_id") or task_meta.get("group_id") or task_meta.get("chain_id") or "")
+    normalized["turn_id"] = str(normalized.get("turn_id") or task_meta.get("turn_id") or "")
+    normalized["dataset_type"] = str(normalized.get("dataset_type") or task_meta.get("dataset_type") or "")
+    normalized["task_type"] = str(normalized.get("task_type") or task_meta.get("task_type") or "")
     normalized["global_memory_id"] = str(
         normalized.get("global_memory_id")
         or "gmem-"
