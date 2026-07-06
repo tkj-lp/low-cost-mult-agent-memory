@@ -91,8 +91,6 @@ def normalize_config(raw: dict[str, Any]) -> dict[str, Any]:
     backend = str(raw.get("backend") or "local")
     if backend not in {"local", "openai-compatible"}:
         raise ValueError(f"不支持的模型后端：{backend}")
-    if collaboration == "latent" and backend != "local":
-        raise ValueError("隐状态传递需要使用本地模型后端")
 
     dataset = DATASETS[dataset_key]
     return {
@@ -113,23 +111,6 @@ def normalize_config(raw: dict[str, Any]) -> dict[str, Any]:
 def build_command(config: dict[str, Any]) -> list[str]:
     dataset = DATASETS[config["dataset"]]
     context_source = "hypergraph" if config["memoryMode"] == "hypergraph" else "inline"
-    if config["collaborationMode"] == "latent":
-        return [
-            sys.executable,
-            "examples/competition_agents/run_hidden_latent_samples.py",
-            "--dataset-type",
-            dataset["dataset_type"],
-            "--dataset-file",
-            dataset["file"],
-            "--limit",
-            str(config["taskCount"]),
-            "--context-source",
-            context_source,
-            "--answer-mode",
-            "generate",
-            "--memory-retrieval-mode",
-            config["retrievalMode"],
-        ]
     return [
         sys.executable,
         "examples/competition_agents/run_demo.py",
@@ -161,7 +142,6 @@ def build_env(config: dict[str, Any]) -> dict[str, str]:
     env["PYTHONIOENCODING"] = "utf-8"
     if config["backend"] == "local":
         env["LOCAL_HIDDEN_MODEL"] = config["localModel"]
-        env.setdefault("LOCAL_HIDDEN_STORAGE_MODE", "pooled_only")
     else:
         if config["baseUrl"]:
             env["LLM_BASE_URL"] = config["baseUrl"]
@@ -525,12 +505,9 @@ def method_record_from_run(payload: dict[str, Any], run: dict[str, Any], source:
         comparable_elapsed_ms = max(0.0, elapsed_ms - state_generation_ms)
     state_transfer_count = 0 if collaboration == "plain" else safe_int(metrics.get("latent_transfer_count"))
     state_bytes = 0 if collaboration == "plain" else safe_int(metrics.get("latent_bytes"))
-    text_chars = safe_int(metrics.get("text_chars"))
-    communication_cost = safe_int(metrics.get("communication_cost")) or (text_chars + state_bytes)
     if collaboration == "plain":
         state_generation_ms = 0.0
         comparable_elapsed_ms = elapsed_ms
-        communication_cost = text_chars
     archive_id = str(payload.get("archive_id") or "").strip()
     fingerprint = run_fingerprint(payload, run)
     record_id = f"{archive_id or source}|{run_index}|{fingerprint}"
@@ -547,11 +524,11 @@ def method_record_from_run(payload: dict[str, Any], run: dict[str, Any], source:
         "retrievalMode": retrieval or "unknown",
         "taskCount": task_count,
         "messageCount": safe_int(metrics.get("message_count")),
-        "textChars": text_chars,
+        "textChars": safe_int(metrics.get("text_chars")),
         "protocolBytes": safe_int(metrics.get("protocol_bytes")),
         "stateTransferCount": state_transfer_count,
         "stateBytes": state_bytes,
-        "communicationCost": communication_cost,
+        "communicationCost": safe_int(metrics.get("text_chars")),
         "stateGenerationMs": state_generation_ms,
         "elapsedMs": elapsed_ms,
         "comparableElapsedMs": comparable_elapsed_ms,

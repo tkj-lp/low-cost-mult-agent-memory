@@ -2285,8 +2285,6 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
         "text_chars": total_chars,
         "hidden_state_refs": total_refs,
         "hidden_bytes": total_bytes,
-        "latent_transfer_count": total_refs,
-        "latent_bytes": total_bytes,
         "memory_hits": total_memory_hits,
         "experience_hit_count": total_experience_hits,
         "memory_hit_rate": memory_hit_rate,
@@ -2338,8 +2336,6 @@ def aggregate_results(args: Namespace, results: list[dict[str, Any]]) -> dict[st
                 "messages": frontend_safe(result.get("messages", [])),
                 "metrics": {
                     **frontend_safe(result.get("metrics", {})),
-                    "latent_transfer_count": result.get("metrics", {}).get("hidden_state_refs", 0),
-                    "latent_bytes": result.get("metrics", {}).get("hidden_bytes", 0),
                     "memory_hit_rate": 1.0 if result.get("metrics", {}).get("memory_hits", 0) else 0.0,
                     "exact_match": result.get("exact_match"),
                 },

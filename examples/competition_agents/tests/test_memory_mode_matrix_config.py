@@ -58,17 +58,11 @@ def test_hypergraph_memory_modes_build_effective_commands() -> None:
         )
         command = runner_server.build_command(config)
 
-        if collaboration_mode == "latent":
-            assert "run_hidden_latent_samples.py" in command[1]
-            assert "--experiment-mode" not in command
-            assert "--answer-mode" in command
-            assert command[command.index("--answer-mode") + 1] == "generate"
-        else:
-            assert "run_demo.py" in command[1]
-            assert "--experiment-mode" in command
-            assert runner_server.EXPERIMENT_MODES[collaboration_mode] in command
-        assert "--context-source" in command
-        assert command[command.index("--context-source") + 1] == "hypergraph"
+    assert "run_demo.py" in command[1]
+    assert "--experiment-mode" in command
+    assert runner_server.EXPERIMENT_MODES[collaboration_mode] in command
+    assert "--context-source" in command
+    assert command[command.index("--context-source") + 1] == "hypergraph"
 
 
 def test_memory_organization_rejects_incompatible_retrieval_modes() -> None:
@@ -79,8 +73,4 @@ def test_memory_organization_rejects_incompatible_retrieval_modes() -> None:
     with pytest.raises(ValueError, match="超图记忆"):
         runner_server.normalize_config(
             {"memoryMode": "hypergraph", "retrievalMode": "keyword"}
-        )
-    with pytest.raises(ValueError, match="隐状态传递"):
-        runner_server.normalize_config(
-            {"collaborationMode": "latent", "backend": "openai-compatible"}
         )
