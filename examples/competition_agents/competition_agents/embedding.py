@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -112,7 +113,9 @@ def _get_local_embedding_model():
     except ImportError as exc:
         raise RuntimeError(
             "Local embedding requires sentence-transformers. "
-            "Install it with: pip install sentence-transformers"
+            f"Current Python is {sys.executable}. "
+            "Activate the conda environment that contains sentence-transformers, "
+            "for example: conda activate langgraph"
         ) from exc
 
     model_name = os.environ.get("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
@@ -122,14 +125,7 @@ def _get_local_embedding_model():
 
 def _embed_local(text: str) -> EmbeddingResult:
     model_name = os.environ.get("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-    try:
-        model = _get_local_embedding_model()
-    except RuntimeError:
-        return EmbeddingResult(
-            vector=hash_embedding(text),
-            provider="local_hash_fallback",
-            model=f"{model_name}:missing-sentence-transformers",
-        )
+    model = _get_local_embedding_model()
     vector = model.encode(text, normalize_embeddings=True).tolist()
     return EmbeddingResult(
         vector=[float(value) for value in vector],

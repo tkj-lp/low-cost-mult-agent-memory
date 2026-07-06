@@ -163,7 +163,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-const EVENT_LOG_URL = '/runtime/run_events.jsonl'
+const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
 const selectedTaskKey = ref('')
 const selectedMemoryId = ref('')
 const runtimeEvents = ref([])
@@ -432,30 +432,16 @@ function selectMemory(memoryId) {
 
 async function refreshRuntimeEvents() {
   try {
-    const response = await fetch(`${EVENT_LOG_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    const response = await fetch(`${RUNNER_EVENTS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) {
       runtimeEvents.value = []
       return
     }
-    runtimeEvents.value = parseEventLog(await response.text())
+    const payload = await response.json()
+    runtimeEvents.value = Array.isArray(payload.events) ? payload.events : []
   } catch {
     runtimeEvents.value = []
   }
-}
-
-function parseEventLog(text) {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      try {
-        return JSON.parse(line)
-      } catch {
-        return null
-      }
-    })
-    .filter(Boolean)
 }
 
 function taskStatus(index) {

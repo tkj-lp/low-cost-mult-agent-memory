@@ -240,6 +240,25 @@ def read_events() -> list[dict[str, Any]]:
     return events
 
 
+def has_archived_records() -> bool:
+    if not RUN_ARCHIVE_DIR.exists():
+        return False
+    return any(path.is_file() for path in RUN_ARCHIVE_DIR.glob("*.json"))
+
+
+def has_running_process() -> bool:
+    return bool(STATE.process and STATE.process.poll() is None)
+
+
+def clear_runtime_files(*, include_stdout: bool = False) -> None:
+    paths = (EVENT_LOG_FILE, STDOUT_LOG_FILE) if include_stdout else (EVENT_LOG_FILE,)
+    for path in paths:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def read_run_result_payload(path: Path) -> dict[str, Any] | None:
     try:
         text = path.read_text(encoding="utf-8", errors="replace")
@@ -505,6 +524,12 @@ def method_record_from_run(payload: dict[str, Any], run: dict[str, Any], source:
         comparable_elapsed_ms = max(0.0, elapsed_ms - state_generation_ms)
     state_transfer_count = 0 if collaboration == "plain" else safe_int(metrics.get("latent_transfer_count"))
     state_bytes = 0 if collaboration == "plain" else safe_int(metrics.get("latent_bytes"))
+    protocol_bytes = safe_int(metrics.get("protocol_bytes"))
+    if not protocol_bytes:
+        protocol_bytes = safe_int(metrics.get("text_chars"))
+    communication_bytes = safe_int(metrics.get("communication_bytes"))
+    if not communication_bytes:
+        communication_bytes = protocol_bytes
     if collaboration == "plain":
         state_generation_ms = 0.0
         comparable_elapsed_ms = elapsed_ms
@@ -525,10 +550,10 @@ def method_record_from_run(payload: dict[str, Any], run: dict[str, Any], source:
         "taskCount": task_count,
         "messageCount": safe_int(metrics.get("message_count")),
         "textChars": safe_int(metrics.get("text_chars")),
-        "protocolBytes": safe_int(metrics.get("protocol_bytes")),
+        "protocolBytes": protocol_bytes,
         "stateTransferCount": state_transfer_count,
         "stateBytes": state_bytes,
-        "communicationCost": safe_int(metrics.get("text_chars")),
+        "communicationCost": communication_bytes,
         "stateGenerationMs": state_generation_ms,
         "elapsedMs": elapsed_ms,
         "comparableElapsedMs": comparable_elapsed_ms,
@@ -686,6 +711,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(status_payload())
             return
         if path == "/api/runner/events":
+            refresh_process_state()
+            if not has_running_process() and not has_archived_records() and not read_run_result_payload(STDOUT_LOG_FILE):
+                clear_runtime_files()
             self.send_json({"events": read_events()})
             return
         if path == "/api/runner/metrics":
@@ -711,7 +739,14 @@ class Handler(BaseHTTPRequestHandler):
                 deleted = delete_archived_record(str(body.get("recordId") or ""))
                 METRICS_CACHE = []
                 METRICS_CACHE_AT = 0.0
-                self.send_json({"deleted": deleted, "records": collect_metric_records()})
+                records = collect_metric_records()
+                if not records:
+                    clear_runtime_files(include_stdout=True)
+                self.send_json({"deleted": deleted, "records": records})
+                return
+            if path == "/api/runner/clear-runtime":
+                clear_runtime_files(include_stdout=bool(body.get("includeStdout")))
+                self.send_json({"cleared": True, "events": read_events()})
                 return
             self.send_json({"error": "not found"}, status=404)
         except Exception as exc:

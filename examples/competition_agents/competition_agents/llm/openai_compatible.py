@@ -238,6 +238,15 @@ def _postprocess_answer_candidate(question: str, evidence: list[str], answer_can
         refined = _extract_mineral_resource_span_from_evidence(evidence)
         if refined:
             return refined
+    if (
+        "government position" in question_lower
+        or "what position" in question_lower
+        or "position was held" in question_lower
+        or "position did" in question_lower
+    ):
+        refined = _extract_preferred_answer_from_evidence(evidence)
+        if refined:
+            return refined
     if _is_yes_no_question(question):
         refined = _infer_yes_no_answer_from_evidence(question, evidence)
         if refined:

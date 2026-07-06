@@ -3,9 +3,11 @@ from __future__ import annotations
 import ast
 import json
 import os
+import queue
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -72,6 +74,105 @@ BLOCKED_NODES = (
     ast.While,
     ast.With,
 )
+
+
+WORKER_SOURCE = r"""
+import json
+import traceback
+
+while True:
+    line = input()
+    request = json.loads(line)
+    code = request.get("code", "")
+    inputs = request.get("inputs", {})
+    memory = request.get("memory", {})
+    namespace = {"inputs": inputs, "memory": memory}
+    try:
+        exec(code, namespace, namespace)
+        result = namespace.get("result", {})
+        print(json.dumps({"ok": True, "result": result}, ensure_ascii=False, sort_keys=True), flush=True)
+    except Exception as exc:
+        print(json.dumps({
+            "ok": False,
+            "error": str(exc),
+            "traceback": traceback.format_exc(limit=3),
+        }, ensure_ascii=False, sort_keys=True), flush=True)
+"""
+
+
+class _PersistentCodeActWorker:
+    def __init__(self) -> None:
+        self.process: subprocess.Popen[str] | None = None
+        self.lock = threading.Lock()
+        self.responses: queue.Queue[str] = queue.Queue()
+        self.reader: threading.Thread | None = None
+
+    def _start(self) -> None:
+        if self.process and self.process.poll() is None:
+            return
+        self.process = subprocess.Popen(
+            [sys.executable, "-u", "-c", WORKER_SOURCE],
+            cwd=tempfile.gettempdir(),
+            env=_safe_env(),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        self.reader = threading.Thread(target=self._read_stdout, daemon=True)
+        self.reader.start()
+
+    def _read_stdout(self) -> None:
+        process = self.process
+        if not process or not process.stdout:
+            return
+        for line in process.stdout:
+            self.responses.put(line)
+
+    def kill(self) -> None:
+        process = self.process
+        self.process = None
+        if process and process.poll() is None:
+            process.kill()
+
+    def run(
+        self,
+        *,
+        code: str,
+        inputs: dict[str, Any],
+        memory: dict[str, Any],
+        timeout_ms: int,
+    ) -> dict[str, Any]:
+        with self.lock:
+            self._start()
+            if not self.process or not self.process.stdin:
+                raise RuntimeError("persistent worker did not start")
+            while not self.responses.empty():
+                self.responses.get_nowait()
+            self.process.stdin.write(json.dumps({"code": code, "inputs": inputs, "memory": memory}, ensure_ascii=False) + "\n")
+            self.process.stdin.flush()
+            try:
+                raw = self.responses.get(timeout=max(timeout_ms / 1000, 0.001))
+            except queue.Empty as exc:
+                self.kill()
+                raise TimeoutError("persistent worker timeout") from exc
+            return json.loads(raw)
+
+
+_WORKER = _PersistentCodeActWorker()
+
+
+def warm_persistent_codeact_worker() -> None:
+    """Start the persistent sandbox worker before per-task timing begins."""
+
+    worker_enabled = os.environ.get("CODEACT_PERSISTENT_WORKER", "1").lower() not in {
+        "0",
+        "false",
+        "no",
+    }
+    if not worker_enabled:
+        return
+    _WORKER._start()
 
 
 def _name_of_call(node: ast.Call) -> str:
@@ -167,6 +268,65 @@ def _safe_env() -> dict[str, str]:
     return env
 
 
+def _run_subprocess_once(
+    code: str,
+    *,
+    inputs: dict[str, Any],
+    memory: dict[str, Any],
+    timeout_ms: int,
+    stdout_limit: int,
+    stderr_limit: int,
+) -> tuple[str, str, dict[str, Any], str, int]:
+    with tempfile.TemporaryDirectory(prefix="codeact_") as temp_dir:
+        runner = Path(temp_dir) / "runner.py"
+        runner.write_text(
+            _runner_source(code, inputs=inputs, memory=memory),
+            encoding="utf-8",
+        )
+        try:
+            completed = subprocess.run(
+                [sys.executable, str(runner)],
+                cwd=temp_dir,
+                env=_safe_env(),
+                capture_output=True,
+                text=True,
+                timeout=max(timeout_ms / 1000, 0.001),
+                check=False,
+            )
+            stdout = completed.stdout[:stdout_limit]
+            stderr = completed.stderr[:stderr_limit]
+            try:
+                result = json.loads(stdout.strip()) if completed.returncode == 0 else {}
+            except json.JSONDecodeError:
+                result = {}
+            status = "ok" if completed.returncode == 0 and result != {} else "error"
+            exit_code = completed.returncode
+        except subprocess.TimeoutExpired as exc:
+            stdout = (exc.stdout or "")[:stdout_limit]
+            stderr = "timeout"[:stderr_limit]
+            result = {}
+            status = "timeout"
+            exit_code = 124
+    return stdout, stderr, result, status, exit_code
+
+
+def _run_persistent_worker(
+    code: str,
+    *,
+    inputs: dict[str, Any],
+    memory: dict[str, Any],
+    timeout_ms: int,
+    stdout_limit: int,
+    stderr_limit: int,
+) -> tuple[str, str, dict[str, Any], str, int]:
+    response = _WORKER.run(code=code, inputs=inputs, memory=memory, timeout_ms=timeout_ms)
+    stdout = json.dumps(response.get("result", {}), ensure_ascii=False, sort_keys=True)[:stdout_limit]
+    if response.get("ok"):
+        return stdout, "", response.get("result", {}), "ok", 0
+    stderr = (response.get("error") or response.get("traceback") or "worker error")[:stderr_limit]
+    return "", stderr, {}, "error", 1
+
+
 def run_restricted_python(
     code: str,
     *,
@@ -195,39 +355,33 @@ def run_restricted_python(
             "result": {},
         }
 
-    with tempfile.TemporaryDirectory(prefix="codeact_") as temp_dir:
-        runner = Path(temp_dir) / "runner.py"
-        runner.write_text(
-            _runner_source(code, inputs=inputs or {}, memory=memory or {}),
-            encoding="utf-8",
+    worker_enabled = os.environ.get("CODEACT_PERSISTENT_WORKER", "1").lower() not in {"0", "false", "no"}
+    runner = _run_persistent_worker if worker_enabled else _run_subprocess_once
+    try:
+        stdout, stderr, result, status, exit_code = runner(
+            code,
+            inputs=inputs or {},
+            memory=memory or {},
+            timeout_ms=timeout_ms,
+            stdout_limit=stdout_limit,
+            stderr_limit=stderr_limit,
         )
-        try:
-            completed = subprocess.run(
-                [sys.executable, str(runner)],
-                cwd=temp_dir,
-                env=_safe_env(),
-                capture_output=True,
-                text=True,
-                timeout=max(timeout_ms / 1000, 0.001),
-                check=False,
-            )
-            stdout = completed.stdout[:stdout_limit]
-            stderr = completed.stderr[:stderr_limit]
-            try:
-                result = json.loads(stdout.strip()) if completed.returncode == 0 else {}
-            except json.JSONDecodeError:
-                result = {}
-            status = "ok" if completed.returncode == 0 and result != {} else "error"
-            exit_code = completed.returncode
-        except subprocess.TimeoutExpired as exc:
-            stdout = (exc.stdout or "")[:stdout_limit]
-            stderr = "timeout"[:stderr_limit]
-            result = {}
-            status = "timeout"
-            exit_code = 124
+        execution_backend = "persistent_worker" if worker_enabled else "subprocess_once"
+    except Exception as exc:
+        _WORKER.kill()
+        stdout, stderr, result, status, exit_code = _run_subprocess_once(
+            code,
+            inputs=inputs or {},
+            memory=memory or {},
+            timeout_ms=timeout_ms,
+            stdout_limit=stdout_limit,
+            stderr_limit=stderr_limit,
+        )
+        execution_backend = f"subprocess_fallback:{type(exc).__name__}"
 
     return {
         "execution_mode": "restricted_python_codeact",
+        "execution_backend": execution_backend,
         "sandbox_status": status,
         "blocked_reason": "",
         "allowed_imports": sorted(DEFAULT_ALLOWED_IMPORTS if allowed_imports is None else allowed_imports),

@@ -3,8 +3,9 @@ from __future__ import annotations
 import hashlib
 import os
 from dataclasses import dataclass
+from functools import lru_cache
 
-from competition_agents.latent_hidden.local_model import load_local_hidden_model
+from competition_agents.latent_hidden.local_model import get_hidden_model_name, load_local_hidden_model
 
 
 @dataclass
@@ -174,9 +175,7 @@ def _should_stop_generation(bundle, generated_token_ids: list[int]) -> bool:
     return any(marker in lowered for marker in stop_markers)
 
 
-def extract_last_hidden_state(text: str) -> tuple[HiddenStateResult, object]:
-    """运行本地 LLM 前向传播，直接提取最后一层 hidden state。"""
-
+def _extract_last_hidden_state_uncached(text: str) -> tuple[HiddenStateResult, object]:
     bundle = load_local_hidden_model()
     inputs = _prepare_generation_inputs(bundle, text)
 
@@ -188,8 +187,40 @@ def extract_last_hidden_state(text: str) -> tuple[HiddenStateResult, object]:
         )
 
     last_hidden = outputs.hidden_states[-1].detach()
-    result = _build_hidden_result(bundle, last_hidden, int(inputs["input_ids"].shape[-1]))
-    return result, last_hidden.to("cpu")
+    token_count = int(inputs["input_ids"].shape[-1])
+    if should_store_full_hidden_tensor():
+        result = _build_hidden_result(bundle, last_hidden, token_count)
+        return result, last_hidden.to("cpu")
+
+    result = _build_pooled_hidden_result(bundle, last_hidden, token_count, list(last_hidden.shape))
+    return result, last_hidden[:, -1, :].detach().to("cpu")
+
+
+@lru_cache(maxsize=512)
+def _extract_last_hidden_state_cached(
+    model_name: str,
+    storage_mode_value: str,
+    max_input_tokens: str,
+    text: str,
+) -> tuple[HiddenStateResult, object]:
+    """缓存轻量 hidden 抽取结果，避免连续任务里重复前向同一段状态文本。"""
+
+    del model_name, storage_mode_value, max_input_tokens
+    return _extract_last_hidden_state_uncached(text)
+
+
+def extract_last_hidden_state(text: str) -> tuple[HiddenStateResult, object]:
+    """运行本地 LLM 前向传播，直接提取最后一层 hidden state。"""
+
+    if should_store_full_hidden_tensor():
+        return _extract_last_hidden_state_uncached(text)
+
+    return _extract_last_hidden_state_cached(
+        get_hidden_model_name(),
+        hidden_storage_mode(),
+        os.environ.get("LOCAL_LLM_MAX_INPUT_TOKENS", "0"),
+        text,
+    )
 
 
 def generate_text_with_last_hidden_state(

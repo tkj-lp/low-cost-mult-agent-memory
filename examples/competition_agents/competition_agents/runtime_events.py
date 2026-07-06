@@ -121,6 +121,65 @@ def emit_state_transfer_event(
     )
 
 
+def emit_memory_retrieval_events(
+    state: dict[str, Any],
+    *,
+    query: str,
+    hits: list[dict[str, Any]],
+) -> None:
+    """在 Retriever 实际检索完成时写事件，避免前端只能在任务结束时看到记忆命中。"""
+
+    task_meta = _task_meta(state)
+    base = _base_context(state, task_meta)
+    memory_refs = [hit.get("memory_id") for hit in hits if hit.get("memory_id")]
+    emit_runtime_event(
+        {
+            **base,
+            "event_type": "memory_query",
+            "from_agent": "retriever",
+            "to_agent": "memory",
+            "action_type": "query_memory",
+            "input_params": {"query": query[:500], "top_k": len(hits)},
+            "return_result": {"hit_count": len(memory_refs)},
+            "state_refs": [],
+            "memory_refs": memory_refs,
+            "text_chars": 0,
+            "elapsed_ms": 0,
+        }
+    )
+    for hit in hits:
+        emit_memory_hit_event(base, hit)
+
+
+def emit_memory_hit_event(base: dict[str, Any], hit: dict[str, Any]) -> None:
+    emit_runtime_event(
+        {
+            **base,
+            "event_type": "memory_hit",
+            "from_agent": "memory",
+            "to_agent": "retriever",
+            "action_type": "return_memory",
+            "state_refs": [],
+            "memory_refs": [hit.get("memory_id")] if hit.get("memory_id") else [],
+            "text_chars": 0,
+            "elapsed_ms": 0,
+            "return_result": {
+                "memory_id": hit.get("memory_id"),
+                "summary": hit.get("summary"),
+                "retrieval_score": hit.get("retrieval_score"),
+                "memory_type": hit.get("memory_type"),
+                "task_topic": hit.get("task_topic"),
+                "tags": hit.get("tags"),
+                "matched_terms": hit.get("matched_terms"),
+                "matched_nodes": hit.get("matched_nodes"),
+                "reasoning_path": hit.get("reasoning_path"),
+                "score_components": _memory_score_components(hit),
+                "selection_reason": _memory_selection_reason(hit),
+            },
+        }
+    )
+
+
 def emit_task_result_events(
     *,
     mode: str,
@@ -134,33 +193,6 @@ def emit_task_result_events(
 
     base = _base_context({"mode": mode, "task_meta": _task_meta_from_item(task_index, task_item)}, _task_meta_from_item(task_index, task_item))
     memory_hits = result.get("memory_hits", []) or []
-    for hit in memory_hits:
-        emit_runtime_event(
-            {
-                **base,
-                "event_type": "memory_hit",
-                "from_agent": "memory",
-                "to_agent": "retriever",
-                "action_type": "return_memory",
-                "state_refs": [],
-                "memory_refs": [hit.get("memory_id")] if hit.get("memory_id") else [],
-                "text_chars": 0,
-                "elapsed_ms": 0,
-                "return_result": {
-                    "memory_id": hit.get("memory_id"),
-                    "summary": hit.get("summary"),
-                    "retrieval_score": hit.get("retrieval_score"),
-                    "memory_type": hit.get("memory_type"),
-                    "task_topic": hit.get("task_topic"),
-                    "tags": hit.get("tags"),
-                    "matched_terms": hit.get("matched_terms"),
-                    "matched_nodes": hit.get("matched_nodes"),
-                    "reasoning_path": hit.get("reasoning_path"),
-                    "score_components": _memory_score_components(hit),
-                    "selection_reason": _memory_selection_reason(hit),
-                },
-            }
-        )
 
     latest_memory = result.get("latest_memory_write") or result.get("latest_evidence_write") or {}
     if latest_memory.get("memory_id"):

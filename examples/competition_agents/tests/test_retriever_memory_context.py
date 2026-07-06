@@ -5,8 +5,8 @@ from competition_agents.memory import add_memory
 from competition_agents.state import initial_state
 
 
-def test_retriever_forwards_compact_memory_context_without_reembedding_summary() -> None:
-    """Retriever 应转发裁剪后的记忆上下文，但 evidence latent 不再包含记忆摘要正文。"""
+def test_retriever_keeps_memory_context_in_state_and_sends_refs_only() -> None:
+    """Retriever 应把记忆详情留在共享状态里，协议包只传记忆引用。"""
 
     unique_summary = "UNIQUE_MEMORY_SUMMARY_SHOULD_NOT_BE_REEMBEDDED"
     memory = add_memory(
@@ -28,7 +28,8 @@ def test_retriever_forwards_compact_memory_context_without_reembedding_summary()
 
     payload = result["messages"][-1]["payload"]
     assert payload["m"] == ["mem-0001"]
-    assert payload["r"]["memory_context"][0]["memory_id"] == "mem-0001"
+    assert "memory_context" not in payload["r"]
+    assert payload["r"]["hits"] == 1
 
 
 def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:

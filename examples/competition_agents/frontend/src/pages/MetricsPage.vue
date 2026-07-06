@@ -151,10 +151,10 @@ const statusLine = computed(() => {
 
 const chartRecords = computed(() => {
   const list = []
-  if (hasBaseline.value) list.push(enrichRecord(baselineRecord.value, 'blue'))
+  if (hasBaseline.value) list.push(enrichRecord(baselineRecord.value))
   for (const record of selectedChartRecords.value) {
     if (hasBaseline.value && record.recordId === baselineRecord.value.recordId) continue
-    list.push(enrichRecord(record, toneForMode(record.collaborationMode)))
+    list.push(enrichRecord(record))
   }
   return list
 })
@@ -194,7 +194,7 @@ const kpis = computed(() => {
       },
       {
         title: '通信开销',
-        value: communicationKpiValueText(record),
+        value: improvementText(baseline?.communicationCost, record?.communicationCost),
         desc: baseline && record ? communicationBaselineDesc(record, baseline) : '缺少匹配基线',
         tone: 'purple',
         icon: '↔'
@@ -373,11 +373,12 @@ function buildSeries(key) {
     .filter((line) => line.values.length)
 }
 
-function enrichRecord(record, tone) {
+function enrichRecord(record) {
+  const tone = toneForRecord(record)
   return {
     ...record,
     tone,
-    color: colorForTone(tone),
+    color: colorForRecord(record),
     shortMethod: shortMethodLabel(record)
   }
 }
@@ -443,21 +444,28 @@ function communicationKpi(record) {
 
 function communicationKpiValueText(record) {
   if (!record) return '--'
-  const messages = Number(record.messageCount || 0)
-  const stateBytes = Number(record.stateBytes || 0)
-  if (!messages && !stateBytes) return '--'
-  return `${integerText(messages)} 次`
+  const cost = Number(record.communicationCost || 0)
+  if (!cost) return '--'
+  return byteText(cost)
 }
 
 function communicationKpiDescText(record) {
   if (!record) return '当前筛选组合暂无真实结果'
   const chars = Number(record.textChars || 0)
+  const protocolBytes = Number(record.protocolBytes || 0)
   const stateCount = Number(record.stateTransferCount || 0)
   const stateBytes = Number(record.stateBytes || 0)
-  if (!chars && !stateCount && !stateBytes) return '当前筛选组合暂无真实结果'
+  const communicationCost = Number(record.communicationCost || 0)
+  if (!chars && !protocolBytes && !stateCount && !stateBytes && !communicationCost) return '当前筛选组合暂无真实结果'
   const parts = [`文本 ${integerText(chars)} 字`]
+  if (protocolBytes) {
+    parts.push(`协议 ${byteText(protocolBytes)}`)
+  }
   if (stateCount || stateBytes) {
     parts.push(`状态 ${integerText(stateCount)} 次 / ${byteText(stateBytes)}`)
+  }
+  if (communicationCost) {
+    parts.push(`载荷 ${byteText(communicationCost)}`)
   }
   return parts.join(' · ')
 }
@@ -465,19 +473,27 @@ function communicationKpiDescText(record) {
 function communicationBaselineDesc(record, baseline) {
   const saving = improvementText(baseline?.communicationCost, record?.communicationCost)
   const current = communicationKpiDescText(record)
-  return saving === '--' ? current : `文本通信较基线下降 ${saving} · ${current}`
+  return saving === '--' ? current : `通信载荷较基线下降 ${saving} · ${current}`
 }
 
 function communicationCostText(record) {
   if (!record) return '--'
   const messages = Number(record.messageCount || 0)
   const chars = Number(record.textChars || 0)
+  const protocolBytes = Number(record.protocolBytes || 0)
   const stateCount = Number(record.stateTransferCount || 0)
   const stateBytes = Number(record.stateBytes || 0)
-  if (!messages && !chars && !stateBytes) return '--'
+  const communicationCost = Number(record.communicationCost || 0)
+  if (!messages && !chars && !protocolBytes && !stateBytes && !communicationCost) return '--'
   const parts = [`${integerText(messages)} 次`, `${integerText(chars)} 字`]
+  if (protocolBytes) {
+    parts.push(`协议 ${byteText(protocolBytes)}`)
+  }
   if (stateCount || stateBytes) {
     parts.push(`状态 ${integerText(stateCount)} 次 / ${byteText(stateBytes)}`)
+  }
+  if (communicationCost) {
+    parts.push(`载荷 ${byteText(communicationCost)}`)
   }
   return parts.join(' / ')
 }
@@ -540,6 +556,10 @@ function toneForMode(mode) {
   }[mode] || 'blue'
 }
 
+function toneForRecord(record) {
+  return toneForMode(record?.collaborationMode)
+}
+
 function colorForTone(tone) {
   return {
     blue: '#1677ff',
@@ -547,6 +567,15 @@ function colorForTone(tone) {
     orange: '#ff7a00',
     purple: '#7651e8'
   }[tone] || '#1677ff'
+}
+
+function colorForRecord(record) {
+  return {
+    plain: '#1677ff',
+    structured: '#10a96b',
+    'protocol-vector': '#ff7a00',
+    latent: '#7651e8'
+  }[record?.collaborationMode] || colorForTone(toneForRecord(record))
 }
 
 function percentText(value) {
@@ -624,9 +653,10 @@ function fallbackRecordFromRun(payload, run, index = 0) {
     taskCount: Number(run.task_count || run.tasks || metrics.task_count || payload.task_count || 0),
     messageCount: Number(metrics.message_count || 0),
     textChars: Number(metrics.text_chars || 0),
+    protocolBytes: Number(metrics.protocol_bytes || metrics.text_chars || 0),
     stateTransferCount: collaborationMode === 'plain' ? 0 : Number(metrics.latent_transfer_count || 0),
     stateBytes: collaborationMode === 'plain' ? 0 : Number(metrics.latent_bytes || 0),
-    communicationCost: Number(metrics.text_chars || 0),
+    communicationCost: Number(metrics.communication_bytes || Number(metrics.protocol_bytes || metrics.text_chars || 0)),
     stateGenerationMs,
     elapsedMs,
     comparableElapsedMs: collaborationMode === 'plain' ? elapsedMs : comparableElapsedMs,

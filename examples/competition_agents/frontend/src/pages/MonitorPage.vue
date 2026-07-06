@@ -52,35 +52,35 @@
           <h2>运行时协作链路</h2>
           <em>{{ selectedTask.title }}</em>
         </header>
-        <div v-if="selectedTask.messages.length" class="sequence-board">
-          <div class="sequence-columns">
-            <span v-for="agent in sequenceAgents" :key="agent">{{ agent }}</span>
+        <div v-if="selectedTask.messages.length" class="sequence-board flow-sequence-board">
+          <div class="flow-agent-row" :style="flowGridStyle">
+            <span v-for="agent in sequenceAgents" :key="agent" class="flow-agent">
+              <b>{{ agent }}</b>
+              <i></i>
+            </span>
           </div>
-          <svg class="sequence-diagram animated-sequence" viewBox="0 0 900 390" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <marker id="seq-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor" />
-              </marker>
-            </defs>
-            <g class="lifelines">
-              <line v-for="x in sequenceX" :key="x" :x1="x" y1="16" :x2="x" y2="360" />
-            </g>
-            <g
+          <div class="flow-message-list">
+            <div
               v-for="(msg, index) in selectedTask.messages"
               :key="msg.id"
-              class="seq-msg seq-animated"
-              :class="[msg.tone, { running: selectedTask.state === 'running' && index === activeMessageIndex }]"
-              :style="{ '--delay': `${index * 120}ms` }"
+              class="flow-message-row"
+              :style="flowGridStyle"
             >
-              <line :x1="msg.x1" :y1="msg.y" :x2="msg.x2" :y2="msg.y" />
-              <circle v-if="selectedTask.state === 'running' && index === activeMessageIndex" :cx="msg.x2" :cy="msg.y" r="4" />
-              <text :x="(msg.x1 + msg.x2) / 2" :y="msg.y - 7" text-anchor="middle">{{ msg.label }}</text>
-            </g>
-          </svg>
+              <span v-for="agent in sequenceAgents" :key="`${msg.id}-${agent}`" class="flow-lifeline"></span>
+              <div
+                class="flow-edge seq-animated"
+                :class="[msg.tone, { reverse: msg.reverse, running: selectedTask.state === 'running' && index === activeMessageIndex }]"
+                :style="[msg.edgeStyle, { '--delay': `${index * 120}ms` }]"
+              >
+                <em>{{ msg.label }}</em>
+                <b v-if="msg.memoryCount">{{ msg.memoryCount }} 条</b>
+              </div>
+            </div>
+          </div>
           <div class="sequence-legend">
             <span><i class="blue"></i>结构化消息</span>
             <span><i class="green"></i>状态传递</span>
-            <span><i class="orange"></i>记忆查询/复用</span>
+            <span><i class="orange"></i>记忆检索/复用</span>
             <span><i class="purple"></i>工具执行</span>
           </div>
         </div>
@@ -180,7 +180,7 @@ import {
 } from '../experimentOptions'
 
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
-const EVENT_LOG_URL = '/runtime/run_events.jsonl'
+const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
 
 const selectedTaskId = ref('')
 const selectedPacketTab = ref('message')
@@ -196,9 +196,6 @@ const packetTabs = [
   { label: '协议映射', value: 'mapping' },
   { label: '消息详情', value: 'message' }
 ]
-
-const sequenceAgents = ['Planner', 'Retriever', 'Reasoner', 'Executor', 'Summarizer', 'Memory']
-const sequenceX = [70, 210, 350, 510, 670, 830]
 
 const config = computed(() => normalizeExperimentConfig(savedConfig.value))
 const collaboration = computed(() => selectedCollaboration(config.value))
@@ -219,6 +216,10 @@ const runModeLabel = computed(() => {
 
 const tasks = computed(() => (hasRuntimeEvents.value ? buildTasksFromRuntimeEvents(runtimeEvents.value) : []))
 const selectedTask = computed(() => tasks.value.find((task) => task.id === selectedTaskId.value) ?? tasks.value[0] ?? emptyTask())
+const sequenceAgents = computed(() => selectedTask.value.agents || [])
+const flowGridStyle = computed(() => ({
+  gridTemplateColumns: `repeat(${Math.max(sequenceAgents.value.length, 1)}, minmax(0, 1fr))`
+}))
 const activeMessageIndex = computed(() => {
   const count = selectedTask.value.messages.length || 1
   return tick.value % count
@@ -283,30 +284,16 @@ function refreshSavedConfig() {
 
 async function refreshRuntimeEvents() {
   try {
-    const response = await fetch(`${EVENT_LOG_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    const response = await fetch(`${RUNNER_EVENTS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) {
       runtimeEvents.value = []
       return
     }
-    runtimeEvents.value = parseEventLog(await response.text())
+    const payload = await response.json()
+    runtimeEvents.value = Array.isArray(payload.events) ? payload.events : []
   } catch {
     runtimeEvents.value = []
   }
-}
-
-function parseEventLog(text) {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      try {
-        return JSON.parse(line)
-      } catch {
-        return null
-      }
-    })
-    .filter(Boolean)
 }
 
 function buildTasksFromRuntimeEvents(events) {
@@ -322,6 +309,7 @@ function buildTasksFromRuntimeEvents(events) {
     const doneEvent = [...taskEvents].reverse().find((event) => event.event_type === 'task_done')
     const state = doneEvent ? 'done' : taskEvents.length && !runDone ? 'running' : 'waiting'
     const metrics = metricsFromRuntimeEvents(taskEvents, doneEvent)
+    const agents = agentsFromRuntimeEvents(taskEvents)
     return {
       id: `task${round}`,
       round,
@@ -333,7 +321,8 @@ function buildTasksFromRuntimeEvents(events) {
       tags: runtimeTags(taskEvents),
       currentAgent: runtimeCurrentAgent(taskEvents, state),
       metrics,
-      messages: messagesFromRuntimeEvents(taskEvents),
+      agents,
+      messages: messagesFromRuntimeEvents(taskEvents, agents),
       protocol: protocolFromRuntimeEvents(round, state, taskEvents),
       events: tableRowsFromRuntimeEvents(taskEvents)
     }
@@ -358,7 +347,7 @@ function metricsFromRuntimeEvents(taskEvents, doneEvent) {
 
 function progressFromEvents(taskEvents) {
   const executableEvents = taskEvents.filter((event) =>
-    ['handshake', 'capability_discovery', 'protocol_mapping', 'agent_message', 'state_transfer', 'memory_hit', 'memory_write'].includes(event.event_type)
+    ['handshake', 'capability_discovery', 'protocol_mapping', 'agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write'].includes(event.event_type)
   )
   return Math.min(95, Math.max(8, executableEvents.length * 12))
 }
@@ -375,22 +364,86 @@ function runtimeCurrentAgent(taskEvents, state) {
   return normalizeAgentName(last?.to_agent || last?.from_agent || '运行中')
 }
 
-function messagesFromRuntimeEvents(taskEvents) {
-  const sourceEvents = taskEvents.filter((event) =>
-    ['handshake', 'capability_discovery', 'protocol_mapping', 'agent_message', 'state_transfer', 'memory_hit', 'memory_write'].includes(event.event_type)
-  )
-  return sourceEvents.slice(-9).map((event, index) => {
-    const from = agentColumn(event.from_agent)
-    const to = agentColumn(event.to_agent)
+function agentsFromRuntimeEvents(taskEvents) {
+  const ordered = ['Planner', 'Retriever', 'Memory', 'Reasoner', 'Executor', 'Summarizer']
+  const names = new Set()
+  flowEventsFromRuntimeEvents(taskEvents).forEach((event) => {
+    const route = visualRouteForEvent(event)
+    if (route.from && !isSystemAgent(route.from)) names.add(route.from)
+    if (route.to && !isSystemAgent(route.to)) names.add(route.to)
+  })
+  const orderedNames = ordered.filter((name) => names.has(name))
+  const extraNames = Array.from(names).filter((name) => !ordered.includes(name)).sort()
+  return [...orderedNames, ...extraNames]
+}
+
+function flowEventsFromRuntimeEvents(taskEvents) {
+  return taskEvents.flatMap((event) => {
+    if (!['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write'].includes(event.event_type)) {
+      return []
+    }
+    return [event]
+  })
+}
+
+function visualRouteForEvent(event) {
+  if (event.flow_type === 'memory_query' || event.event_type === 'memory_query') {
+    return { from: 'Retriever', to: 'Memory' }
+  }
+  if (event.flow_type === 'memory_result' || event.event_type === 'memory_hit') {
+    return { from: 'Memory', to: 'Retriever' }
+  }
+  if (event.event_type === 'memory_write') {
+    return { from: 'Summarizer', to: 'Memory' }
+  }
+  if (event.event_type === 'state_transfer') {
     return {
-      id: event.event_id || `${event.event_type}-${index}`,
-      x1: sequenceX[from],
-      x2: sequenceX[to],
-      y: 46 + index * 36,
+      from: normalizeAgentName(event.from_agent || 'runtime'),
+      to: normalizeAgentName(String(event.to_agent || '').split(',')[0] || event.from_agent || 'runtime')
+    }
+  }
+  return {
+    from: normalizeAgentName(event.from_agent || 'runtime'),
+    to: normalizeAgentName(event.to_agent || event.from_agent || 'runtime')
+  }
+}
+
+function messagesFromRuntimeEvents(taskEvents, agents) {
+  const sourceEvents = flowEventsFromRuntimeEvents(taskEvents)
+  if (!agents.length) return []
+  return selectFlowEvents(sourceEvents).map((event, index) => {
+    const route = visualRouteForEvent(event)
+    const from = agentColumn(route.from, agents)
+    const to = agentColumn(route.to, agents)
+    return {
+      id: event.synthetic_id || event.event_id || `${event.event_type}-${index}`,
       label: `${index + 1}. ${eventLabel(event)}`,
-      tone: eventTone(event)
+      tone: eventTone(event),
+      reverse: from > to,
+      edgeStyle: flowEdgeStyle(from, to, agents.length),
+      memoryCount: eventMemoryCount(event)
     }
   })
+}
+
+function selectFlowEvents(events) {
+  if (events.length <= 10) return events
+  const rest = events.filter((event) => event.event_type !== 'memory_write')
+  const latestMemoryWrite = [...events].reverse().find((event) => event.event_type === 'memory_write')
+  const selected = rest.slice(0, latestMemoryWrite ? 11 : 12)
+  return latestMemoryWrite ? [...selected, latestMemoryWrite] : selected
+}
+
+function flowEdgeStyle(from, to, count) {
+  const columnCount = Math.max(count, 1)
+  const fromCenter = ((from + 0.5) / columnCount) * 100
+  const toCenter = ((to + 0.5) / columnCount) * 100
+  const left = Math.min(fromCenter, toCenter)
+  const width = Math.max(Math.abs(toCenter - fromCenter), 3)
+  return {
+    left: `${left}%`,
+    width: `${width}%`
+  }
 }
 
 function protocolFromRuntimeEvents(round, state, taskEvents) {
@@ -445,6 +498,7 @@ function emptyTask() {
     tags: [],
     currentAgent: '未开始',
     metrics: { messages: 0, textCost: '--', stateTransfers: 0, memoryHits: 0 },
+    agents: [],
     messages: [],
     protocol: {
       handshake: emptyPacket('握手', '启动实验后显示真实握手事件。'),
@@ -486,15 +540,10 @@ function modeText(mode) {
   return map[mode] || mode
 }
 
-function agentColumn(name) {
-  const value = String(name || '').toLowerCase()
-  if (value.includes('planner')) return 0
-  if (value.includes('retriever')) return 1
-  if (value.includes('reasoner')) return 2
-  if (value.includes('executor') || value.includes('tool')) return 3
-  if (value.includes('summarizer')) return 4
-  if (value.includes('memory')) return 5
-  return 0
+function agentColumn(name, agents) {
+  const normalized = normalizeAgentName(name)
+  const index = agents.indexOf(normalized)
+  return index >= 0 ? index : 0
 }
 
 function normalizeAgentName(name) {
@@ -512,29 +561,56 @@ function normalizeAgentName(name) {
   return map[value.toLowerCase()] || value || '-'
 }
 
+function isSystemAgent(name) {
+  return ['Runtime', 'Dashboard', 'runtime', 'dashboard'].includes(String(name || ''))
+}
+
 function eventLabel(event) {
+  if (event.flow_type === 'memory_query') return '检索记忆'
+  if (event.flow_type === 'memory_result') return `命中记忆 ${eventMemoryCount(event)}`
   const map = {
-    run_start: 'RUN_START',
-    task_queue: 'TASK_QUEUE',
-    task_start: 'TASK_START',
-    handshake: 'HANDSHAKE',
-    capability_discovery: 'CAPABILITY',
-    protocol_mapping: 'MAPPING',
-    agent_message: String(event.action_type || 'MESSAGE').toUpperCase(),
+    run_start: '启动',
+    task_queue: '任务队列',
+    task_start: '开始任务',
+    handshake: '握手',
+    capability_discovery: '能力发现',
+    protocol_mapping: '协议映射',
+    agent_message: actionText(event.action_type),
     state_transfer: `STATE ${listText(event.state_refs)}`,
-    memory_hit: `MEMORY_HIT ${listText(event.memory_refs)}`,
-    memory_write: `MEMORY_WRITE ${listText(event.memory_refs)}`,
-    task_done: 'TASK_DONE',
-    run_done: 'RUN_DONE'
+    memory_query: '检索记忆',
+    memory_hit: `命中记忆 ${listText(event.memory_refs)}`,
+    memory_write: `写回记忆 ${listText(event.memory_refs)}`,
+    task_done: '任务完成',
+    run_done: '运行完成'
   }
   return map[event.event_type] || String(event.action_type || event.event_type || 'event').toUpperCase()
 }
 
+function actionText(action) {
+  const map = {
+    retrieve: '检索',
+    reason: '推理',
+    execute: '执行',
+    summarize: '总结',
+    start_task: '分发任务',
+    open_session: '建立会话',
+    discover_capability: '能力发现',
+    map_protocol: '协议映射'
+  }
+  return map[action] || String(action || '消息').toUpperCase()
+}
+
 function eventTone(event) {
   if (event.event_type === 'state_transfer') return 'green'
-  if (event.event_type === 'memory_hit' || event.event_type === 'memory_write') return 'orange'
+  if (event.flow_type || event.event_type === 'memory_query' || event.event_type === 'memory_hit' || event.event_type === 'memory_write') return 'orange'
   if (event.event_type === 'protocol_mapping' || String(event.to_agent || '').toLowerCase().includes('executor')) return 'purple'
   return 'blue'
+}
+
+function eventMemoryCount(event) {
+  const refs = Array.isArray(event.memory_refs) ? event.memory_refs.filter(Boolean) : event.memory_refs ? [event.memory_refs] : []
+  const result = event.return_result || {}
+  return Number(result.memory_hit_count || result.hit_count || refs.length || 0)
 }
 
 function listText(value) {

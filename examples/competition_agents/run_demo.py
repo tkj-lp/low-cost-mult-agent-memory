@@ -18,6 +18,7 @@ from competition_agents.runtime_events import (
     emit_runtime_event,
     emit_task_result_events,
 )
+from competition_agents.state_store import clear_state_store
 from competition_agents.state import initial_state
 from hypergraph_memory_method import (
     RETRIEVAL_MODE_VALUES,
@@ -388,6 +389,10 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
         return ["protocol"]
     if args.experiment_mode == "hidden_api":
         os.environ["EMBEDDING_PROVIDER"] = "hash"
+        if args.llm_backend == "local":
+            os.environ.setdefault("HIDDEN_RETRIEVER_STATE_ENCODER", "embedding")
+            os.environ.setdefault("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER", "local")
+            os.environ.setdefault("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
         return ["hidden"]
     raise ValueError(f"Unsupported experiment mode: {args.experiment_mode}")
 
@@ -1056,6 +1061,47 @@ def print_state_trace(task_item: dict[str, Any], result: dict[str, Any]) -> None
         )
 
 
+def warm_local_runtime() -> None:
+    """在任务计时前加载本地模型，避免一次性启动成本污染单任务耗时。"""
+
+    providers = {
+        os.environ.get("LLM_PROVIDER", ""),
+        os.environ.get("LLM_PLANNER_PROVIDER", ""),
+        os.environ.get("LLM_REASONER_PROVIDER", ""),
+        os.environ.get("LLM_SUMMARIZER_PROVIDER", ""),
+    }
+    if "local_hf" in providers:
+        from competition_agents.latent_hidden.local_model import load_local_hidden_model
+
+        load_local_hidden_model()
+    if os.environ.get("EMBEDDING_PROVIDER", "").lower() == "local":
+        from competition_agents.embedding import embed_text
+
+        embed_text("__warmup_embedding__")
+    if os.environ.get("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER", "").lower() == "local":
+        from competition_agents.embedding import embed_text
+
+        previous = os.environ.get("EMBEDDING_PROVIDER")
+        os.environ["EMBEDDING_PROVIDER"] = "local"
+        try:
+            embed_text("__warmup_hidden_retriever_embedding__")
+        finally:
+            if previous is None:
+                os.environ.pop("EMBEDDING_PROVIDER", None)
+            else:
+                os.environ["EMBEDDING_PROVIDER"] = previous
+
+
+def warm_codeact_runtime(dataset_type: str) -> None:
+    """Warm the long-lived CodeAct sandbox outside per-task timing."""
+
+    if dataset_type != "codeact":
+        return
+    from competition_agents.restricted_python_codeact import warm_persistent_codeact_worker
+
+    warm_persistent_codeact_worker()
+
+
 def run_mode(
     mode: str,
     tasks: list[dict[str, Any]],
@@ -1071,6 +1117,7 @@ def run_mode(
 ) -> dict[str, Any]:
     """运行一种协作模式，并汇总该模式的指标。"""
 
+    os.environ["LOCAL_CAPTURE_HIDDEN"] = "1" if mode == "hidden" else "0"
     graph = build_graph()
     global_memory: list[dict[str, Any]] = []
     group_memory: dict[str, list[dict[str, Any]]] = {}
@@ -1082,6 +1129,8 @@ def run_mode(
     total_metrics = {
         "message_count": 0,
         "text_chars": 0,
+        "protocol_bytes": 0,
+        "communication_bytes": 0,
         "latent_transfer_count": 0,
         "latent_bytes": 0,
         "transfer_latency_ms": 0.0,
@@ -1094,6 +1143,9 @@ def run_mode(
     }
 
     print(f"\n=== {mode} mode ===")
+    clear_state_store()
+    warm_local_runtime()
+    warm_codeact_runtime(dataset_type)
     for index, task_item in enumerate(tasks, start=1):
         group_id = task_item.get("group_id", "default")
         memory = group_memory.get(group_id, []) if dataset_type == "continuous" else global_memory
@@ -1286,6 +1338,8 @@ def run_mode(
             "metrics: "
             f"messages={metrics['message_count']}, "
             f"text_chars={metrics['text_chars']}, "
+            f"protocol_bytes={metrics.get('protocol_bytes', 0)}, "
+            f"communication_bytes={metrics.get('communication_bytes', 0)}, "
             f"latent_transfers={metrics['latent_transfer_count']}, "
             f"latent_bytes={metrics['latent_bytes']}, "
             f"transfer_latency_ms={metrics['transfer_latency_ms']:.2f}, "
@@ -1322,6 +1376,8 @@ def run_mode(
         f"tasks={len(tasks)}, "
         f"messages={total_metrics['message_count']}, "
         f"text_chars={total_metrics['text_chars']}, "
+        f"protocol_bytes={total_metrics.get('protocol_bytes', 0)}, "
+        f"communication_bytes={total_metrics.get('communication_bytes', 0)}, "
         f"latent_transfers={total_metrics['latent_transfer_count']}, "
         f"latent_bytes={total_metrics['latent_bytes']}, "
         f"transfer_latency_ms={total_metrics['transfer_latency_ms']:.2f}, "

@@ -129,6 +129,23 @@ class LocalHFClient(OpenAICompatibleClient):
             kwargs["task"] = _compact_local_task(str(kwargs.get("task", "")))
         return super().summarize(**kwargs)
 
+    def _generate_text_only(self, prompt: str) -> str:
+        inputs = self._prepare_inputs(prompt)
+        tokenizer = self.bundle.tokenizer
+        eos_token_id = tokenizer.eos_token_id
+        pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else eos_token_id
+        with self.bundle.torch.no_grad():
+            output_ids = self.bundle.model.generate(
+                **inputs,
+                max_new_tokens=self.max_new_tokens,
+                do_sample=False,
+                pad_token_id=pad_token_id,
+                eos_token_id=eos_token_id,
+            )
+        prompt_tokens = int(inputs["input_ids"].shape[-1])
+        generated_ids = output_ids[0][prompt_tokens:]
+        return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+
     def generate(self, prompt: str) -> str:
         print(
             f"[local_hf] role={self.role} model={self.model} "
@@ -136,6 +153,11 @@ class LocalHFClient(OpenAICompatibleClient):
             f"prompt_chars={len(prompt)}",
             flush=True,
         )
+        capture_hidden = os.environ.get("LOCAL_CAPTURE_HIDDEN", "").lower() in {"1", "true", "yes"}
+        if not capture_hidden:
+            self._last_hidden_result = None
+            self._last_hidden_tensor = None
+            return self._generate_text_only(prompt)
         generated, tensor = generate_text_with_last_hidden_state(
             prompt,
             max_new_tokens=self.max_new_tokens,

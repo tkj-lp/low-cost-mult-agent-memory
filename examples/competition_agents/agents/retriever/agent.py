@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import re
+import os
 
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
+from competition_agents.runtime_events import emit_memory_retrieval_events
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
 from hypergraph_memory_method import search_context
 
@@ -46,6 +48,80 @@ def _compact_memory_context(hits: list[dict]) -> list[dict]:
             }
         )
     return context
+
+
+def _hidden_evidence_state_text(
+    evidence: list[str],
+    memory_context: list[dict],
+    planner_focus: list[str],
+) -> str:
+    """为 hidden 状态抽取构造短输入；完整证据仍通过共享状态给 Reasoner 使用。"""
+
+    del memory_context, planner_focus
+    core_evidence = [
+        item
+        for item in evidence
+        if item and not item.startswith("Current memory retrieval uses ") and not item.startswith("Planner-guided retrieval focus:")
+    ][:2]
+    parts = [
+        "retrieved_evidence_refs",
+        *[item[:160] for item in core_evidence],
+    ]
+    return "\n".join(parts)
+
+
+def _put_hidden_mode_retriever_state(
+    state: CompetitionState,
+    *,
+    text: str,
+    consumers: list[str],
+) -> tuple[str, dict[str, dict[str, Any]], dict[str, Any]]:
+    """hidden 模式下 Retriever 默认使用轻量 latent ref，避免额外 Qwen 前向。"""
+
+    encoder = os.environ.get("HIDDEN_RETRIEVER_STATE_ENCODER", "embedding").strip().lower()
+    if encoder == "hidden":
+        return put_hidden_state(
+            state,
+            producer="retriever",
+            topic=state["task"],
+            text=text,
+            consumers=consumers,
+        )
+
+    previous_provider = os.environ.get("EMBEDDING_PROVIDER")
+    previous_model = os.environ.get("LOCAL_EMBEDDING_MODEL")
+    provider = os.environ.get("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER") or (
+        "local" if os.environ.get("LLM_PROVIDER") == "local_hf" else "hash"
+    )
+    try:
+        os.environ["EMBEDDING_PROVIDER"] = provider
+        if provider == "local":
+            os.environ.setdefault("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+        return put_latent_state(
+            state,
+            producer="retriever",
+            topic=state["task"],
+            text=text,
+            consumers=consumers,
+        )
+    except RuntimeError:
+        os.environ["EMBEDDING_PROVIDER"] = "hash"
+        return put_latent_state(
+            state,
+            producer="retriever",
+            topic=state["task"],
+            text=text,
+            consumers=consumers,
+        )
+    finally:
+        if previous_provider is None:
+            os.environ.pop("EMBEDDING_PROVIDER", None)
+        else:
+            os.environ["EMBEDDING_PROVIDER"] = previous_provider
+        if previous_model is None:
+            os.environ.pop("LOCAL_EMBEDDING_MODEL", None)
+        else:
+            os.environ["LOCAL_EMBEDDING_MODEL"] = previous_model
 
 
 def _build_experience_rules(hits: list[dict]) -> list[dict]:
@@ -517,6 +593,7 @@ def retriever_agent(state: CompetitionState) -> dict:
         hit for hit in experience_hits if hit.get("memory_id") not in {item.get("memory_id") for item in evidence_hits}
     ]
     hits = combined_hits[: max(4, evidence_top_k)]
+    emit_memory_retrieval_events(state, query=retrieval_query, hits=hits)
     memory_context = _compact_memory_context(hits)
     experience_rules = _build_experience_rules(experience_hits)
     evidence = [
@@ -539,11 +616,9 @@ def retriever_agent(state: CompetitionState) -> dict:
         latent_states = state.get("latent_states", {})
         metrics = state["metrics"]
     elif state["mode"] == "hidden":
-        latent_ref, latent_states, metrics = put_hidden_state(
+        latent_ref, latent_states, metrics = _put_hidden_mode_retriever_state(
             state,
-            producer="retriever",
-            topic=state["task"],
-            text=" ".join(evidence),
+            text=_hidden_evidence_state_text(evidence, memory_context, planner_focus),
             consumers=["reasoner", "summarizer"],
         )
     else:
@@ -583,16 +658,13 @@ def retriever_agent(state: CompetitionState) -> dict:
             sender="retriever",
             receiver="reasoner",
             action="reason",
-            content_type="hidden_state_ref" if state["mode"] == "hidden" else "state_ref",
+            content_type=latent_states.get(latent_ref, {}).get("content_type", "state_ref"),
             params={"tool": "codeact_stats", "n": len(evidence)},
             result={
                 "mode": "memory",
                 "hits": len(hits),
-                "memory_context": memory_context,
-                "planner_focus": planner_focus,
                 "evidence_hits": len(evidence_hits),
                 "experience_hits": len(experience_hits),
-                "experience_rules": experience_rules,
             },
             state_refs=[latent_ref],
             memory_refs=[hit["memory_id"] for hit in hits],
