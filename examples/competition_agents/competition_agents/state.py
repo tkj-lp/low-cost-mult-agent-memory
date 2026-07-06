@@ -172,12 +172,19 @@ def put_hidden_state(
     consumers: list[str] | None = None,
     scope: str = "task",
     ttl: int = 3,
+    hidden_result: Any | None = None,
+    hidden_tensor: Any | None = None,
 ) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
     """创建本地 LLM hidden state，并复用现有 latent_state 容器输出 state_ref。"""
 
-    started = time.perf_counter()
-    result, tensor = extract_last_hidden_state(text)
-    generation_elapsed_ms = (time.perf_counter() - started) * 1000
+    if hidden_result is None:
+        started = time.perf_counter()
+        result, tensor = extract_last_hidden_state(text)
+        generation_elapsed_ms = (time.perf_counter() - started) * 1000
+    else:
+        result = hidden_result
+        tensor = hidden_tensor
+        generation_elapsed_ms = 0.0
     state_id = f"hidden-{len(state['latent_states']) + 1:04d}"
     latent_state = {
         "state_id": state_id,
@@ -205,6 +212,7 @@ def put_hidden_state(
         "storage_mode": hidden_storage_mode(),
         "stored_hidden_bytes": stored_hidden_bytes(result),
         "tensor": tensor if should_store_full_hidden_tensor() else None,
+        "reused_generation_hidden": hidden_result is not None,
         "source_text_chars": len(text),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }

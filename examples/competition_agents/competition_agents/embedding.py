@@ -121,8 +121,15 @@ def _get_local_embedding_model():
 
 
 def _embed_local(text: str) -> EmbeddingResult:
-    model = _get_local_embedding_model()
     model_name = os.environ.get("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+    try:
+        model = _get_local_embedding_model()
+    except RuntimeError:
+        return EmbeddingResult(
+            vector=hash_embedding(text),
+            provider="local_hash_fallback",
+            model=f"{model_name}:missing-sentence-transformers",
+        )
     vector = model.encode(text, normalize_embeddings=True).tolist()
     return EmbeddingResult(
         vector=[float(value) for value in vector],
@@ -142,18 +149,45 @@ def _embed_local_hidden(text: str) -> EmbeddingResult:
     )
 
 
-def embed_text(text: str) -> EmbeddingResult:
-    provider = get_embedding_provider()
+@lru_cache(maxsize=2048)
+def _embed_text_cached(
+    provider: str,
+    model_key: str,
+    base_url: str,
+    text: str,
+) -> tuple[tuple[float, ...], str, str]:
+    """Cache embedding calls by provider/model/text to avoid repeated state encoding."""
+
+    del model_key, base_url
     if provider in {"openai", "openai_compatible", "api"}:
-        return _embed_openai_compatible(text)
-    if provider == "local":
-        return _embed_local(text)
-    if provider in {"local_hidden", "local_hf", "hidden"}:
-        return _embed_local_hidden(text)
-    if provider == "hash":
-        return EmbeddingResult(
+        result = _embed_openai_compatible(text)
+    elif provider == "local":
+        result = _embed_local(text)
+    elif provider in {"local_hidden", "local_hf", "hidden"}:
+        result = _embed_local_hidden(text)
+    elif provider == "hash":
+        result = EmbeddingResult(
             vector=hash_embedding(text),
             provider="hash",
             model="hash-v1",
         )
-    raise ValueError(f"Unsupported EMBEDDING_PROVIDER: {provider}")
+    else:
+        raise ValueError(f"Unsupported EMBEDDING_PROVIDER: {provider}")
+    return tuple(result.vector), result.provider, result.model
+
+
+def embed_text(text: str) -> EmbeddingResult:
+    provider = get_embedding_provider()
+    model_key = (
+        os.environ.get("EMBEDDING_MODEL")
+        or os.environ.get("LOCAL_EMBEDDING_MODEL")
+        or os.environ.get("LOCAL_HIDDEN_MODEL")
+        or ""
+    )
+    base_url = os.environ.get("EMBEDDING_BASE_URL") or os.environ.get("LLM_BASE_URL", "")
+    vector, actual_provider, model = _embed_text_cached(provider, model_key, base_url, text)
+    return EmbeddingResult(
+        vector=[float(value) for value in vector],
+        provider=actual_provider,
+        model=model,
+    )

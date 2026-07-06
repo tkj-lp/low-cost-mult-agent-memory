@@ -49,6 +49,17 @@ def _unique_memory_ids(items: list[dict]) -> list[str]:
     return ids
 
 
+def _latest_message_payload(state: CompetitionState, *, sender: str, receiver: str) -> str:
+    """Return the newest text payload sent between two agents."""
+
+    for message in reversed(state.get("messages", [])):
+        if message.get("from") != sender or message.get("to") != receiver:
+            continue
+        payload = message.get("payload", "")
+        return payload if isinstance(payload, str) else str(payload)
+    return ""
+
+
 def _question_answer_rules(question: str) -> list[str]:
     """根据问题类型补充稳定答案槽位约束，降低模型自由发挥。"""
 
@@ -109,6 +120,15 @@ def reasoner_agent(state: CompetitionState) -> dict:
     task_text = _reasoner_task_text(state)
     question = str(state.get("task_meta", {}).get("question") or "")
     answer_rules = _question_answer_rules(question)
+    if state["mode"] == "text":
+        planner_message = _latest_message_payload(state, sender="planner", receiver="retriever")
+        retriever_message = _latest_message_payload(state, sender="retriever", receiver="reasoner")
+        if planner_message:
+            plan = [planner_message]
+        if retriever_message:
+            evidence = [retriever_message]
+        memory_context = []
+        experience_rules = []
     print(
         "[reasoner] "
         f"task chars={len(task_text)} evidence_count={len(evidence)} "
@@ -125,7 +145,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
         if latent_plan:
             plan = latent_plan
 
-    result = get_llm_client("reasoner").reason(
+    client = get_llm_client("reasoner")
+    result = client.reason(
         task=task_text,
         plan=plan,
         evidence=evidence,
@@ -135,6 +156,12 @@ def reasoner_agent(state: CompetitionState) -> dict:
         answer_rules=answer_rules,
         mode=state["mode"],
     )
+    hidden_result = None
+    hidden_tensor = None
+    if state["mode"] == "hidden":
+        consume_hidden = getattr(client, "consume_last_hidden_state", None)
+        if callable(consume_hidden):
+            hidden_result, hidden_tensor = consume_hidden()
     cognitive_gap = make_cognitive_gap(
         agent="reasoner",
         known=["task", "plan", "retrieved_evidence", "memory_hit_count"],
@@ -162,6 +189,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
                 topic=task_text,
                 text=answer_text,
                 consumers=["summarizer"],
+                hidden_result=hidden_result,
+                hidden_tensor=hidden_tensor,
             )
         else:
             answer_ref, latent_states, metrics = put_latent_state(

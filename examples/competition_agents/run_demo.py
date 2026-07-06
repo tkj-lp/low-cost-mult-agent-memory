@@ -380,7 +380,11 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
         os.environ["EMBEDDING_PROVIDER"] = "hash"
         return ["protocol"]
     if args.experiment_mode == "protocol_api_embedding":
-        os.environ["EMBEDDING_PROVIDER"] = "local_hidden" if args.llm_backend == "local" else "openai_compatible"
+        if args.llm_backend == "local":
+            os.environ["EMBEDDING_PROVIDER"] = "local"
+            os.environ.setdefault("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+        else:
+            os.environ["EMBEDDING_PROVIDER"] = "openai_compatible"
         return ["protocol"]
     if args.experiment_mode == "hidden_api":
         os.environ["EMBEDDING_PROVIDER"] = "hash"

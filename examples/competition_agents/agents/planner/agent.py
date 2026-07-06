@@ -25,6 +25,12 @@ def planner_agent(state: CompetitionState) -> dict:
     else:
         plan = client.plan(task)
         raw_output = "\n".join(plan)
+    hidden_result = None
+    hidden_tensor = None
+    if state["mode"] == "hidden":
+        consume_hidden = getattr(client, "consume_last_hidden_state", None)
+        if callable(consume_hidden):
+            hidden_result, hidden_tensor = consume_hidden()
     cognitive_gap = make_cognitive_gap(
         agent="planner",
         known=["task_goal", "available_agent_capabilities"],
@@ -44,6 +50,8 @@ def planner_agent(state: CompetitionState) -> dict:
                 topic=task,
                 text="\n".join(plan),
                 consumers=["retriever", "reasoner"],
+                hidden_result=hidden_result,
+                hidden_tensor=hidden_tensor,
             )
         else:
             plan_ref, latent_states, metrics = put_latent_state(

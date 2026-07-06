@@ -4,6 +4,8 @@ import os
 import re
 from typing import Any
 
+from competition_agents.latent_hidden import generate_text_with_last_hidden_state
+from competition_agents.latent_hidden.hidden_state import HiddenStateResult
 from competition_agents.latent_hidden.local_model import load_local_hidden_model
 
 from .openai_compatible import OpenAICompatibleClient
@@ -41,6 +43,17 @@ class LocalHFClient(OpenAICompatibleClient):
             "true",
             "yes",
         }
+        self._last_hidden_result: HiddenStateResult | None = None
+        self._last_hidden_tensor: object | None = None
+
+    def consume_last_hidden_state(self) -> tuple[HiddenStateResult | None, object | None]:
+        """Return and clear the hidden state produced by the last local generation."""
+
+        result = self._last_hidden_result
+        tensor = self._last_hidden_tensor
+        self._last_hidden_result = None
+        self._last_hidden_tensor = None
+        return result, tensor
 
     def _prepare_inputs(self, prompt: str) -> dict[str, Any]:
         tokenizer = self.bundle.tokenizer
@@ -117,28 +130,17 @@ class LocalHFClient(OpenAICompatibleClient):
         return super().summarize(**kwargs)
 
     def generate(self, prompt: str) -> str:
-        tokenizer = self.bundle.tokenizer
-        model = self.bundle.model
-        torch = self.bundle.torch
-        inputs = self._prepare_inputs(prompt)
-        input_len = int(inputs["input_ids"].shape[-1])
-        generation_kwargs: dict[str, Any] = {
-            **inputs,
-            "max_new_tokens": self.max_new_tokens,
-            "do_sample": False,
-            "use_cache": True,
-        }
-        if tokenizer.eos_token_id is not None:
-            generation_kwargs["eos_token_id"] = tokenizer.eos_token_id
-        generation_kwargs["pad_token_id"] = tokenizer.pad_token_id or tokenizer.eos_token_id
-
         print(
             f"[local_hf] role={self.role} model={self.model} "
             f"device={self.bundle.device} max_new_tokens={self.max_new_tokens} "
             f"prompt_chars={len(prompt)}",
             flush=True,
         )
-        with torch.no_grad():
-            output_ids = model.generate(**generation_kwargs)
-        generated_ids = output_ids[0][input_len:]
-        return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+        generated, tensor = generate_text_with_last_hidden_state(
+            prompt,
+            max_new_tokens=self.max_new_tokens,
+            do_sample=False,
+        )
+        self._last_hidden_result = generated.hidden
+        self._last_hidden_tensor = tensor
+        return generated.generated_text.strip()

@@ -15,6 +15,17 @@ def _shorten(value: object, limit: int = 220) -> str:
     return text if len(text) <= limit else text[:limit] + "..."
 
 
+def _latest_message_payload(state: CompetitionState, *, sender: str, receiver: str) -> str:
+    """Return the newest text payload sent between two agents."""
+
+    for message in reversed(state.get("messages", [])):
+        if message.get("from") != sender or message.get("to") != receiver:
+            continue
+        payload = message.get("payload", "")
+        return payload if isinstance(payload, str) else str(payload)
+    return ""
+
+
 def _compact_memory_context(hits: list[dict]) -> list[dict]:
     """把超图检索结果裁剪成 Reasoner 可读、可解释的轻量上下文。"""
 
@@ -474,7 +485,20 @@ def retriever_agent(state: CompetitionState) -> dict:
     """检索可复用记忆，并生成非文本状态引用。"""
 
     task_meta = state.get("task_meta", {})
-    retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []), task_meta)
+    if state["mode"] == "text":
+        planner_message = _latest_message_payload(state, sender="planner", receiver="retriever")
+        retrieval_query = "\n".join(
+            part
+            for part in [
+                state["task"],
+                "Planner natural-language message:",
+                planner_message,
+            ]
+            if str(part).strip()
+        )
+        planner_focus = []
+    else:
+        retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []), task_meta)
     question = str(task_meta.get("question") or state["task"])
     experience_query = _build_experience_query(state["task"], state.get("plan", []), question, task_meta)
     context_source = str(task_meta.get("context_source") or "inline")
@@ -509,8 +533,12 @@ def retriever_agent(state: CompetitionState) -> dict:
         gap_type="missing_memory" if not hits else "partial_context",
         confidence=0.78 if hits else 0.64,
     )
-    # Match the original behavior: evidence is written once as state and passed by reference.
-    if state["mode"] == "hidden":
+    # Non-text modes write evidence as state and pass only refs. Text mode carries evidence in the message.
+    if state["mode"] == "text":
+        latent_ref = ""
+        latent_states = state.get("latent_states", {})
+        metrics = state["metrics"]
+    elif state["mode"] == "hidden":
         latent_ref, latent_states, metrics = put_hidden_state(
             state,
             producer="retriever",
@@ -538,15 +566,15 @@ def retriever_agent(state: CompetitionState) -> dict:
             + " | ".join(hit["memory_id"] for hit in hits)
             + ". Memory summaries: "
             + memory_summaries
-            + f". It forwards latent semantic content as {latent_ref}. "
+            + ". It forwards the full evidence text for downstream natural-language parsing. "
             + "Because this is text-mode collaboration, the retriever serializes the evidence, "
             + "memory summaries, retrieval rationale, and downstream execution instruction as "
             + "natural language instead of passing compact references. Evidence repeated for "
             + "baseline cost. The retriever also explains that it can perform memory recall, "
-            + "evidence search, and latent state writing. Its current cognitive gap is that "
+            + "evidence search, and natural-language evidence handoff. Its current cognitive gap is that "
             + "future query expansion and unseen memory are still uncertain, so the "
-            + "downstream executor should treat the evidence as a lightweight latent reference "
-            + "rather than a full hidden-state transfer. Evidence repeated for baseline cost: "
+            + "downstream agent must parse the evidence and memory summaries from this text. "
+            + "Evidence repeated for baseline cost: "
             + " | ".join(evidence)
         )
     else:

@@ -35,6 +35,25 @@ class GeneratedHiddenResult:
 def _prepare_generation_inputs(bundle, prompt: str) -> dict[str, object]:
     """优先走 chat template，避免 instruct 模型把输入当成裸续写文本。"""
 
+    def truncate(inputs: dict[str, object]) -> dict[str, object]:
+        max_input_tokens = int(os.environ.get("LOCAL_LLM_MAX_INPUT_TOKENS", "0") or 0)
+        input_ids = inputs.get("input_ids")
+        if (
+            input_ids is None
+            or max_input_tokens <= 0
+            or not hasattr(input_ids, "shape")
+            or int(input_ids.shape[-1]) <= max_input_tokens
+        ):
+            return inputs
+        head_tokens = min(256, max_input_tokens // 3)
+        tail_tokens = max_input_tokens - head_tokens
+        for key, value in list(inputs.items()):
+            if hasattr(value, "shape") and len(value.shape) >= 2 and value.shape[-1] == input_ids.shape[-1]:
+                inputs[key] = bundle.torch.cat(
+                    [value[..., :head_tokens], value[..., -tail_tokens:]], dim=-1
+                )
+        return inputs
+
     tokenizer = bundle.tokenizer
     messages = [{"role": "user", "content": prompt}]
     if "deepseek-coder" in bundle.model_name.lower():
@@ -60,18 +79,18 @@ def _prepare_generation_inputs(bundle, prompt: str) -> dict[str, object]:
             )
             if inputs is not None:
                 if hasattr(inputs, "items"):
-                    return {
+                    return truncate({
                         key: value.to(bundle.device) if hasattr(value, "to") else value
                         for key, value in inputs.items()
-                    }
+                    })
                 if hasattr(inputs, "to"):
                     inputs = inputs.to(bundle.device)
-                return {"input_ids": inputs}
+                return truncate({"input_ids": inputs})
         except Exception:
             pass
 
     inputs = tokenizer(prompt, return_tensors="pt")
-    return {key: value.to(bundle.device) for key, value in inputs.items()}
+    return truncate({key: value.to(bundle.device) for key, value in inputs.items()})
 
 
 def hidden_storage_mode() -> str:
