@@ -91,9 +91,7 @@ def _put_hidden_mode_retriever_state(
 
     previous_provider = os.environ.get("EMBEDDING_PROVIDER")
     previous_model = os.environ.get("LOCAL_EMBEDDING_MODEL")
-    provider = os.environ.get("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER") or (
-        "local" if os.environ.get("LLM_PROVIDER") == "local_hf" else "hash"
-    )
+    provider = os.environ.get("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER") or "hash"
     try:
         os.environ["EMBEDDING_PROVIDER"] = provider
         if provider == "local":

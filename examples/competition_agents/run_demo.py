@@ -397,8 +397,7 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
         os.environ["EMBEDDING_PROVIDER"] = "hash"
         if args.llm_backend == "local":
             os.environ.setdefault("HIDDEN_RETRIEVER_STATE_ENCODER", "embedding")
-            os.environ.setdefault("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER", "local")
-            os.environ.setdefault("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+            os.environ.setdefault("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER", "hash")
             os.environ.setdefault("LOCAL_HIDDEN_POOLED_DIM", "128")
             os.environ.setdefault("LOCAL_LLM_PLANNER_MAX_NEW_TOKENS", "48")
             os.environ.setdefault("LOCAL_LLM_REASONER_MAX_NEW_TOKENS", "72")
@@ -1126,7 +1125,7 @@ def run_mode(
 ) -> dict[str, Any]:
     """运行一种协作模式，并汇总该模式的指标。"""
 
-    os.environ["LOCAL_CAPTURE_HIDDEN"] = "1" if mode == "hidden" else "0"
+    os.environ["LOCAL_CAPTURE_HIDDEN"] = "0"
     graph = build_graph()
     global_memory: list[dict[str, Any]] = []
     group_memory: dict[str, list[dict[str, Any]]] = {}

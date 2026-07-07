@@ -64,6 +64,12 @@
               v-for="(msg, index) in selectedTask.messages"
               :key="msg.id"
               class="flow-message-row"
+              :class="{ selected: msg.id === selectedMessage?.id }"
+              role="button"
+              tabindex="0"
+              @click="selectMessage(msg.id)"
+              @keydown.enter.prevent="selectMessage(msg.id)"
+              @keydown.space.prevent="selectMessage(msg.id)"
               :style="flowGridStyle"
             >
               <span v-for="agent in sequenceAgents" :key="`${msg.id}-${agent}`" class="flow-lifeline"></span>
@@ -98,22 +104,95 @@
         </header>
         <div class="packet-tabs protocol-tabs">
           <button
-            v-for="tab in packetTabs"
+            v-for="tab in protocolViewTabs"
             :key="tab.value"
-            :class="{ active: selectedPacketTab === tab.value }"
+            :class="{ active: protocolViewTab === tab.value }"
             type="button"
-            @click="selectedPacketTab = tab.value"
+            @click="protocolViewTab = tab.value"
           >
             {{ tab.label }}
           </button>
         </div>
-        <section v-if="activePacket.hasData" class="protocol-detail-panel">
+        <section v-if="activePacket.hasData && protocolViewTab === 'protocol'" class="protocol-detail-panel readable-protocol-panel">
           <div class="protocol-detail-head">
             <strong>{{ activePacket.title }}</strong>
             <span>{{ activePacket.badge }}</span>
           </div>
           <p>{{ activePacket.desc }}</p>
-          <pre>{{ activePacket.payload }}</pre>
+          <div class="protocol-readable-grid">
+            <article v-for="item in activePacket.sections" :key="item.label">
+              <b>{{ item.label }}</b>
+              <span>{{ item.value }}</span>
+            </article>
+          </div>
+          <article class="protocol-map-card">
+            <b>协议映射</b>
+            <span>{{ activePacket.mapping }}</span>
+          </article>
+          <details class="protocol-raw-detail">
+            <summary>查看原始协议包</summary>
+            <pre>{{ activePacket.payload }}</pre>
+          </details>
+        </section>
+        <section v-else-if="protocolViewTab === 'transfer' && activeTransferDetail.hasData" class="protocol-detail-panel transfer-content-panel transfer-detail-panel">
+          <article class="transfer-agent-detail">
+            <div class="detail-head">
+              <div>
+                <span>{{ activeTransferDetail.taskLabel }}</span>
+                <strong>{{ activeTransferDetail.agentLabel }}</strong>
+              </div>
+              <span class="detail-status" :class="activeTransferDetail.status">
+                {{ transferStatusText(activeTransferDetail.status) }}
+              </span>
+            </div>
+
+            <div class="detail-meta">
+              <span>exact_match: {{ formatExactMatch(activeTransferDetail.exactMatch) }}</span>
+              <span v-if="activeTransferDetail.stateRef">state_ref: {{ activeTransferDetail.stateRef }}</span>
+            </div>
+
+            <div class="detail-scroll">
+              <section class="detail-section">
+                <h3>&#38382;&#39064;</h3>
+                <p>{{ activeTransferDetail.question || '&#24403;&#21069;&#36718;&#27425;&#26242;&#26080;&#38382;&#39064;&#25991;&#26412;&#12290;' }}</p>
+              </section>
+
+              <section class="detail-section">
+                <h3>Agent &#36755;&#20986;</h3>
+                <p>{{ activeTransferDetail.displayText || (activeTransferDetail.hasOutput ? '&#35813; Agent &#26412;&#36718;&#26410;&#36820;&#22238; display_text&#12290;' : '&#35813; Agent &#26412;&#36718;&#26242;&#26080; agent_views &#36755;&#20986;&#12290;') }}</p>
+              </section>
+
+              <section v-if="activeTransferDetail.structuredText" class="detail-section">
+                <h3>&#32467;&#26500;&#21270;&#20869;&#23481;</h3>
+                <pre>{{ activeTransferDetail.structuredText }}</pre>
+              </section>
+
+              <section v-if="activeTransferDetail.agentKey === 'retriever' && activeTransferDetail.retrievalSummaryText" class="detail-section">
+                <h3>&#26816;&#32034;&#19982;&#35760;&#24518;</h3>
+                <pre>{{ activeTransferDetail.retrievalSummaryText }}</pre>
+              </section>
+
+              <section v-if="activeTransferDetail.agentKey === 'reasoner' && activeTransferDetail.executionResultText" class="detail-section">
+                <h3>&#25512;&#29702;&#32467;&#26524;</h3>
+                <pre>{{ activeTransferDetail.executionResultText }}</pre>
+              </section>
+
+              <section v-if="activeTransferDetail.agentKey === 'summarizer' && activeTransferDetail.summaryResultText" class="detail-section">
+                <h3>&#31572;&#26696;&#19982;&#35760;&#24518;&#20889;&#22238;</h3>
+                <pre>{{ activeTransferDetail.summaryResultText }}</pre>
+              </section>
+
+              <section v-if="activeTransferDetail.agentKey === 'summarizer' && activeTransferDetail.memoryRefineText" class="detail-section">
+                <h3>&#32463;&#39564;&#25552;&#28860;</h3>
+                <pre>{{ activeTransferDetail.memoryRefineText }}</pre>
+              </section>
+
+              <section v-if="activeTransferDetail.agentKey === 'executor' && activeTransferDetail.executionResultText" class="detail-section">
+                <h3>&#25191;&#34892;&#32467;&#26524;</h3>
+                <pre>{{ activeTransferDetail.executionResultText }}</pre>
+              </section>
+            </div>
+          </article>
         </section>
         <div v-else class="runtime-empty-panel">
           <strong>{{ activePacket.title }}</strong>
@@ -181,27 +260,29 @@ import {
 
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
 const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
+const RUNNER_RESULT_URL = 'http://127.0.0.1:8765/api/runner/result'
 
 const selectedTaskId = ref('')
 const selectedPacketTab = ref('message')
+const protocolViewTab = ref('protocol')
+const selectedMessageId = ref('')
 const tick = ref(0)
 const savedConfig = ref(readSavedConfig())
 const runtimeEvents = ref([])
+const latestRunResult = ref(null)
 let timer = null
 let eventTimer = null
 
-const packetTabs = [
-  { label: '握手', value: 'handshake' },
-  { label: '能力发现', value: 'capability' },
-  { label: '协议映射', value: 'mapping' },
-  { label: '消息详情', value: 'message' }
+const protocolViewTabs = [
+  { label: '\u534f\u8bae\u5b57\u6bb5', value: 'protocol' },
+  { label: '\u4f20\u9012\u5185\u5bb9', value: 'transfer' }
 ]
 
 const config = computed(() => normalizeExperimentConfig(savedConfig.value))
 const collaboration = computed(() => selectedCollaboration(config.value))
 const memoryLabel = computed(() => labelOf(memoryModes, config.value.memoryMode))
 const retrievalLabel = computed(() => labelOf(retrievalOptionsFor(config.value.memoryMode), config.value.retrievalMode))
-const hasRuntimeEvents = computed(() => runtimeEvents.value.length > 0)
+const hasRuntimeEvents = computed(() => runtimeEvents.value.length > 0 || Boolean(latestPrimaryRun(latestRunResult.value)))
 const runMeta = computed(() => runtimeEvents.value.find((event) => event.event_type === 'run_start') ?? {})
 const taskQueue = computed(() => {
   const queue = runtimeEvents.value.find((event) => event.event_type === 'task_queue')
@@ -214,7 +295,7 @@ const runModeLabel = computed(() => {
   return `${collaboration.value.label} / ${memoryLabel.value} / ${retrievalLabel.value}`
 })
 
-const tasks = computed(() => (hasRuntimeEvents.value ? buildTasksFromRuntimeEvents(runtimeEvents.value) : []))
+const tasks = computed(() => (hasRuntimeEvents.value ? buildTasksFromRuntimeEvents(runtimeEvents.value, latestRunResult.value) : []))
 const selectedTask = computed(() => tasks.value.find((task) => task.id === selectedTaskId.value) ?? tasks.value[0] ?? emptyTask())
 const sequenceAgents = computed(() => selectedTask.value.agents || [])
 const flowGridStyle = computed(() => ({
@@ -224,7 +305,9 @@ const activeMessageIndex = computed(() => {
   const count = selectedTask.value.messages.length || 1
   return tick.value % count
 })
-const activePacket = computed(() => selectedTask.value.protocol[selectedPacketTab.value] ?? emptyPacket(selectedPacketTab.value))
+const selectedMessage = computed(() => selectedTask.value.messages.find((message) => message.id === selectedMessageId.value) ?? selectedTask.value.messages[0] ?? null)
+const activePacket = computed(() => packetForSelectedMessage(selectedTask.value, selectedMessage.value))
+const activeTransferDetail = computed(() => transferAgentDetailForSelectedMessage(selectedTask.value, selectedMessage.value))
 
 const summary = computed(() => [
   { label: '运行模式', value: runModeLabel.value, icon: '协', tone: 'green' },
@@ -249,12 +332,12 @@ watch(tasks, (nextTasks) => {
 
 onMounted(() => {
   refreshSavedConfig()
-  refreshRuntimeEvents()
+  refreshRuntimeSnapshot()
   window.addEventListener('storage', refreshSavedConfig)
   timer = window.setInterval(() => {
     tick.value += 1
   }, 900)
-  eventTimer = window.setInterval(refreshRuntimeEvents, 1200)
+  eventTimer = window.setInterval(refreshRuntimeSnapshot, 1200)
 })
 
 onBeforeUnmount(() => {
@@ -265,6 +348,13 @@ onBeforeUnmount(() => {
 
 function selectTask(taskId) {
   selectedTaskId.value = taskId
+  selectedPacketTab.value = 'message'
+  protocolViewTab.value = 'protocol'
+  selectedMessageId.value = ''
+}
+
+function selectMessage(messageId) {
+  selectedMessageId.value = messageId
   selectedPacketTab.value = 'message'
 }
 
@@ -282,6 +372,10 @@ function refreshSavedConfig() {
   savedConfig.value = readSavedConfig()
 }
 
+async function refreshRuntimeSnapshot() {
+  await Promise.all([refreshRuntimeEvents(), refreshRunResult()])
+}
+
 async function refreshRuntimeEvents() {
   try {
     const response = await fetch(`${RUNNER_EVENTS_URL}?t=${Date.now()}`, { cache: 'no-store' })
@@ -296,19 +390,46 @@ async function refreshRuntimeEvents() {
   }
 }
 
-function buildTasksFromRuntimeEvents(events) {
+async function refreshRunResult() {
+  try {
+    const response = await fetch(`${RUNNER_RESULT_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) {
+      latestRunResult.value = null
+      return
+    }
+    const payload = await response.json()
+    latestRunResult.value = payload?.payload || null
+  } catch {
+    latestRunResult.value = null
+  }
+}
+
+function latestPrimaryRun(payload) {
+  const runs = Array.isArray(payload?.runs) ? payload.runs : []
+  return runs[0] || null
+}
+
+function resultTaskForRound(taskResults, round) {
+  const byIndex = taskResults.find((item) => Number(item?.task_index || item?.turn_index || 0) === round)
+  return byIndex || taskResults[round - 1] || null
+}
+
+function buildTasksFromRuntimeEvents(events, runPayload) {
+  const primaryRun = latestPrimaryRun(runPayload)
+  const resultTasks = Array.isArray(primaryRun?.task_results) ? primaryRun.task_results : []
   const maxEventRound = Math.max(0, ...events.map((event) => Number(event.task_index) || 0))
-  const total = Math.max(Number(runMeta.value.task_count) || 0, taskQueue.value.length, maxEventRound)
+  const total = Math.max(Number(runMeta.value.task_count) || 0, taskQueue.value.length, maxEventRound, resultTasks.length)
   const runDone = events.some((event) => event.event_type === 'run_done')
 
   return Array.from({ length: total }, (_, index) => {
     const round = index + 1
     const queueItem = taskQueue.value.find((item) => Number(item.task_index) === round) ?? {}
     const taskEvents = events.filter((event) => Number(event.task_index) === round)
+    const taskResult = resultTaskForRound(resultTasks, round)
     const startEvent = taskEvents.find((event) => event.event_type === 'task_start')
     const doneEvent = [...taskEvents].reverse().find((event) => event.event_type === 'task_done')
-    const state = doneEvent ? 'done' : taskEvents.length && !runDone ? 'running' : 'waiting'
-    const metrics = metricsFromRuntimeEvents(taskEvents, doneEvent)
+    const state = taskResult || doneEvent ? 'done' : taskEvents.length && !runDone ? 'running' : 'waiting'
+    const metrics = metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult)
     const agents = agentsFromRuntimeEvents(taskEvents)
     return {
       id: `task${round}`,
@@ -323,25 +444,29 @@ function buildTasksFromRuntimeEvents(events) {
       metrics,
       agents,
       messages: messagesFromRuntimeEvents(taskEvents, agents),
+      protocolEvents: taskEvents,
+      taskResult,
       protocol: protocolFromRuntimeEvents(round, state, taskEvents),
       events: tableRowsFromRuntimeEvents(taskEvents)
     }
   })
 }
 
-function metricsFromRuntimeEvents(taskEvents, doneEvent) {
+function metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult) {
   const messageEvents = taskEvents.filter((event) => event.event_type === 'agent_message')
   const stateEvents = taskEvents.filter((event) => event.event_type === 'state_transfer')
   const hitEvents = taskEvents.filter((event) => event.event_type === 'memory_hit')
   const doneResult = doneEvent?.return_result ?? {}
+  const resultMetrics = taskResult?.metrics || {}
   const textChars =
     Number(doneEvent?.text_chars) ||
+    Number(resultMetrics.text_chars) ||
     messageEvents.reduce((sum, event) => sum + (Number(event.text_chars) || 0), 0)
   return {
-    messages: Number(doneResult.message_count) || messageEvents.length,
-    textCost: textChars ? `${textChars} 字符` : '--',
-    stateTransfers: Number(doneResult.state_transfer_count) || stateEvents.length,
-    memoryHits: Number(doneResult.memory_hit_count) || hitEvents.length
+    messages: Number(doneResult.message_count) || Number(resultMetrics.message_count) || messageEvents.length,
+    textCost: textChars ? `${textChars} ??` : '--',
+    stateTransfers: Number(doneResult.state_transfer_count) || Number(resultMetrics.latent_transfer_count) || stateEvents.length,
+    memoryHits: Number(doneResult.memory_hit_count) || Number(taskResult?.memory_hit_count) || hitEvents.length
   }
 }
 
@@ -421,7 +546,10 @@ function messagesFromRuntimeEvents(taskEvents, agents) {
       tone: eventTone(event),
       reverse: from > to,
       edgeStyle: flowEdgeStyle(from, to, agents.length),
-      memoryCount: eventMemoryCount(event)
+      memoryCount: eventMemoryCount(event),
+      event,
+      fromAgent: route.from,
+      toAgent: route.to
     }
   })
 }
@@ -447,27 +575,268 @@ function flowEdgeStyle(from, to, count) {
 }
 
 function protocolFromRuntimeEvents(round, state, taskEvents) {
-  const handshake = taskEvents.find((event) => event.event_type === 'handshake')
-  const capability = taskEvents.find((event) => event.event_type === 'capability_discovery')
-  const mapping = [...taskEvents].reverse().find((event) => event.event_type === 'protocol_mapping')
-  const message = [...taskEvents].reverse().find((event) => event.event_type === 'agent_message')
+  const message = [...taskEvents].reverse().find((event) => isProtocolDetailEvent(event))
   return {
-    handshake: packetFromEvent('握手', handshake, '等待后端握手事件。'),
-    capability: packetFromEvent('能力发现', capability, '等待后端能力发现事件。'),
-    mapping: packetFromEvent('协议映射', mapping, '等待后端协议映射事件。'),
-    message: packetFromEvent('消息详情', message, state === 'waiting' ? `任务 ${round} 尚未开始。` : '等待 Agent 消息事件。')
+    message: packetFromEvent('\u4f20\u8f93\u8be6\u60c5', message, state === 'waiting' ? `\u4efb\u52a1 ${round} \u5c1a\u672a\u5f00\u59cb\u3002` : '\u70b9\u51fb\u8fd0\u884c\u65f6\u534f\u4f5c\u94fe\u8def\u4e2d\u7684\u6d88\u606f\u67e5\u770b\u4f20\u8f93\u8be6\u60c5\u3002')
   }
+}
+
+function isProtocolDetailEvent(event) {
+  return ['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write'].includes(event.event_type)
+}
+
+function packetForSelectedMessage(task, message) {
+  if (!message?.event) {
+    return emptyPacket('\u4f20\u8f93\u8be6\u60c5', task.state === 'waiting' ? '\u4efb\u52a1\u5c1a\u672a\u5f00\u59cb\u3002' : '\u70b9\u51fb\u534f\u4f5c\u94fe\u8def\u4e2d\u7684\u6d88\u606f\u67e5\u770b\u8be6\u60c5\u3002')
+  }
+  return packetFromEvent('\u4f20\u8f93\u8be6\u60c5', message.event, '\u70b9\u51fb\u534f\u4f5c\u94fe\u8def\u4e2d\u7684\u6d88\u606f\u67e5\u770b\u8be6\u60c5\u3002')
 }
 
 function packetFromEvent(title, event, emptyDesc) {
   if (!event) return emptyPacket(title, emptyDesc)
+  const route = visualRouteForEvent(event)
+  const action = event.action_type || event.event_type || '-'
+  const stateRefs = listText(event.state_refs)
+  const memoryRefs = listText(event.memory_refs)
+  const result = resultText(event)
   return {
-    title,
-    badge: event.action_type || event.event_type,
-    desc: `${normalizeAgentName(event.from_agent)} -> ${normalizeAgentName(event.to_agent)}`,
+    title: `${normalizeAgentName(route.from)} \u2192 ${normalizeAgentName(route.to)}`,
+    badge: actionText(action),
+    desc: protocolReadableDesc(event, route),
+    sections: [
+      { label: '\u53d1\u9001\u65b9', value: normalizeAgentName(route.from) },
+      { label: '\u63a5\u6536\u65b9', value: normalizeAgentName(route.to) },
+      { label: '\u52a8\u4f5c\u7c7b\u578b', value: actionText(action) },
+      { label: '\u4f20\u9012\u5185\u5bb9', value: protocolContentSummary(event) },
+      { label: '\u72b6\u6001\u5f15\u7528', value: stateRefs },
+      { label: '\u8bb0\u5fc6\u5f15\u7528', value: memoryRefs },
+      { label: '\u901a\u4fe1\u5f00\u9500', value: protocolCostText(event) },
+      { label: '\u8fd4\u56de\u7ed3\u679c', value: result }
+    ],
+    mapping: protocolMappingText(event, route),
     payload: stringify(event),
     hasData: true
   }
+}
+
+function formatExactMatch(value) {
+  if (value === null || typeof value === 'undefined') return 'N/A'
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+  return String(value)
+}
+
+function transferStatusText(status) {
+  if (status === 'done') return '\u5df2\u5b8c\u6210'
+  if (status === 'running') return '\u8fd0\u884c\u4e2d'
+  return '\u5f85\u8fd0\u884c'
+}
+
+function safeStringify(value) {
+  if (value === null || typeof value === 'undefined' || value === '') return ''
+  if (typeof value === 'string') return value
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
+function getArrayField(value) {
+  return Array.isArray(value) ? value : []
+}
+
+function normalizeAgentOutputKey(value) {
+  return String(value || '').trim().toLowerCase().replace(/agent$/, '')
+}
+
+function agentOutputListItemToView(item) {
+  const displayText = item.display_text ?? item.raw_output ?? item.answer_candidate ?? item.reasoning_summary ?? item.retrieval_query ?? ''
+  return {
+    display_text: String(displayText || ''),
+    structured: item,
+    state_ref: typeof item.state_ref === 'string' ? item.state_ref : ''
+  }
+}
+
+function getAgentView(taskResult, agentKey) {
+  const normalizedKey = String(agentKey || '').toLowerCase()
+  const views = taskResult?.agent_views
+  if (views && typeof views === 'object' && !Array.isArray(views) && views[normalizedKey]) {
+    return views[normalizedKey]
+  }
+  const outputs = taskResult?.agent_outputs
+  if (outputs && typeof outputs === 'object' && !Array.isArray(outputs) && outputs[normalizedKey]) {
+    return outputs[normalizedKey]
+  }
+  if (Array.isArray(outputs)) {
+    const item = outputs.find((output) => normalizeAgentOutputKey(output.agent) === normalizedKey)
+    if (item) return agentOutputListItemToView(item)
+  }
+  return null
+}
+
+function transferAgentKeyFromMessage(message) {
+  const event = message?.event || {}
+  const action = String(event.action_type || '').toLowerCase()
+  const from = String(event.from_agent || '').toLowerCase()
+  const to = String(event.to_agent || '').toLowerCase()
+  if (event.event_type === 'memory_query' || event.event_type === 'memory_hit') return 'retriever'
+  if (event.event_type === 'memory_write') return 'summarizer'
+  if (action === 'retrieve') return 'planner'
+  if (action === 'summarize') return 'summarizer'
+  if (action === 'execute' || from === 'executor' || to === 'executor') return 'executor'
+  if (action === 'reason') return from || 'retriever'
+  return from || to || 'planner'
+}
+
+function buildFallbackTransferDetail(task, message, agentKey) {
+  const event = message?.event || {}
+  const payloadText = eventPayloadText(event)
+  const eventResultText = safeStringify(event.return_result)
+  return {
+    hasData: true,
+    agentKey,
+    taskLabel: `task ${task.round}`,
+    agentLabel: normalizeAgentName(agentKey),
+    status: task.state || 'waiting',
+    hasOutput: Boolean(payloadText || eventResultText),
+    question: task.title || '',
+    exactMatch: null,
+    stateRef: listText(event.state_refs) === '-' ? '' : listText(event.state_refs),
+    displayText: payloadText,
+    structuredText: typeof event.payload === 'object' ? safeStringify(event.payload) : '',
+    retrievalSummaryText: event.event_type === 'memory_query' || event.event_type === 'memory_hit' ? safeStringify(event.return_result || event.input_params) : '',
+    summaryResultText: event.event_type === 'memory_write' || String(event.action_type || '').toLowerCase() === 'summarize' ? safeStringify({ payload: event.payload, return_result: event.return_result }) : '',
+    memoryRefineText: '',
+    executionResultText: agentKey === 'executor' ? safeStringify(event.return_result || event.payload) : ''
+  }
+}
+
+function transferAgentDetailForSelectedMessage(task, message) {
+  if (!message?.event) {
+    return {
+      hasData: false,
+      taskLabel: '',
+      agentLabel: '',
+      status: 'waiting',
+      hasOutput: false,
+      question: '',
+      exactMatch: null,
+      stateRef: '',
+      displayText: '',
+      structuredText: '',
+      retrievalSummaryText: '',
+      summaryResultText: '',
+      memoryRefineText: '',
+      executionResultText: '',
+      agentKey: ''
+    }
+  }
+
+  const agentKey = transferAgentKeyFromMessage(message)
+  const taskResult = task.taskResult
+  if (!taskResult) {
+    return buildFallbackTransferDetail(task, message, agentKey)
+  }
+
+  const agentView = getAgentView(taskResult, agentKey)
+  const retrievalDebug = taskResult.retrieval_debug ?? {}
+  const plannerFocus = getArrayField(retrievalDebug.planner_focus)
+  const retrievalSummaryText = safeStringify({
+    retrieval_query: retrievalDebug.retrieval_query ?? '',
+    planner_focus: plannerFocus,
+    context_source: retrievalDebug.context_source ?? '',
+    context_hit_ids: retrievalDebug.context_hit_ids ?? [],
+    context_hits: retrievalDebug.context_hits ?? [],
+    memory_hit_ids: retrievalDebug.memory_hit_ids ?? [],
+    memory_context: taskResult.memory_context ?? [],
+    memory_hits: taskResult.memory_hits ?? []
+  })
+  const summaryResultText = safeStringify({
+    final_answer: taskResult.final_answer ?? '',
+    latest_evidence_write: taskResult.latest_evidence_write ?? null,
+    latest_experience_write: taskResult.latest_experience_write ?? null,
+    execution_result: taskResult.execution_result ?? null
+  })
+
+  return {
+    hasData: true,
+    agentKey,
+    taskLabel: `task ${task.round}`,
+    agentLabel: normalizeAgentName(agentKey),
+    status: taskResult ? 'done' : task.state || 'waiting',
+    hasOutput: Boolean(agentView),
+    question: taskResult.question ?? task.title ?? '',
+    exactMatch: taskResult.exact_match ?? null,
+    stateRef: String(agentView?.state_ref ?? taskResult.state_refs?.[agentKey] ?? ''),
+    displayText: agentView?.display_text ?? buildFallbackTransferDetail(task, message, agentKey).displayText,
+    structuredText: safeStringify(agentView?.structured),
+    retrievalSummaryText: agentKey === 'retriever' ? retrievalSummaryText : '',
+    summaryResultText: agentKey === 'summarizer' ? summaryResultText : '',
+    memoryRefineText: agentKey === 'summarizer' ? safeStringify(taskResult.memory_refine_debug ?? null) : '',
+    executionResultText: (agentKey === 'executor' || agentKey === 'reasoner') ? safeStringify(taskResult.execution_result) : ''
+  }
+}
+
+function eventPayloadText(event) {
+  if (typeof event.payload === 'string' && event.payload.trim()) return event.payload.trim()
+  if (event.payload && typeof event.payload === 'object') return safeStringify(event.payload)
+  if (event.payload_summary) return String(event.payload_summary)
+  if (event.input_params && Object.keys(event.input_params).length) return safeStringify(event.input_params)
+  if (event.return_result && Object.keys(event.return_result).length) return safeStringify(event.return_result)
+  return protocolContentSummary(event)
+}
+
+function protocolReadableDesc(event, route) {
+  if (event.event_type === 'memory_query') return 'Retriever \u5411\u5171\u4eab\u8bb0\u5fc6\u6a21\u5757\u53d1\u8d77\u68c0\u7d22\u8bf7\u6c42\u3002'
+  if (event.event_type === 'memory_hit') return 'Memory \u8fd4\u56de\u53ef\u590d\u7528\u7684\u5386\u53f2\u8bb0\u5fc6\u6216\u8bc1\u636e\u547d\u4e2d\u3002'
+  if (event.event_type === 'memory_write') return 'Summarizer \u5c06\u672c\u8f6e\u8bc1\u636e\u3001\u7ed3\u8bba\u6216\u7ecf\u9a8c\u5199\u56de\u5171\u4eab\u8bb0\u5fc6\u3002'
+  if (event.event_type === 'state_transfer') return 'Agent \u4e4b\u95f4\u4f20\u9012\u975e\u6587\u672c\u72b6\u6001\u5f15\u7528\uff0c\u907f\u514d\u91cd\u590d\u4f20\u8f93\u957f\u6587\u672c\u3002'
+  return `${normalizeAgentName(route.from)} \u5c06\u7ed3\u6784\u5316\u6d88\u606f\u53d1\u9001\u7ed9 ${normalizeAgentName(route.to)}\u3002`
+}
+
+function protocolContentSummary(event) {
+  const result = event.return_result || {}
+  if (event.event_type === 'memory_hit') {
+    return result.summary || result.memory_id || `\u547d\u4e2d ${eventMemoryCount(event)} \u6761\u8bb0\u5fc6`
+  }
+  if (event.event_type === 'memory_write') {
+    return result.summary || result.memory_id || '\u5199\u56de\u65b0\u7684\u5171\u4eab\u8bb0\u5fc6\u5355\u5143'
+  }
+  if (event.event_type === 'state_transfer') {
+    return event.summary || result.summary || `\u4f20\u9012 ${listText(event.state_refs)} \u72b6\u6001\u5f15\u7528`
+  }
+  if (result.summary) return result.summary
+  if (result.answer_candidate) return result.answer_candidate
+  if (result.evidence_hits || result.experience_hits) {
+    return `\u8bc1\u636e\u547d\u4e2d ${result.evidence_hits || 0}\uff0c\u7ecf\u9a8c\u547d\u4e2d ${result.experience_hits || 0}`
+  }
+  return event.payload_summary || event.action_type || event.event_type || '-'
+}
+
+function protocolCostText(event) {
+  const parts = []
+  if (event.text_chars) parts.push(`${event.text_chars} \u5b57\u7b26`)
+  if (event.protocol_bytes) parts.push(`\u534f\u8bae ${formatBytes(event.protocol_bytes)}`)
+  if (event.communication_bytes) parts.push(`\u5b9e\u9645\u8f7d\u8377 ${formatBytes(event.communication_bytes)}`)
+  if (event.bytes_size) parts.push(`\u72b6\u6001 ${formatBytes(event.bytes_size)}`)
+  return parts.length ? parts.join(' / ') : '-'
+}
+
+function protocolMappingText(event, route) {
+  const action = event.action_type || event.event_type
+  if (event.event_type === 'memory_query') return '\u68c0\u7d22\u610f\u56fe \u2192 memory.search(query, top_k, retrieval_mode)'
+  if (event.event_type === 'memory_hit') return '\u5386\u53f2\u547d\u4e2d \u2192 return_result(memory_refs, summaries, scores)'
+  if (event.event_type === 'memory_write') return '\u603b\u7ed3\u5199\u56de \u2192 memory.write(memory_type, summary, source_agent, task_topic)'
+  if (event.event_type === 'state_transfer') return '\u4e2d\u95f4\u72b6\u6001 \u2192 state_ref(content_type, producer, consumers, bytes)'
+  const map = {
+    retrieve: '\u68c0\u7d22\u8bf7\u6c42 \u2192 retrieve(query, planner_focus, memory_scope)',
+    reason: '\u8bc1\u636e\u63a8\u7406 \u2192 reason(evidence_refs, memory_refs, state_refs)',
+    execute: '\u5de5\u5177\u6267\u884c \u2192 execute(tool_name, args, state_refs)',
+    summarize: '\u7b54\u6848\u603b\u7ed3 \u2192 summarize(answer, evidence_refs, experience_refs)',
+    start_task: '\u4efb\u52a1\u5206\u53d1 \u2192 start_task(task_title, dataset_type, required_roles)'
+  }
+  return map[action] || `${normalizeAgentName(route.from)} \u6d88\u606f \u2192 ${action || 'message'}(input_params, state_refs, memory_refs, return_result)`
 }
 
 function tableRowsFromRuntimeEvents(taskEvents) {
@@ -637,6 +1006,13 @@ function formatEventTime(value) {
   const ss = String(date.getSeconds()).padStart(2, '0')
   const ms = String(date.getMilliseconds()).padStart(3, '0')
   return `${hh}:${mm}:${ss}.${ms}`
+}
+
+function formatBytes(value) {
+  const bytes = Number(value) || 0
+  if (bytes <= 0) return '0 B'
+  if (bytes < 1024) return `${bytes} B`
+  return `${(bytes / 1024).toFixed(1)} KB`
 }
 
 function stringify(payload) {

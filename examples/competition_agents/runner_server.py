@@ -670,6 +670,23 @@ def normalize_agent(agent: str) -> str:
     return mapping.get(str(agent).lower(), str(agent))
 
 
+
+
+def latest_run_result_payload() -> dict[str, Any] | None:
+    refresh_process_state()
+    latest_payload = read_run_result_payload(STDOUT_LOG_FILE)
+    if latest_payload:
+        return latest_payload
+    if RUN_ARCHIVE_DIR.exists():
+        latest_path = max(
+            RUN_ARCHIVE_DIR.glob('*.json'),
+            key=lambda item: item.stat().st_mtime,
+            default=None,
+        )
+        if latest_path is not None:
+            return read_run_result_payload(latest_path)
+    return None
+
 def status_payload() -> dict[str, Any]:
     refresh_process_state()
     process = STATE.process
@@ -721,6 +738,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/runner/records":
             self.send_json({"records": collect_metric_records()})
+            return
+        if path == "/api/runner/result":
+            self.send_json({"payload": latest_run_result_payload()})
             return
         self.send_json({"error": "not found"}, status=404)
 

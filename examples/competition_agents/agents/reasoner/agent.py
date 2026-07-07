@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 
 from competition_agents.llm import get_llm_client
@@ -166,16 +167,26 @@ def reasoner_agent(state: CompetitionState) -> dict:
 
     client = get_llm_client("reasoner")
     llm_started = time.perf_counter()
-    result = client.reason(
-        task=task_text,
-        plan=plan,
-        evidence=evidence,
-        memory_hits=len(memory_hits),
-        memory_hit_details=memory_context,
-        experience_rules=experience_rules,
-        answer_rules=answer_rules,
-        mode=state["mode"],
-    )
+    previous_capture_hidden = os.environ.get("LOCAL_CAPTURE_HIDDEN")
+    if state["mode"] == "hidden":
+        os.environ["LOCAL_CAPTURE_HIDDEN"] = "1"
+    try:
+        result = client.reason(
+            task=task_text,
+            plan=plan,
+            evidence=evidence,
+            memory_hits=len(memory_hits),
+            memory_hit_details=memory_context,
+            experience_rules=experience_rules,
+            answer_rules=answer_rules,
+            mode=state["mode"],
+        )
+    finally:
+        if state["mode"] == "hidden":
+            if previous_capture_hidden is None:
+                os.environ.pop("LOCAL_CAPTURE_HIDDEN", None)
+            else:
+                os.environ["LOCAL_CAPTURE_HIDDEN"] = previous_capture_hidden
     llm_elapsed_ms = (time.perf_counter() - llm_started) * 1000
     hidden_result = None
     hidden_tensor = None
