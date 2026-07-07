@@ -877,13 +877,22 @@ def _case_lacks_transferable_lesson(case: dict[str, Any], hint_catalog: dict[str
 
 def _distill_rule_card(case: dict[str, Any], distilled: dict[str, Any]) -> dict[str, Any]:
     hint_catalog = _experience_hint_catalog(case)
-    if os.environ.get("COMPETITION_MEMORY_DISTILLATION_MODE", "").strip().lower() in {
+    distillation_mode = os.environ.get("COMPETITION_MEMORY_DISTILLATION_MODE", "").strip().lower()
+    summarizer_provider = (
+        os.environ.get("LLM_SUMMARIZER_PROVIDER")
+        or os.environ.get("LLM_PROVIDER")
+        or ""
+    ).strip().lower()
+    if (
+        distillation_mode in {
         "fallback",
         "local",
         "local_fallback",
         "rule",
         "rule_based",
-    }:
+        }
+        or (not distillation_mode and summarizer_provider == "local_hf")
+    ):
         fallback = _fallback_rule_card(case, distilled)
         if _case_lacks_transferable_lesson(case, hint_catalog):
             fallback["should_write"] = False
@@ -1466,15 +1475,35 @@ def increment_reuse_counts(
     return updated
 
 
-def _extract_query_structure(query: str) -> tuple[str, set[str], set[str]]:
+def _extract_query_structure(query: str) -> tuple[str, set[str], set[str], set[str], set[str], str]:
     task_type = ""
+    group_id = ""
     tags: set[str] = set()
     triggers: set[str] = set()
+    expected_turns: set[str] = set()
+    expected_artifacts: set[str] = set()
     for raw_line in str(query or "").splitlines():
         line = raw_line.strip()
         lowered = line.lower()
         if lowered.startswith("task type:"):
             task_type = line.split(":", 1)[1].strip().lower()
+        elif lowered.startswith("group id:"):
+            group_id = line.split(":", 1)[1].strip().lower()
+        elif lowered.startswith("expected reuse:"):
+            payload = line.split(":", 1)[1].strip()
+            for value in re.split(r"[,;\s]+", payload):
+                source, _, artifact = value.strip().lower().partition(".")
+                if source.startswith("turn-"):
+                    expected_turns.add(source)
+                if artifact:
+                    expected_artifacts.add(artifact)
+        elif lowered.startswith("required artifacts:"):
+            payload = line.split(":", 1)[1].strip()
+            expected_artifacts |= {
+                value.strip().lower()
+                for value in re.split(r"[,;\s]+", payload)
+                if value.strip()
+            }
         elif lowered.startswith("tags:"):
             payload = line.split(":", 1)[1].strip()
             try:
@@ -1484,12 +1513,19 @@ def _extract_query_structure(query: str) -> tuple[str, set[str], set[str]]:
             except json.JSONDecodeError:
                 tags |= {token.strip().lower() for token in payload.split(",") if token.strip()}
     triggers |= set(_normalize_trigger_conditions(_sanitize_triggers(query)))
-    return task_type, tags, triggers
+    return task_type, tags, triggers, expected_turns, expected_artifacts, group_id
 
 
 def _rerank_memory_hits(hits: list[dict], query: str) -> list[dict]:
-    query_task_type, query_tags, query_triggers = _extract_query_structure(query)
-    if not query_task_type and not query_tags and not query_triggers:
+    (
+        query_task_type,
+        query_tags,
+        query_triggers,
+        expected_turns,
+        expected_artifacts,
+        query_group_id,
+    ) = _extract_query_structure(query)
+    if not any([query_task_type, query_tags, query_triggers, expected_turns, expected_artifacts, query_group_id]):
         return hits
 
     rescored: list[tuple[float, dict[str, Any]]] = []
@@ -1506,12 +1542,28 @@ def _rerank_memory_hits(hits: list[dict], query: str) -> list[dict]:
             for item in hit.get("trigger_conditions", []) or []
             if str(item).strip()
         }
+        memory_turn = str(hit.get("turn_id") or "").strip().lower()
+        memory_group = str(hit.get("group_id") or "").strip().lower()
+        memory_artifacts = {
+            str(item).strip().lower()
+            for item in hit.get("artifact_types", []) or []
+            if str(item).strip()
+        }
         if query_task_type and memory_task_type == query_task_type:
             score += 8.0
         if query_tags and memory_tags:
             score += len(query_tags & memory_tags) * 3.0
         if query_triggers and memory_triggers:
             score += len(query_triggers & memory_triggers) * 4.0
+        if query_group_id and memory_group == query_group_id:
+            score += 4.0
+        if expected_turns and memory_turn in expected_turns:
+            score += 30.0
+        artifact_overlap = expected_artifacts & memory_artifacts
+        if artifact_overlap:
+            score += min(len(artifact_overlap) * 8.0, 16.0)
+        if expected_turns and memory_turn in expected_turns and artifact_overlap:
+            score += 20.0
         rescored.append((score, {**hit, "retrieval_score": round(score, 4), "_rank_index": index}))
 
     rescored.sort(

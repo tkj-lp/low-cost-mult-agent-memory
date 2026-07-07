@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
@@ -20,11 +21,13 @@ def planner_agent(state: CompetitionState) -> dict:
     )
     # Planner 可通过 LLM_PLANNER_PROVIDER 切换 mock 或真实 API。
     client = get_llm_client("planner")
+    llm_started = time.perf_counter()
     if hasattr(client, "plan_with_raw"):
         plan, raw_output = client.plan_with_raw(task)
     else:
         plan = client.plan(task)
         raw_output = "\n".join(plan)
+    llm_elapsed_ms = (time.perf_counter() - llm_started) * 1000
     hidden_result = None
     hidden_tensor = None
     if state["mode"] == "hidden":
@@ -102,6 +105,8 @@ def planner_agent(state: CompetitionState) -> dict:
         payload=payload,
         metrics=metrics,
     )
+    metrics = dict(metrics)
+    metrics["planner_llm_ms"] = metrics.get("planner_llm_ms", 0.0) + llm_elapsed_ms
     return {
         "plan": plan,
         "latent_states": latent_states,

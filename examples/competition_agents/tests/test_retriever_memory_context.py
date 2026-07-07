@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from agents.retriever.agent import retriever_agent
-from competition_agents.memory import add_memory
+from competition_agents.memory import _rerank_memory_hits, add_memory
 from competition_agents.state import initial_state
 
 
@@ -61,7 +61,45 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
         "Retrieve biographical details about Shirley Temple",
         "Extract the government position she later held",
     ]
-    assert "hypergraph structural matching plus embedding similarity fusion ranking" in result["evidence"][-2]
+    assert any(
+        "hypergraph structural matching plus embedding similarity fusion ranking" in item
+        for item in result["evidence"]
+    )
+    assert not any("Planner-guided retrieval focus:" in item for item in result["evidence"])
+
+
+def test_expected_reuse_rerank_prioritizes_target_turn() -> None:
+    """连续任务排序应优先复用 expected_reuse 指向的历史轮次。"""
+
+    hits = [
+        {
+            "memory_id": "mem-0006",
+            "group_id": "chain-001",
+            "turn_id": "turn-6",
+            "artifact_types": ["answer", "evidence"],
+            "retrieval_score": 0.23,
+        },
+        {
+            "memory_id": "mem-0007",
+            "group_id": "chain-001",
+            "turn_id": "turn-7",
+            "artifact_types": ["answer", "evidence"],
+            "retrieval_score": 0.22,
+        },
+    ]
+    query = "\n".join(
+        [
+            "Question: what kinds of fish are commonly found in this sea?",
+            "Group id: chain-001",
+            "Expected reuse: turn-7.answer, group.supporting_facts",
+            "Required artifacts: answer, supporting_facts",
+        ]
+    )
+
+    reranked = _rerank_memory_hits(hits, query)
+
+    assert reranked[0]["memory_id"] == "mem-0007"
+    assert reranked[0]["retrieval_score"] > reranked[1]["retrieval_score"]
 
 
 def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:

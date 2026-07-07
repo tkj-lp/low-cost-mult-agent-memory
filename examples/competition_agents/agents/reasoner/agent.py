@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
@@ -47,6 +48,21 @@ def _unique_memory_ids(items: list[dict]) -> list[str]:
         seen.add(memory_id)
         ids.append(memory_id)
     return ids
+
+
+def _compact_hidden_memory_context(items: list[dict], limit: int = 2) -> list[dict]:
+    compact: list[dict] = []
+    for item in items[:limit]:
+        compact.append(
+            {
+                "memory_id": item.get("memory_id"),
+                "turn_id": item.get("turn_id", ""),
+                "artifact_types": item.get("artifact_types", []),
+                "summary": str(item.get("summary") or "")[:120],
+                "retrieval_score": item.get("retrieval_score"),
+            }
+        )
+    return compact
 
 
 def _latest_message_payload(state: CompetitionState, *, sender: str, receiver: str) -> str:
@@ -129,6 +145,9 @@ def reasoner_agent(state: CompetitionState) -> dict:
             evidence = [retriever_message]
         memory_context = []
         experience_rules = []
+    elif state["mode"] == "hidden":
+        memory_context = _compact_hidden_memory_context(memory_context)
+        experience_rules = experience_rules[:1]
     print(
         "[reasoner] "
         f"task chars={len(task_text)} evidence_count={len(evidence)} "
@@ -146,6 +165,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             plan = latent_plan
 
     client = get_llm_client("reasoner")
+    llm_started = time.perf_counter()
     result = client.reason(
         task=task_text,
         plan=plan,
@@ -156,6 +176,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
         answer_rules=answer_rules,
         mode=state["mode"],
     )
+    llm_elapsed_ms = (time.perf_counter() - llm_started) * 1000
     hidden_result = None
     hidden_tensor = None
     if state["mode"] == "hidden":
@@ -264,6 +285,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
         payload=payload,
         metrics=metrics,
     )
+    metrics = dict(metrics)
+    metrics["reasoner_llm_ms"] = metrics.get("reasoner_llm_ms", 0.0) + llm_elapsed_ms
     evidence_used_memory_ids = _unique_memory_ids(
         [hit for hit in memory_hits if str(hit.get("memory_type", "evidence") or "evidence") != "experience"]
     )

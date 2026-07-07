@@ -124,6 +124,35 @@ def stored_hidden_bytes(result: HiddenStateResult) -> int:
     return total * 4
 
 
+def hidden_pooled_dim() -> int:
+    raw = os.environ.get("LOCAL_HIDDEN_POOLED_DIM", "128").strip()
+    try:
+        value = int(raw)
+    except ValueError:
+        return 128
+    return max(0, value)
+
+
+def _project_pooled_vector(values: list[float]) -> list[float]:
+    target_dim = hidden_pooled_dim()
+    if target_dim <= 0 or target_dim >= len(values):
+        return [float(value) for value in values]
+
+    projected = [0.0 for _ in range(target_dim)]
+    counts = [0 for _ in range(target_dim)]
+    for index, value in enumerate(values):
+        digest = hashlib.blake2b(str(index).encode("ascii"), digest_size=4).digest()
+        bucket = int.from_bytes(digest[:2], "little") % target_dim
+        sign = 1.0 if digest[2] & 1 else -1.0
+        projected[bucket] += sign * float(value)
+        counts[bucket] += 1
+
+    compact = []
+    for value, count in zip(projected, counts, strict=False):
+        compact.append(round(value / (max(count, 1) ** 0.5), 6))
+    return compact
+
+
 def _checksum_tensor(tensor) -> str:
     """对 tensor 内容生成短 checksum，证明状态确实发生了传递。"""
 
@@ -133,12 +162,14 @@ def _checksum_tensor(tensor) -> str:
 
 def _build_hidden_result(bundle, hidden_tensor, token_count: int) -> HiddenStateResult:
     pooled = hidden_tensor[:, -1, :].squeeze(0).to("cpu").float()
+    pooled_values = [float(value) for value in pooled.tolist()]
+    compact_values = _project_pooled_vector(pooled_values)
     return HiddenStateResult(
         model_name=bundle.model_name,
         layer="last",
         shape=list(hidden_tensor.shape),
-        pooling="last_token",
-        pooled_vector=[float(value) for value in pooled.tolist()],
+        pooling=f"last_token_projected_{len(compact_values)}",
+        pooled_vector=compact_values,
         checksum=_checksum_tensor(hidden_tensor),
         token_count=token_count,
         dtype=str(hidden_tensor.dtype),
@@ -151,12 +182,14 @@ def _build_pooled_hidden_result(bundle, hidden_tensor, token_count: int, shape: 
 
     pooled = hidden_tensor[:, -1, :].squeeze(0).to("cpu").float()
     checksum = hashlib.sha256(pooled.contiguous().numpy().tobytes()).hexdigest()[:16]
+    pooled_values = [float(value) for value in pooled.tolist()]
+    compact_values = _project_pooled_vector(pooled_values)
     return HiddenStateResult(
         model_name=bundle.model_name,
         layer="last",
         shape=shape,
-        pooling="last_token",
-        pooled_vector=[float(value) for value in pooled.tolist()],
+        pooling=f"last_token_projected_{len(compact_values)}",
+        pooled_vector=compact_values,
         checksum=checksum,
         token_count=token_count,
         dtype=str(hidden_tensor.dtype),
@@ -241,78 +274,51 @@ def generate_text_with_last_hidden_state(
 
     bundle = load_local_hidden_model()
     inputs = _prepare_generation_inputs(bundle, prompt)
-    eos_token_id = bundle.tokenizer.eos_token_id
+    tokenizer = bundle.tokenizer
+    eos_token_id = tokenizer.eos_token_id
+    pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else eos_token_id
 
-    def select_next_token(logits):
-        if do_sample:
-            adjusted = logits / max(float(temperature), 1e-5)
-            probs = bundle.torch.softmax(adjusted, dim=-1)
-            return bundle.torch.multinomial(probs, num_samples=1)
-        return bundle.torch.argmax(logits, dim=-1, keepdim=True)
+    generate_kwargs = {
+        "max_new_tokens": max_new_tokens,
+        "do_sample": do_sample,
+        "pad_token_id": pad_token_id,
+        "eos_token_id": eos_token_id,
+        "return_dict_in_generate": True,
+        "output_hidden_states": True,
+    }
+    if do_sample:
+        generate_kwargs["temperature"] = temperature
 
     with bundle.torch.no_grad():
-        outputs = bundle.model(
-            **inputs,
-            output_hidden_states=True,
-            use_cache=True,
-        )
+        generated = bundle.model.generate(**inputs, **generate_kwargs)
 
-    store_full_hidden = should_store_full_hidden_tensor()
-    first_hidden = outputs.hidden_states[-1].detach()
-    all_hidden = [first_hidden.to("cpu")] if store_full_hidden else []
-    latest_hidden = first_hidden
-    past_key_values = outputs.past_key_values
-    attention_mask = inputs.get("attention_mask")
-    next_token = select_next_token(outputs.logits[:, -1, :])
-    generated_token_ids: list[int] = []
+    sequences = generated.sequences
+    prompt_tokens = int(inputs["input_ids"].shape[-1])
+    generated_ids = sequences[0][prompt_tokens:]
+    generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+    full_text = tokenizer.decode(sequences[0], skip_special_tokens=True)
 
-    for _ in range(max_new_tokens):
-        token_id = int(next_token.item())
-        if eos_token_id is not None and token_id == int(eos_token_id):
+    hidden_steps = getattr(generated, "hidden_states", None) or ()
+    latest_hidden = None
+    for step in reversed(hidden_steps):
+        if step:
+            latest_hidden = step[-1].detach()
             break
-
-        generated_token_ids.append(token_id)
-        if _should_stop_generation(bundle, generated_token_ids):
-            generated_token_ids.pop()
-            break
-        if attention_mask is not None:
-            ones = bundle.torch.ones((attention_mask.shape[0], 1), dtype=attention_mask.dtype, device=bundle.device)
-            attention_mask = bundle.torch.cat([attention_mask, ones], dim=1)
-
+    if latest_hidden is None:
         with bundle.torch.no_grad():
-            step_outputs = bundle.model(
-                input_ids=next_token,
-                attention_mask=attention_mask,
-                past_key_values=past_key_values,
+            outputs = bundle.model(
+                input_ids=sequences,
                 output_hidden_states=True,
                 use_cache=True,
             )
+        latest_hidden = outputs.hidden_states[-1].detach()
 
-        latest_hidden = step_outputs.hidden_states[-1].detach()
-        if store_full_hidden:
-            all_hidden.append(latest_hidden.to("cpu"))
-        past_key_values = step_outputs.past_key_values
-        next_token = select_next_token(step_outputs.logits[:, -1, :])
-
-    if generated_token_ids:
-        generated_ids_tensor = bundle.torch.tensor(
-            [generated_token_ids],
-            dtype=inputs["input_ids"].dtype,
-            device=inputs["input_ids"].device,
-        )
-        full_ids = bundle.torch.cat([inputs["input_ids"], generated_ids_tensor], dim=1)
+    full_shape = [int(sequences.shape[0]), int(sequences.shape[-1]), int(latest_hidden.shape[-1])]
+    if should_store_full_hidden_tensor() and int(latest_hidden.shape[-2]) == int(sequences.shape[-1]):
+        hidden = _build_hidden_result(bundle, latest_hidden, int(sequences.shape[-1]))
+        returned_tensor = latest_hidden.to("cpu")
     else:
-        full_ids = inputs["input_ids"]
-
-    generated_text = bundle.tokenizer.decode(generated_token_ids, skip_special_tokens=True).strip()
-    full_text = bundle.tokenizer.decode(full_ids[0], skip_special_tokens=True)
-    full_shape = [int(full_ids.shape[0]), int(full_ids.shape[-1]), int(latest_hidden.shape[-1])]
-    if store_full_hidden:
-        hidden_tensor = bundle.torch.cat(all_hidden, dim=1)
-        hidden = _build_hidden_result(bundle, hidden_tensor, int(full_ids.shape[-1]))
-        returned_tensor = hidden_tensor.to("cpu")
-    else:
-        hidden = _build_pooled_hidden_result(bundle, latest_hidden, int(full_ids.shape[-1]), full_shape)
+        hidden = _build_pooled_hidden_result(bundle, latest_hidden, int(sequences.shape[-1]), full_shape)
         returned_tensor = latest_hidden[:, -1, :].detach().to("cpu")
     return (
         GeneratedHiddenResult(

@@ -150,7 +150,7 @@ def answers_match(prediction: str, gold: str) -> bool:
         return False
     if pred == expected:
         return True
-    if expected in pred or pred in expected:
+    if expected in pred:
         return True
 
     pred_date = normalize_date_answer(prediction)
@@ -169,6 +169,12 @@ def answers_match(prediction: str, gold: str) -> bool:
     expected_tokens = [token for token in expected.split() if token]
     if not pred_tokens or not expected_tokens:
         return False
+    if pred in expected:
+        if expected_date and not pred_date:
+            return False
+        if len(expected_tokens) <= 2:
+            return True
+        return len(pred_tokens) >= max(2, int(len(expected_tokens) * 0.8))
 
     expected_set = set(expected_tokens)
     pred_set = set(pred_tokens)
@@ -393,6 +399,9 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
             os.environ.setdefault("HIDDEN_RETRIEVER_STATE_ENCODER", "embedding")
             os.environ.setdefault("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER", "local")
             os.environ.setdefault("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+            os.environ.setdefault("LOCAL_HIDDEN_POOLED_DIM", "128")
+            os.environ.setdefault("LOCAL_LLM_PLANNER_MAX_NEW_TOKENS", "48")
+            os.environ.setdefault("LOCAL_LLM_REASONER_MAX_NEW_TOKENS", "72")
         return ["hidden"]
     raise ValueError(f"Unsupported experiment mode: {args.experiment_mode}")
 
@@ -1135,6 +1144,13 @@ def run_mode(
         "latent_bytes": 0,
         "transfer_latency_ms": 0.0,
         "state_generation_ms": 0.0,
+        "planner_llm_ms": 0.0,
+        "retriever_context_ms": 0.0,
+        "retriever_memory_ms": 0.0,
+        "reasoner_llm_ms": 0.0,
+        "summarizer_llm_ms": 0.0,
+        "memory_refine_ms": 0.0,
+        "memory_write_ms": 0.0,
         "memory_write_count": 0,
         "experience_write_count": 0,
         "experience_hit_count": 0,

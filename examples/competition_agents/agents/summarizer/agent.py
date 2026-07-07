@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import time
 
 from competition_agents.llm import get_llm_client
 from competition_agents.memory import add_memory, increment_reuse_counts, refine_memory
@@ -17,6 +19,24 @@ def _summarizer_task_text(state: CompetitionState) -> str:
         if question:
             return f"Question: {question}"
     return state["task"]
+
+
+def _direct_qa_summary(state: CompetitionState, execution_result: dict) -> str:
+    mode = os.environ.get("COMPETITION_SUMMARIZER_MODE", "").strip().lower()
+    if mode in {"llm", "model"}:
+        return ""
+    task_meta = state.get("task_meta", {})
+    if str(task_meta.get("dataset_type") or "") not in {"continuous", "multihop"}:
+        return ""
+    provider = (
+        os.environ.get("LLM_SUMMARIZER_PROVIDER")
+        or os.environ.get("LLM_PROVIDER")
+        or ""
+    ).strip().lower()
+    if mode not in {"direct", "deterministic"} and provider != "local_hf":
+        return ""
+    answer = str(execution_result.get("answer_candidate") or "").strip()
+    return answer
 
 
 def _locate_latest_experience_write(
@@ -141,16 +161,23 @@ def summarizer_agent(state: CompetitionState) -> dict:
                 "latent_shape": answer_state.get("shape", []),
             }
     # Summarizer 可单独接真实 API，其他 Agent 保持 mock 以便快速验证。
-    summary = get_llm_client("summarizer").summarize(
-        task=task_text,
-        memory_hits=hit_count,
-        latent_states=latent_count,
-        plan=state.get("plan", []),
-        evidence=state.get("evidence", []),
-        execution_result=execution_result,
-        cognitive_gaps=state.get("cognitive_gaps", []),
-        mode=state["mode"],
-    )
+    direct_summary = _direct_qa_summary(state, execution_result)
+    if direct_summary:
+        summary = direct_summary
+        summarizer_llm_ms = 0.0
+    else:
+        summarize_started = time.perf_counter()
+        summary = get_llm_client("summarizer").summarize(
+            task=task_text,
+            memory_hits=hit_count,
+            latent_states=latent_count,
+            plan=state.get("plan", []),
+            evidence=state.get("evidence", []),
+            execution_result=execution_result,
+            cognitive_gaps=state.get("cognitive_gaps", []),
+            mode=state["mode"],
+        )
+        summarizer_llm_ms = (time.perf_counter() - summarize_started) * 1000
     # 这里是共享记忆写入路径，也是后续接超图存储的钩子。
     trace = {
         "task_meta": state.get("task_meta", {}),
@@ -166,11 +193,13 @@ def summarizer_agent(state: CompetitionState) -> dict:
         "agent_outputs": state.get("agent_outputs", []),
         "metrics": state.get("metrics", {}),
     }
+    refine_started = time.perf_counter()
     refined = refine_memory(
         task_topic=task_text,
         summary=summary,
         trace=trace,
     )
+    memory_refine_ms = (time.perf_counter() - refine_started) * 1000
     successful_experience_ids: list[str] = []
     if refined.get("experience_source") == "success-derived":
         successful_experience_ids = [
@@ -183,6 +212,7 @@ def summarizer_agent(state: CompetitionState) -> dict:
         [hit.get("memory_id") for hit in state.get("memory_hits", [])],
         successful_memory_ids=successful_experience_ids,
     )
+    write_started = time.perf_counter()
     evidence_memory = add_memory(
         updated_memory,
         source_agent="summarizer",
@@ -223,6 +253,11 @@ def summarizer_agent(state: CompetitionState) -> dict:
         )
         latest_experience_write = _locate_latest_experience_write(memory, refined=refined)
         latest_experience_write = _normalize_latest_experience_write(latest_experience_write, refined)
+    memory_write_ms = (time.perf_counter() - write_started) * 1000
+    metrics = dict(state["metrics"])
+    metrics["summarizer_llm_ms"] = metrics.get("summarizer_llm_ms", 0.0) + summarizer_llm_ms
+    metrics["memory_refine_ms"] = metrics.get("memory_refine_ms", 0.0) + memory_refine_ms
+    metrics["memory_write_ms"] = metrics.get("memory_write_ms", 0.0) + memory_write_ms
     cognitive_gap = make_cognitive_gap(
         agent="summarizer",
         known=["plan", "evidence", "execution_result", "latent_state_refs"],
@@ -248,6 +283,7 @@ def summarizer_agent(state: CompetitionState) -> dict:
         "latest_experience_write": latest_experience_write,
         "memory_write_count": 2 if refined.get("should_write", True) else 1,
         "experience_write_count": 1 if refined.get("should_write", True) else 0,
+        "metrics": metrics,
         "agent_outputs": [
             *state.get("agent_outputs", []),
             {"agent": "SummarizerAgent", "raw_output": summary},

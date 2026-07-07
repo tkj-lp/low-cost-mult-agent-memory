@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import os
+import time
 
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
@@ -449,6 +450,8 @@ def _extract_hypergraph_context(
         text = str(hit.get("text") or "").strip()
         if not text:
             continue
+        if str(hit.get("kind") or "") == "dialogue_question":
+            continue
         evidence.append(f"{title}: {text}" if title else text)
     return evidence, hits
 
@@ -579,16 +582,20 @@ def retriever_agent(state: CompetitionState) -> dict:
     experience_query = _build_experience_query(state["task"], state.get("plan", []), question, task_meta)
     context_source = str(task_meta.get("context_source") or "inline")
     context_hits: list[dict] = []
+    context_started = time.perf_counter()
     if context_source == "hypergraph":
         retrieved_context_evidence, context_hits = _extract_hypergraph_context(task_meta, planner_focus)
     else:
         retrieved_context_evidence = _extract_context_evidence(task_meta, planner_focus)
+    context_elapsed_ms = (time.perf_counter() - context_started) * 1000
 
     # 把 Planner 的显式计划并入 query，让检索不再只依赖原始任务文本。
     evidence_top_k = _memory_top_k(task_meta, base=2, limit=6)
+    memory_started = time.perf_counter()
     evidence_hits = search_memory(state["memory"], retrieval_query, top_k=evidence_top_k, memory_types=["evidence"])
     raw_experience_hits = search_memory(state["memory"], experience_query, top_k=2, memory_types=["experience"])
     experience_hits = _rerank_experience_hits(question, raw_experience_hits, top_k=2)
+    memory_elapsed_ms = (time.perf_counter() - memory_started) * 1000
     combined_hits = evidence_hits + [
         hit for hit in experience_hits if hit.get("memory_id") not in {item.get("memory_id") for item in evidence_hits}
     ]
@@ -599,7 +606,6 @@ def retriever_agent(state: CompetitionState) -> dict:
     evidence = [
         *retrieved_context_evidence,
         "Current memory retrieval uses hypergraph structural matching plus embedding similarity fusion ranking.",
-        *([f"Planner-guided retrieval focus: {' | '.join(planner_focus)}."] if planner_focus else []),
         *_task_specific_evidence(state["task"]),
     ]
     cognitive_gap = make_cognitive_gap(
@@ -682,6 +688,9 @@ def retriever_agent(state: CompetitionState) -> dict:
         payload=payload,
         metrics=metrics,
     )
+    metrics = dict(metrics)
+    metrics["retriever_context_ms"] = metrics.get("retriever_context_ms", 0.0) + context_elapsed_ms
+    metrics["retriever_memory_ms"] = metrics.get("retriever_memory_ms", 0.0) + memory_elapsed_ms
     return {
         "evidence": evidence,
         "memory_hits": hits,
