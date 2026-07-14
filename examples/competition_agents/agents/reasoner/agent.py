@@ -4,6 +4,7 @@ import json
 import os
 import time
 
+from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
@@ -243,6 +244,13 @@ def reasoner_agent(state: CompetitionState) -> dict:
                 "must run AST safety checks before executing it. "
                 f"Allowed imports: {execution_request.get('allowed_imports', [])}."
             )
+            if autoform_enabled():
+                payload, _autoform_audit = generate_autoform_message(
+                    sender="reasoner",
+                    receiver="executor",
+                    action="execute",
+                    source_message=payload,
+                )
         else:
             payload = (
                 f"ReasonerAgent received {len(evidence)} evidence items and "
@@ -251,6 +259,13 @@ def reasoner_agent(state: CompetitionState) -> dict:
                 f"It generated an answer_candidate from the task, plan, evidence, and memory. "
                 f"Answer candidate: {result.get('answer_candidate', '')}"
             )
+            if autoform_enabled():
+                payload, _autoform_audit = generate_autoform_message(
+                    sender="reasoner",
+                    receiver="summarizer",
+                    action="summarize",
+                    source_message=payload,
+                )
     else:
         if execution_request:
             payload = make_compact_packet(

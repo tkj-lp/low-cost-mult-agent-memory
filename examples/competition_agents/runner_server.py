@@ -21,7 +21,8 @@ FRONTEND_PUBLIC = ROOT / "examples" / "competition_agents" / "frontend" / "publi
 RUNTIME_DIR = FRONTEND_PUBLIC / "runtime"
 EVENT_LOG_FILE = RUNTIME_DIR / "run_events.jsonl"
 STDOUT_LOG_FILE = RUNTIME_DIR / "latest_run_stdout.log"
-RUN_ARCHIVE_DIR = ROOT / "run_result" / "frontend_records"
+RUN_RESULT_DIR = ROOT / "run_result"
+RUN_ARCHIVE_DIR = RUN_RESULT_DIR
 HOST = "127.0.0.1"
 PORT = 8765
 RUN_RESULT_MARKER = "=== run_result_json ==="
@@ -41,20 +42,24 @@ DATASETS = {
         "dataset_type": "continuous",
         "file": "examples/competition_agents/data/topiocqa_2_10turns.json",
     },
-    "hotpot-3": {
-        "task_count": 3,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/hotpot_continuous_tasks_3turn.json",
-    },
     "codeact-1": {
         "task_count": 10,
         "dataset_type": "codeact",
         "file": "examples/competition_agents/data/codeact_1_10tasks.json",
     },
+    "codeact-2": {
+        "task_count": 10,
+        "dataset_type": "codeact",
+        "file": "examples/competition_agents/data/codeact_2_10tasks.json",
+    },
 }
 
 EXPERIMENT_MODES = {
     "plain": "baseline_text",
+    "autogen": "autogen_text",
+    "camel": "camel_text",
+    "autoform": "autoform_text",
+    "llmlingua": "llmlingua_text",
     "structured": "protocol_api",
     "protocol-vector": "protocol_api_embedding",
     "latent": "hidden_api",
@@ -243,7 +248,7 @@ def read_events() -> list[dict[str, Any]]:
 def has_archived_records() -> bool:
     if not RUN_ARCHIVE_DIR.exists():
         return False
-    return any(path.is_file() for path in RUN_ARCHIVE_DIR.glob("*.json"))
+    return any(path.is_file() for path in RUN_ARCHIVE_DIR.rglob("*.json"))
 
 
 def has_running_process() -> bool:
@@ -287,22 +292,46 @@ def read_run_result_payload(path: Path) -> dict[str, Any] | None:
             return None
 
 
+def safe_folder_name(value: str) -> str:
+    cleaned = "".join(char if char.isalnum() or char in "._-" else "_" for char in str(value).strip())
+    cleaned = cleaned.strip("._-")
+    return cleaned or "unknown"
+
+
+def result_folder_name(config: dict[str, Any] | None, payload: dict[str, Any] | None = None) -> str:
+    config = config or {}
+    payload = payload or {}
+    backend = str(config.get("backend") or "").lower()
+    if backend == "local":
+        model_name = str(config.get("localModel") or os.environ.get("LOCAL_HIDDEN_MODEL") or "local")
+        return safe_folder_name(model_name.split("/")[-1])
+    if backend == "openai-compatible":
+        model_name = str(config.get("remoteModel") or os.environ.get("LLM_MODEL") or "api")
+        return f"api_{safe_folder_name(model_name)}"
+    model_name = str(payload.get("model") or os.environ.get("LOCAL_HIDDEN_MODEL") or os.environ.get("LLM_MODEL") or "unknown")
+    return safe_folder_name(model_name.split("/")[-1])
+
+
 def archive_latest_run_result() -> bool:
     payload = read_run_result_payload(STDOUT_LOG_FILE)
     if not payload or not payload.get("runs"):
         return False
     archived_at = datetime.now(timezone.utc).isoformat()
-    archive_id = f"run-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{hashlib.sha1(json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode('utf-8')).hexdigest()[:8]}"
+    archive_hash = hashlib.sha1(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()[:8]
     dataset = dataset_key_for_file(str(payload.get("dataset_file") or ""))
     mode = str(payload.get("experiment_mode") or "experiment").replace("/", "_")
     retrieval = str(payload.get("memory_retrieval_mode") or "retrieval").replace("/", "_")
+    archive_id = f"{dataset}_{mode}_{retrieval}_{archive_hash}"
     archived_payload = {
         **payload,
         "archive_id": archive_id,
         "archived_at": archived_at,
     }
-    RUN_ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    path = RUN_ARCHIVE_DIR / f"{archive_id}_{dataset}_{mode}_{retrieval}.json"
+    output_dir = RUN_ARCHIVE_DIR / result_folder_name(STATE.config, payload)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / f"frontend_{mode}_{dataset}_{retrieval}.json"
     path.write_text(json.dumps(archived_payload, ensure_ascii=False, default=str, indent=2), encoding="utf-8")
     return True
 
@@ -314,7 +343,7 @@ def delete_archived_record(record_id: str) -> bool:
     archive_target = target.split("|", 1)[0]
     deleted = False
     deleted_fingerprints: set[str] = set()
-    for path in RUN_ARCHIVE_DIR.glob("*.json"):
+    for path in RUN_ARCHIVE_DIR.rglob("*.json"):
         payload = read_run_result_payload(path)
         if not payload:
             continue
@@ -349,6 +378,11 @@ def collaboration_key_for_mode(mode: str) -> str:
     normalized = str(mode or "").lower()
     mapping = {
         "baseline_text": "plain",
+        "autogen_text": "autogen",
+        "camel_text": "camel",
+        "autogen_camel_text": "autogen",
+        "autoform_text": "autoform",
+        "llmlingua_text": "llmlingua",
         "text": "plain",
         "plain": "plain",
         "protocol_api": "structured",
@@ -522,15 +556,16 @@ def method_record_from_run(payload: dict[str, Any], run: dict[str, Any], source:
     comparable_elapsed_ms = safe_float(metrics.get("adjusted_elapsed_ms"))
     if comparable_elapsed_ms is None:
         comparable_elapsed_ms = max(0.0, elapsed_ms - state_generation_ms)
-    state_transfer_count = 0 if collaboration == "plain" else safe_int(metrics.get("latent_transfer_count"))
-    state_bytes = 0 if collaboration == "plain" else safe_int(metrics.get("latent_bytes"))
+    text_only_collaboration = collaboration in {"plain", "autogen", "camel", "autoform", "llmlingua"}
+    state_transfer_count = 0 if text_only_collaboration else safe_int(metrics.get("latent_transfer_count"))
+    state_bytes = 0 if text_only_collaboration else safe_int(metrics.get("latent_bytes"))
     protocol_bytes = safe_int(metrics.get("protocol_bytes"))
     if not protocol_bytes:
         protocol_bytes = safe_int(metrics.get("text_chars"))
     communication_bytes = safe_int(metrics.get("communication_bytes"))
     if not communication_bytes:
         communication_bytes = protocol_bytes
-    if collaboration == "plain":
+    if text_only_collaboration:
         state_generation_ms = 0.0
         comparable_elapsed_ms = elapsed_ms
     archive_id = str(payload.get("archive_id") or "").strip()
@@ -574,6 +609,67 @@ def method_record_from_run(payload: dict[str, Any], run: dict[str, Any], source:
     }
 
 
+def safe_result_file_path(relative_path: str) -> Path:
+    relative = Path(str(relative_path).replace("\\", "/"))
+    if relative.is_absolute() or ".." in relative.parts:
+        raise ValueError(f"无效结果文件路径：{relative_path}")
+    path = (RUN_RESULT_DIR / relative).resolve()
+    result_root = RUN_RESULT_DIR.resolve()
+    if result_root != path and result_root not in path.parents:
+        raise ValueError(f"结果文件不在 run_result 目录内：{relative_path}")
+    if path.suffix.lower() != ".json" or not path.is_file():
+        raise ValueError(f"结果文件不存在或不是 JSON：{relative_path}")
+    return path
+
+
+def result_files_payload() -> dict[str, Any]:
+    RUN_RESULT_DIR.mkdir(parents=True, exist_ok=True)
+    files: list[dict[str, Any]] = []
+    for path in sorted(RUN_RESULT_DIR.rglob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
+        stat = path.stat()
+        relative_path = path.relative_to(RUN_RESULT_DIR)
+        files.append(
+            {
+                "name": path.name,
+                "path": relative_path.as_posix(),
+                "folder": relative_path.parent.as_posix() if str(relative_path.parent) != "." else "",
+                "modifiedTime": stat.st_mtime,
+                "modifiedLabel": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+                "size": stat.st_size,
+            }
+        )
+    return {"directory": str(RUN_RESULT_DIR), "files": files}
+
+
+def import_result_records(file_paths: list[Any]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for item in file_paths:
+        path = safe_result_file_path(str(item))
+        payload = read_run_result_payload(path)
+        if not payload:
+            continue
+        source = str(path.relative_to(ROOT))
+        for index, run in enumerate(payload.get("runs", []) or []):
+            records.append(method_record_from_run(payload, run, source, index))
+    return records
+
+
+def import_result_payloads(file_paths: list[Any]) -> list[dict[str, Any]]:
+    payloads: list[dict[str, Any]] = []
+    for item in file_paths:
+        path = safe_result_file_path(str(item))
+        payload = read_run_result_payload(path)
+        if not payload:
+            continue
+        payloads.append(
+            {
+                "source": str(path.relative_to(ROOT)),
+                "payload": payload,
+            }
+        )
+    return payloads
+
+
 def collect_metric_records() -> list[dict[str, Any]]:
     global METRICS_CACHE_AT, METRICS_CACHE
     refresh_process_state()
@@ -585,7 +681,7 @@ def collect_metric_records() -> list[dict[str, Any]]:
     archived_fingerprints: set[str] = set()
 
     if RUN_ARCHIVE_DIR.exists():
-        for path in sorted(RUN_ARCHIVE_DIR.glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
+        for path in sorted(RUN_ARCHIVE_DIR.rglob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
             payload = read_run_result_payload(path)
             if not payload:
                 continue
@@ -679,7 +775,7 @@ def latest_run_result_payload() -> dict[str, Any] | None:
         return latest_payload
     if RUN_ARCHIVE_DIR.exists():
         latest_path = max(
-            RUN_ARCHIVE_DIR.glob('*.json'),
+            RUN_ARCHIVE_DIR.rglob('*.json'),
             key=lambda item: item.stat().st_mtime,
             default=None,
         )
@@ -739,6 +835,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/runner/records":
             self.send_json({"records": collect_metric_records()})
             return
+        if path == "/api/runner/result-files":
+            self.send_json(result_files_payload())
+            return
         if path == "/api/runner/result":
             self.send_json({"payload": latest_run_result_payload()})
             return
@@ -763,6 +862,14 @@ class Handler(BaseHTTPRequestHandler):
                 if not records:
                     clear_runtime_files(include_stdout=True)
                 self.send_json({"deleted": deleted, "records": records})
+                return
+            if path == "/api/runner/import-results":
+                file_paths = body.get("files")
+                if not isinstance(file_paths, list) or not file_paths:
+                    raise ValueError("请选择至少一个结果文件。")
+                records = import_result_records(file_paths)
+                payloads = import_result_payloads(file_paths)
+                self.send_json({"records": records, "payloads": payloads})
                 return
             if path == "/api/runner/clear-runtime":
                 clear_runtime_files(include_stdout=bool(body.get("includeStdout")))
@@ -792,7 +899,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(data)
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
+            return
 
     def send_cors(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")

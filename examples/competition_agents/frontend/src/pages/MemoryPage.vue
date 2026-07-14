@@ -162,16 +162,30 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { defaultExperimentConfig, normalizeExperimentConfig } from '../experimentOptions'
 
 const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
+const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
+const props = defineProps({
+  importedPayloads: {
+    type: Array,
+    default: () => []
+  }
+})
+
 const selectedTaskKey = ref('')
 const selectedMemoryId = ref('')
 const runtimeEvents = ref([])
+const savedConfig = ref(readSavedConfig())
 let timer = null
 
-const runMeta = computed(() => runtimeEvents.value.find((event) => event.event_type === 'run_start') ?? {})
+const importedRunPayload = computed(() => importedPayloadForCurrentConfig(props.importedPayloads, savedConfig.value))
+const displayRuntimeEvents = computed(() =>
+  importedRunPayload.value ? eventsFromImportedPayload(importedRunPayload.value) : runtimeEvents.value
+)
+const runMeta = computed(() => displayRuntimeEvents.value.find((event) => event.event_type === 'run_start') ?? {})
 const taskQueue = computed(() => {
-  const queue = runtimeEvents.value.find((event) => event.event_type === 'task_queue')
+  const queue = displayRuntimeEvents.value.find((event) => event.event_type === 'task_queue')
   return Array.isArray(queue?.tasks) ? queue.tasks : []
 })
 
@@ -197,7 +211,7 @@ const tasks = computed(() => {
       expectedReuse: item.expected_reuse || []
     })
   }
-  for (const event of runtimeEvents.value) {
+  for (const event of displayRuntimeEvents.value) {
     const index = Number(event.task_index || 0)
     if (!index) continue
     if (!byIndex.has(index)) {
@@ -219,7 +233,7 @@ const tasks = computed(() => {
 const selectedTask = computed(() => tasks.value.find((task) => task.key === selectedTaskKey.value) ?? null)
 const selectedTaskEvents = computed(() => {
   if (!selectedTask.value) return []
-  return runtimeEvents.value.filter((event) => Number(event.task_index || 0) === selectedTask.value.index)
+  return displayRuntimeEvents.value.filter((event) => Number(event.task_index || 0) === selectedTask.value.index)
 })
 
 const taskDoneEvent = computed(() => selectedTaskEvents.value.find((event) => event.event_type === 'task_done') ?? null)
@@ -397,7 +411,7 @@ watch(tasks, (nextTasks) => {
   if (!nextTasks.some((task) => task.key === selectedTaskKey.value)) {
     const runningTask = nextTasks.find((task) => task.status === 'running')
     const firstHitTask = nextTasks.find((task) =>
-      runtimeEvents.value.some((event) => event.event_type === 'memory_hit' && Number(event.task_index || 0) === task.index)
+      displayRuntimeEvents.value.some((event) => event.event_type === 'memory_hit' && Number(event.task_index || 0) === task.index)
     )
     selectedTaskKey.value = runningTask?.key ?? firstHitTask?.key ?? nextTasks[0].key
   }
@@ -414,11 +428,14 @@ watch(retrievalRows, (rows) => {
 }, { immediate: true })
 
 onMounted(() => {
+  refreshSavedConfig()
   refreshRuntimeEvents()
+  window.addEventListener('storage', refreshSavedConfig)
   timer = window.setInterval(refreshRuntimeEvents, 1200)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('storage', refreshSavedConfig)
   if (timer) window.clearInterval(timer)
 })
 
@@ -430,7 +447,22 @@ function selectMemory(memoryId) {
   selectedMemoryId.value = memoryId
 }
 
+function readSavedConfig() {
+  if (typeof window === 'undefined') return defaultExperimentConfig()
+  try {
+    const raw = window.localStorage.getItem(CONFIG_STORAGE_KEY)
+    return raw ? normalizeExperimentConfig({ ...defaultExperimentConfig(), ...JSON.parse(raw) }) : defaultExperimentConfig()
+  } catch {
+    return defaultExperimentConfig()
+  }
+}
+
+function refreshSavedConfig() {
+  savedConfig.value = readSavedConfig()
+}
+
 async function refreshRuntimeEvents() {
+  if (importedRunPayload.value) return
   try {
     const response = await fetch(`${RUNNER_EVENTS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) {
@@ -445,10 +477,185 @@ async function refreshRuntimeEvents() {
 }
 
 function taskStatus(index) {
-  const events = runtimeEvents.value.filter((event) => Number(event.task_index || 0) === index)
+  const events = displayRuntimeEvents.value.filter((event) => Number(event.task_index || 0) === index)
   if (events.some((event) => event.event_type === 'task_done')) return 'done'
   if (events.some((event) => event.event_type === 'task_start')) return 'running'
   return 'waiting'
+}
+
+function eventsFromImportedPayload(payload) {
+  const primaryRun = latestPrimaryRun(payload) || {}
+  const taskResults = Array.isArray(primaryRun.task_results) ? primaryRun.task_results : []
+  const timestamp = payload?.archived_at || new Date().toISOString()
+  const events = [
+    {
+      event_type: 'run_start',
+      timestamp,
+      experiment_mode: payload?.experiment_mode || primaryRun.experiment_mode || primaryRun.mode,
+      memory_organization: payload?.memory_organization || primaryRun.memory_organization,
+      memory_retrieval_mode: payload?.memory_retrieval_mode || primaryRun.memory_retrieval_mode,
+      dataset_file: payload?.dataset_file || primaryRun.dataset_file,
+      task_count: taskResults.length || payload?.task_count || primaryRun.task_count || primaryRun.tasks
+    },
+    {
+      event_type: 'task_queue',
+      timestamp,
+      tasks: taskResults.map((task, index) => ({
+        task_index: index + 1,
+        task_id: task.task_id || `task-${index + 1}`,
+        task_title: task.task_title || task.question || task.task || `任务 ${index + 1}`,
+        expected_reuse: task.expected_reuse || []
+      }))
+    }
+  ]
+
+  for (const [index, task] of taskResults.entries()) {
+    const taskIndex = index + 1
+    const taskId = task.task_id || `task-${taskIndex}`
+    const taskTitle = task.task_title || task.question || task.task || `任务 ${taskIndex}`
+    const metrics = task.metrics || {}
+    const memoryHits = importedMemoryHits(task)
+    const memoryRefs = normalizeList(task.memory_refs || task.memory_hit_ids || task.memory_ids)
+    const stateRefs = normalizeList(task.state_refs)
+    events.push({
+      event_type: 'task_start',
+      timestamp,
+      task_index: taskIndex,
+      task_id: taskId,
+      task_title: taskTitle,
+      from_agent: 'runtime',
+      to_agent: 'planner',
+      action_type: 'start_task'
+    })
+    events.push({
+      event_type: 'agent_message',
+      timestamp,
+      task_index: taskIndex,
+      task_id: taskId,
+      task_title: taskTitle,
+      from_agent: 'planner',
+      to_agent: 'retriever',
+      action_type: 'retrieve',
+      input_params: {
+        question: task.question || taskTitle,
+        planner_focus: task.retrieval_debug?.planner_focus || []
+      },
+      state_refs: stateRefs
+    })
+    for (const [hitIndex, hit] of memoryHits.entries()) {
+      const memoryId = hit.memory_id || hit.id || memoryRefs[hitIndex] || `mem-${String(hitIndex + 1).padStart(4, '0')}`
+      events.push({
+        event_type: 'memory_hit',
+        timestamp,
+        task_index: taskIndex,
+        task_id: taskId,
+        task_title: taskTitle,
+        from_agent: 'memory',
+        to_agent: 'retriever',
+        action_type: 'memory_hit',
+        memory_refs: [memoryId],
+        state_refs: stateRefs,
+        return_result: {
+          memory_id: memoryId,
+          summary: hit.summary || hit.text || hit.content || '导入结果记录了记忆命中',
+          retrieval_score: hit.score ?? hit.retrieval_score ?? hit.confidence,
+          memory_type: hit.memory_type || hit.type || 'memory',
+          selection_reason: hit.selection_reason || hit.reason || '由导入实验结果恢复的记忆命中',
+          tags: hit.tags || []
+        }
+      })
+    }
+    for (const write of importedMemoryWrites(task)) {
+      const memoryId = write.memory_id || write.id || write.memory_ref || 'memory-write'
+      events.push({
+        event_type: 'memory_write',
+        timestamp,
+        task_index: taskIndex,
+        task_id: taskId,
+        task_title: taskTitle,
+        from_agent: 'summarizer',
+        to_agent: 'memory',
+        action_type: 'write_memory',
+        memory_refs: [memoryId],
+        state_refs: stateRefs,
+        return_result: {
+          memory_id: memoryId,
+          memory_type: write.memory_type || write.type || 'memory',
+          summary: write.summary || write.text || write.content || '导入结果记录了记忆写回'
+        }
+      })
+    }
+    events.push({
+      event_type: 'task_done',
+      timestamp,
+      task_index: taskIndex,
+      task_id: taskId,
+      task_title: taskTitle,
+      from_agent: 'summarizer',
+      to_agent: 'dashboard',
+      action_type: 'done',
+      memory_refs: memoryRefs,
+      state_refs: stateRefs,
+      text_chars: Number(metrics.text_chars || 0),
+      elapsed_ms: Number(metrics.elapsed_ms || task.elapsed_ms || 0),
+      return_result: {
+        final_answer: task.final_answer || task.answer || '',
+        exact_match: task.exact_match,
+        memory_hit_count: Number(task.memory_hit_count || memoryHits.length || metrics.memory_hit_count || 0)
+      }
+    })
+  }
+  events.push({ event_type: 'run_done', timestamp })
+  return events
+}
+
+function latestPrimaryRun(payload) {
+  const runs = Array.isArray(payload?.runs) ? payload.runs : []
+  return runs[0] || null
+}
+
+function importedPayloadForCurrentConfig(items, currentConfig) {
+  const payloads = Array.isArray(items) ? items.map((item) => item?.payload).filter(Boolean) : []
+  if (!payloads.length) return null
+  return payloads.find((payload) => datasetKey(payload?.dataset_file || latestPrimaryRun(payload)?.dataset_file) === currentConfig.dataset) ?? payloads[0]
+}
+
+function datasetKey(file) {
+  const text = String(file || '')
+  if (text.includes('topiocqa_1_10turns')) return 'topiocqa-1'
+  if (text.includes('topiocqa_2_10turns')) return 'topiocqa-2'
+  if (text.includes('codeact_1_10tasks')) return 'codeact-1'
+  if (text.includes('codeact_2_10tasks')) return 'codeact-2'
+  return text
+}
+
+function importedMemoryHits(task) {
+  const candidates = [
+    task.memory_hits,
+    task.retrieved_memories,
+    task.retrieval_debug?.memory_hits,
+    task.retrieval_debug?.context_hits
+  ]
+  for (const value of candidates) {
+    if (Array.isArray(value) && value.length) return value
+  }
+  const refs = normalizeList(task.memory_refs || task.memory_hit_ids || task.memory_ids)
+  return refs.map((memoryId) => ({ memory_id: memoryId, summary: '导入结果记录了该记忆参与本轮任务' }))
+}
+
+function importedMemoryWrites(task) {
+  const writes = []
+  for (const value of [task.latest_evidence_write, task.latest_experience_write, task.memory_write, task.memory_writes]) {
+    if (Array.isArray(value)) writes.push(...value)
+    else if (value && typeof value === 'object') writes.push(value)
+  }
+  return writes
+}
+
+function normalizeList(value) {
+  if (Array.isArray(value)) return value.filter(Boolean).map(String)
+  if (value && typeof value === 'object') return Object.values(value).filter(Boolean).map(String)
+  return value ? [String(value)] : []
 }
 
 function eventPayloadText(event) {
@@ -544,6 +751,11 @@ function tagText(value) {
 function modeLabel(value) {
   const map = {
     baseline_text: '纯文本',
+    autogen_text: 'autogen',
+    camel_text: 'camel',
+    autogen_camel_text: 'autogen',
+    autoform_text: 'AutoForm',
+    llmlingua_text: 'LLMLingua-2',
     text: '纯文本',
     protocol_api: '结构化协议',
     protocol: '结构化协议',
@@ -559,8 +771,8 @@ function datasetLabelFromMeta(meta) {
   const file = String(meta.dataset_file || '')
   if (file.includes('topiocqa_1_10turns')) return 'TopiOCQA 第 1 组（10轮）'
   if (file.includes('topiocqa_2_10turns')) return 'TopiOCQA 第 2 组（10轮）'
-  if (file.includes('hotpot_continuous_tasks_3turn')) return 'Hotpot 连续任务（3轮）'
   if (file.includes('codeact_1_10tasks')) return 'CodeAct 第 1 组（10题）'
+  if (file.includes('codeact_2_10tasks')) return 'CodeAct 第 2 组（10题）'
   return meta.dataset_type || '等待运行'
 }
 

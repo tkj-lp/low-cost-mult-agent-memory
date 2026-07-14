@@ -16,20 +16,20 @@ export const datasets = [
     file: 'examples/competition_agents/data/topiocqa_2_10turns.json'
   },
   {
-    label: 'Hotpot 连续任务（3轮）',
-    value: 'hotpot-3',
-    taskCount: 3,
-    datasetType: 'continuous',
-    latentDatasetType: 'continuous',
-    file: 'examples/competition_agents/data/hotpot_continuous_tasks_3turn.json'
-  },
-  {
     label: 'CodeAct 第 1 组（10题）',
     value: 'codeact-1',
     taskCount: 10,
     datasetType: 'codeact',
     latentDatasetType: 'codeact',
     file: 'examples/competition_agents/data/codeact_1_10tasks.json'
+  },
+  {
+    label: 'CodeAct 第 2 组（10题）',
+    value: 'codeact-2',
+    taskCount: 10,
+    datasetType: 'codeact',
+    latentDatasetType: 'codeact',
+    file: 'examples/competition_agents/data/codeact_2_10tasks.json'
   }
 ]
 
@@ -45,6 +45,8 @@ export const localModels = [
 
 export const collaborationModes = [
   { label: '纯文本', value: 'plain', icon: '⊙', experimentMode: 'baseline_text' },
+  { label: 'AutoForm', value: 'autoform', icon: 'A', experimentMode: 'autoform_text' },
+  { label: 'LLMLingua-2', value: 'llmlingua', icon: 'L', experimentMode: 'llmlingua_text' },
   { label: '结构化协议', value: 'structured', icon: '▣', experimentMode: 'protocol_api' },
   { label: '协议 + 向量', value: 'protocol-vector', icon: '⌘', experimentMode: 'protocol_api_embedding' },
   { label: '隐状态传递', value: 'latent', icon: '◷', experimentMode: 'hidden_api' }
@@ -213,6 +215,11 @@ export function decodeRunResultBuffer(buffer) {
 export function configFromRunResult(payload, fallbackConfig) {
   const modeToCollaboration = {
     baseline_text: 'plain',
+    autogen_text: 'autogen',
+    camel_text: 'camel',
+    autogen_camel_text: 'autogen',
+    autoform_text: 'autoform',
+    llmlingua_text: 'llmlingua',
     protocol_api: 'structured',
     protocol_api_embedding: 'protocol-vector',
     hidden_api: 'latent',

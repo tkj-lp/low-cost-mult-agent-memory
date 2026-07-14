@@ -61,15 +61,25 @@ def load_local_hidden_model() -> LocalHiddenModel:
 
     model_name = get_hidden_model_name()
     cache_dir = os.environ.get("LOCAL_HIDDEN_CACHE_DIR") or None
+    local_files_only = os.environ.get("LOCAL_HIDDEN_LOCAL_FILES_ONLY", "1").lower() not in {
+        "0",
+        "false",
+        "no",
+    }
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if "deepseek-coder" in model_name.lower():
         tokenizer = _load_deepseek_coder_tokenizer(model_name, cache_dir)
     else:
-        tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            cache_dir=cache_dir,
+            local_files_only=local_files_only,
+        )
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         cache_dir=cache_dir,
+        local_files_only=local_files_only,
         torch_dtype="auto",
         low_cpu_mem_usage=True,
     )

@@ -4,6 +4,7 @@ import re
 import os
 import time
 
+from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
 from competition_agents.runtime_events import emit_memory_retrieval_events
@@ -656,6 +657,13 @@ def retriever_agent(state: CompetitionState) -> dict:
             + "Evidence repeated for baseline cost: "
             + " | ".join(evidence)
         )
+        if autoform_enabled():
+            payload, _autoform_audit = generate_autoform_message(
+                sender="retriever",
+                receiver="reasoner",
+                action="reason",
+                source_message=payload,
+            )
     else:
         # protocol 模式通过 id 传证据和记忆引用，通信开销更低。
         payload = make_compact_packet(

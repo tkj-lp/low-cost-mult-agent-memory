@@ -4,6 +4,7 @@ import json
 import os
 import time
 
+from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
@@ -92,6 +93,13 @@ def planner_agent(state: CompetitionState) -> dict:
             "summary generation. Full task background repeated for baseline cost: "
             f"{task}."
         )
+        if autoform_enabled():
+            payload, _autoform_audit = generate_autoform_message(
+                sender="planner",
+                receiver="retriever",
+                action="retrieve",
+                source_message=payload,
+            )
     else:
         # protocol 模式只传紧凑的动作参数，不传长段自然语言。
         payload = make_compact_packet(

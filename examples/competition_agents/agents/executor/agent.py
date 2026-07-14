@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.protocol import make_cognitive_gap, make_packet
 from competition_agents.restricted_python_codeact import run_restricted_python
 from competition_agents.state import CompetitionState, record_message
@@ -87,6 +88,13 @@ def executor_agent(state: CompetitionState) -> dict:
             f"Error: {result.get('error')}. "
             "The summarizer should store this structured execution_result in trace memory."
         )
+        if autoform_enabled():
+            payload, _autoform_audit = generate_autoform_message(
+                sender="executor",
+                receiver="summarizer",
+                action="summarize",
+                source_message=payload,
+            )
     else:
         payload = make_packet(
             sender="executor",

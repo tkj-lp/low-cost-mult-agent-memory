@@ -5,7 +5,8 @@
       <strong>暂无可绘制数据</strong>
       <span>完成一次真实运行后会显示对应任务的趋势图。</span>
     </div>
-    <div v-else class="chart-scroll">
+    <div v-else class="chart-shell">
+      <div class="chart-scroll">
       <svg class="line-chart-svg" viewBox="0 0 760 260" preserveAspectRatio="xMidYMid meet" aria-label="趋势图">
         <g class="chart-grid-lines">
           <line v-for="tick in yTicks" :key="tick.value" :x1="plot.left" :y1="tick.y" :x2="plot.right" :y2="tick.y" />
@@ -21,8 +22,23 @@
           <line :x1="x(index)" :x2="x(index)" :y1="plot.bottom" :y2="plot.bottom + 5" class="axis-tick" />
           <text :x="x(index)" y="248" class="axis-label" text-anchor="middle">{{ label }}</text>
         </g>
-        <g v-for="line in normalized" :key="line.name">
-          <polyline :points="line.points" fill="none" :stroke="line.color" stroke-width="2.5" />
+        <g
+          v-for="line in normalized"
+          :key="line.name"
+          class="chart-line-group"
+          :class="{ muted: activeLine && activeLine !== line.name, active: activeLine === line.name }"
+          @mouseenter="activeLine = line.name"
+          @mouseleave="activeLine = ''"
+        >
+          <polyline
+            :points="line.points"
+            fill="none"
+            :stroke="line.color"
+            :stroke-dasharray="line.dash"
+            :stroke-width="activeLine === line.name ? 4 : 2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
           <circle
             v-for="point in line.pointList"
             :key="`${line.name}-${point.x}`"
@@ -34,21 +50,40 @@
             stroke-width="2.2"
           />
         </g>
-        <g class="svg-legend">
-          <g v-for="(line, index) in legendItems" :key="line.name" :transform="`translate(${legendX(index)}, 42)`">
-            <rect x="-8" y="-13" width="128" height="20" rx="5" />
-            <line x1="0" y1="0" x2="20" y2="0" :stroke="line.color" stroke-width="3" stroke-linecap="round" />
-            <circle cx="10" cy="0" r="3.5" fill="#fff" :stroke="line.color" stroke-width="2" />
-            <text x="28" y="4">{{ line.label }}</text>
-          </g>
-        </g>
       </svg>
+      </div>
+      <div class="chart-legend-list">
+        <button
+          v-for="line in legendItems"
+          :key="line.name"
+          type="button"
+          class="chart-legend-item"
+          :class="{ active: activeLine === line.name, muted: activeLine && activeLine !== line.name }"
+          :title="line.name"
+          @mouseenter="activeLine = line.name"
+          @mouseleave="activeLine = ''"
+        >
+          <svg class="legend-line" viewBox="0 0 34 8" aria-hidden="true">
+            <line
+              x1="1"
+              y1="4"
+              x2="33"
+              y2="4"
+              :stroke="line.color"
+              :stroke-dasharray="line.dash"
+              stroke-width="3"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span>{{ line.label }}</span>
+        </button>
+      </div>
     </div>
   </BaseCard>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import BaseCard from '../BaseCard.vue'
 
 const props = defineProps({
@@ -76,6 +111,8 @@ const plot = {
   top: 62,
   bottom: 222
 }
+const activeLine = ref('')
+const dashPatterns = ['', '8 5', '3 4', '12 4 3 4', '2 6', '10 3', '6 3 2 3', '14 5']
 const allValues = computed(() => props.series.flatMap((line) => line.values))
 const minValue = computed(() => Math.min(0, ...allValues.value))
 const maxValue = computed(() => (allValues.value.length ? Math.max(...allValues.value) : 1))
@@ -96,23 +133,31 @@ const x = (index) => {
   return plot.left + index * ((plot.right - plot.left) / (labels.value.length - 1))
 }
 const y = (value) => plot.bottom - ((value - minValue.value) / span.value) * (plot.bottom - plot.top)
-const legendX = (index) => [86, 248, 424, 588][index] ?? 86
 
 const legendItems = computed(() =>
-  props.series.map((line) => ({
+  normalized.value.map((line) => ({
     ...line,
-    label: line.name.replace(/（.*$/, '')
+    label: shortenLabel(line.name)
   }))
 )
 
 const normalized = computed(() =>
-  props.series.map((line) => {
+  props.series.map((line, lineIndex) => {
     const pointList = line.values.map((value, index) => ({ x: x(index), y: y(value) }))
     return {
       ...line,
+      dash: line.dash || dashPatterns[lineIndex % dashPatterns.length],
       pointList,
       points: pointList.map((point) => `${point.x},${point.y}`).join(' ')
     }
   })
 )
+
+function shortenLabel(label) {
+  const text = String(label || '')
+    .replace(/\s*\+\s*/g, ' + ')
+    .replace(/\s*#\d+$/, '')
+    .trim()
+  return text.length > 30 ? `${text.slice(0, 29)}?` : text
+}
 </script>

@@ -380,7 +380,21 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
         os.environ["LLM_SUMMARIZER_PROVIDER"] = llm_provider
         os.environ["LLM_REQUIRE_REAL"] = "1"
 
-    if args.experiment_mode == "baseline_text":
+    if args.experiment_mode in {
+        "baseline_text",
+        "autogen_text",
+        "camel_text",
+        "autogen_camel_text",
+    }:
+        os.environ.pop("TEXT_COMM_STYLE", None)
+        os.environ["EMBEDDING_PROVIDER"] = "hash"
+        return ["text"]
+    if args.experiment_mode == "autoform_text":
+        os.environ["TEXT_COMM_STYLE"] = "autoform"
+        os.environ["EMBEDDING_PROVIDER"] = "hash"
+        return ["text"]
+    if args.experiment_mode == "llmlingua_text":
+        os.environ["TEXT_COMM_STYLE"] = "llmlingua2"
         os.environ["EMBEDDING_PROVIDER"] = "hash"
         return ["text"]
     if args.experiment_mode == "protocol_api":
@@ -1143,6 +1157,11 @@ def run_mode(
         "latent_bytes": 0,
         "transfer_latency_ms": 0.0,
         "state_generation_ms": 0.0,
+        "raw_text_chars": 0,
+        "compressed_text_chars": 0,
+        "compression_latency_ms": 0.0,
+        "generated_text_chars": 0,
+        "transmitted_text_chars": 0,
         "planner_llm_ms": 0.0,
         "retriever_context_ms": 0.0,
         "retriever_memory_ms": 0.0,
@@ -1527,11 +1546,28 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run competition multi-agent experiments.")
     parser.add_argument(
         "--experiment-mode",
-        choices=["baseline_text", "protocol_api", "protocol_api_embedding", "hidden_api", "codeact_tools"],
+        choices=[
+            "baseline_text",
+            "autogen_text",
+            "camel_text",
+            "autogen_camel_text",
+            "autoform_text",
+            "llmlingua_text",
+            "protocol_api",
+            "protocol_api_embedding",
+            "hidden_api",
+            "codeact_tools",
+        ],
         default="",
         help=(
             "Formal experiment mode for dashboards. "
-            "baseline_text uses text collaboration; protocol_api uses structured protocol; "
+            "baseline_text uses text collaboration; "
+            "autogen_text uses an AutoGen-style natural-language multi-agent baseline; "
+            "camel_text uses a CAMEL-style natural-language multi-agent baseline; "
+            "autogen_camel_text is kept only for legacy imported records; "
+            "autoform_text adapts AutoForm-style autonomous compact communication format selection; "
+            "llmlingua_text uses LLMLingua-2 style text-message compression; "
+            "protocol_api uses structured protocol; "
             "protocol_api_embedding additionally uses configured embedding API; "
             "hidden_api keeps real multi-agent reasoning but replaces agent-to-agent text exchange with hidden-state refs."
         ),

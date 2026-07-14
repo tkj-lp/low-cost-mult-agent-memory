@@ -4,7 +4,7 @@
       :model-value="filters"
       :baseline-options="baselineOptions"
       @update:model-value="updateFilters"
-      @refresh="fetchMetrics"
+      @refresh="refreshMetricsFromArchive"
     />
     <div class="metrics-content">
       <div class="metrics-status-line">{{ statusLine }}</div>
@@ -39,36 +39,58 @@
     </div>
 
     <div v-if="props.recordDialogOpen" class="metrics-record-backdrop" @click.self="closeRecordDialog">
-      <section class="metrics-record-dialog" role="dialog" aria-modal="true" aria-label="实验记录">
+      <section class="metrics-record-dialog" role="dialog" aria-modal="true" aria-label="导入实验结果">
         <header>
           <div>
-            <strong>实验记录</strong>
-            <span>选择要展示到图表中的记录；基线仍由上方“基线记录”单独决定。</span>
+            <strong>导入实验结果</strong>
+            <span>{{ resultFileDirectory || 'run_result' }}</span>
           </div>
           <button type="button" class="metrics-dialog-close" @click="closeRecordDialog">关闭</button>
         </header>
-        <div v-if="!records.length" class="metrics-record-empty">暂无实验记录，完整运行一次后会自动保存。</div>
-        <div v-else class="metrics-record-list dialog-list">
-          <article
-            v-for="record in records"
-            :key="record.recordId"
-            class="metrics-record-item"
-            :class="{ selected: selectedRecordIds.includes(record.recordId) }"
-          >
-            <label>
+        <div class="metrics-import-toolbar">
+          <button type="button" @click="loadResultFiles">刷新</button>
+          <button type="button" @click="selectAllResultFiles">全选</button>
+          <button type="button" @click="clearSelectedResultFiles">取消全选</button>
+          <span>已选择 {{ selectedImportFiles.length }} 个文件</span>
+        </div>
+        <div v-if="!resultFiles.length" class="metrics-record-empty">暂无可导入的 JSON 结果文件。</div>
+        <div v-else class="metrics-import-tree">
+          <section v-for="group in importFileGroups" :key="group.folder" class="metrics-import-folder">
+            <label class="metrics-import-folder-row">
               <input
                 type="checkbox"
-                :checked="selectedRecordIds.includes(record.recordId)"
-                @change="toggleRecord(record.recordId, $event.target.checked)"
+                :checked="isImportFolderSelected(group)"
+                @change="toggleImportFolder(group, $event.target.checked)"
               />
-              <span>
-                <strong>{{ fullMethodLabel(record) }}</strong>
-                <em>{{ recordMetaLabel(record) }}</em>
-                <small class="metrics-record-time">{{ recordTimeLabel(record) }}</small>
-              </span>
+              <strong>{{ group.label }}</strong>
+              <span>{{ group.files.length }} 个文件 / {{ formatFileSize(group.size) }}</span>
             </label>
-            <button type="button" @click="deleteRecord(record)">删除</button>
-          </article>
+            <label
+              v-for="file in group.files"
+              :key="file.path"
+              class="metrics-import-file-row"
+            >
+              <input
+                type="checkbox"
+                :value="file.path"
+                v-model="selectedImportFiles"
+              />
+              <span>{{ file.name }}</span>
+              <em>{{ file.modifiedLabel }}</em>
+              <small>{{ formatFileSize(file.size) }}</small>
+            </label>
+          </section>
+        </div>
+        <div class="metrics-import-footer">
+          <button type="button" class="metrics-import-cancel" @click="closeRecordDialog">取消</button>
+          <button
+            type="button"
+            class="metrics-import-submit"
+            :disabled="!selectedImportFiles.length || importLoading"
+            @click="importSelectedResults"
+          >
+            {{ importLoading ? '导入中...' : '导入所选' }}
+          </button>
         </div>
       </section>
     </div>
@@ -93,6 +115,8 @@ import {
 
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
 const RUNNER_METRICS_URL = 'http://127.0.0.1:8765/api/runner/metrics'
+const RUNNER_RESULT_FILES_URL = 'http://127.0.0.1:8765/api/runner/result-files'
+const RUNNER_IMPORT_RESULTS_URL = 'http://127.0.0.1:8765/api/runner/import-results'
 const LATEST_STDOUT_URL = '/runtime/latest_run_stdout.log'
 const RUN_RESULT_MARKER = '=== run_result_json ==='
 
@@ -100,6 +124,10 @@ const props = defineProps({
   recordDialogOpen: {
     type: Boolean,
     default: false
+  },
+  importedRecords: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -116,6 +144,11 @@ const filters = reactive({
 })
 const records = ref([])
 const selectedRecordIds = ref([])
+const resultFiles = ref([])
+const selectedImportFiles = ref([])
+const resultFileDirectory = ref('')
+const importLoading = ref(false)
+const importedRecordsActive = ref(false)
 const loadError = ref('')
 let timer = null
 
@@ -140,27 +173,46 @@ const baselineOptions = computed(() =>
   }))
 )
 
+const importFileGroups = computed(() => {
+  const groups = new Map()
+  for (const file of resultFiles.value) {
+    const folder = file.folder || '未分组'
+    if (!groups.has(folder)) groups.set(folder, [])
+    groups.get(folder).push(file)
+  }
+  return [...groups.entries()].map(([folder, files]) => ({
+    folder,
+    label: folder,
+    files,
+    size: files.reduce((sum, file) => sum + Number(file.size || 0), 0)
+  }))
+})
+
 const baselineSelected = computed(() => filters.baselineMode === 'compare')
 const hasBaseline = computed(() => Boolean(baselineSelected.value && baselineRecord.value))
 const statusLine = computed(() => {
   if (loadError.value) return loadError.value
+  if (!selectedRecord.value && selectedChartRecords.value.length) return '当前数据集已有导入记录；当前方法组合还没有真实运行结果。'
   if (!selectedRecord.value) return '当前筛选组合还没有真实运行结果。'
   if (baselineSelected.value && !baselineRecord.value) return '请选择一条历史实验记录作为基线。'
   return `当前方法：${fullMethodLabel(selectedRecord.value)}`
 })
 
 const chartRecords = computed(() => {
-  const list = []
-  if (hasBaseline.value) list.push(enrichRecord(baselineRecord.value))
+  const sourceRecords = []
+  if (hasBaseline.value) sourceRecords.push(baselineRecord.value)
   for (const record of selectedChartRecords.value) {
     if (hasBaseline.value && record.recordId === baselineRecord.value.recordId) continue
-    list.push(enrichRecord(record))
+    sourceRecords.push(record)
   }
-  return list
+  return sourceRecords.map((record, index) => enrichRecord(record, index, sourceRecords.length))
 })
 
 const selectedChartRecords = computed(() => {
-  const selected = records.value.filter((record) => selectedRecordIds.value.includes(record.recordId))
+  const selected = records.value.filter((record) =>
+    selectedRecordIds.value.includes(record.recordId) &&
+    matchesCurrentDataset(record)
+  )
   if (selected.length) return selected
   return selectedRecord.value ? [selectedRecord.value] : []
 })
@@ -246,6 +298,7 @@ onBeforeUnmount(() => {
 })
 
 function updateFilters(nextFilters) {
+  const previousDataset = filters.dataset
   const normalized = normalizeExperimentConfig({
     ...defaultExperimentConfig(),
     ...filters,
@@ -260,9 +313,18 @@ function updateFilters(nextFilters) {
   if (filters.baselineMode !== 'compare') {
     filters.baselineRecordId = ''
   }
+  if (previousDataset !== filters.dataset) {
+    selectCurrentDatasetRecords()
+  }
 }
 
-async function fetchMetrics() {
+async function refreshMetricsFromArchive() {
+  importedRecordsActive.value = false
+  await fetchMetrics({ force: true })
+}
+
+async function fetchMetrics(options = {}) {
+  if (importedRecordsActive.value && !options.force) return
   try {
     const response = await fetch(`${RUNNER_METRICS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) throw new Error('指标服务未返回有效结果')
@@ -280,12 +342,20 @@ async function fetchMetrics() {
 function syncSelectedRecords() {
   const validIds = new Set(records.value.map((record) => record.recordId))
   selectedRecordIds.value = selectedRecordIds.value.filter((id) => validIds.has(id))
-  if (!selectedRecordIds.value.length && selectedRecord.value?.recordId) {
+  if (!selectedChartRecords.value.length && selectedRecord.value?.recordId) {
     selectedRecordIds.value = [selectedRecord.value.recordId]
   }
   if (filters.baselineRecordId && !validIds.has(filters.baselineRecordId)) {
     filters.baselineRecordId = ''
   }
+}
+
+function selectCurrentDatasetRecords() {
+  selectedRecordIds.value = records.value
+    .filter((record) => matchesCurrentDataset(record))
+    .map((record) => record.recordId)
+  loadError.value = ''
+  syncSelectedRecords()
 }
 
 function toggleRecord(recordId, checked) {
@@ -297,6 +367,66 @@ function toggleRecord(recordId, checked) {
 
 function closeRecordDialog() {
   emit('close-records')
+}
+
+async function loadResultFiles() {
+  try {
+    const response = await fetch(`${RUNNER_RESULT_FILES_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) throw new Error('结果文件列表读取失败')
+    const payload = await response.json()
+    resultFiles.value = Array.isArray(payload.files) ? payload.files : []
+    resultFileDirectory.value = payload.directory || ''
+    const validPaths = new Set(resultFiles.value.map((file) => file.path))
+    selectedImportFiles.value = selectedImportFiles.value.filter((path) => validPaths.has(path))
+  } catch (error) {
+    resultFiles.value = []
+    selectedImportFiles.value = []
+    loadError.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+function selectAllResultFiles() {
+  selectedImportFiles.value = resultFiles.value.map((file) => file.path)
+}
+
+function clearSelectedResultFiles() {
+  selectedImportFiles.value = []
+}
+
+function isImportFolderSelected(group) {
+  return group.files.length > 0 && group.files.every((file) => selectedImportFiles.value.includes(file.path))
+}
+
+function toggleImportFolder(group, checked) {
+  const selected = new Set(selectedImportFiles.value)
+  for (const file of group.files) {
+    if (checked) selected.add(file.path)
+    else selected.delete(file.path)
+  }
+  selectedImportFiles.value = [...selected]
+}
+
+async function importSelectedResults() {
+  if (!selectedImportFiles.value.length || importLoading.value) return
+  importLoading.value = true
+  try {
+    const response = await fetch(RUNNER_IMPORT_RESULTS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: selectedImportFiles.value })
+    })
+    if (!response.ok) throw new Error('导入结果失败')
+    const payload = await response.json()
+    records.value = normalizeRecords(Array.isArray(payload.records) ? payload.records : [])
+    importedRecordsActive.value = true
+    selectCurrentDatasetRecords()
+    loadError.value = selectedRecordIds.value.length ? '' : '所选文件没有当前数据集的实验记录。'
+    closeRecordDialog()
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : String(error)
+  } finally {
+    importLoading.value = false
+  }
 }
 
 async function deleteRecord(record) {
@@ -334,10 +464,38 @@ function normalizeRecords(rawRecords) {
     seen.set(base, count + 1)
     return {
       ...record,
+      dataset: datasetKey(record.dataset || record.source || ''),
       sourceRecordId,
       recordId: count ? `${base}|${count}` : base
     }
   })
+}
+
+function matchesCurrentDataset(record) {
+  return record?.dataset === filters.dataset
+}
+
+function latestRecordPerMethod(sourceRecords) {
+  const byMethod = new Map()
+  for (const record of sourceRecords) {
+    const key = [
+      record.dataset,
+      record.collaborationMode,
+      record.memoryMode,
+      record.retrievalMode,
+      record.experimentMode || ''
+    ].join('|')
+    const previous = byMethod.get(key)
+    if (!previous || recordTimestamp(record) >= recordTimestamp(previous)) {
+      byMethod.set(key, record)
+    }
+  }
+  return [...byMethod.values()]
+}
+
+function recordTimestamp(record) {
+  const time = record?.archivedAt ? new Date(record.archivedAt).getTime() : 0
+  return Number.isFinite(time) ? time : 0
 }
 
 async function readLatestStdoutMetrics() {
@@ -373,13 +531,13 @@ function buildSeries(key) {
     .filter((line) => line.values.length)
 }
 
-function enrichRecord(record) {
+function enrichRecord(record, index = 0, total = 1) {
   const tone = toneForRecord(record)
   return {
     ...record,
     tone,
-    color: colorForRecord(record),
-    shortMethod: shortMethodLabel(record)
+    color: colorForRecord(record, index),
+    shortMethod: shortMethodLabel(record, index, total)
   }
 }
 
@@ -401,8 +559,19 @@ watch([records, () => filters.baselineMode], () => {
 }, { immediate: true })
 
 watch(() => props.recordDialogOpen, (open) => {
-  if (open) fetchMetrics()
+  if (open) {
+    selectedImportFiles.value = []
+    loadResultFiles()
+  }
 })
+
+watch(() => props.importedRecords, (nextRecords) => {
+  if (!Array.isArray(nextRecords) || !nextRecords.length) return
+  records.value = normalizeRecords(nextRecords)
+  importedRecordsActive.value = true
+  selectCurrentDatasetRecords()
+  loadError.value = selectedRecordIds.value.length ? '' : '所选文件没有当前数据集的实验记录。'
+}, { deep: true, immediate: true })
 
 function qualityKpi(title, value, desc, tone, icon) {
   return {
@@ -534,13 +703,25 @@ function datasetOptions() {
   return [
     { label: 'TopiOCQA 第 1 组（10轮）', value: 'topiocqa-1' },
     { label: 'TopiOCQA 第 2 组（10轮）', value: 'topiocqa-2' },
-    { label: 'Hotpot 连续任务（3轮）', value: 'hotpot-3' },
-    { label: 'CodeAct 第 1 组（10题）', value: 'codeact-1' }
+    { label: 'CodeAct 第 1 组（10题）', value: 'codeact-1' },
+    { label: 'CodeAct 第 2 组（10题）', value: 'codeact-2' }
   ]
 }
 
-function shortMethodLabel(record) {
-  return `${labelOf(collaborationModes, record.collaborationMode)} + ${retrievalLabel(record)}`
+function shortMethodLabel(record, index = 0, total = 1) {
+  const variant = recordVariantLabel(record)
+  const label = `${labelOf(collaborationModes, record.collaborationMode)}${variant ? ` ${variant}` : ''} + ${retrievalLabel(record)}`
+  return total > 1 ? `${label} #${index + 1}` : label
+}
+
+function recordVariantLabel(record) {
+  const sourceText = `${record?.source || ''} ${record?.sourceRecordId || ''} ${record?.recordId || ''}`
+  const rateMatch = sourceText.match(/llmlingua_text_([0-9.]+)_/i)
+  if (rateMatch) return `rate=${rateMatch[1]}`
+  const archiveText = String(record?.archiveId || record?.sourceRecordId || record?.recordId || '')
+  const archiveRateMatch = archiveText.match(/llmlingua_text_([0-9.]+)/i)
+  if (archiveRateMatch) return `rate=${archiveRateMatch[1]}`
+  return ''
 }
 
 function retrievalLabel(record) {
@@ -549,6 +730,10 @@ function retrievalLabel(record) {
 
 function toneForMode(mode) {
   return {
+    autogen: 'blue',
+    camel: 'purple',
+    autoform: 'cyan',
+    llmlingua: 'orange',
     plain: 'blue',
     structured: 'green',
     'protocol-vector': 'orange',
@@ -569,13 +754,26 @@ function colorForTone(tone) {
   }[tone] || '#1677ff'
 }
 
-function colorForRecord(record) {
-  return {
-    plain: '#1677ff',
-    structured: '#10a96b',
-    'protocol-vector': '#ff7a00',
-    latent: '#7651e8'
-  }[record?.collaborationMode] || colorForTone(toneForRecord(record))
+function colorForRecord(record, index = 0) {
+  const palette = [
+    '#1677ff',
+    '#7651e8',
+    '#10a96b',
+    '#ff7a00',
+    '#e5484d',
+    '#08979c',
+    '#9c27b0',
+    '#5c6bc0',
+    '#c2410c',
+    '#0f766e',
+    '#be185d',
+    '#7c3aed',
+    '#2563eb',
+    '#65a30d',
+    '#ca8a04',
+    '#475569'
+  ]
+  return palette[index % palette.length] || colorForTone(toneForRecord(record))
 }
 
 function percentText(value) {
@@ -612,6 +810,14 @@ function byteText(value) {
   const bytes = Number(value || 0)
   if (!bytes) return '--'
   return `${(bytes / 1024).toFixed(1)} KB`
+}
+
+function formatFileSize(value) {
+  const bytes = Number(value || 0)
+  if (!bytes) return '0 B'
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
 function secondsText(ms) {
@@ -698,14 +904,20 @@ function datasetKey(file) {
   const text = String(file || '')
   if (text.includes('topiocqa_1_10turns')) return 'topiocqa-1'
   if (text.includes('topiocqa_2_10turns')) return 'topiocqa-2'
-  if (text.includes('hotpot_continuous_tasks_3turn')) return 'hotpot-3'
   if (text.includes('codeact_1_10tasks')) return 'codeact-1'
+  if (text.includes('codeact_2_10tasks')) return 'codeact-2'
+  if (text === 'codeact_2_10tasks.json') return 'codeact-2'
   return text
 }
 
 function collaborationKey(mode) {
   return {
     baseline_text: 'plain',
+    autogen_text: 'autogen',
+    camel_text: 'camel',
+    autogen_camel_text: 'autogen',
+    autoform_text: 'autoform',
+    llmlingua_text: 'llmlingua',
     text: 'plain',
     protocol_api: 'structured',
     protocol: 'structured',

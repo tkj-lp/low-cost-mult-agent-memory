@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
 from datetime import datetime, timezone
 from typing import Any, Literal, TypedDict
@@ -17,6 +18,7 @@ from competition_agents.latent_hidden import (
 )
 from competition_agents.runtime_events import emit_message_event, emit_state_transfer_event
 from competition_agents.state_store import put_state_payload
+from baselines.llmlingua2 import compress_message
 
 
 class Metrics(TypedDict):
@@ -30,6 +32,11 @@ class Metrics(TypedDict):
     latent_bytes: int
     transfer_latency_ms: float
     state_generation_ms: float
+    raw_text_chars: int
+    compressed_text_chars: int
+    compression_latency_ms: float
+    generated_text_chars: int
+    transmitted_text_chars: int
 
 
 AGENT_CODES = {
@@ -126,6 +133,9 @@ def initial_state(
             "latent_bytes": 0,
             "transfer_latency_ms": 0.0,
             "state_generation_ms": 0.0,
+            "raw_text_chars": 0,
+            "compressed_text_chars": 0,
+            "compression_latency_ms": 0.0,
         },
     }
 
@@ -300,7 +310,38 @@ def record_message(
     """记录一条 Agent 间消息，并更新通信指标。"""
 
     started = time.perf_counter()
+    original_payload = payload
+    compression_info: dict[str, Any] = {}
+    text_comm_style = os.environ.get("TEXT_COMM_STYLE", "").strip().lower()
+    if (
+        state.get("mode") == "text"
+        and isinstance(payload, str)
+        and text_comm_style == "llmlingua2"
+    ):
+        compression = compress_message(
+            payload,
+            sender=sender,
+            receiver=receiver,
+            action=action,
+        )
+        payload = compression.payload
+        compression_info = {
+            "raw_text_chars": compression.raw_chars,
+            "compressed_text_chars": compression.compressed_chars,
+            "compression_latency_ms": compression.latency_ms,
+            "compression_provider": compression.provider,
+            "compression_ratio": compression.ratio,
+        }
+    elif state.get("mode") == "text" and isinstance(payload, str) and text_comm_style == "autoform":
+        compression_info = {
+            "communication_style": "autoform",
+            "generated_text_chars": len(payload),
+            "transmitted_text_chars": len(payload),
+            "transform_latency_ms": 0.0,
+        }
+
     # 结构化 payload 使用紧凑 JSON 统计传输大小。
+    serialized = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     serialized = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     protocol_bytes = len(serialized.encode("utf-8"))
     minimal_payload = minimal_wire_payload(state, sender=sender, receiver=receiver, action=action, payload=payload)
@@ -313,6 +354,15 @@ def record_message(
     next_metrics["protocol_bytes"] = next_metrics.get("protocol_bytes", 0) + protocol_bytes
     next_metrics["communication_bytes"] = next_metrics.get("communication_bytes", 0) + communication_bytes
     next_metrics["transfer_latency_ms"] += transfer_elapsed_ms
+    if state.get("mode") == "text" and isinstance(payload, str):
+        generated_chars = int(compression_info.get("raw_text_chars", len(serialized)))
+        transmitted_chars = int(compression_info.get("compressed_text_chars", len(serialized)))
+        next_metrics["generated_text_chars"] = next_metrics.get("generated_text_chars", 0) + generated_chars
+        next_metrics["transmitted_text_chars"] = next_metrics.get("transmitted_text_chars", 0) + transmitted_chars
+    if "raw_text_chars" in compression_info:
+        next_metrics["raw_text_chars"] = next_metrics.get("raw_text_chars", 0) + int(compression_info["raw_text_chars"])
+        next_metrics["compressed_text_chars"] = next_metrics.get("compressed_text_chars", 0) + int(compression_info["compressed_text_chars"])
+        next_metrics["compression_latency_ms"] = next_metrics.get("compression_latency_ms", 0.0) + float(compression_info["compression_latency_ms"])
 
     # 网页端可以把这条 message 画成通信图中的一条边。
     message = {
@@ -324,7 +374,10 @@ def record_message(
         "protocol_bytes": protocol_bytes,
         "communication_bytes": communication_bytes,
         "transfer_latency_ms": transfer_elapsed_ms,
+        **compression_info,
     }
+    if compression_info:
+        message["raw_payload"] = original_payload
     emit_message_event(
         state,
         sender=sender,
@@ -333,6 +386,7 @@ def record_message(
         payload=payload,
         char_cost=len(serialized),
         transfer_elapsed_ms=transfer_elapsed_ms,
+        extra=compression_info if compression_info else None,
     )
     return [*state["messages"], message], next_metrics
 

@@ -60,6 +60,7 @@ def emit_message_event(
     payload: str | dict[str, Any],
     char_cost: int,
     transfer_elapsed_ms: float,
+    extra: dict[str, Any] | None = None,
 ) -> None:
     """把已有 Agent 间消息复制成前端可消费的事件。"""
 
@@ -81,6 +82,7 @@ def emit_message_event(
             "text_chars": char_cost,
             "elapsed_ms": transfer_elapsed_ms,
             "payload": payload,
+            **(extra or {}),
         }
     )
 
