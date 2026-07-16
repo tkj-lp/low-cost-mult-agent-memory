@@ -26,7 +26,8 @@ def _direct_qa_summary(state: CompetitionState, execution_result: dict) -> str:
     if mode in {"llm", "model"}:
         return ""
     task_meta = state.get("task_meta", {})
-    if str(task_meta.get("dataset_type") or "") not in {"continuous", "multihop"}:
+    dataset_type = str(task_meta.get("dataset_type") or "")
+    if dataset_type not in {"continuous", "multihop", "codeact"}:
         return ""
     provider = (
         os.environ.get("LLM_SUMMARIZER_PROVIDER")
@@ -35,6 +36,11 @@ def _direct_qa_summary(state: CompetitionState, execution_result: dict) -> str:
     ).strip().lower()
     if mode not in {"direct", "deterministic"} and provider != "local_hf":
         return ""
+    if dataset_type == "codeact":
+        result = execution_result.get("result")
+        if result is not None:
+            return json.dumps(result, ensure_ascii=False, sort_keys=True)
+        return str(execution_result.get("sandbox_status") or "").strip()
     answer = str(execution_result.get("answer_candidate") or "").strip()
     return answer
 

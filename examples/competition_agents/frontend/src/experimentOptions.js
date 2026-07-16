@@ -40,7 +40,10 @@ export const backends = [
 
 export const localModels = [
   { label: 'Qwen2.5 0.5B Instruct', value: 'Qwen/Qwen2.5-0.5B-Instruct' },
-  { label: 'Qwen2.5 1.5B Instruct', value: 'Qwen/Qwen2.5-1.5B-Instruct' }
+  { label: 'Qwen2.5 1.5B Instruct', value: 'Qwen/Qwen2.5-1.5B-Instruct' },
+  { label: 'TinyLlama 1.1B Chat', value: 'TinyLlama/TinyLlama-1.1B-Chat-v1.0' },
+  { label: 'SmolLM2 1.7B Instruct', value: 'HuggingFaceTB/SmolLM2-1.7B-Instruct' },
+  { label: 'DeepSeek Coder 1.3B Instruct', value: 'deepseek-ai/deepseek-coder-1.3b-instruct' }
 ]
 
 export const collaborationModes = [

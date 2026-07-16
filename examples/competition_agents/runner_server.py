@@ -146,6 +146,13 @@ def build_env(config: dict[str, Any]) -> dict[str, str]:
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
     if config["backend"] == "local":
+        env.setdefault("TRANSFORMERS_OFFLINE", "1")
+        env.setdefault("HF_HUB_OFFLINE", "1")
+        env.setdefault("LOCAL_HIDDEN_LOCAL_FILES_ONLY", "1")
+        env.setdefault("LLM_PROVIDER", "local_hf")
+        env.setdefault("PLANNER_LLM_PROVIDER", "local_hf")
+        env.setdefault("REASONER_LLM_PROVIDER", "local_hf")
+        env.setdefault("SUMMARIZER_LLM_PROVIDER", "local_hf")
         env["LOCAL_HIDDEN_MODEL"] = config["localModel"]
     else:
         if config["baseUrl"]:
