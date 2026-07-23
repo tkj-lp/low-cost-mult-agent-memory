@@ -255,7 +255,7 @@ openEuler 环境可参考：
 
 ```text
 examples/competition_agents/setup_openeuler_env.sh
-examples/competition_agents/competition_docs/02_部署文档草稿.md
+examples/competition_agents/competition_docs/02_部署文档.md
 ```
 
 基本流程：
@@ -313,4 +313,3 @@ nvidia-smi -l 1
 ### 11.4 导入结果没有显示
 
 确认导入的是 `.json` 结果文件，并且页面当前选择的数据集与结果文件的数据集一致。例如 `frontend_baseline_text_codeact-2_fusion.json` 只会在 CodeAct 第 2 组下展示。
-
