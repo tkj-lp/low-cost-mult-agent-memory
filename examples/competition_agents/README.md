@@ -1,55 +1,10 @@
-# 多智能体比赛原型
+# competition_agents 子项目
 
-这个目录是比赛用的多智能体协作原型，当前重点验证三件事：
+本目录是多智能体低开销通信实验系统的主体实现，包含 Agent 角色、结构化通信协议、状态传递、共享记忆、对比方法、实验数据、前端控制台和运行后端。
 
-- 用结构化协议减少 Agent 之间的长文本通信。
-- 用 `state_ref` / `hidden_state_ref` 传递非文本中间状态。
-- 用共享记忆和超图检索支持跨任务复用。
+项目总说明请看根目录 [README.md](../../README.md)。
 
-当前代码都放在 `examples/competition_agents` 下，不修改 LangGraph 核心代码。
+运行手册请看根目录 [RUNBOOK.md](../../RUNBOOK.md)。
 
-## 文档导航
+正式交付文档请看 [competition_docs](./competition_docs)。
 
-这套文档现在按“入口 / 运行 / 前端 / 协议”分工：
-
-| 文档 | 作用 | 
-| --- | --- | 
-| `README.md` | 项目简介和文档导航 | 
-| `RUNBOOK.md` | 唯一运行手册：怎么配、怎么跑、怎么看结果 | 
-| `FRONTEND_CONTRACT.md` | 前端字段契约：读哪些字段、怎么解析 `run_result_json`、页面怎么展示 | 
-| `PROTOCOL_V0_2.md` | 协议结构、`state_ref`、`memory_ref`、`cognitive_gap` 定义 | 
-| `HYPERGRAPH_CONTRACT.md` | 超图记忆模块接口和对接口径 | 
-
-如果只想快速上手：
-
-1. 先看 `RUNBOOK.md`
-2. 需要接前端时再看 `FRONTEND_CONTRACT.md`
-3. 需要看协议字段来源时再看 `PROTOCOL_V0_2.md`
-
-## Agent 分工
-
-- `PlannerAgent`：拆解任务，生成执行计划。
-- `RetrieverAgent`：检索共享记忆和证据，并写入 latent state。当前检索采用“超图结构匹配 + embedding 相似度融合排序”。
-- `ReasonerAgent`：基于计划、证据和记忆命中结果生成候选答案。
-- `SummarizerAgent`：生成最终答案，并把结果沉淀为共享记忆。
-
-主流程是：
-
-```text
-PlannerAgent -> RetrieverAgent -> ReasonerAgent -> SummarizerAgent
-```
-
-如果本地 LangGraph 依赖不可用，代码会退回顺序运行器，保证 demo 可以先跑通。
-
-## 当前结论
-
-当前原型已经完成：
-
-- 多 Agent 原型流程
-- `baseline_text` / `protocol_api` / `protocol_api_embedding` / `latent_hidden` / `codeact_tools` 几类实验入口
-- 文本开销、latent 传递、记忆命中、耗时、`exact_match` 等指标统计
-- 连续任务上的共享记忆复用实验
-- Hidden latent 引用传递实验
-- 受限 Python CodeAct 执行实验
-
-具体命令、数据集组合、收益统计和输出字段，不再放在这里重复描述，统一看 `RUNBOOK.md` 和 `FRONTEND_CONTRACT.md`。
