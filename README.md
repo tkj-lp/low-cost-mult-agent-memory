@@ -22,7 +22,7 @@
 │   ├── agents/                        Planner、Retriever、Reasoner、Executor、Summarizer 等 Agent
 │   ├── baselines/                     LLMLingua-2、AutoForm 对比方法适配
 │   ├── competition_agents/            协议、记忆、状态、评测、本地模型模块
-│   ├── competition_docs/              设计文档、演示视频、部署文档、架构图等材料
+│   ├── competition_docs/              设计文档、实验报告、架构图等材料
 │   ├── data/                          TopiOCQA、CodeAct 实验数据
 │   ├── frontend/                      Vue + Vite 实验控制台
 │   ├── runner_server.py               前端运行后端
@@ -31,6 +31,7 @@
 │   └── start_local_runner.ps1         Windows 本地启动脚本
 ├── run_result/                        已保存的实验结果，按模型分目录
 ├── RUNBOOK.md                         运行手册
+├── 部署文档.md                        部署文档
 └── README.md                          项目总说明
 ```
 
@@ -136,16 +137,15 @@ http://localhost:5173/
 
 ## 交付文档
 
-正式交付材料集中在 `examples/competition_agents/competition_docs`：
+正式交付材料集中在仓库根目录和 `examples/competition_agents/competition_docs`：
 
 | 文件 | 内容 |
 | --- | --- |
 | `部署文档.md` | 正式部署文档，覆盖 openEuler/Linux 和 Windows 调试 |
 | `RUNBOOK.md` | 运行手册，覆盖模型准备、启动、运行、导入和排错 |
-| `项目设计文档.docx` | 包括设计方案、测试结果、创新 |
-| `optimized_multi_agent_architecture.drawio` | 当前正式系统架构图，可编辑 |
-| `optimized_multi_agent_architecture_white.png` | 当前正式系统架构图，白底图片 |
-| `演示视频.mp3` | 演示视频 |
+| `examples/competition_agents/competition_docs/项目设计文档.docx` | 正式项目设计文档 |
+| `examples/competition_agents/competition_docs/optimized_multi_agent_architecture.drawio` | 当前正式系统架构图，可编辑 |
+| `examples/competition_agents/competition_docs/optimized_multi_agent_architecture_white.png` | 当前正式系统架构图，白底图片 |
 
 ## 技术报告说明
 
