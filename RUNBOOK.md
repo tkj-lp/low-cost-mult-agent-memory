@@ -1,51 +1,100 @@
 # 多智能体低开销通信实验系统运行手册
 
-本文档是项目最终运行手册，覆盖环境准备、模型下载、前后端启动、实验运行、结果保存、结果导入和常见问题排查。
+本文档是项目最终运行手册，覆盖环境准备、模型下载、前后端启动、实验运行、结果保存、结果导入和常见问题排查。所有命令默认从仓库根目录执行，不依赖本机绝对路径。
 
 ## 1. 环境要求
 
-### 1.1 Python 环境
+### 1.1 openEuler/Linux 环境
 
-Windows 本地推荐使用已有虚拟环境：
+赛题指定交付环境为：
 
-```powershell
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe
+```text
+openEuler 24.03-LTS-SP3
+```
+
+推荐依赖：
+
+- Python 3.10 或 3.11。
+- Node.js 20 及以上。
+- npm。
+- Git。
+- 可选 NVIDIA GPU 与可用 CUDA 驱动。
+
+推荐使用项目脚本完成环境初始化：
+
+```bash
+bash examples/competition_agents/setup_openeuler_env.sh
+```
+
+脚本默认创建 Conda 环境 `competition-agents`。初始化完成后激活环境：
+
+```bash
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate competition-agents
 ```
 
 检查 Python、PyTorch、Transformers 和 CUDA：
 
-```powershell
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe -c "import sys, torch, transformers; print(sys.executable); print(torch.__version__); print(transformers.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)"
+```bash
+python -c "import sys, torch, transformers; print(sys.executable); print(torch.__version__); print(transformers.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)"
 ```
 
-重新安装依赖：
+### 1.2 Windows 本地调试环境
+
+Windows 环境用于本地调试和演示录制。推荐在仓库根目录创建虚拟环境：
 
 ```powershell
-cd D:\qq\low-cost-memory-integrate-codex
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe -m pip install -r examples\competition_agents\requirements.txt
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r examples\competition_agents\requirements.txt
 ```
 
-### 1.2 前端环境
+检查环境：
 
 ```powershell
-cd D:\qq\low-cost-memory-integrate-codex\examples\competition_agents\frontend
+python -c "import sys, torch, transformers; print(sys.executable); print(torch.__version__); print(transformers.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)"
+```
+
+### 1.3 前端依赖
+
+```bash
+cd examples/competition_agents/frontend
+npm install
+cd ../../..
+```
+
+Windows 下也可使用：
+
+```powershell
+cd examples\competition_agents\frontend
 npm.cmd install
+cd ..\..\..
 ```
 
 ## 2. 模型准备
 
-本项目通过 HuggingFace 缓存加载本地模型。建议先下载模型，再离线运行。
+本项目通过 HuggingFace 缓存加载本地模型。建议先下载模型，再离线运行，避免正式实验中触发网络请求。
 
-设置国内镜像：
+### 2.1 设置镜像
+
+Linux/openEuler：
+
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
+```
+
+Windows PowerShell：
 
 ```powershell
 $env:HF_ENDPOINT="https://hf-mirror.com"
 ```
 
-下载任务模型示例：
+### 2.2 下载任务模型
 
-```powershell
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='Qwen/Qwen2.5-0.5B-Instruct')"
+以 Qwen2.5 0.5B 为例：
+
+```bash
+python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='Qwen/Qwen2.5-0.5B-Instruct')"
 ```
 
 可选模型：
@@ -59,30 +108,86 @@ microsoft/Phi-3.5-mini-instruct
 deepseek-ai/deepseek-coder-1.3b-instruct
 ```
 
-下载 LLMLingua-2 官方压缩模型：
+下载其他模型时替换 `repo_id`。
+
+### 2.3 下载 LLMLingua-2 压缩模型
+
+运行 LLMLingua-2 对比方法时需要官方压缩模型：
+
+```bash
+python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank')"
+```
+
+说明：
+
+- 页面选择的本地模型仍是任务 LLM。
+- LLMLingua-2 模型只负责压缩 Agent 间传输文本。
+- 对比实验中应保证同一数据集、同一任务模型和同一检索配置。
+
+### 2.4 离线运行
+
+模型下载完成后，正式实验推荐离线运行。
+
+Linux/openEuler：
+
+```bash
+export TRANSFORMERS_OFFLINE=1
+export HF_HUB_OFFLINE=1
+export LOCAL_HIDDEN_LOCAL_FILES_ONLY=1
+```
+
+Windows PowerShell：
 
 ```powershell
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank')"
+$env:TRANSFORMERS_OFFLINE="1"
+$env:HF_HUB_OFFLINE="1"
+$env:LOCAL_HIDDEN_LOCAL_FILES_ONLY="1"
 ```
 
 ## 3. 启动系统
 
-### 3.1 清理旧后端
+### 3.1 openEuler/Linux 启动
 
-如果 8765 端口已有旧进程，先停止：
+启动后端：
+
+```bash
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate competition-agents
+python examples/competition_agents/runner_server.py
+```
+
+启动成功后应看到：
+
+```text
+runner server: http://127.0.0.1:8765
+```
+
+另开终端启动前端：
+
+```bash
+cd examples/competition_agents/frontend
+npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+浏览器访问：
+
+```text
+http://<服务器 IP>:5173/
+```
+
+### 3.2 Windows 本地启动
+
+清理旧后端：
 
 ```powershell
 Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue |
   ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
 ```
 
-### 3.2 启动后端
-
-推荐使用项目脚本启动。脚本会统一设置本地模型、离线加载、embedding、LLMLingua-2 等运行环境。
+启动后端：
 
 ```powershell
-cd D:\qq\low-cost-memory-integrate-codex
-D:\qq\low-cost-memory-integrate\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 powershell -ExecutionPolicy Bypass -File examples\competition_agents\start_local_runner.ps1 -UseOfficialLLMLingua2
 ```
 
@@ -92,36 +197,14 @@ powershell -ExecutionPolicy Bypass -File examples\competition_agents\start_local
 powershell -ExecutionPolicy Bypass -File examples\competition_agents\start_local_runner.ps1
 ```
 
-启动成功后应看到：
-
-```text
-runner server: http://127.0.0.1:8765
-```
-
-确认后端使用的是虚拟环境：
+启动前端：
 
 ```powershell
-Get-NetTCPConnection -LocalPort 8765 -State Listen |
-  ForEach-Object {
-    Get-CimInstance Win32_Process -Filter "ProcessId=$($_.OwningProcess)" |
-      Select-Object ProcessId,ExecutablePath,CommandLine
-  }
-```
-
-`ExecutablePath` 应指向：
-
-```text
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe
-```
-
-### 3.3 启动前端
-
-```powershell
-cd D:\qq\low-cost-memory-integrate-codex\examples\competition_agents\frontend
+cd examples\competition_agents\frontend
 npm.cmd run dev
 ```
 
-浏览器打开：
+浏览器访问：
 
 ```text
 http://localhost:5173/
@@ -215,33 +298,49 @@ frontend_llmlingua_text_0.75_topiocqa-1_fusion.json
 
 ## 9. 命令行运行
 
-不经过前端，也可以直接运行主实验入口：
+不经过前端，也可以直接运行主实验入口。
 
-```powershell
-cd D:\qq\low-cost-memory-integrate-codex
+TopiOCQA 示例：
 
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe examples\competition_agents\run_demo.py `
-  --experiment-mode baseline_text `
-  --llm-backend local `
-  --dataset-type continuous `
-  --dataset-file examples\competition_agents\data\topiocqa_1_10turns.json `
-  --limit 1 `
-  --context-source hypergraph `
-  --memory-retrieval-mode fusion `
-  --show-memory `
-  --show-latent `
+```bash
+python examples/competition_agents/run_demo.py \
+  --experiment-mode baseline_text \
+  --llm-backend local \
+  --dataset-type continuous \
+  --dataset-file examples/competition_agents/data/topiocqa_1_10turns.json \
+  --limit 10 \
+  --context-source hypergraph \
+  --memory-retrieval-mode fusion \
+  --show-memory \
+  --show-latent \
   --show-state
 ```
 
 CodeAct 示例：
 
+```bash
+python examples/competition_agents/run_demo.py \
+  --experiment-mode protocol_api \
+  --llm-backend local \
+  --dataset-type codeact \
+  --dataset-file examples/competition_agents/data/codeact_2_10tasks.json \
+  --limit 10 \
+  --context-source hypergraph \
+  --memory-retrieval-mode fusion \
+  --show-memory \
+  --show-latent \
+  --show-state
+```
+
+Windows PowerShell 下把反斜杠续行改成反引号即可：
+
 ```powershell
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe examples\competition_agents\run_demo.py `
-  --experiment-mode protocol_api `
+python examples\competition_agents\run_demo.py `
+  --experiment-mode baseline_text `
   --llm-backend local `
-  --dataset-type codeact `
-  --dataset-file examples\competition_agents\data\codeact_2_10tasks.json `
-  --limit 1 `
+  --dataset-type continuous `
+  --dataset-file examples\competition_agents\data\topiocqa_1_10turns.json `
+  --limit 10 `
   --context-source hypergraph `
   --memory-retrieval-mode fusion `
   --show-memory `
@@ -249,38 +348,17 @@ D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe examples\competition_ag
   --show-state
 ```
 
-## 10. openEuler 运行
+## 10. 运行验证
 
-openEuler 环境可参考：
+### 10.1 后端进程验证
 
-```text
-examples/competition_agents/setup_openeuler_env.sh
-examples/competition_agents/competition_docs/02_部署文档.md
-```
-
-基本流程：
+Linux/openEuler：
 
 ```bash
-cd ~/code/low-cost-mult-agent-memory
-python3 -m venv .venv-gpu
-source .venv-gpu/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r examples/competition_agents/requirements.txt
+ss -ltnp | grep 8765
 ```
 
-前端需要安装 Node.js 和 npm 后运行：
-
-```bash
-cd examples/competition_agents/frontend
-npm install
-npm run dev -- --host 0.0.0.0
-```
-
-## 11. 常见问题
-
-### 11.1 页面选择本地模型但仍请求网络
-
-检查后端启动环境是否正确：
+Windows：
 
 ```powershell
 Get-NetTCPConnection -LocalPort 8765 -State Listen |
@@ -290,25 +368,47 @@ Get-NetTCPConnection -LocalPort 8765 -State Listen |
   }
 ```
 
-如果显示 `D:\python3.11\python.exe`，说明旧后端或错误环境仍在运行。停止旧进程后重新用根目录脚本启动。
+### 10.2 GPU 验证
 
-### 11.2 GPU 没有占用
-
-先确认环境支持 CUDA：
-
-```powershell
-D:\qq\low-cost-memory-integrate\.venv\Scripts\python.exe -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)"
+```bash
+nvidia-smi -l 1
 ```
 
-运行过程中再观察：
+如果运行本地模型时 GPU 显存上升，说明模型已加载到 GPU。若显存无变化，需要检查后端环境、模型加载配置和旧进程占用情况。
+
+### 10.3 结果验证
+
+完成一轮 10 任务实验后，应检查：
+
+1. 页面任务进度达到 `10 / 10`。
+2. `run_result/<模型名称>/` 下生成对应 JSON 文件。
+3. 指标评估页可以显示文本字符数、单任务耗时、通信开销、记忆复用率、准确率等指标。
+4. 导入结果后，切换数据集时只显示对应数据集的结果。
+
+## 11. 常见问题
+
+### 11.1 页面选择本地模型但仍请求网络
+
+原因通常是模型或 LLMLingua-2 压缩模型没有提前下载，或后端没有以离线模式启动。处理方式是先下载模型，再设置离线变量并重启后端。
+
+### 11.2 端口 8765 被旧后端占用
+
+Linux/openEuler：
+
+```bash
+pkill -f "examples/competition_agents/runner_server.py" || true
+```
+
+Windows：
 
 ```powershell
-nvidia-smi -l 1
+Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue |
+  ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
 ```
 
 ### 11.3 LLMLingua-2 启动慢
 
-第一次使用官方 LLMLingua-2 压缩模型时会加载 `microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank`。如果模型未提前下载，会触发网络请求。正式实验建议提前下载并用脚本离线启动。
+第一次使用官方 LLMLingua-2 压缩模型时会加载 `microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank`。如果模型未提前下载，会触发网络请求。正式实验建议提前下载并离线启动。
 
 ### 11.4 导入结果没有显示
 
