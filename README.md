@@ -10,7 +10,7 @@
 - CodeAct 工具任务链路：由 `Reasoner` 触发 `Executor`，执行受限 Python 代码并返回结构化结果。
 - 结构化协议通信：使用 `action / params / result / state_refs / memory_refs / meta` 表示 Agent 间消息。
 - 非文本状态传递：支持 embedding 状态、hidden state、`state_ref` 和非文本状态规模统计。
-- 共享记忆复用：支持 evidence memory、experience memory、历史摘要、任务结论和超图关联关系。
+- 共享记忆复用：采用双超图设计，分为上下文超图、记忆超图，记忆超图支持 evidence memory、experience memory、历史摘要、任务结论和超图关联关系。
 - 对比方法适配：支持纯文本、LLMLingua-2、AutoForm、结构化协议、协议 + 向量、隐状态传递等实验模式。
 - 前端展示：支持实验运行、协作链路查看、记忆复用查看、指标评估、结果文件导入和多模型结果对比。
 
@@ -102,7 +102,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
 http://<服务器 IP>:5173/
 ```
 
-完整部署流程见 [部署文档.md](./部署文档.md)，完整运行说明见 [RUNBOOK.md](./RUNBOOK.md)。
+完整部署流程见 [部署文档.md](./examples/competition_agents/competition_docs/部署文档.md)，完整运行说明见 [RUNBOOK.md](./RUNBOOK.md)。
 
 ## Windows 本地调试
 
@@ -147,6 +147,3 @@ http://localhost:5173/
 | `optimized_multi_agent_architecture_white.png` | 当前正式系统架构图，白底图片 |
 | `演示视频.mp3` | 演示视频 |
 
-## 技术报告说明
-
-比赛要求的技术报告应覆盖作品链接、设计方案、实现方案、运行效果/测试结果、演示视频和特色创新。`项目设计文档.docx` 可以作为设计方案和实现方案的正式基础，但完整技术报告还需要合并实验结果、运行截图、作品链接、演示视频链接和创新点说明。
