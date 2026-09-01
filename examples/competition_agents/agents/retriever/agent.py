@@ -7,7 +7,7 @@ import time
 from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
-from competition_agents.runtime_events import emit_memory_retrieval_events
+from competition_agents.runtime_events import emit_knowledge_retrieval_events, emit_memory_retrieval_events
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
 from hypergraph_memory_method import search_context
 
@@ -241,6 +241,27 @@ def _build_experience_query(task: str, plan: list[str], question: str, task_meta
     return retrieval_query + hint
 
 
+def _augment_knowledge_query(base_query: str, memory_context: list[dict], retrieval_policy: dict) -> str:
+    """Use Planner-approved memory hits as compact hints for the later knowledge lookup."""
+
+    if not memory_context:
+        return base_query
+    memory_lines = []
+    for item in memory_context[:4]:
+        parts = [
+            str(item.get("memory_id") or ""),
+            str(item.get("summary") or ""),
+            " ".join(str(value) for value in item.get("trigger_conditions", []) or []),
+        ]
+        memory_lines.append(" | ".join(part for part in parts if part))
+    sections = [
+        base_query,
+        "Planner retrieval policy: " + str(retrieval_policy.get("reason", "")),
+        "Reusable memory hints:\n" + "\n".join(f"- {line}" for line in memory_lines if line),
+    ]
+    return "\n".join(section for section in sections if section.strip())
+
+
 def _experience_match_score(question: str, hit: dict) -> float:
     family = _experience_family(question)
     combined = " ".join(
@@ -427,11 +448,12 @@ def _extract_hypergraph_context(
     task_meta: dict,
     planner_focus: list[str],
     *,
+    query: str | None = None,
     limit: int = 4,
 ) -> tuple[list[str], list[dict]]:
     """从上下文超图中取回证据，并压成与旧逻辑兼容的 evidence 形式。"""
 
-    question = str(task_meta.get("question") or "")
+    question = str(query or task_meta.get("question") or "")
     dataset_type = task_meta.get("dataset_type")
     if task_meta.get("supporting_passage") or task_meta.get("conversation_context"):
         dataset_type = "topiocqa"
@@ -578,33 +600,60 @@ def retriever_agent(state: CompetitionState) -> dict:
     else:
         retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []), task_meta)
     question = str(task_meta.get("question") or state["task"])
+    retrieval_policy = state.get("retrieval_policy") or {
+        "need_memory": bool(state.get("memory")),
+        "need_knowledge": True,
+        "memory_first": True,
+        "reason": "fallback_policy",
+        "signals": {"memory_available": bool(state.get("memory"))},
+    }
     experience_query = _build_experience_query(state["task"], state.get("plan", []), question, task_meta)
     context_source = str(task_meta.get("context_source") or "inline")
     context_hits: list[dict] = []
-    context_started = time.perf_counter()
-    if context_source == "hypergraph":
-        retrieved_context_evidence, context_hits = _extract_hypergraph_context(task_meta, planner_focus)
-    else:
-        retrieved_context_evidence = _extract_context_evidence(task_meta, planner_focus)
-    context_elapsed_ms = (time.perf_counter() - context_started) * 1000
-
-    # 把 Planner 的显式计划并入 query，让检索不再只依赖原始任务文本。
     evidence_top_k = _memory_top_k(task_meta, base=2, limit=6)
     memory_started = time.perf_counter()
-    evidence_hits = search_memory(state["memory"], retrieval_query, top_k=evidence_top_k, memory_types=["evidence"])
-    raw_experience_hits = search_memory(state["memory"], experience_query, top_k=2, memory_types=["experience"])
-    experience_hits = _rerank_experience_hits(question, raw_experience_hits, top_k=2)
+    if retrieval_policy.get("need_memory"):
+        evidence_hits = search_memory(state["memory"], retrieval_query, top_k=evidence_top_k, memory_types=["evidence"])
+        raw_experience_hits = search_memory(state["memory"], experience_query, top_k=2, memory_types=["experience"])
+        experience_hits = _rerank_experience_hits(question, raw_experience_hits, top_k=2)
+        memory_query_count = 2
+    else:
+        evidence_hits = []
+        raw_experience_hits = []
+        experience_hits = []
+        memory_query_count = 0
     memory_elapsed_ms = (time.perf_counter() - memory_started) * 1000
     combined_hits = evidence_hits + [
         hit for hit in experience_hits if hit.get("memory_id") not in {item.get("memory_id") for item in evidence_hits}
     ]
     hits = combined_hits[: max(4, evidence_top_k)]
-    emit_memory_retrieval_events(state, query=retrieval_query, hits=hits)
+    if retrieval_policy.get("need_memory"):
+        emit_memory_retrieval_events(state, query=retrieval_query, hits=hits)
     memory_context = _compact_memory_context(hits)
     experience_rules = _build_experience_rules(experience_hits)
+    knowledge_query = _augment_knowledge_query(retrieval_query, memory_context, retrieval_policy)
+    context_started = time.perf_counter()
+    if not retrieval_policy.get("need_knowledge", True):
+        retrieved_context_evidence = []
+        knowledge_query_count = 0
+    elif context_source == "hypergraph":
+        retrieved_context_evidence, context_hits = _extract_hypergraph_context(task_meta, planner_focus, query=knowledge_query)
+        emit_knowledge_retrieval_events(state, query=knowledge_query, hits=context_hits)
+        knowledge_query_count = 1
+    else:
+        retrieved_context_evidence = _extract_context_evidence(task_meta, planner_focus)
+        knowledge_query_count = 1
+    context_elapsed_ms = (time.perf_counter() - context_started) * 1000
+
+    # 把 Planner 的显式计划并入 query，让检索不再只依赖原始任务文本。
+    evidence_top_k = _memory_top_k(task_meta, base=2, limit=6)
     evidence = [
         *retrieved_context_evidence,
-        "Current memory retrieval uses hypergraph structural matching plus embedding similarity fusion ranking.",
+        (
+            "Planner-approved memory retrieval used hypergraph structural matching plus embedding similarity fusion ranking."
+            if retrieval_policy.get("need_memory")
+            else "Planner skipped memory retrieval and used knowledge retrieval only."
+        ),
         *_task_specific_evidence(state["task"]),
     ]
     cognitive_gap = make_cognitive_gap(
@@ -677,6 +726,7 @@ def retriever_agent(state: CompetitionState) -> dict:
                 "hits": len(hits),
                 "evidence_hits": len(evidence_hits),
                 "experience_hits": len(experience_hits),
+                "memory_gate": bool(retrieval_policy.get("need_memory")),
             },
             state_refs=[latent_ref],
             memory_refs=[hit["memory_id"] for hit in hits],
@@ -697,6 +747,8 @@ def retriever_agent(state: CompetitionState) -> dict:
     metrics = dict(metrics)
     metrics["retriever_context_ms"] = metrics.get("retriever_context_ms", 0.0) + context_elapsed_ms
     metrics["retriever_memory_ms"] = metrics.get("retriever_memory_ms", 0.0) + memory_elapsed_ms
+    metrics["memory_query_count"] = metrics.get("memory_query_count", 0) + memory_query_count
+    metrics["knowledge_query_count"] = metrics.get("knowledge_query_count", 0) + knowledge_query_count
     return {
         "evidence": evidence,
         "memory_hits": hits,
@@ -713,6 +765,8 @@ def retriever_agent(state: CompetitionState) -> dict:
                 "agent": "RetrieverAgent",
                 "retrieval_query": retrieval_query,
                 "experience_query": experience_query,
+                "knowledge_query": knowledge_query,
+                "retrieval_policy": retrieval_policy,
                 "planner_focus": planner_focus,
                 "expected_reuse": _reuse_specs(task_meta),
                 "context_source": context_source,

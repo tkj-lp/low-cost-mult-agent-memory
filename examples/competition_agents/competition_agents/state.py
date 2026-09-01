@@ -37,6 +37,11 @@ class Metrics(TypedDict):
     compression_latency_ms: float
     generated_text_chars: int
     transmitted_text_chars: int
+    memory_gate_count: int
+    memory_gate_skip_count: int
+    memory_query_count: int
+    knowledge_query_count: int
+    planner_memory_decision_ms: float
 
 
 AGENT_CODES = {
@@ -68,6 +73,7 @@ class CompetitionState(TypedDict):
     task_meta: dict[str, Any]
     mode: Literal["text", "protocol", "hidden"]
     plan: list[str]
+    retrieval_policy: dict[str, Any]
     evidence: list[str]
     execution_result: dict[str, Any]
     final_answer: str
@@ -104,6 +110,7 @@ def initial_state(
         "task_meta": task_meta or {},
         "mode": mode,
         "plan": [],
+        "retrieval_policy": {},
         "evidence": [],
         "execution_result": {},
         "final_answer": "",
@@ -136,6 +143,13 @@ def initial_state(
             "raw_text_chars": 0,
             "compressed_text_chars": 0,
             "compression_latency_ms": 0.0,
+            "generated_text_chars": 0,
+            "transmitted_text_chars": 0,
+            "memory_gate_count": 0,
+            "memory_gate_skip_count": 0,
+            "memory_query_count": 0,
+            "knowledge_query_count": 0,
+            "planner_memory_decision_ms": 0.0,
         },
     }
 

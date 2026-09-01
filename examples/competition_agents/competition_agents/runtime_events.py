@@ -182,6 +182,60 @@ def emit_memory_hit_event(base: dict[str, Any], hit: dict[str, Any]) -> None:
     )
 
 
+def emit_knowledge_retrieval_events(
+    state: dict[str, Any],
+    *,
+    query: str,
+    hits: list[dict[str, Any]],
+) -> None:
+    """Record knowledge-hypergraph lookup events for the collaboration timeline."""
+
+    if not hits:
+        return
+    task_meta = _task_meta(state)
+    base = _base_context(state, task_meta)
+    context_refs = [hit.get("context_id") for hit in hits if hit.get("context_id")]
+    emit_runtime_event(
+        {
+            **base,
+            "event_type": "knowledge_query",
+            "from_agent": "retriever",
+            "to_agent": "knowledge",
+            "action_type": "query_knowledge",
+            "input_params": {"query": query[:500], "top_k": len(hits)},
+            "return_result": {"hit_count": len(context_refs)},
+            "state_refs": [],
+            "memory_refs": [],
+            "text_chars": 0,
+            "elapsed_ms": 0,
+        }
+    )
+    for hit in hits:
+        emit_runtime_event(
+            {
+                **base,
+                "event_type": "knowledge_hit",
+                "from_agent": "knowledge",
+                "to_agent": "retriever",
+                "action_type": "return_knowledge",
+                "state_refs": [],
+                "memory_refs": [],
+                "text_chars": 0,
+                "elapsed_ms": 0,
+                "return_result": {
+                    "context_id": hit.get("context_id"),
+                    "title": hit.get("title"),
+                    "section": hit.get("section"),
+                    "summary": hit.get("text") or hit.get("summary"),
+                    "context_score": hit.get("context_score") or hit.get("retrieval_score") or hit.get("score"),
+                    "kind": hit.get("kind"),
+                    "matched_nodes": hit.get("matched_nodes"),
+                    "reasoning_path": hit.get("reasoning_path"),
+                },
+            }
+        )
+
+
 def emit_task_result_events(
     *,
     mode: str,

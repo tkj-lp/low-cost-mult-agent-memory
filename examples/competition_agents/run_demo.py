@@ -648,6 +648,7 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
                 "structured": {
                     "plan": result.get("plan", []),
                     "raw_output": planner_raw,
+                    "retrieval_policy": result.get("retrieval_policy", {}),
                 },
                 "state_ref": state_refs.get("plan"),
                 "state_display": _state_display(latent_states, state_refs.get("plan", "")),
@@ -677,6 +678,7 @@ def _build_agent_views(task_item: dict[str, Any], result: dict[str, Any]) -> dic
                     "context_hit_ids": retriever_output.get("context_hit_ids", []),
                     "context_hits": retriever_output.get("context_hits", []),
                     "memory_hit_ids": retriever_output.get("memory_hit_ids", []),
+                    "retrieval_policy": retriever_output.get("retrieval_policy", result.get("retrieval_policy", {})),
                     "evidence_hits": retriever_output.get("evidence_hits", []),
                     "experience_hit_ids": retriever_output.get("experience_hit_ids", []),
                     "experience_hits": retriever_output.get("experience_hits", []),
@@ -1174,6 +1176,11 @@ def run_mode(
         "experience_hit_count": 0,
         "experience_used_count": 0,
         "reuse_success_count": 0,
+        "memory_gate_count": 0,
+        "memory_gate_skip_count": 0,
+        "memory_query_count": 0,
+        "knowledge_query_count": 0,
+        "planner_memory_decision_ms": 0.0,
     }
 
     print(f"\n=== {mode} mode ===")
@@ -1379,6 +1386,9 @@ def run_mode(
             f"transfer_latency_ms={metrics['transfer_latency_ms']:.2f}, "
             f"memory_hits={memory_hits}, "
             f"experience_hits={len(result.get('experience_hits', []))}, "
+            f"memory_gate_skip={metrics.get('memory_gate_skip_count', 0)}, "
+            f"memory_queries={metrics.get('memory_query_count', 0)}, "
+            f"knowledge_queries={metrics.get('knowledge_query_count', 0)}, "
             f"elapsed_ms={elapsed * 1000:.2f}"
         )
         if show_agents:
@@ -1418,6 +1428,9 @@ def run_mode(
         f"memory_hits={total_memory_hits}, "
         f"experience_hits={total_metrics['experience_hit_count']}, "
         f"experience_used={total_metrics['experience_used_count']}, "
+        f"memory_gate_skips={total_metrics['memory_gate_skip_count']}, "
+        f"memory_queries={total_metrics['memory_query_count']}, "
+        f"knowledge_queries={total_metrics['knowledge_query_count']}, "
         f"memory_writes={total_metrics['memory_write_count']}, "
         f"memory_hit_rate={memory_hit_rate:.2f}, "
         f"elapsed_ms={total_elapsed * 1000:.2f}"

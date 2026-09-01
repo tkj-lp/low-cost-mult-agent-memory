@@ -1,5 +1,20 @@
 <template>
   <section class="page collab-page">
+    <section class="monitor-result-bar" :class="{ locked: monitorSelectionLocked }">
+      <div class="monitor-result-title">
+        <strong>{{ monitorSelectionLocked ? '实时运行中' : '结果展示' }}</strong>
+        <span>{{ monitorSelectionStatus }}</span>
+      </div>
+      <MetricsFilterBar
+        class="monitor-shared-filter"
+        :class="{ locked: monitorSelectionLocked }"
+        :model-value="monitorFilters"
+        :baseline-options="monitorBaselineOptions"
+        @update:model-value="updateMonitorFilters"
+        @refresh="refreshMonitorRecords"
+      />
+    </section>
+
     <div class="collab-summary compact-summary">
       <article v-for="item in summary" :key="item.label" class="collab-summary-card">
         <span :class="item.tone">{{ item.icon }}</span>
@@ -250,6 +265,8 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
+  collaborationModes,
+  datasets,
   defaultExperimentConfig,
   labelOf,
   memoryModes,
@@ -257,10 +274,14 @@ import {
   retrievalOptionsFor,
   selectedCollaboration
 } from '../experimentOptions'
+import MetricsFilterBar from '../components/metrics/MetricsFilterBar.vue'
 
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
+const FILTER_SYNC_EVENT = 'competition-agent-filter-sync'
 const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
 const RUNNER_RESULT_URL = 'http://127.0.0.1:8765/api/runner/result'
+const RUNNER_STATUS_URL = 'http://127.0.0.1:8765/api/runner/status'
+const RUNNER_METRICS_URL = 'http://127.0.0.1:8765/api/runner/metrics'
 
 const props = defineProps({
   importedPayloads: {
@@ -277,6 +298,11 @@ const tick = ref(0)
 const savedConfig = ref(readSavedConfig())
 const runtimeEvents = ref([])
 const latestRunResult = ref(null)
+const runnerRunning = ref(false)
+const monitorRecords = ref([])
+const selectedMonitorRecordId = ref('')
+const monitorLoadError = ref('')
+const monitorFilters = ref(withFilterDefaults(readSavedConfig()))
 let timer = null
 let eventTimer = null
 
@@ -289,12 +315,46 @@ const config = computed(() => normalizeExperimentConfig(savedConfig.value))
 const collaboration = computed(() => selectedCollaboration(config.value))
 const memoryLabel = computed(() => labelOf(memoryModes, config.value.memoryMode))
 const retrievalLabel = computed(() => labelOf(retrievalOptionsFor(config.value.memoryMode), config.value.retrievalMode))
-const importedRunPayload = computed(() => importedPayloadForCurrentConfig(props.importedPayloads, config.value))
-const effectiveRunResult = computed(() => importedRunPayload.value ?? latestRunResult.value)
+const monitorSelectionLocked = computed(() => runnerRunning.value)
+const selectedMonitorRecord = computed(() =>
+  monitorRecords.value.find((record) => record.recordId === selectedMonitorRecordId.value) ?? null
+)
+const importedRunPayload = computed(() => importedPayloadForCurrentConfig(props.importedPayloads, monitorFilters.value))
+const selectedArchivePayload = computed(() => importedRunPayload.value ?? selectedMonitorRecord.value?.payload ?? null)
+const effectiveRunResult = computed(() =>
+  monitorSelectionLocked.value ? latestRunResult.value : selectedArchivePayload.value ?? latestRunResult.value
+)
 const effectiveRuntimeEvents = computed(() =>
-  importedRunPayload.value ? eventsFromImportedPayload(importedRunPayload.value) : runtimeEvents.value
+  monitorSelectionLocked.value
+    ? runtimeEvents.value
+    : selectedArchivePayload.value
+      ? eventsFromImportedPayload(selectedArchivePayload.value)
+      : runtimeEvents.value
 )
 const hasRuntimeEvents = computed(() => effectiveRuntimeEvents.value.length > 0 || Boolean(latestPrimaryRun(effectiveRunResult.value)))
+const monitorRecordOptions = computed(() =>
+  monitorRecords.value
+    .filter((record) =>
+      record.dataset === monitorFilters.value.dataset &&
+      record.collaborationMode === monitorFilters.value.collaborationMode &&
+      record.memoryMode === monitorFilters.value.memoryMode &&
+      record.retrievalMode === monitorFilters.value.retrievalMode
+    )
+    .map((record) => ({ label: monitorRecordLabel(record), value: record.recordId }))
+)
+const monitorBaselineOptions = computed(() =>
+  monitorRecords.value.map((record) => ({
+    label: monitorRecordLabel(record),
+    value: record.recordId
+  }))
+)
+const monitorSelectionStatus = computed(() => {
+  if (monitorSelectionLocked.value) return '运行时锁定为实时协作链路，暂停手动切换展示结果。'
+  if (monitorLoadError.value) return monitorLoadError.value
+  if (selectedMonitorRecord.value) return `当前展示：${monitorRecordLabel(selectedMonitorRecord.value)}`
+  if (selectedArchivePayload.value) return '当前展示导入或最近的历史结果。'
+  return '未选择历史结果时展示最近一次运行快照。'
+})
 const runMeta = computed(() => effectiveRuntimeEvents.value.find((event) => event.event_type === 'run_start') ?? {})
 const taskQueue = computed(() => {
   const queue = effectiveRuntimeEvents.value.find((event) => event.event_type === 'task_queue')
@@ -344,8 +404,10 @@ watch(tasks, (nextTasks) => {
 
 onMounted(() => {
   refreshSavedConfig()
+  refreshMonitorRecords()
   refreshRuntimeSnapshot()
   window.addEventListener('storage', refreshSavedConfig)
+  window.addEventListener(FILTER_SYNC_EVENT, refreshSavedConfig)
   timer = window.setInterval(() => {
     tick.value += 1
   }, 900)
@@ -354,6 +416,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('storage', refreshSavedConfig)
+  window.removeEventListener(FILTER_SYNC_EVENT, refreshSavedConfig)
   if (timer) window.clearInterval(timer)
   if (eventTimer) window.clearInterval(eventTimer)
 })
@@ -382,11 +445,131 @@ function readSavedConfig() {
 
 function refreshSavedConfig() {
   savedConfig.value = readSavedConfig()
+  if (!monitorSelectionLocked.value) {
+    monitorFilters.value = withFilterDefaults(savedConfig.value)
+    selectedMonitorRecordId.value = monitorFilters.value.baselineRecordId || ''
+    syncSelectedMonitorRecord()
+  }
+}
+
+function withFilterDefaults(value) {
+  return {
+    ...normalizeExperimentConfig({ ...defaultExperimentConfig(), ...value }),
+    baselineMode: value?.baselineMode ?? 'none',
+    baselineRecordId: value?.baselineRecordId ?? ''
+  }
+}
+
+function updateMonitorFilters(nextFilters) {
+  if (monitorSelectionLocked.value) return
+  const normalized = normalizeExperimentConfig({
+    ...defaultExperimentConfig(),
+    ...monitorFilters.value,
+    ...nextFilters
+  })
+  monitorFilters.value = {
+    ...normalized,
+    baselineMode: nextFilters.baselineMode ?? monitorFilters.value.baselineMode ?? 'none',
+    baselineRecordId: nextFilters.baselineRecordId ?? monitorFilters.value.baselineRecordId ?? ''
+  }
+  if (monitorFilters.value.baselineMode !== 'compare') {
+    monitorFilters.value.baselineRecordId = ''
+  }
+  persistSharedFilters(monitorFilters.value)
+  selectedMonitorRecordId.value = monitorFilters.value.baselineRecordId || ''
+  syncSelectedMonitorRecord()
+}
+
+function persistSharedFilters(value) {
+  try {
+    window.localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(value))
+    window.dispatchEvent(new CustomEvent(FILTER_SYNC_EVENT))
+  } catch {
+    // Ignore storage errors; the page-local selection still updates.
+  }
 }
 
 async function refreshRuntimeSnapshot() {
-  if (importedRunPayload.value) return
+  await refreshRunnerStatus()
   await Promise.all([refreshRuntimeEvents(), refreshRunResult()])
+}
+
+async function refreshRunnerStatus() {
+  try {
+    const response = await fetch(`${RUNNER_STATUS_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) {
+      runnerRunning.value = false
+      return
+    }
+    const payload = await response.json()
+    runnerRunning.value = Boolean(payload.running || payload.status === 'running')
+  } catch {
+    runnerRunning.value = false
+  }
+}
+
+async function refreshMonitorRecords() {
+  if (monitorSelectionLocked.value) return
+  try {
+    const response = await fetch(`${RUNNER_METRICS_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) throw new Error('历史结果服务未返回有效数据')
+    const payload = await response.json()
+    monitorRecords.value = normalizeMonitorRecords(Array.isArray(payload.records) ? payload.records : [])
+    monitorLoadError.value = monitorRecords.value.length ? '' : '暂无历史结果，请先完成一次运行。'
+    syncSelectedMonitorRecord()
+  } catch {
+    monitorRecords.value = []
+    monitorLoadError.value = '暂无历史结果，请先启动本地运行服务或完成一次运行。'
+    syncSelectedMonitorRecord()
+  }
+}
+
+function normalizeMonitorRecords(records) {
+  return records
+    .filter((record) => record?.payload)
+    .map((record, index) => ({
+      ...record,
+      recordId: String(record.recordId || `${record.source || 'record'}-${index}`),
+      dataset: datasetKey(record.dataset || record.payload?.dataset_file || record.source || '')
+    }))
+}
+
+function syncSelectedMonitorRecord() {
+  const options = monitorRecordOptions.value
+  if (!options.length) {
+    selectedMonitorRecordId.value = ''
+    return
+  }
+  if (!options.some((option) => option.value === selectedMonitorRecordId.value)) {
+    selectedMonitorRecordId.value = options[0].value
+  }
+  monitorFilters.value = {
+    ...monitorFilters.value,
+    baselineRecordId: selectedMonitorRecordId.value
+  }
+}
+
+function applySelectedMonitorRecord() {
+  const record = selectedMonitorRecord.value
+  if (!record) return
+  monitorFilters.value = normalizeExperimentConfig({
+    ...monitorFilters.value,
+    dataset: record.dataset,
+    collaborationMode: record.collaborationMode,
+    memoryMode: record.memoryMode,
+    retrievalMode: record.retrievalMode
+  })
+}
+
+function updateMonitorMemoryMode() {
+  const options = retrievalOptionsFor(monitorFilters.value.memoryMode)
+  if (!options.some((item) => item.value === monitorFilters.value.retrievalMode)) {
+    monitorFilters.value = {
+      ...monitorFilters.value,
+      retrievalMode: options[0]?.value || monitorFilters.value.retrievalMode
+    }
+  }
+  syncSelectedMonitorRecord()
 }
 
 async function refreshRuntimeEvents() {
@@ -425,7 +608,7 @@ function latestPrimaryRun(payload) {
 function importedPayloadForCurrentConfig(items, currentConfig) {
   const payloads = Array.isArray(items) ? items.map((item) => item?.payload).filter(Boolean) : []
   if (!payloads.length) return null
-  return payloads.find((payload) => datasetKey(payload?.dataset_file || latestPrimaryRun(payload)?.dataset_file) === currentConfig.dataset) ?? payloads[0]
+  return payloads.find((payload) => payloadMatchesCurrentConfig(payload, currentConfig)) ?? null
 }
 
 function datasetKey(file) {
@@ -435,6 +618,60 @@ function datasetKey(file) {
   if (text.includes('codeact_1_10tasks')) return 'codeact-1'
   if (text.includes('codeact_2_10tasks')) return 'codeact-2'
   return text
+}
+
+function payloadMatchesCurrentConfig(payload, currentConfig) {
+  const run = latestPrimaryRun(payload) || {}
+  const mode = payload?.experiment_mode || run.experiment_mode || run.mode
+  const memory = payload?.memory_organization || run.memory_organization || payload?.memory_retrieval_mode || run.memory_retrieval_mode
+  const retrieval = payload?.memory_retrieval_mode || run.memory_retrieval_mode
+  return (
+    datasetKey(payload?.dataset_file || run.dataset_file) === currentConfig.dataset &&
+    collaborationKey(mode) === currentConfig.collaborationMode &&
+    memoryKey(memory) === currentConfig.memoryMode &&
+    String(retrieval || '') === currentConfig.retrievalMode
+  )
+}
+
+function collaborationKey(mode) {
+  return {
+    baseline_text: 'plain',
+    autogen_text: 'autogen',
+    camel_text: 'camel',
+    autogen_camel_text: 'autogen',
+    autoform_text: 'autoform',
+    llmlingua_text: 'llmlingua',
+    text: 'plain',
+    protocol_api: 'structured',
+    protocol: 'structured',
+    protocol_api_embedding: 'protocol-vector',
+    hidden_api: 'latent',
+    hidden: 'latent',
+    latent_hidden: 'latent'
+  }[String(mode || '').toLowerCase()] || 'plain'
+}
+
+function memoryKey(value) {
+  return ['hypergraph', 'fusion'].includes(String(value || '').toLowerCase()) ? 'hypergraph' : 'text'
+}
+
+function monitorRecordLabel(record) {
+  const dataset = labelOf(datasets, record.dataset, record.dataset || '-')
+  const collaboration = labelOf(collaborationModes, record.collaborationMode, record.collaborationMode || '-')
+  const memory = labelOf(memoryModes, record.memoryMode, record.memoryMode || '-')
+  const retrieval = labelOf(retrievalOptionsFor(record.memoryMode), record.retrievalMode, record.retrievalMode || '-')
+  const time = record.archivedAt ? formatArchiveTime(record.archivedAt) : record.source || 'latest'
+  return `${dataset} / ${collaboration} / ${memory} / ${retrieval} / ${time}`
+}
+
+function formatArchiveTime(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  return `${month}-${day} ${hour}:${minute}`
 }
 
 function eventsFromImportedPayload(payload) {
@@ -470,6 +707,9 @@ function eventsFromImportedPayload(payload) {
     const metrics = task.metrics || {}
     const memoryRefs = normalizeList(task.memory_refs || task.memory_hit_ids || task.memory_ids)
     const stateRefs = normalizeList(task.state_refs)
+    const memoryHits = importedMemoryHits(task)
+    const contextHits = importedContextHits(task)
+    const retrievalPolicy = importedRetrievalPolicy(task, memoryHits)
     events.push({
       event_type: 'task_start',
       timestamp,
@@ -493,8 +733,15 @@ function eventsFromImportedPayload(payload) {
       state_refs: stateRefs,
       text_chars: Number(metrics.text_chars || 0),
       payload_summary: task.agent_views?.planner?.display_text || task.question || taskTitle,
-      return_result: { summary: task.agent_views?.planner?.display_text || '' }
+      return_result: {
+        summary: task.agent_views?.planner?.display_text || '',
+        retrieval_policy: retrievalPolicy
+      }
     })
+    if (retrievalPolicy.need_memory) {
+      pushImportedMemoryEvents(events, { timestamp, taskIndex, taskId, taskTitle, stateRefs, memoryRefs, memoryHits, task })
+    }
+    pushImportedKnowledgeEvents(events, { timestamp, taskIndex, taskId, taskTitle, stateRefs, contextHits, task })
     events.push({
       event_type: 'agent_message',
       timestamp,
@@ -508,9 +755,15 @@ function eventsFromImportedPayload(payload) {
       state_refs: stateRefs,
       text_chars: Number(metrics.text_chars || 0),
       payload_summary: task.agent_views?.retriever?.display_text || task.memory_context || '',
-      return_result: { summary: task.agent_views?.retriever?.display_text || '', memory_hit_count: memoryRefs.length }
+      return_result: {
+        summary: task.agent_views?.retriever?.display_text || '',
+        memory_hit_count: memoryHits.length || memoryRefs.length,
+        retrieval_query: task.retrieval_debug?.retrieval_query || '',
+        context_hits: contextHits,
+        memory_hits: memoryHits
+      }
     })
-    if (task.execution_result) {
+    if (shouldShowExecutorForImportedTask(payload, primaryRun, task)) {
       events.push({
         event_type: 'agent_message',
         timestamp,
@@ -577,6 +830,149 @@ function normalizeList(value) {
   if (Array.isArray(value)) return value.filter(Boolean).map(String)
   if (value && typeof value === 'object') return Object.values(value).filter(Boolean).map(String)
   return value ? [String(value)] : []
+}
+
+function shouldShowExecutorForImportedTask(payload, run, task) {
+  const datasetType = String(payload?.dataset_type || run?.dataset_type || task?.dataset_type || '').toLowerCase()
+  const execution = task?.execution_result || {}
+  const mode = String(execution.execution_mode || '').toLowerCase()
+  return datasetType === 'codeact' || mode.includes('sandbox') || Boolean(execution.sandbox_status)
+}
+
+function importedRetrievalPolicy(task, memoryHits) {
+  const policy =
+    task.agent_views?.planner?.structured?.retrieval_policy ||
+    task.agent_views?.retriever?.structured?.retrieval_policy ||
+    task.retrieval_debug?.retrieval_policy
+  if (policy && typeof policy === 'object') return policy
+  const expectedReuse = normalizeList(task.expected_reuse)
+  const turn = String(task.turn_id || task.task_id || '').toLowerCase()
+  const needMemory = expectedReuse.length > 0 || memoryHits.length > 0 || (turn && !turn.includes('turn-1') && /\b(this|that|previous|earlier|same)\b/i.test(String(task.question || '')))
+  return {
+    need_memory: needMemory,
+    need_knowledge: true,
+    memory_first: true,
+    reason: needMemory ? 'inferred: expected reuse or cross-turn reference' : 'inferred: first turn or no reuse signal',
+    expected_reuse: expectedReuse
+  }
+}
+
+function pushImportedMemoryEvents(events, context) {
+  const { timestamp, taskIndex, taskId, taskTitle, stateRefs, memoryRefs, memoryHits, task } = context
+  events.push({
+    event_type: 'memory_query',
+    timestamp,
+    task_index: taskIndex,
+    task_id: taskId,
+    task_title: taskTitle,
+    from_agent: 'retriever',
+    to_agent: 'memory',
+    action_type: 'query_memory',
+    input_params: {
+      query: task.retrieval_debug?.retrieval_query || task.question || taskTitle,
+      top_k: memoryHits.length || memoryRefs.length
+    },
+    return_result: { hit_count: memoryHits.length || memoryRefs.length },
+    state_refs: stateRefs,
+    memory_refs: memoryRefs
+  })
+  for (const [hitIndex, hit] of memoryHits.entries()) {
+    const memoryId = hit.memory_id || hit.id || memoryRefs[hitIndex] || `mem-${String(hitIndex + 1).padStart(4, '0')}`
+    events.push({
+      event_type: 'memory_hit',
+      timestamp,
+      task_index: taskIndex,
+      task_id: taskId,
+      task_title: taskTitle,
+      from_agent: 'memory',
+      to_agent: 'retriever',
+      action_type: 'memory_hit',
+      memory_refs: [memoryId],
+      state_refs: stateRefs,
+      return_result: {
+        memory_id: memoryId,
+        summary: hit.summary || hit.text || hit.content || '',
+        retrieval_score: hit.score ?? hit.retrieval_score ?? hit.confidence,
+        memory_type: hit.memory_type || hit.type || 'memory',
+        selection_reason: hit.selection_reason || hit.reason || '',
+        source_turn: hit.source_turn || hit.turn_id || ''
+      }
+    })
+  }
+}
+
+function pushImportedKnowledgeEvents(events, context) {
+  const { timestamp, taskIndex, taskId, taskTitle, stateRefs, contextHits, task } = context
+  if (!contextHits.length) return
+  events.push({
+    event_type: 'knowledge_query',
+    timestamp,
+    task_index: taskIndex,
+    task_id: taskId,
+    task_title: taskTitle,
+    from_agent: 'retriever',
+    to_agent: 'knowledge',
+    action_type: 'query_knowledge',
+    state_refs: stateRefs,
+    input_params: {
+      query: task.retrieval_debug?.retrieval_query || task.question || taskTitle,
+      top_k: contextHits.length,
+      retrieval_mode: task.retrieval_debug?.context_source || 'hypergraph'
+    },
+    return_result: { hit_count: contextHits.length }
+  })
+  for (const [hitIndex, hit] of contextHits.entries()) {
+    const contextId = hit.context_id || hit.id || `context-${String(hitIndex + 1).padStart(4, '0')}`
+    events.push({
+      event_type: 'knowledge_hit',
+      timestamp,
+      task_index: taskIndex,
+      task_id: taskId,
+      task_title: taskTitle,
+      from_agent: 'knowledge',
+      to_agent: 'retriever',
+      action_type: 'return_knowledge',
+      state_refs: stateRefs,
+      memory_refs: [],
+      return_result: {
+        context_id: contextId,
+        title: hit.title || hit.source_id || '',
+        section: hit.section || '',
+        summary: hit.text || hit.summary || hit.content || '',
+        context_score: hit.context_score ?? hit.score ?? hit.retrieval_score,
+        kind: hit.kind || 'context',
+        matched_nodes: hit.matched_nodes || [],
+        reasoning_path: hit.reasoning_path || []
+      }
+    })
+  }
+}
+
+function importedMemoryHits(task) {
+  const candidates = [
+    task.memory_hits,
+    task.retrieved_memories,
+    task.retrieval_debug?.memory_hits
+  ]
+  for (const value of candidates) {
+    if (Array.isArray(value) && value.length) return value
+  }
+  return normalizeList(task.memory_refs || task.memory_hit_ids || task.memory_ids).map((memoryId) => ({
+    memory_id: memoryId,
+    summary: ''
+  }))
+}
+
+function importedContextHits(task) {
+  const candidates = [
+    task.context_hits,
+    task.retrieval_debug?.context_hits,
+    task.agent_views?.retriever?.structured?.context_hits
+  ]
+  for (const value of candidates) {
+    if (Array.isArray(value) && value.length) return value
+  }
+  return []
 }
 
 function resultTaskForRound(taskResults, round) {
@@ -660,7 +1056,7 @@ function runtimeCurrentAgent(taskEvents, state) {
 }
 
 function agentsFromRuntimeEvents(taskEvents) {
-  const ordered = ['Planner', 'Retriever', 'Memory', 'Reasoner', 'Executor', 'Summarizer']
+  const ordered = ['Planner', 'Retriever', 'Memory', 'Knowledge', 'Reasoner', 'Executor', 'Summarizer']
   const names = new Set()
   flowEventsFromRuntimeEvents(taskEvents).forEach((event) => {
     const route = visualRouteForEvent(event)
@@ -674,7 +1070,7 @@ function agentsFromRuntimeEvents(taskEvents) {
 
 function flowEventsFromRuntimeEvents(taskEvents) {
   return taskEvents.flatMap((event) => {
-    if (!['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write'].includes(event.event_type)) {
+    if (!['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit'].includes(event.event_type)) {
       return []
     }
     return [event]
@@ -687,6 +1083,12 @@ function visualRouteForEvent(event) {
   }
   if (event.flow_type === 'memory_result' || event.event_type === 'memory_hit') {
     return { from: 'Memory', to: 'Retriever' }
+  }
+  if (event.event_type === 'knowledge_query') {
+    return { from: 'Retriever', to: 'Knowledge' }
+  }
+  if (event.event_type === 'knowledge_hit') {
+    return { from: 'Knowledge', to: 'Retriever' }
   }
   if (event.event_type === 'memory_write') {
     return { from: 'Summarizer', to: 'Memory' }
@@ -752,7 +1154,7 @@ function protocolFromRuntimeEvents(round, state, taskEvents) {
 }
 
 function isProtocolDetailEvent(event) {
-  return ['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write'].includes(event.event_type)
+  return ['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit'].includes(event.event_type)
 }
 
 function packetForSelectedMessage(task, message) {
@@ -777,9 +1179,9 @@ function packetFromEvent(title, event, emptyDesc) {
       { label: '\u53d1\u9001\u65b9', value: normalizeAgentName(route.from) },
       { label: '\u63a5\u6536\u65b9', value: normalizeAgentName(route.to) },
       { label: '\u52a8\u4f5c\u7c7b\u578b', value: actionText(action) },
-      { label: '\u4f20\u9012\u5185\u5bb9', value: protocolContentSummary(event) },
+      { label: '\u4f20\u9012\u5185\u5bb9', value: protocolTransferContent(event) },
       { label: '\u72b6\u6001\u5f15\u7528', value: stateRefs },
-      { label: '\u8bb0\u5fc6\u5f15\u7528', value: memoryRefs },
+      { label: protocolMemorySectionLabel(event), value: protocolMemorySectionValue(event, memoryRefs) },
       { label: '\u901a\u4fe1\u5f00\u9500', value: protocolCostText(event) },
       { label: '\u8fd4\u56de\u7ed3\u679c', value: result }
     ],
@@ -850,6 +1252,7 @@ function transferAgentKeyFromMessage(message) {
   const action = String(event.action_type || '').toLowerCase()
   const from = String(event.from_agent || '').toLowerCase()
   const to = String(event.to_agent || '').toLowerCase()
+  if (event.event_type === 'knowledge_query' || event.event_type === 'knowledge_hit') return 'retriever'
   if (event.event_type === 'memory_query' || event.event_type === 'memory_hit') return 'retriever'
   if (event.event_type === 'memory_write') return 'summarizer'
   if (action === 'retrieve') return 'planner'
@@ -875,7 +1278,7 @@ function buildFallbackTransferDetail(task, message, agentKey) {
     stateRef: listText(event.state_refs) === '-' ? '' : listText(event.state_refs),
     displayText: payloadText,
     structuredText: typeof event.payload === 'object' ? safeStringify(event.payload) : '',
-    retrievalSummaryText: event.event_type === 'memory_query' || event.event_type === 'memory_hit' ? safeStringify(event.return_result || event.input_params) : '',
+    retrievalSummaryText: ['memory_query', 'memory_hit', 'knowledge_query', 'knowledge_hit'].includes(event.event_type) ? safeStringify(event.return_result || event.input_params) : '',
     summaryResultText: event.event_type === 'memory_write' || String(event.action_type || '').toLowerCase() === 'summarize' ? safeStringify({ payload: event.payload, return_result: event.return_result }) : '',
     memoryRefineText: '',
     executionResultText: agentKey === 'executor' ? safeStringify(event.return_result || event.payload) : ''
@@ -958,6 +1361,8 @@ function eventPayloadText(event) {
 }
 
 function protocolReadableDesc(event, route) {
+  if (event.event_type === 'knowledge_query') return '\u0052\u0065\u0074\u0072\u0069\u0065\u0076\u0065\u0072 \u5411\u77e5\u8bc6\u8d85\u56fe\u53d1\u8d77\u4e0a\u4e0b\u6587\u8bc1\u636e\u68c0\u7d22\u3002'
+  if (event.event_type === 'knowledge_hit') return '\u005b\u004b\u006e\u006f\u0077\u006c\u0065\u0064\u0067\u0065\u005d \u8fd4\u56de\u672c\u9898\u77e5\u8bc6\u8d85\u56fe\u53ec\u56de\u7684 supporting passage \u6216\u4e0a\u4e0b\u6587\u8bc1\u636e\u3002'
   if (event.event_type === 'memory_query') return 'Retriever \u5411\u5171\u4eab\u8bb0\u5fc6\u6a21\u5757\u53d1\u8d77\u68c0\u7d22\u8bf7\u6c42\u3002'
   if (event.event_type === 'memory_hit') return 'Memory \u8fd4\u56de\u53ef\u590d\u7528\u7684\u5386\u53f2\u8bb0\u5fc6\u6216\u8bc1\u636e\u547d\u4e2d\u3002'
   if (event.event_type === 'memory_write') return 'Summarizer \u5c06\u672c\u8f6e\u8bc1\u636e\u3001\u7ed3\u8bba\u6216\u7ecf\u9a8c\u5199\u56de\u5171\u4eab\u8bb0\u5fc6\u3002'
@@ -965,8 +1370,34 @@ function protocolReadableDesc(event, route) {
   return `${normalizeAgentName(route.from)} \u5c06\u7ed3\u6784\u5316\u6d88\u606f\u53d1\u9001\u7ed9 ${normalizeAgentName(route.to)}\u3002`
 }
 
+function protocolTransferContent(event) {
+  const result = event.return_result || {}
+  if (event.action_type === 'retrieve') {
+    return event.payload_summary || result.summary || eventPayloadText(event) || '-'
+  }
+  return protocolContentSummary(event)
+}
+
+function protocolMemorySectionLabel(event) {
+  return event.action_type === 'retrieve' ? '\u68c0\u7d22\u89c4\u5212' : '\u8bb0\u5fc6\u5f15\u7528'
+}
+
+function protocolMemorySectionValue(event, memoryRefs) {
+  const policy = (event.return_result || {}).retrieval_policy
+  if (event.action_type === 'retrieve' && policy) {
+    return `\u8bb0\u5fc6\u68c0\u7d22\uff1a${policy.need_memory ? '\u9700\u8981' : '\u8df3\u8fc7'}；\u77e5\u8bc6\u68c0\u7d22\uff1a${policy.need_knowledge === false ? '\u8df3\u8fc7' : '\u9700\u8981'}；\u7406\u7531\uff1a${policy.reason || '-'}`
+  }
+  return memoryRefs
+}
+
 function protocolContentSummary(event) {
   const result = event.return_result || {}
+  if (event.event_type === 'knowledge_query') {
+    return `\u77e5\u8bc6\u68c0\u7d22 query=${event.input_params?.query || '-'}`
+  }
+  if (event.event_type === 'knowledge_hit') {
+    return result.summary || result.context_id || `\u547d\u4e2d ${eventMemoryCount(event)} \u6761\u77e5\u8bc6\u8bc1\u636e`
+  }
   if (event.event_type === 'memory_hit') {
     return result.summary || result.memory_id || `\u547d\u4e2d ${eventMemoryCount(event)} \u6761\u8bb0\u5fc6`
   }
@@ -995,6 +1426,8 @@ function protocolCostText(event) {
 
 function protocolMappingText(event, route) {
   const action = event.action_type || event.event_type
+  if (event.event_type === 'knowledge_query') return '\u77e5\u8bc6\u68c0\u7d22\u610f\u56fe \u2192 knowledge_hypergraph.search(query, top_k, retrieval_mode)'
+  if (event.event_type === 'knowledge_hit') return '\u77e5\u8bc6\u53ec\u56de \u2192 return_result(context_refs, passages, scores)'
   if (event.event_type === 'memory_query') return '\u68c0\u7d22\u610f\u56fe \u2192 memory.search(query, top_k, retrieval_mode)'
   if (event.event_type === 'memory_hit') return '\u5386\u53f2\u547d\u4e2d \u2192 return_result(memory_refs, summaries, scores)'
   if (event.event_type === 'memory_write') return '\u603b\u7ed3\u5199\u56de \u2192 memory.write(memory_type, summary, source_agent, task_topic)'
@@ -1099,6 +1532,7 @@ function normalizeAgentName(name) {
     executor: 'Executor',
     summarizer: 'Summarizer',
     memory: 'Memory',
+    knowledge: 'Knowledge',
     runtime: 'Runtime',
     dashboard: 'Dashboard'
   }
@@ -1110,6 +1544,8 @@ function isSystemAgent(name) {
 }
 
 function eventLabel(event) {
+  if (event.event_type === 'knowledge_query') return '\u68c0\u7d22\u77e5\u8bc6'
+  if (event.event_type === 'knowledge_hit') return `\u547d\u4e2d\u77e5\u8bc6 ${event.return_result?.context_id || ''}`.trim()
   if (event.flow_type === 'memory_query') return '检索记忆'
   if (event.flow_type === 'memory_result') return `命中记忆 ${eventMemoryCount(event)}`
   const map = {
