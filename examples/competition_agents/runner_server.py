@@ -613,6 +613,18 @@ def method_record_from_run(payload: dict[str, Any], run: dict[str, Any], source:
             "elapsedSeconds": per_task_series(task_results, "elapsed_seconds"),
             "memoryReuse": per_task_series(task_results, "memory_reuse"),
         },
+        "payload": {
+            "schema_version": payload.get("schema_version", 1),
+            "experiment_mode": experiment_mode,
+            "memory_retrieval_mode": run.get("memory_retrieval_mode") or payload.get("memory_retrieval_mode"),
+            "memory_organization": run.get("memory_organization") or payload.get("memory_organization"),
+            "dataset_type": run.get("dataset_type") or payload.get("dataset_type"),
+            "dataset_file": run.get("dataset_file") or payload.get("dataset_file"),
+            "context_source": payload.get("context_source"),
+            "task_count": task_count,
+            "archived_at": payload.get("archived_at"),
+            "runs": [run],
+        },
     }
 
 

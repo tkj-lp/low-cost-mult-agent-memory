@@ -2,12 +2,169 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 
 from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
+
+
+def _contains_cross_turn_reference(text: str) -> bool:
+    markers = (
+        "previous",
+        "earlier",
+        "above",
+        "again",
+        "same",
+        "that list",
+        "that process",
+        "that substance",
+        "that experiment",
+        "上一个",
+        "前面",
+        "之前",
+        "刚才",
+        "上述",
+        "这些",
+        "该",
+    )
+    lowered = str(text or "").lower()
+    if any(marker in lowered for marker in markers):
+        return True
+    return bool(re.search(r"\b(that|this|it|they|those)\b", lowered))
+
+
+def _plan_requests_memory(plan: list[str]) -> bool:
+    text = " ".join(str(step or "").lower() for step in plan)
+    return any(marker in text for marker in ("memory", "reuse", "historical", "prior", "previous"))
+
+
+def _build_planner_task(state: CompetitionState) -> str:
+    task = str(state.get("task") or "")
+    task_meta = state.get("task_meta", {}) or {}
+    question = str(task_meta.get("question") or "").strip()
+    if not question:
+        return task
+
+    lines = [
+        "Plan this QA task. Return task steps only, not a dialogue.",
+        f"Question: {question}",
+    ]
+    topic = str(task_meta.get("topic") or "").strip()
+    if topic:
+        lines.append(f"Topic: {topic}")
+    expected_reuse = [str(item) for item in task_meta.get("expected_reuse", []) or [] if str(item).strip()]
+    if expected_reuse:
+        lines.append("Expected reuse: " + ", ".join(expected_reuse))
+    supporting = str(task_meta.get("supporting_passage") or "").strip()
+    if supporting:
+        lines.append("Supporting passage hint: " + supporting[:360])
+    return "\n".join(lines)
+
+
+def _fallback_plan(state: CompetitionState) -> list[str]:
+    task_meta = state.get("task_meta", {}) or {}
+    expected_reuse = [str(item) for item in task_meta.get("expected_reuse", []) or [] if str(item).strip()]
+    memory_step = (
+        "Check expected reuse and prior memory for relevant earlier facts."
+        if expected_reuse
+        else "Decide whether this task needs prior memory or only knowledge evidence."
+    )
+    return [
+        "Identify the question target and requested answer type.",
+        memory_step,
+        "Retrieve the most relevant supporting evidence for the target.",
+        "Route evidence to reasoning and summarize a concise final answer.",
+    ]
+
+
+def _is_bad_plan_step(step: str) -> bool:
+    text = str(step or "").strip()
+    lowered = text.lower()
+    if not text:
+        return True
+    dialogue_markers = (
+        "ask:",
+        "receive response",
+        "user:",
+        "assistant:",
+        "protagonist",
+        "love story",
+    )
+    if any(marker in lowered for marker in dialogue_markers):
+        return True
+    if len(text) > 180:
+        return True
+    return False
+
+
+def _sanitize_plan(state: CompetitionState, plan: list[str]) -> tuple[list[str], bool]:
+    cleaned = []
+    for step in plan:
+        text = str(step or "").strip("- 0123456789.\t ")
+        if _is_bad_plan_step(text):
+            continue
+        cleaned.append(text)
+    if len(cleaned) < 2:
+        return _fallback_plan(state), True
+    return cleaned[:4], len(cleaned) != len(plan)
+
+
+def _build_retrieval_policy(state: CompetitionState, plan: list[str]) -> tuple[dict[str, object], float]:
+    started = time.perf_counter()
+    task_meta = state.get("task_meta", {})
+    task = state.get("task", "")
+    memory_available = bool(state.get("memory"))
+    expected_reuse = [str(item) for item in task_meta.get("expected_reuse", []) or [] if str(item).strip()]
+    dataset_type = str(task_meta.get("dataset_type") or "")
+    turn_id = str(task_meta.get("turn_id") or "")
+    cross_turn_reference = _contains_cross_turn_reference(
+        " ".join(
+            str(item or "")
+            for item in (
+                task,
+                task_meta.get("question", ""),
+                task_meta.get("supporting_passage", ""),
+            )
+        )
+    )
+    explicit_continuous_reuse = (
+        dataset_type == "continuous"
+        and turn_id not in {"", "turn-1", "1"}
+        and (bool(expected_reuse) or cross_turn_reference)
+    )
+    plan_memory_intent = _plan_requests_memory(plan)
+    need_memory = memory_available and (
+        bool(expected_reuse)
+        or explicit_continuous_reuse
+        or cross_turn_reference
+        or (plan_memory_intent and dataset_type in {"continuous", "codeact"})
+    )
+    reason_signals = {
+        "memory_available": memory_available,
+        "dataset_type": dataset_type,
+        "turn_id": turn_id,
+        "expected_reuse_count": len(expected_reuse),
+        "cross_turn_reference": cross_turn_reference,
+        "plan_memory_intent": plan_memory_intent,
+    }
+    reasons = [key for key, value in reason_signals.items() if value]
+    if not memory_available:
+        reasons.append("memory_empty")
+    policy = {
+        "need_memory": need_memory,
+        "need_knowledge": True,
+        "memory_first": True,
+        "memory_query_hint": task_meta.get("question") or task[:240],
+        "knowledge_query_hint": task_meta.get("question") or task[:240],
+        "reason": ", ".join(reasons) if reasons else "default_knowledge_only",
+        "signals": reason_signals,
+        "expected_reuse": expected_reuse,
+    }
+    elapsed_ms = (time.perf_counter() - started) * 1000
+    return policy, elapsed_ms
 
 
 def planner_agent(state: CompetitionState) -> dict:
@@ -28,10 +185,11 @@ def planner_agent(state: CompetitionState) -> dict:
     if state["mode"] == "hidden":
         os.environ["LOCAL_CAPTURE_HIDDEN"] = "1"
     try:
+        planner_task = _build_planner_task(state)
         if hasattr(client, "plan_with_raw"):
-            plan, raw_output = client.plan_with_raw(task)
+            plan, raw_output = client.plan_with_raw(planner_task)
         else:
-            plan = client.plan(task)
+            plan = client.plan(planner_task)
             raw_output = "\n".join(plan)
     finally:
         if state["mode"] == "hidden":
@@ -40,12 +198,14 @@ def planner_agent(state: CompetitionState) -> dict:
             else:
                 os.environ["LOCAL_CAPTURE_HIDDEN"] = previous_capture_hidden
     llm_elapsed_ms = (time.perf_counter() - llm_started) * 1000
+    plan, plan_sanitized = _sanitize_plan(state, plan)
     hidden_result = None
     hidden_tensor = None
     if state["mode"] == "hidden":
         consume_hidden = getattr(client, "consume_last_hidden_state", None)
         if callable(consume_hidden):
             hidden_result, hidden_tensor = consume_hidden()
+    retrieval_policy, planner_decision_ms = _build_retrieval_policy(state, plan)
     cognitive_gap = make_cognitive_gap(
         agent="planner",
         known=["task_goal", "available_agent_capabilities"],
@@ -107,8 +267,8 @@ def planner_agent(state: CompetitionState) -> dict:
             receiver="retriever",
             action="retrieve",
             content_type="hidden_state_ref" if state["mode"] == "hidden" else "state_ref",
-            params={"plan": plan_ref},
-            result={"next": "retriever"},
+            params={"plan": plan_ref, "retrieval_policy": retrieval_policy},
+            result={"next": "retriever", "retrieval_policy": retrieval_policy},
             state_refs=[plan_ref],
             capability_required=["retrieve"],
             cognitive_gap=cognitive_gap,
@@ -126,15 +286,25 @@ def planner_agent(state: CompetitionState) -> dict:
     )
     metrics = dict(metrics)
     metrics["planner_llm_ms"] = metrics.get("planner_llm_ms", 0.0) + llm_elapsed_ms
+    metrics["memory_gate_count"] = metrics.get("memory_gate_count", 0) + 1
+    if not retrieval_policy.get("need_memory"):
+        metrics["memory_gate_skip_count"] = metrics.get("memory_gate_skip_count", 0) + 1
+    metrics["planner_memory_decision_ms"] = metrics.get("planner_memory_decision_ms", 0.0) + planner_decision_ms
     return {
         "plan": plan,
+        "retrieval_policy": retrieval_policy,
         "latent_states": latent_states,
         "state_refs": {**state.get("state_refs", {}), **({"plan": plan_ref} if plan_ref else {})},
         "messages": messages,
         "metrics": metrics,
         "agent_outputs": [
             *state.get("agent_outputs", []),
-            {"agent": "PlannerAgent", "raw_output": raw_output},
+            {
+                "agent": "PlannerAgent",
+                "raw_output": raw_output,
+                "plan_sanitized": plan_sanitized,
+                "retrieval_policy": retrieval_policy,
+            },
         ],
         "cognitive_gaps": [*state["cognitive_gaps"], cognitive_gap],
     }

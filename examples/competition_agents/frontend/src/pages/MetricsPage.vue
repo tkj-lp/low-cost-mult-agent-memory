@@ -114,6 +114,7 @@ import {
 } from '../experimentOptions'
 
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
+const FILTER_SYNC_EVENT = 'competition-agent-filter-sync'
 const RUNNER_METRICS_URL = 'http://127.0.0.1:8765/api/runner/metrics'
 const RUNNER_RESULT_FILES_URL = 'http://127.0.0.1:8765/api/runner/result-files'
 const RUNNER_IMPORT_RESULTS_URL = 'http://127.0.0.1:8765/api/runner/import-results'
@@ -315,6 +316,16 @@ function updateFilters(nextFilters) {
   }
   if (previousDataset !== filters.dataset) {
     selectCurrentDatasetRecords()
+  }
+  persistSharedFilters(filters)
+}
+
+function persistSharedFilters(value) {
+  try {
+    window.localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify({ ...value }))
+    window.dispatchEvent(new CustomEvent(FILTER_SYNC_EVENT))
+  } catch {
+    // Page-level filters still update even if storage is unavailable.
   }
 }
 

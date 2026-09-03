@@ -7,8 +7,14 @@
     />
     <main class="app-main">
       <ExperimentConsole v-if="activeTab === '实验控制台'" />
-      <MonitorPage v-else-if="activeTab === '协作机制'" />
-      <MemoryPage v-else-if="activeTab === '记忆复用'" />
+      <MonitorPage
+        v-else-if="activeTab === '协作机制'"
+        :imported-payloads="importedPayloads"
+      />
+      <MemoryPage
+        v-else-if="activeTab === '记忆复用'"
+        :imported-payloads="importedPayloads"
+      />
       <MetricsPage
         v-else
         :imported-records="importedRecords"

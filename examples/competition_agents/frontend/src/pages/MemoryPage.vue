@@ -1,5 +1,14 @@
 <template>
   <section class="page memory-page memory-flow-page">
+    <section class="memory-shared-filter" :class="{ locked: memorySelectionLocked }">
+      <MetricsFilterBar
+        :model-value="sharedFilters"
+        :baseline-options="memoryBaselineOptions"
+        @update:model-value="updateSharedFilters"
+        @refresh="refreshMemoryRecords"
+      />
+    </section>
+
     <section class="memory-card memory-task-flow-card">
       <header>
         <span></span>
@@ -162,10 +171,22 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { defaultExperimentConfig, normalizeExperimentConfig } from '../experimentOptions'
+import {
+  collaborationModes,
+  datasets,
+  defaultExperimentConfig,
+  labelOf,
+  memoryModes,
+  normalizeExperimentConfig,
+  retrievalOptionsFor
+} from '../experimentOptions'
+import MetricsFilterBar from '../components/metrics/MetricsFilterBar.vue'
 
 const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
+const RUNNER_STATUS_URL = 'http://127.0.0.1:8765/api/runner/status'
+const RUNNER_METRICS_URL = 'http://127.0.0.1:8765/api/runner/metrics'
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
+const FILTER_SYNC_EVENT = 'competition-agent-filter-sync'
 const props = defineProps({
   importedPayloads: {
     type: Array,
@@ -177,11 +198,35 @@ const selectedTaskKey = ref('')
 const selectedMemoryId = ref('')
 const runtimeEvents = ref([])
 const savedConfig = ref(readSavedConfig())
+const sharedFilters = ref(withFilterDefaults(savedConfig.value))
+const runnerRunning = ref(false)
+const memoryRecords = ref([])
+const memoryLoadError = ref('')
 let timer = null
 
-const importedRunPayload = computed(() => importedPayloadForCurrentConfig(props.importedPayloads, savedConfig.value))
+const memorySelectionLocked = computed(() => runnerRunning.value)
+const selectedMemoryRecord = computed(() =>
+  memoryRecords.value.find((record) =>
+    record.dataset === sharedFilters.value.dataset &&
+    record.collaborationMode === sharedFilters.value.collaborationMode &&
+    record.memoryMode === sharedFilters.value.memoryMode &&
+    record.retrievalMode === sharedFilters.value.retrievalMode
+  ) ?? null
+)
+const memoryBaselineOptions = computed(() =>
+  memoryRecords.value.map((record) => ({
+    label: memoryRecordLabel(record),
+    value: record.recordId
+  }))
+)
+const importedRunPayload = computed(() => importedPayloadForCurrentConfig(props.importedPayloads, sharedFilters.value))
+const selectedArchivePayload = computed(() => importedRunPayload.value ?? selectedMemoryRecord.value?.payload ?? null)
 const displayRuntimeEvents = computed(() =>
-  importedRunPayload.value ? eventsFromImportedPayload(importedRunPayload.value) : runtimeEvents.value
+  memorySelectionLocked.value
+    ? runtimeEvents.value
+    : selectedArchivePayload.value
+      ? eventsFromImportedPayload(selectedArchivePayload.value)
+      : runtimeEvents.value
 )
 const runMeta = computed(() => displayRuntimeEvents.value.find((event) => event.event_type === 'run_start') ?? {})
 const taskQueue = computed(() => {
@@ -429,13 +474,16 @@ watch(retrievalRows, (rows) => {
 
 onMounted(() => {
   refreshSavedConfig()
+  refreshMemoryRecords()
   refreshRuntimeEvents()
   window.addEventListener('storage', refreshSavedConfig)
+  window.addEventListener(FILTER_SYNC_EVENT, refreshSavedConfig)
   timer = window.setInterval(refreshRuntimeEvents, 1200)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('storage', refreshSavedConfig)
+  window.removeEventListener(FILTER_SYNC_EVENT, refreshSavedConfig)
   if (timer) window.clearInterval(timer)
 })
 
@@ -459,10 +507,13 @@ function readSavedConfig() {
 
 function refreshSavedConfig() {
   savedConfig.value = readSavedConfig()
+  if (!memorySelectionLocked.value) {
+    sharedFilters.value = withFilterDefaults(savedConfig.value)
+  }
 }
 
 async function refreshRuntimeEvents() {
-  if (importedRunPayload.value) return
+  await refreshRunnerStatus()
   try {
     const response = await fetch(`${RUNNER_EVENTS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) {
@@ -474,6 +525,93 @@ async function refreshRuntimeEvents() {
   } catch {
     runtimeEvents.value = []
   }
+}
+
+async function refreshRunnerStatus() {
+  try {
+    const response = await fetch(`${RUNNER_STATUS_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) {
+      runnerRunning.value = false
+      return
+    }
+    const payload = await response.json()
+    runnerRunning.value = Boolean(payload.running || payload.status === 'running')
+  } catch {
+    runnerRunning.value = false
+  }
+}
+
+async function refreshMemoryRecords() {
+  if (memorySelectionLocked.value) return
+  try {
+    const response = await fetch(`${RUNNER_METRICS_URL}?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) throw new Error('历史结果服务未返回有效数据')
+    const payload = await response.json()
+    memoryRecords.value = normalizeMemoryRecords(Array.isArray(payload.records) ? payload.records : [])
+    memoryLoadError.value = memoryRecords.value.length ? '' : '暂无历史结果，请先完成一次运行。'
+  } catch {
+    memoryRecords.value = []
+    memoryLoadError.value = '暂无历史结果，请先启动本地运行服务或完成一次运行。'
+  }
+}
+
+function updateSharedFilters(nextFilters) {
+  if (memorySelectionLocked.value) return
+  const normalized = withFilterDefaults({
+    ...sharedFilters.value,
+    ...nextFilters
+  })
+  if (normalized.baselineMode !== 'compare') {
+    normalized.baselineRecordId = ''
+  }
+  sharedFilters.value = normalized
+  persistSharedFilters(normalized)
+}
+
+function persistSharedFilters(value) {
+  try {
+    window.localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(value))
+    window.dispatchEvent(new CustomEvent(FILTER_SYNC_EVENT))
+  } catch {
+    // Page-level filters still update even if storage is unavailable.
+  }
+}
+
+function withFilterDefaults(value) {
+  return {
+    ...normalizeExperimentConfig({ ...defaultExperimentConfig(), ...value }),
+    baselineMode: value?.baselineMode ?? 'none',
+    baselineRecordId: value?.baselineRecordId ?? ''
+  }
+}
+
+function normalizeMemoryRecords(records) {
+  return records
+    .filter((record) => record?.payload)
+    .map((record, index) => ({
+      ...record,
+      recordId: String(record.recordId || `${record.source || 'record'}-${index}`),
+      dataset: datasetKey(record.dataset || record.payload?.dataset_file || record.source || '')
+    }))
+}
+
+function memoryRecordLabel(record) {
+  const dataset = labelOf(datasets, record.dataset, record.dataset || '-')
+  const collaboration = labelOf(collaborationModes, record.collaborationMode, record.collaborationMode || '-')
+  const memory = labelOf(memoryModes, record.memoryMode, record.memoryMode || '-')
+  const retrieval = labelOf(retrievalOptionsFor(record.memoryMode), record.retrievalMode, record.retrievalMode || '-')
+  const time = record.archivedAt ? formatArchiveTime(record.archivedAt) : record.source || 'latest'
+  return `${dataset} / ${collaboration} / ${memory} / ${retrieval} / ${time}`
+}
+
+function formatArchiveTime(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  return `${month}-${day} ${hour}:${minute}`
 }
 
 function taskStatus(index) {
@@ -617,7 +755,7 @@ function latestPrimaryRun(payload) {
 function importedPayloadForCurrentConfig(items, currentConfig) {
   const payloads = Array.isArray(items) ? items.map((item) => item?.payload).filter(Boolean) : []
   if (!payloads.length) return null
-  return payloads.find((payload) => datasetKey(payload?.dataset_file || latestPrimaryRun(payload)?.dataset_file) === currentConfig.dataset) ?? payloads[0]
+  return payloads.find((payload) => payloadMatchesCurrentConfig(payload, currentConfig)) ?? null
 }
 
 function datasetKey(file) {
@@ -627,6 +765,41 @@ function datasetKey(file) {
   if (text.includes('codeact_1_10tasks')) return 'codeact-1'
   if (text.includes('codeact_2_10tasks')) return 'codeact-2'
   return text
+}
+
+function payloadMatchesCurrentConfig(payload, currentConfig) {
+  const run = latestPrimaryRun(payload) || {}
+  const mode = payload?.experiment_mode || run.experiment_mode || run.mode
+  const memory = payload?.memory_organization || run.memory_organization || payload?.memory_retrieval_mode || run.memory_retrieval_mode
+  const retrieval = payload?.memory_retrieval_mode || run.memory_retrieval_mode
+  return (
+    datasetKey(payload?.dataset_file || run.dataset_file) === currentConfig.dataset &&
+    collaborationKey(mode) === currentConfig.collaborationMode &&
+    memoryKey(memory) === currentConfig.memoryMode &&
+    String(retrieval || '') === currentConfig.retrievalMode
+  )
+}
+
+function collaborationKey(mode) {
+  return {
+    baseline_text: 'plain',
+    autogen_text: 'autogen',
+    camel_text: 'camel',
+    autogen_camel_text: 'autogen',
+    autoform_text: 'autoform',
+    llmlingua_text: 'llmlingua',
+    text: 'plain',
+    protocol_api: 'structured',
+    protocol: 'structured',
+    protocol_api_embedding: 'protocol-vector',
+    hidden_api: 'latent',
+    hidden: 'latent',
+    latent_hidden: 'latent'
+  }[String(mode || '').toLowerCase()] || 'plain'
+}
+
+function memoryKey(value) {
+  return ['hypergraph', 'fusion'].includes(String(value || '').toLowerCase()) ? 'hypergraph' : 'text'
 }
 
 function importedMemoryHits(task) {
