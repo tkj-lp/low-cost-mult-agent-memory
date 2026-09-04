@@ -5,9 +5,11 @@ import os
 import time
 
 from competition_agents.llm import get_llm_client
-from competition_agents.memory import add_memory, increment_reuse_counts, refine_memory
+from competition_agents.memory import add_memory, record_memory_usage, refine_memory
 from competition_agents.protocol import make_cognitive_gap
 from competition_agents.state import CompetitionState
+from competition_agents.state_store import resolve_state_payload
+from hypergraph_memory_method import compact_trace
 
 
 def _summarizer_task_text(state: CompetitionState) -> str:
@@ -142,19 +144,30 @@ def _normalize_latest_experience_write(latest: dict, refined: dict) -> dict:
 def summarizer_agent(state: CompetitionState) -> dict:
     """生成最终答案，并沉淀为可复用共享记忆。"""
 
-    hit_count = len(state.get("memory_hits", []))
+    retrieval_ref = str(state.get("state_refs", {}).get("retrieval") or "")
+    retrieval_bundle = (
+        resolve_state_payload(retrieval_ref, expected_content_type="retrieval.bundle")
+        if retrieval_ref
+        else None
+    ) or {}
+    memory_hits = retrieval_bundle.get("memory_hits", state.get("memory_hits", []))
+    memory_context = retrieval_bundle.get("memory_context", state.get("memory_context", []))
+    experience_rules = retrieval_bundle.get("experience_rules", state.get("experience_rules", []))
+    evidence = retrieval_bundle.get("evidence", state.get("evidence", []))
+    hit_count = len(memory_hits)
     latent_count = len(state.get("latent_states", {}))
     execution_result = state.get("execution_result", {})
     task_text = _summarizer_task_text(state)
     print(
         "[summarizer] "
         f"task chars={len(task_text)} memory_hits={hit_count} latent_states={latent_count} "
-        f"memory_context chars={len(json.dumps(state.get('memory_context', []), ensure_ascii=False))}",
+        f"memory_context chars={len(json.dumps(memory_context, ensure_ascii=False))}",
         flush=True,
     )
     if state["mode"] in {"protocol", "hidden"}:
         answer_ref = state.get("state_refs", {}).get("answer", "")
         answer_state = state.get("latent_states", {}).get(answer_ref, {})
+        answer_payload = resolve_state_payload(answer_ref) if answer_ref else None
         if answer_state:
             execution_result = {
                 **execution_result,
@@ -165,6 +178,7 @@ def summarizer_agent(state: CompetitionState) -> dict:
                 "latent_model": answer_state.get("model", ""),
                 "latent_layer": answer_state.get("layer", ""),
                 "latent_shape": answer_state.get("shape", []),
+                "latent_answer_content_type": (answer_payload or {}).get("content_type", ""),
             }
     # Summarizer 可单独接真实 API，其他 Agent 保持 mock 以便快速验证。
     direct_summary = _direct_qa_summary(state, execution_result)
@@ -178,27 +192,27 @@ def summarizer_agent(state: CompetitionState) -> dict:
             memory_hits=hit_count,
             latent_states=latent_count,
             plan=state.get("plan", []),
-            evidence=state.get("evidence", []),
+            evidence=evidence,
             execution_result=execution_result,
             cognitive_gaps=state.get("cognitive_gaps", []),
             mode=state["mode"],
         )
         summarizer_llm_ms = (time.perf_counter() - summarize_started) * 1000
     # 这里是共享记忆写入路径，也是后续接超图存储的钩子。
-    trace = {
+    trace = compact_trace({
         "task_meta": state.get("task_meta", {}),
         "plan": state.get("plan", []),
         "messages": state.get("messages", []),
-        "evidence": state.get("evidence", []),
-        "memory_hits": state.get("memory_hits", []),
-        "memory_context": state.get("memory_context", []),
+        "evidence": evidence,
+        "memory_hits": memory_hits,
+        "memory_context": memory_context,
         "latent_states": state.get("latent_states", {}),
         "state_refs": state.get("state_refs", {}),
         "execution_result": state.get("execution_result", {}),
         "cognitive_gaps": state.get("cognitive_gaps", []),
         "agent_outputs": state.get("agent_outputs", []),
         "metrics": state.get("metrics", {}),
-    }
+    })
     refine_started = time.perf_counter()
     refined = refine_memory(
         task_topic=task_text,
@@ -206,17 +220,14 @@ def summarizer_agent(state: CompetitionState) -> dict:
         trace=trace,
     )
     memory_refine_ms = (time.perf_counter() - refine_started) * 1000
-    successful_experience_ids: list[str] = []
-    if refined.get("experience_source") == "success-derived":
-        successful_experience_ids = [
-            str(memory_id)
-            for memory_id in state.get("execution_result", {}).get("experience_used_memory_ids", [])
-            if memory_id
-        ]
-    updated_memory = increment_reuse_counts(
+    execution_usage = state.get("execution_result", {})
+    updated_memory = record_memory_usage(
         state["memory"],
-        [hit.get("memory_id") for hit in state.get("memory_hits", [])],
-        successful_memory_ids=successful_experience_ids,
+        retrieved_memory_ids=execution_usage.get("memory_retrieved_ids", []),
+        adopted_memory_ids=execution_usage.get(
+            "memory_adopted_ids",
+            execution_usage.get("memory_materialized_ids", []),
+        ),
     )
     write_started = time.perf_counter()
     evidence_memory = add_memory(
@@ -246,12 +257,17 @@ def summarizer_agent(state: CompetitionState) -> dict:
             supporting_evidence=refined["supporting_evidence"],
             confidence=refined["confidence"],
             archive_scope=refined["archive_scope"],
-            lifecycle_stage=refined["lifecycle_stage"],
+            lifecycle_stage="needs-validation",
             strategies=refined["strategies"],
             experiences=refined["experiences"],
             reuse_benefits=refined["reuse_benefits"],
             experience_rule_card=refined["experience_rule_card"],
             experience_source=refined.get("experience_source", ""),
+            source_memory_ids=[
+                str(latest_evidence_write.get("memory_id"))
+            ]
+            if latest_evidence_write.get("memory_id")
+            else [],
             distillation_case=refined.get("distillation_case", {}),
             abstraction_note=refined.get("abstraction_note", ""),
             distillation_mode=refined.get("distillation_mode", ""),
@@ -261,6 +277,10 @@ def summarizer_agent(state: CompetitionState) -> dict:
         latest_experience_write = _normalize_latest_experience_write(latest_experience_write, refined)
     memory_write_ms = (time.perf_counter() - write_started) * 1000
     metrics = dict(state["metrics"])
+    state_store_reads = int(bool(retrieval_bundle)) + int(
+        bool(state["mode"] in {"protocol", "hidden"} and state.get("state_refs", {}).get("answer"))
+    )
+    metrics["state_store_read_count"] = metrics.get("state_store_read_count", 0) + state_store_reads
     metrics["summarizer_llm_ms"] = metrics.get("summarizer_llm_ms", 0.0) + summarizer_llm_ms
     metrics["memory_refine_ms"] = metrics.get("memory_refine_ms", 0.0) + memory_refine_ms
     metrics["memory_write_ms"] = metrics.get("memory_write_ms", 0.0) + memory_write_ms

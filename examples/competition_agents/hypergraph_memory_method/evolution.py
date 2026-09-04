@@ -100,8 +100,14 @@ def merge_experience_records(records: list[dict[str, Any]]) -> dict[str, Any]:
             merged[field] = combined
 
     merged["reuse_count"] = sum(int(record.get("reuse_count", 0) or 0) for record in records)
+    merged["retrieval_count"] = sum(
+        int(record.get("retrieval_count", 0) or 0) for record in records
+    )
     merged["reuse_success_count"] = sum(
         int(record.get("reuse_success_count", 0) or 0) for record in records
+    )
+    merged["reuse_failure_count"] = sum(
+        int(record.get("reuse_failure_count", 0) or 0) for record in records
     )
     merged["confidence"] = max(float(record.get("confidence", 0.0) or 0.0) for record in records)
     merged["merge_count"] = (
@@ -290,6 +296,37 @@ def prune_memory(
         }
         retained = [record for record in retained if str(record.get("memory_id")) in selected_ids]
     return retained
+
+
+def maintain_memory(
+    memory: list[dict[str, Any]],
+    *,
+    now: datetime | None = None,
+    max_records: int | None = None,
+    aggressive: bool = False,
+) -> list[dict[str, Any]]:
+    """Run one auditable maintenance pass after a task batch.
+
+    Online task execution only updates usage counters. Deduplication, lifecycle
+    normalization, decay, and optional capacity pruning happen here so that
+    maintenance work does not inflate per-task latency.
+    """
+
+    maintained: list[dict[str, Any]] = []
+    for record in deduplicate_memory(memory):
+        next_record = deepcopy(record)
+        next_record.setdefault("retrieval_count", 0)
+        next_record.setdefault("reuse_count", 0)
+        next_record.setdefault("reuse_success_count", 0)
+        next_record.setdefault("reuse_failure_count", 0)
+        next_record["lifecycle_stage"] = lifecycle_stage(next_record)
+        maintained.append(next_record)
+    return prune_memory(
+        maintained,
+        now=now,
+        max_records=max_records,
+        aggressive=aggressive,
+    )
 
 
 def prepare_searchable_memory(memory: list[dict[str, Any]]) -> list[dict[str, Any]]:

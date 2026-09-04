@@ -10,6 +10,7 @@ from typing import Any, Iterable, Iterator
 
 from .builder import build_hypergraph_view
 from .distill import lifecycle_stage
+from .layers import memory_layer_for_record, normalize_memory_layer
 from .memory_model import normalize_memory_record
 from .retrieval import RetrievalMode, search_memory_by_mode
 from .text import tokenize
@@ -85,6 +86,7 @@ class SQLiteHypergraphMemoryStore:
     ) -> set[tuple[str, str, float]]:
         hypergraph = hypergraph or build_hypergraph_view(record, persist=False)
         entries: set[tuple[str, str, float]] = set()
+        entries.add(("memory_layer", memory_layer_for_record(record), 5.0))
         for token in tokenize(str(record.get("search_document") or "")):
             entries.add(("keyword", token, 1.0))
         for tag in record.get("tags", []):
@@ -177,6 +179,7 @@ class SQLiteHypergraphMemoryStore:
         self,
         *,
         memory_types: Iterable[str] | None = None,
+        memory_layers: Iterable[str] | None = None,
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
         parameters: list[Any] = []
@@ -187,14 +190,30 @@ class SQLiteHypergraphMemoryStore:
             sql += f" WHERE memory_type IN ({placeholders})"
             parameters.extend(allowed_types)
         sql += " ORDER BY created_at, memory_id"
-        if limit is not None:
+        allowed_layers = (
+            {normalize_memory_layer(layer) for layer in memory_layers}
+            if memory_layers
+            else set()
+        )
+        if limit is not None and not allowed_layers:
             if limit < 0:
                 raise ValueError("limit must be non-negative")
             sql += " LIMIT ?"
             parameters.append(limit)
         with self._lock:
             rows = self._connection.execute(sql, parameters).fetchall()
-        return [json.loads(row["record_json"]) for row in rows]
+        records = [json.loads(row["record_json"]) for row in rows]
+        if allowed_layers:
+            records = [
+                record
+                for record in records
+                if memory_layer_for_record(record) in allowed_layers
+            ]
+            if limit is not None:
+                if limit < 0:
+                    raise ValueError("limit must be non-negative")
+                records = records[:limit]
+        return records
 
     def count(self) -> int:
         with self._lock:
@@ -262,6 +281,7 @@ class SQLiteHypergraphMemoryStore:
         *,
         top_k: int,
         mode: RetrievalMode = "hypergraph",
+        memory_layers: Iterable[str] | None = None,
     ) -> list[dict[str, Any]]:
         candidate_ids = self._indexed_candidate_ids(query, mode)
         if candidate_ids:
@@ -271,7 +291,16 @@ class SQLiteHypergraphMemoryStore:
                 if (record := self.get(memory_id)) is not None
             ]
         else:
-            records = self.list()
+            records = self.list(memory_layers=memory_layers)
+        if memory_layers and candidate_ids:
+            allowed_layers = {
+                normalize_memory_layer(layer) for layer in memory_layers
+            }
+            records = [
+                record
+                for record in records
+                if memory_layer_for_record(record) in allowed_layers
+            ]
         return search_memory_by_mode(records, query, top_k=top_k, mode=mode)
 
     def rebuild_indexes(self) -> int:

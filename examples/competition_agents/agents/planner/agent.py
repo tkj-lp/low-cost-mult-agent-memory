@@ -9,6 +9,10 @@ from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
+from hypergraph_memory_method.retrieval_batches import (
+    KNOWLEDGE_FOLLOWUP_BATCH,
+    build_retrieval_batches,
+)
 
 
 def _contains_cross_turn_reference(text: str) -> bool:
@@ -55,9 +59,6 @@ def _build_planner_task(state: CompetitionState) -> str:
     topic = str(task_meta.get("topic") or "").strip()
     if topic:
         lines.append(f"Topic: {topic}")
-    expected_reuse = [str(item) for item in task_meta.get("expected_reuse", []) or [] if str(item).strip()]
-    if expected_reuse:
-        lines.append("Expected reuse: " + ", ".join(expected_reuse))
     supporting = str(task_meta.get("supporting_passage") or "").strip()
     if supporting:
         lines.append("Supporting passage hint: " + supporting[:360])
@@ -66,10 +67,18 @@ def _build_planner_task(state: CompetitionState) -> str:
 
 def _fallback_plan(state: CompetitionState) -> list[str]:
     task_meta = state.get("task_meta", {}) or {}
-    expected_reuse = [str(item) for item in task_meta.get("expected_reuse", []) or [] if str(item).strip()]
+    task_text = " ".join(
+        str(value or "")
+        for value in (
+            state.get("task"),
+            task_meta.get("question"),
+            task_meta.get("supporting_passage"),
+        )
+    )
+    is_later_turn = str(task_meta.get("turn_id") or "") not in {"", "turn-1", "1"}
     memory_step = (
-        "Check expected reuse and prior memory for relevant earlier facts."
-        if expected_reuse
+        "Resolve cross-turn references against available prior memory before retrieval."
+        if is_later_turn or _contains_cross_turn_reference(task_text)
         else "Decide whether this task needs prior memory or only knowledge evidence."
     )
     return [
@@ -117,7 +126,6 @@ def _build_retrieval_policy(state: CompetitionState, plan: list[str]) -> tuple[d
     task_meta = state.get("task_meta", {})
     task = state.get("task", "")
     memory_available = bool(state.get("memory"))
-    expected_reuse = [str(item) for item in task_meta.get("expected_reuse", []) or [] if str(item).strip()]
     dataset_type = str(task_meta.get("dataset_type") or "")
     turn_id = str(task_meta.get("turn_id") or "")
     cross_turn_reference = _contains_cross_turn_reference(
@@ -130,15 +138,13 @@ def _build_retrieval_policy(state: CompetitionState, plan: list[str]) -> tuple[d
             )
         )
     )
-    explicit_continuous_reuse = (
+    later_continuous_turn = (
         dataset_type == "continuous"
         and turn_id not in {"", "turn-1", "1"}
-        and (bool(expected_reuse) or cross_turn_reference)
     )
     plan_memory_intent = _plan_requests_memory(plan)
     need_memory = memory_available and (
-        bool(expected_reuse)
-        or explicit_continuous_reuse
+        later_continuous_turn
         or cross_turn_reference
         or (plan_memory_intent and dataset_type in {"continuous", "codeact"})
     )
@@ -146,7 +152,7 @@ def _build_retrieval_policy(state: CompetitionState, plan: list[str]) -> tuple[d
         "memory_available": memory_available,
         "dataset_type": dataset_type,
         "turn_id": turn_id,
-        "expected_reuse_count": len(expected_reuse),
+        "later_continuous_turn": later_continuous_turn,
         "cross_turn_reference": cross_turn_reference,
         "plan_memory_intent": plan_memory_intent,
     }
@@ -161,7 +167,16 @@ def _build_retrieval_policy(state: CompetitionState, plan: list[str]) -> tuple[d
         "knowledge_query_hint": task_meta.get("question") or task[:240],
         "reason": ", ".join(reasons) if reasons else "default_knowledge_only",
         "signals": reason_signals,
-        "expected_reuse": expected_reuse,
+    }
+    policy["retrieval_batches"] = build_retrieval_batches(
+        need_memory=need_memory,
+        need_knowledge=True,
+    )
+    policy["next_batch_interface"] = {
+        "batch_id": KNOWLEDGE_FOLLOWUP_BATCH,
+        "decision_owner": "planner",
+        "allowed_decisions": ["run", "skip"],
+        "decision_field": "next_batch_decision",
     }
     elapsed_ms = (time.perf_counter() - started) * 1000
     return policy, elapsed_ms
@@ -262,13 +277,18 @@ def planner_agent(state: CompetitionState) -> dict:
             )
     else:
         # protocol 模式只传紧凑的动作参数，不传长段自然语言。
+        wire_retrieval_policy = {
+            key: value
+            for key, value in retrieval_policy.items()
+            if key not in {"retrieval_batches", "next_batch_interface"}
+        }
         payload = make_compact_packet(
             sender="planner",
             receiver="retriever",
             action="retrieve",
             content_type="hidden_state_ref" if state["mode"] == "hidden" else "state_ref",
-            params={"plan": plan_ref, "retrieval_policy": retrieval_policy},
-            result={"next": "retriever", "retrieval_policy": retrieval_policy},
+            params={"plan": plan_ref, "retrieval_policy": wire_retrieval_policy},
+            result={"next": "retriever", "retrieval_policy": wire_retrieval_policy},
             state_refs=[plan_ref],
             capability_required=["retrieve"],
             cognitive_gap=cognitive_gap,
@@ -293,6 +313,7 @@ def planner_agent(state: CompetitionState) -> dict:
     return {
         "plan": plan,
         "retrieval_policy": retrieval_policy,
+        "retrieval_batches": retrieval_policy["retrieval_batches"],
         "latent_states": latent_states,
         "state_refs": {**state.get("state_refs", {}), **({"plan": plan_ref} if plan_ref else {})},
         "messages": messages,

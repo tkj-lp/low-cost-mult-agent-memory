@@ -9,11 +9,6 @@ def _clean_label(value: Any) -> str:
     return normalize_text(str(value)).replace(" ", "-")
 
 
-def _artifact_from_expected_reuse(value: str) -> str:
-    _, _, artifact = value.partition(".")
-    return _clean_label(artifact or value)
-
-
 def _message_payload(message: dict[str, Any]) -> dict[str, Any]:
     payload = message.get("payload", {})
     return payload if isinstance(payload, dict) else {}
@@ -32,8 +27,7 @@ def archive_scope(trace: dict[str, Any]) -> str:
 
     task_meta = trace.get("task_meta", {}) if isinstance(trace.get("task_meta"), dict) else {}
     memory_hits = trace.get("memory_hits", [])
-    expected_reuse = task_meta.get("expected_reuse", [])
-    if memory_hits and expected_reuse:
+    if memory_hits and task_meta.get("group_id"):
         return "cross-turn-reuse"
     if task_meta.get("group_id"):
         return "group"
@@ -63,24 +57,26 @@ def lifecycle_stage(record: dict[str, Any], trace: dict[str, Any] | None = None)
     success_rate = reuse_success_rate(record)
     stored_stage = str(record.get("lifecycle_stage") or "").strip()
 
-    if reuse_count >= 3 and success_rate < 0.4:
+    if reuse_count >= 5 and success_rate < 0.2:
         return "deprecated"
-    if reuse_count >= 4 and success_rate >= 0.75:
+    if reuse_success_count >= 4 and success_rate >= 0.8:
         return "generalized"
-    if reuse_count >= 2 and reuse_success_count >= 1:
+    if reuse_success_count >= 2 and success_rate >= 0.67:
         return "validated"
+    if reuse_success_count >= 1 and success_rate >= 0.5:
+        return "promoted-candidate"
+    if reuse_count:
+        return "needs-validation"
     if stored_stage in {"validated", "generalized", "deprecated", "needs-validation"}:
         return stored_stage
 
     trace = trace if isinstance(trace, dict) else record.get("trace")
     execution_result = trace.get("execution_result", {}) if isinstance(trace, dict) and isinstance(trace.get("execution_result"), dict) else {}
-    task_meta = trace.get("task_meta", {}) if isinstance(trace, dict) and isinstance(trace.get("task_meta"), dict) else {}
     memory_hits = trace.get("memory_hits", []) if isinstance(trace, dict) else []
-    expected_reuse = task_meta.get("expected_reuse", []) if isinstance(task_meta, dict) else []
 
     if execution_result.get("limitations"):
         return "needs-validation"
-    if memory_hits or expected_reuse:
+    if memory_hits:
         return "promoted-candidate"
     return stored_stage or "episodic"
 
@@ -101,10 +97,11 @@ def distill_experience(record: dict[str, Any]) -> dict[str, Any]:
     task_meta = trace.get("task_meta", {}) if isinstance(trace.get("task_meta"), dict) else {}
     messages = [message for message in trace.get("messages", []) if isinstance(message, dict)]
     memory_hits = [hit for hit in trace.get("memory_hits", []) if isinstance(hit, dict)]
-    expected_reuse = [str(value) for value in task_meta.get("expected_reuse", []) if value]
     state_refs = trace.get("state_refs", {}) if isinstance(trace.get("state_refs"), dict) else {}
     evidence = trace.get("evidence", [])
-    supporting_facts = task_meta.get("supporting_facts", [])
+    supporting_facts = record.get("supporting_facts", []) or record.get(
+        "supporting_evidence", []
+    )
     metrics = trace.get("metrics", {}) if isinstance(trace.get("metrics"), dict) else {}
     execution_result = trace.get("execution_result", {}) if isinstance(trace.get("execution_result"), dict) else {}
 
@@ -128,19 +125,12 @@ def distill_experience(record: dict[str, Any]) -> dict[str, Any]:
         strategies.add("evidence-grounding")
     if trace.get("cognitive_gaps"):
         strategies.add("gap-aware-coordination")
-    if expected_reuse:
-        strategies.add("expected-reuse-planning")
-
-    for value in expected_reuse:
-        artifact = _artifact_from_expected_reuse(value)
-        experiences.add(f"reuse-{artifact}")
-        reuse_benefits.add(f"expected-reuse:{artifact}")
     if memory_hits:
         experiences.add("memory-grounded-reasoning")
         reuse_benefits.add(f"memory-hit-count:{len(memory_hits)}")
     else:
         experiences.add("cold-start-episode")
-    if supporting_facts:
+    if evidence or supporting_facts:
         experiences.add("supporting-fact-chain")
     if "answer" in state_refs or execution_result.get("answer_ref"):
         experiences.add("answer-state-captured")

@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 
 from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.llm import get_llm_client
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
+from competition_agents.state_store import resolve_state_payload
 
 
 def _reasoner_task_text(state: CompetitionState) -> str:
@@ -61,6 +63,7 @@ def _compact_hidden_memory_context(items: list[dict], limit: int = 2) -> list[di
                 "turn_id": item.get("turn_id", ""),
                 "artifact_types": item.get("artifact_types", []),
                 "summary": str(item.get("summary") or "")[:120],
+                "answer": str(item.get("answer") or item.get("summary") or "")[:120],
                 "retrieval_score": item.get("retrieval_score"),
             }
         )
@@ -76,6 +79,109 @@ def _latest_message_payload(state: CompetitionState, *, sender: str, receiver: s
         payload = message.get("payload", "")
         return payload if isinstance(payload, str) else str(payload)
     return ""
+
+
+def _resolve_retrieval_bundle(state: CompetitionState) -> dict:
+    retrieval_ref = str(state.get("state_refs", {}).get("retrieval") or "")
+    if not retrieval_ref:
+        return {}
+    return resolve_state_payload(
+        retrieval_ref,
+        expected_content_type="retrieval.bundle",
+    ) or {}
+
+
+def _clean_memory_answer(value: object) -> str:
+    text = str(value or "").strip()
+    if not text or len(text) > 160:
+        return ""
+    if any(
+        marker in text.lower()
+        for marker in ("implementation notes", "run diagnostics", "mock reasoner")
+    ):
+        return ""
+    if text.lower().startswith("answer:"):
+        text = text.split(":", 1)[1].strip()
+    return " ".join(text.split())
+
+
+def _reuse_previous_answer_if_needed(
+    question: str,
+    answer_candidate: str,
+    memory_context: list[dict],
+) -> tuple[str, str]:
+    """Recover an explicit prior-answer reference when the model only restates it."""
+
+    question_lower = str(question or "").lower()
+    reuse_markers = (
+        "previous answer",
+        "prior answer",
+        "answer again",
+        "same supporting facts",
+        "same evidence",
+        "supported by the facts",
+        "that answer",
+        "earlier answer",
+    )
+    if not any(marker in question_lower for marker in reuse_markers):
+        return answer_candidate, ""
+
+    answer_tokens = set(re.findall(r"[a-z0-9]+", answer_candidate.lower()))
+    question_tokens = set(re.findall(r"[a-z0-9]+", question_lower))
+    overlap_ratio = (
+        len(answer_tokens & question_tokens) / len(answer_tokens)
+        if answer_tokens
+        else 1.0
+    )
+    looks_like_restatement = (
+        not answer_candidate.strip()
+        or len(answer_candidate) > 120
+        or (len(answer_tokens) >= 5 and overlap_ratio >= 0.7)
+    )
+    if not looks_like_restatement:
+        return answer_candidate, ""
+
+    for item in memory_context:
+        if str(item.get("memory_type", "evidence") or "evidence") == "experience":
+            continue
+        answer = _clean_memory_answer(item.get("answer") or item.get("summary"))
+        if answer:
+            return answer, str(item.get("memory_id") or "")
+    return answer_candidate, ""
+
+
+def _inferred_adopted_memory_ids(
+    answer_candidate: str,
+    memory_context: list[dict],
+    *,
+    explicit_memory_id: str = "",
+) -> list[str]:
+    """Infer answer-bearing memory actually reflected in the final candidate."""
+
+    adopted = [explicit_memory_id] if explicit_memory_id else []
+    answer = " ".join(re.findall(r"[a-z0-9]+", answer_candidate.lower()))
+    if not answer:
+        return adopted
+    for item in memory_context:
+        if str(item.get("memory_type", "evidence") or "evidence") == "experience":
+            continue
+        memory_answer = _clean_memory_answer(
+            item.get("answer") or item.get("summary")
+        )
+        normalized_memory_answer = " ".join(
+            re.findall(r"[a-z0-9]+", memory_answer.lower())
+        )
+        if not normalized_memory_answer:
+            continue
+        if (
+            normalized_memory_answer == answer
+            or normalized_memory_answer in answer
+            or answer in normalized_memory_answer
+        ):
+            memory_id = str(item.get("memory_id") or "")
+            if memory_id and memory_id not in adopted:
+                adopted.append(memory_id)
+    return adopted
 
 
 def _question_answer_rules(question: str) -> list[str]:
@@ -128,12 +234,13 @@ def _question_answer_rules(question: str) -> list[str]:
 def reasoner_agent(state: CompetitionState) -> dict:
     """基于任务、计划、检索证据和记忆命中生成候选答案。"""
 
-    # RetrieverAgent 会在前一节点写入 evidence、memory_hits 和裁剪后的 memory_context。
-    memory_hits = state.get("memory_hits", [])
-    memory_context = state.get("memory_context", [])
-    experience_hits = state.get("experience_hits", [])
-    experience_rules = state.get("experience_rules", [])
-    evidence = state.get("evidence", [])
+    retrieval_bundle = _resolve_retrieval_bundle(state)
+    memory_hits = retrieval_bundle.get("memory_hits", state.get("memory_hits", []))
+    memory_context = retrieval_bundle.get("memory_context", state.get("memory_context", []))
+    experience_hits = retrieval_bundle.get("experience_hits", state.get("experience_hits", []))
+    experience_rules = retrieval_bundle.get("experience_rules", state.get("experience_rules", []))
+    evidence = retrieval_bundle.get("evidence", state.get("evidence", []))
+    state_store_reads = 1 if retrieval_bundle else 0
     plan = state.get("plan", [])
     task_text = _reasoner_task_text(state)
     question = str(state.get("task_meta", {}).get("question") or "")
@@ -160,8 +267,15 @@ def reasoner_agent(state: CompetitionState) -> dict:
     plan_ref = state.get("state_refs", {}).get("plan", "")
     evidence_ref = state.get("state_refs", {}).get("evidence", "")
     if state["mode"] in {"protocol", "hidden"} and plan_ref:
+        plan_payload = resolve_state_payload(plan_ref)
         plan_state = state.get("latent_states", {}).get(plan_ref, {})
-        plan_text = str(plan_state.get("source_text") or plan_state.get("summary") or "")
+        plan_text = str(
+            (plan_payload or {}).get("source_text")
+            or plan_state.get("summary")
+            or ""
+        )
+        if plan_payload:
+            state_store_reads += 1
         latent_plan = [line.strip() for line in plan_text.splitlines() if line.strip()]
         if latent_plan:
             plan = latent_plan
@@ -188,6 +302,25 @@ def reasoner_agent(state: CompetitionState) -> dict:
                 os.environ.pop("LOCAL_CAPTURE_HIDDEN", None)
             else:
                 os.environ["LOCAL_CAPTURE_HIDDEN"] = previous_capture_hidden
+    answer_candidate, memory_answer_id = _reuse_previous_answer_if_needed(
+        question,
+        str(result.get("answer_candidate") or ""),
+        memory_context,
+    )
+    if memory_answer_id:
+        result = {
+            **result,
+            "answer_candidate": answer_candidate,
+            "memory_answer_adopted_id": memory_answer_id,
+            "reasoning_summary": " ".join(
+                part
+                for part in [
+                    str(result.get("reasoning_summary") or "").strip(),
+                    f"Resolved the explicit cross-turn answer reference from memory {memory_answer_id}.",
+                ]
+                if part
+            ),
+        }
     llm_elapsed_ms = (time.perf_counter() - llm_started) * 1000
     hidden_result = None
     hidden_tensor = None
@@ -205,7 +338,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
     )
     answer_ref = ""
     latent_states = state.get("latent_states", {})
-    metrics = state["metrics"]
+    metrics = dict(state["metrics"])
+    metrics["state_store_read_count"] = metrics.get("state_store_read_count", 0) + state_store_reads
     if state["mode"] in {"protocol", "hidden"}:
         answer_text = (
             f"answer_candidate: {result.get('answer_candidate', '')}\n"
@@ -217,7 +351,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
         )
         if state["mode"] == "hidden":
             answer_ref, latent_states, metrics = put_hidden_state(
-                state,
+                {**state, "metrics": metrics, "latent_states": latent_states},
                 producer="reasoner",
                 topic=task_text,
                 text=answer_text,
@@ -227,7 +361,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             )
         else:
             answer_ref, latent_states, metrics = put_latent_state(
-                state,
+                {**state, "metrics": metrics, "latent_states": latent_states},
                 producer="reasoner",
                 topic=task_text,
                 text=answer_text,
@@ -313,17 +447,27 @@ def reasoner_agent(state: CompetitionState) -> dict:
     )
     metrics = dict(metrics)
     metrics["reasoner_llm_ms"] = metrics.get("reasoner_llm_ms", 0.0) + llm_elapsed_ms
+    memory_retrieved_ids = _unique_memory_ids(memory_hits)
     evidence_used_memory_ids = _unique_memory_ids(
-        [hit for hit in memory_hits if str(hit.get("memory_type", "evidence") or "evidence") != "experience"]
+        [
+            hit
+            for hit in memory_context
+            if str(hit.get("memory_type", "evidence") or "evidence") != "experience"
+        ]
     )
     experience_used_memory_ids = _unique_memory_ids(experience_rules)
-    memory_used_ids = _unique_memory_ids([*memory_hits, *experience_rules])
+    memory_used_ids = _unique_memory_ids([*memory_context, *experience_rules])
+    memory_adopted_ids = _inferred_adopted_memory_ids(
+        str(result.get("answer_candidate") or ""),
+        memory_context,
+        explicit_memory_id=memory_answer_id,
+    )
     return {
-        "evidence": evidence,
+        "evidence": evidence if state["mode"] == "text" else state.get("evidence", []),
         "memory_hits": memory_hits,
         "experience_hits": experience_hits,
-        "experience_rules": experience_rules,
-        "memory_context": memory_context,
+        "experience_rules": experience_rules if state["mode"] == "text" else state.get("experience_rules", []),
+        "memory_context": memory_context if state["mode"] == "text" else state.get("memory_context", []),
         "latent_states": latent_states,
         "state_refs": {**state.get("state_refs", {}), **({"answer": answer_ref} if answer_ref else {})},
         "execution_result": {
@@ -335,6 +479,9 @@ def reasoner_agent(state: CompetitionState) -> dict:
             "experience_rules": experience_rules,
             "answer_rules": answer_rules,
             "experience_used_count": len(experience_rules),
+            "memory_retrieved_ids": memory_retrieved_ids,
+            "memory_materialized_ids": memory_used_ids,
+            "memory_adopted_ids": memory_adopted_ids,
             "memory_used_ids": memory_used_ids,
             "evidence_used_memory_ids": evidence_used_memory_ids,
             "experience_used_memory_ids": experience_used_memory_ids,

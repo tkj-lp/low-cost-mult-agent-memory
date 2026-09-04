@@ -42,6 +42,11 @@ DATASETS = {
         "dataset_type": "continuous",
         "file": "examples/competition_agents/data/topiocqa_2_10turns.json",
     },
+    "hotpot-3": {
+        "task_count": 3,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/hotpot_continuous_tasks_3turn.json",
+    },
     "codeact-1": {
         "task_count": 10,
         "dataset_type": "codeact",

@@ -1,13 +1,19 @@
 from __future__ import annotations
 
-from agents.retriever.agent import retriever_agent
+from agents.retriever.agent import (
+    _build_retrieval_query,
+    _extract_context_evidence,
+    retriever_agent,
+)
 from competition_agents.memory import _rerank_memory_hits, add_memory
 from competition_agents.state import initial_state
+from competition_agents.state_store import clear_state_store, resolve_state_payload
 
 
 def test_retriever_keeps_memory_context_in_state_and_sends_refs_only() -> None:
-    """Retriever 应把记忆详情留在共享状态里，协议包只传记忆引用。"""
+    """协议模式应把检索结果放入状态池，下游只接收可解引用标识。"""
 
+    clear_state_store()
     unique_summary = "UNIQUE_MEMORY_SUMMARY_SHOULD_NOT_BE_REEMBEDDED"
     memory = add_memory(
         [],
@@ -20,14 +26,18 @@ def test_retriever_keeps_memory_context_in_state_and_sends_refs_only() -> None:
 
     result = retriever_agent(state)
 
-    assert result["memory_context"]
-    assert result["memory_context"][0]["summary"] == unique_summary
+    assert result["memory_context"] == []
+    retrieval_ref = result["state_refs"]["retrieval"]
+    retrieval_bundle = resolve_state_payload(retrieval_ref)
+    assert retrieval_bundle is not None
+    assert retrieval_bundle["memory_context"][0]["summary"] == unique_summary
     evidence_ref = result["state_refs"]["evidence"]
     evidence_state = result["latent_states"][evidence_ref]
-    assert unique_summary not in evidence_state["source_text"]
+    assert unique_summary not in evidence_state["summary"]
 
     payload = result["messages"][-1]["payload"]
     assert payload["m"] == ["mem-0001"]
+    assert retrieval_ref in payload["s"]
     assert "memory_context" not in payload["r"]
     assert payload["r"]["hits"] == 1
 
@@ -37,14 +47,30 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
 
     captured: dict[str, object] = {}
 
-    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
+    def fake_search_memory(
+        memory: list[dict],
+        query: str,
+        *,
+        top_k: int,
+        memory_types=None,
+        type_limits=None,
+        memory_layers=None,
+        layer_limits=None,
+    ) -> list[dict]:
         captured["query"] = query
         captured["top_k"] = top_k
+        captured["type_limits"] = type_limits
+        captured["layer_limits"] = layer_limits
         return []
 
     monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
 
-    state = initial_state("Find the diplomatic role held by Shirley Temple.", "protocol", [])
+    state = initial_state(
+        "Find the diplomatic role held by Shirley Temple.",
+        "protocol",
+        [{"memory_id": "mem-0001", "memory_type": "evidence", "summary": "prior"}],
+    )
+    state["retrieval_policy"] = {"need_memory": True, "need_knowledge": True}
     state["plan"] = [
         "Identify the actress who portrayed Corliss Archer.",
         "Retrieve biographical details about Shirley Temple.",
@@ -55,21 +81,28 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
 
     assert "Planner retrieval focus:" in str(captured["query"])
     assert "Retrieve biographical details about Shirley Temple" in str(captured["query"])
-    assert captured["top_k"] == 2
+    assert captured["top_k"] == 6
+    assert captured["type_limits"] is None
+    assert captured["layer_limits"] == {"episodic": 2, "experience": 4}
     assert result["agent_outputs"][-1]["planner_focus"] == [
         "Identify the actress who portrayed Corliss Archer",
         "Retrieve biographical details about Shirley Temple",
         "Extract the government position she later held",
     ]
+    retrieval_bundle = resolve_state_payload(result["state_refs"]["retrieval"])
+    assert retrieval_bundle is not None
     assert any(
         "hypergraph structural matching plus embedding similarity fusion ranking" in item
-        for item in result["evidence"]
+        for item in retrieval_bundle["evidence"]
     )
-    assert not any("Planner-guided retrieval focus:" in item for item in result["evidence"])
+    assert not any(
+        "Planner-guided retrieval focus:" in item
+        for item in result["agent_outputs"][-1]["context_evidence"]
+    )
 
 
-def test_expected_reuse_rerank_prioritizes_target_turn() -> None:
-    """连续任务排序应优先复用 expected_reuse 指向的历史轮次。"""
+def test_expected_reuse_labels_do_not_change_online_query_or_ranking() -> None:
+    """评测标注只能用于离线评分，不能影响在线查询和排序。"""
 
     hits = [
         {
@@ -87,19 +120,31 @@ def test_expected_reuse_rerank_prioritizes_target_turn() -> None:
             "retrieval_score": 0.22,
         },
     ]
-    query = "\n".join(
-        [
-            "Question: what kinds of fish are commonly found in this sea?",
-            "Group id: chain-001",
-            "Expected reuse: turn-7.answer, group.supporting_facts",
-            "Required artifacts: answer, supporting_facts",
-        ]
+    task = "Question: what kinds of fish are commonly found in this sea?"
+    plan = ["Resolve the sea named by the previous turn", "Retrieve relevant fish evidence"]
+    plain_query, _ = _build_retrieval_query(
+        task,
+        plan,
+        {"group_id": "chain-001", "turn_id": "turn-8", "task_type": "continuous"},
+    )
+    labelled_query, _ = _build_retrieval_query(
+        task,
+        plan,
+        {
+            "group_id": "chain-001",
+            "turn_id": "turn-8",
+            "task_type": "continuous",
+            "expected_reuse": ["turn-7.answer", "group.supporting_facts"],
+        },
     )
 
-    reranked = _rerank_memory_hits(hits, query)
+    assert labelled_query == plain_query
+    reranked = _rerank_memory_hits(
+        hits,
+        plain_query + "\nExpected reuse: turn-7.answer\nRequired artifacts: answer",
+    )
 
-    assert reranked[0]["memory_id"] == "mem-0007"
-    assert reranked[0]["retrieval_score"] > reranked[1]["retrieval_score"]
+    assert [hit["memory_id"] for hit in reranked] == ["mem-0006", "mem-0007"]
 
 
 def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
@@ -126,16 +171,27 @@ def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
         },
     ]
 
-    def fake_search_memory(memory_records: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
-        if memory_types == ["evidence"]:
-            return [memory_records[0]]
-        if memory_types == ["experience"]:
-            return [memory_records[1]]
-        return []
+    calls = {"count": 0}
+
+    def fake_search_memory(
+        memory_records: list[dict],
+        query: str,
+        *,
+        top_k: int,
+        memory_types=None,
+        type_limits=None,
+        memory_layers=None,
+        layer_limits=None,
+    ) -> list[dict]:
+        calls["count"] += 1
+        assert type_limits is None
+        assert layer_limits == {"episodic": 2, "experience": 4}
+        return memory_records
 
     monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
 
     state = initial_state("when was dunkirk released on dvd in the united kingdom?", "protocol", memory)
+    state["retrieval_policy"] = {"need_memory": True, "need_knowledge": True}
     state["plan"] = [
         "Retrieve the film release sentence.",
         "Check the United Kingdom constraint.",
@@ -150,7 +206,32 @@ def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
     assert retriever_output["experience_hit_ids"] == ["mem-0002"]
     assert retriever_output["experience_hits"][0]["problem_pattern"] == "temporal_slot_selection"
     assert retriever_output["experience_rules"][0]["solution_pattern"] == "choose_date_matching_constraints"
-    assert any(item["memory_type"] == "experience" for item in result["memory_context"])
+    retrieval_bundle = resolve_state_payload(result["state_refs"]["retrieval"])
+    assert retrieval_bundle is not None
+    assert any(item["memory_type"] == "experience" for item in retrieval_bundle["memory_context"])
+    assert calls["count"] == 1
+
+
+def test_gold_supporting_facts_do_not_change_context_retrieval() -> None:
+    """更换金标准证据标签不应改变同一上下文的在线检索结果。"""
+
+    base_meta = {
+        "question": "Which basket item is mentioned?",
+        "context": [
+            {"title": "Basket", "sentences": ["The basket item is apples."]},
+            {"title": "Basket", "sentences": ["The basket item is pears."]},
+        ],
+    }
+    apples_gold = {
+        **base_meta,
+        "supporting_facts": [["Basket", "The basket item is apples."]],
+    }
+    pears_gold = {
+        **base_meta,
+        "supporting_facts": [["Basket", "The basket item is pears."]],
+    }
+
+    assert _extract_context_evidence(apples_gold, []) == _extract_context_evidence(pears_gold, [])
 
 
 def test_retriever_extracts_context_evidence_from_planner_focus(monkeypatch) -> None:
@@ -191,9 +272,10 @@ def test_retriever_extracts_context_evidence_from_planner_focus(monkeypatch) -> 
 
     result = retriever_agent(state)
 
-    assert any("Kiss and Tell (1945 film): Kiss and Tell is a 1945 American comedy film starring Shirley Temple as Corliss Archer." == item for item in result["evidence"])
-    assert any("Shirley Temple: As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States." == item for item in result["evidence"])
-    assert result["agent_outputs"][-1]["context_evidence"]
+    context_evidence = result["agent_outputs"][-1]["context_evidence"]
+    assert any("Kiss and Tell (1945 film): Kiss and Tell is a 1945 American comedy film starring Shirley Temple as Corliss Archer." == item for item in context_evidence)
+    assert any("Shirley Temple: As an adult, she was named United States ambassador to Ghana and to Czechoslovakia and also served as Chief of Protocol of the United States." == item for item in context_evidence)
+    assert context_evidence
 
 
 def test_retriever_prioritizes_answer_bearing_sentence_over_title_overlap(monkeypatch) -> None:

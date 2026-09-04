@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 import runner_server
+from run_demo import task_meta_from_item
 
 
 VISIBLE_DATASETS = {
@@ -16,14 +17,35 @@ TEXT_RETRIEVAL_MODES = {"keyword", "tag", "semantic"}
 HYPERGRAPH_RETRIEVAL_MODES = {"hypergraph", "fusion"}
 
 
+def test_online_task_metadata_excludes_evaluation_labels() -> None:
+    metadata = task_meta_from_item(
+        {
+            "task_id": "task-1",
+            "question": "observable question",
+            "expected_answer": "gold answer",
+            "expected_reuse": ["turn-1.answer"],
+            "supporting_facts": [["title", 0]],
+            "expected": {"result": 1},
+            "reference_code": "result = 1",
+        }
+    )
+
+    assert metadata["question"] == "observable question"
+    assert metadata["reference_code"] == "result = 1"
+    assert "expected_answer" not in metadata
+    assert "expected_reuse" not in metadata
+    assert "supporting_facts" not in metadata
+    assert "expected" not in metadata
+
+
 def test_runner_supports_visible_datasets_and_collaboration_modes() -> None:
     assert set(runner_server.DATASETS) >= VISIBLE_DATASETS
-    assert runner_server.EXPERIMENT_MODES == {
+    assert set(runner_server.EXPERIMENT_MODES.items()) >= {
         "plain": "baseline_text",
         "structured": "protocol_api",
         "protocol-vector": "protocol_api_embedding",
         "latent": "hidden_api",
-    }
+    }.items()
 
 
 def test_text_memory_modes_build_effective_commands() -> None:

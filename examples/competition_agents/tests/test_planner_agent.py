@@ -35,9 +35,22 @@ def test_planner_sanitizes_dialogue_script_output(monkeypatch) -> None:
 
     assert result["agent_outputs"][-1]["plan_sanitized"] is True
     assert result["retrieval_policy"]["need_memory"] is False
+    assert result["retrieval_policy"]["next_batch_interface"] == {
+        "batch_id": "knowledge_followup",
+        "decision_owner": "planner",
+        "allowed_decisions": ["run", "skip"],
+        "decision_field": "next_batch_decision",
+    }
+    assert result["retrieval_batches"][0]["layers"] == [
+        "episodic",
+        "experience",
+    ]
+    wire_policy = result["messages"][-1]["payload"]["p"]["retrieval_policy"]
+    assert "retrieval_batches" not in wire_policy
+    assert "next_batch_interface" not in wire_policy
     assert result["plan"] == [
         "Identify the question target and requested answer type.",
-        "Check expected reuse and prior memory for relevant earlier facts.",
+        "Resolve cross-turn references against available prior memory before retrieval.",
         "Retrieve the most relevant supporting evidence for the target.",
         "Route evidence to reasoning and summarize a concise final answer.",
     ]

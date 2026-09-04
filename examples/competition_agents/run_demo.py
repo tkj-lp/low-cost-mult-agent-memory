@@ -12,16 +12,19 @@ from typing import Any
 from competition_agents.capabilities import build_capability_registry
 from competition_agents.graph import build_graph
 from competition_agents.llm.client import get_llm_provider
+from competition_agents.memory import apply_memory_outcome
 from competition_agents.runtime_events import (
     DEFAULT_EVENT_LOG_FILE,
     configure_event_log,
     emit_runtime_event,
     emit_task_result_events,
 )
-from competition_agents.state_store import clear_state_store
+from competition_agents.state_store import clear_state_scope, clear_state_store
 from competition_agents.state import initial_state
 from hypergraph_memory_method import (
     RETRIEVAL_MODE_VALUES,
+    clear_hypergraph_index_cache,
+    maintain_memory,
     memory_organization_for_mode,
 )
 from hypergraph_memory_method.reuse_metrics import evaluate_run_reuse
@@ -465,11 +468,8 @@ def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
             "turn_id",
             "dataset_type",
             "source_dataset",
-            "expected_answer",
-            "expected_reuse",
             "question",
             "context",
-            "supporting_facts",
             "topic",
             "topic_section",
             "conversation_context",
@@ -477,7 +477,6 @@ def task_meta_from_item(task_item: dict[str, Any]) -> dict[str, Any]:
             "context_source",
             "task_type",
             "inputs",
-            "expected",
             "allowed_imports",
             "reference_code",
             "timeout_ms",
@@ -779,6 +778,13 @@ def _build_retrieval_debug(result: dict[str, Any]) -> dict[str, Any]:
             "experience_hit_ids": retriever_output.get("experience_hit_ids", []),
             "experience_hits": retriever_output.get("experience_hits", []),
             "experience_rules": retriever_output.get("experience_rules", []),
+            "retrieval_batches": retriever_output.get(
+                "retrieval_batches", result.get("retrieval_batches", [])
+            ),
+            "memory_layer_hit_counts": retriever_output.get(
+                "memory_layer_hit_counts", {}
+            ),
+            "memory_layer_hits": result.get("memory_layer_hits", {}),
             "memory_context": result.get("memory_context", []),
             "memory_hits": _frontend_memory_hits(result.get("memory_hits", [])),
         },
@@ -1180,11 +1186,16 @@ def run_mode(
         "memory_gate_skip_count": 0,
         "memory_query_count": 0,
         "knowledge_query_count": 0,
+        "retrieval_batch_count": 0,
         "planner_memory_decision_ms": 0.0,
+        "state_store_write_count": 0,
+        "state_store_read_count": 0,
+        "state_store_bytes": 0,
     }
 
     print(f"\n=== {mode} mode ===")
     clear_state_store()
+    clear_hypergraph_index_cache()
     warm_local_runtime()
     warm_codeact_runtime(dataset_type)
     for index, task_item in enumerate(tasks, start=1):
@@ -1313,11 +1324,6 @@ def run_mode(
         )
         total_elapsed += elapsed
 
-        if dataset_type == "continuous":
-            group_memory[group_id] = result["memory"]
-        else:
-            global_memory = result["memory"]
-
         metrics = result["metrics"]
         memory_hits = len(result["memory_hits"])
         total_memory_hits += memory_hits
@@ -1342,8 +1348,24 @@ def run_mode(
             comparable += 1
             exact_match = answers_match(prediction, str(expected_answer))
             correct += int(exact_match)
-        if exact_match and int(result.get("execution_result", {}).get("experience_used_count", 0)) > 0:
+        adopted_memory_ids = result.get("execution_result", {}).get(
+            "memory_adopted_ids",
+            result.get("execution_result", {}).get("memory_materialized_ids", []),
+        )
+        if exact_match and adopted_memory_ids:
             total_metrics["reuse_success_count"] += 1
+
+        if exact_match is not None and adopted_memory_ids:
+            result["memory"] = apply_memory_outcome(
+                result["memory"],
+                adopted_memory_ids,
+                successful=bool(exact_match),
+            )
+
+        if dataset_type == "continuous":
+            group_memory[group_id] = result["memory"]
+        else:
+            global_memory = result["memory"]
 
         emit_task_result_events(
             mode=mode,
@@ -1389,6 +1411,7 @@ def run_mode(
             f"memory_gate_skip={metrics.get('memory_gate_skip_count', 0)}, "
             f"memory_queries={metrics.get('memory_query_count', 0)}, "
             f"knowledge_queries={metrics.get('knowledge_query_count', 0)}, "
+            f"retrieval_batches={metrics.get('retrieval_batch_count', 0)}, "
             f"elapsed_ms={elapsed * 1000:.2f}"
         )
         if show_agents:
@@ -1410,6 +1433,21 @@ def run_mode(
                 prediction=prediction,
             )
         )
+        clear_state_scope("task")
+
+    maintenance_before = sum(len(records) for records in group_memory.values()) + len(
+        global_memory
+    )
+    if dataset_type == "continuous":
+        group_memory = {
+            group_id: maintain_memory(records)
+            for group_id, records in group_memory.items()
+        }
+    else:
+        global_memory = maintain_memory(global_memory)
+    maintenance_after = sum(len(records) for records in group_memory.values()) + len(
+        global_memory
+    )
 
     hit_task_count = sum(1 for task_result in task_results if task_result.get("memory_hit_count", 0) > 0)
     memory_hit_rate = hit_task_count / len(tasks) if tasks else 0.0
@@ -1431,6 +1469,7 @@ def run_mode(
         f"memory_gate_skips={total_metrics['memory_gate_skip_count']}, "
         f"memory_queries={total_metrics['memory_query_count']}, "
         f"knowledge_queries={total_metrics['knowledge_query_count']}, "
+        f"retrieval_batches={total_metrics['retrieval_batch_count']}, "
         f"memory_writes={total_metrics['memory_write_count']}, "
         f"memory_hit_rate={memory_hit_rate:.2f}, "
         f"elapsed_ms={total_elapsed * 1000:.2f}"
@@ -1469,6 +1508,10 @@ def run_mode(
         "elapsed_ms": elapsed_ms,
         "exact_match": exact_match_rate,
         "task_results": task_results,
+        "memory_maintenance": {
+            "records_before": maintenance_before,
+            "records_after": maintenance_after,
+        },
     }
     return run_result
 

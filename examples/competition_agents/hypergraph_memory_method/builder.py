@@ -4,6 +4,7 @@ import os
 from typing import Any
 
 from .distill import distill_experience
+from .layers import memory_layer_for_record
 from .memory_model import normalize_memory_record
 from .schema import (
     EDGE_AGENT_MESSAGE,
@@ -15,6 +16,7 @@ from .schema import (
     EDGE_EVIDENCE_CHAIN,
     EDGE_EVIDENCE_PROVENANCE,
     EDGE_EXPERIENCE,
+    EDGE_EXPERIENCE_ABSTRACTION,
     EDGE_EXPERIENCE_RULE,
     EDGE_EXPERIENCE_SIGNATURE,
     EDGE_GAP,
@@ -22,6 +24,7 @@ from .schema import (
     EDGE_MEMORY_EVENT,
     EDGE_MEMORY_LAYER,
     EDGE_MEMORY_REUSE,
+    EDGE_KNOWLEDGE_GROUNDING,
     EDGE_OUTCOME,
     EDGE_OUTCOME_FEEDBACK,
     EDGE_REUSE_BENEFIT,
@@ -38,13 +41,13 @@ from .schema import (
     NODE_ARTIFACT,
     NODE_CAPABILITY,
     NODE_CLAIM,
+    NODE_CONTEXT,
     NODE_DATASET,
     NODE_ENTITY,
     NODE_EVIDENCE,
     NODE_EVIDENCE_CHAIN,
     NODE_EVIDENCE_SOURCE,
     NODE_EXECUTION,
-    NODE_EXPECTED_REUSE,
     NODE_EXPERIENCE,
     NODE_EXPERIENCE_RULE,
     NODE_EXPERIENCE_SIGNATURE,
@@ -102,13 +105,13 @@ def _clean_tags(tags: list[str]) -> list[str]:
     )
 
 
-def _memory_layers(
+def _memory_facets(
     record: dict[str, Any], trace: dict[str, Any] | None = None
 ) -> list[str]:
-    """Classify one record into logical memory layers.
+    """Describe the payload facets carried by one memory record.
 
-    A physical memory record can contain several logical layers. For example, an
-    evidence write with a trace still carries trajectory and outcome memory.
+    Facets such as evidence, trajectory, and outcome are not primary storage
+    layers. They remain indexed because retrieval scoring uses them.
     """
 
     layers: set[str] = set()
@@ -157,6 +160,15 @@ def _memory_layers(
     return sorted(layers)
 
 
+def _memory_layers(
+    record: dict[str, Any], trace: dict[str, Any] | None = None
+) -> list[str]:
+    """Return the single primary layer used by the three-layer architecture."""
+
+    del trace
+    return [memory_layer_for_record(record)]
+
+
 def _memory_layer_edge(
     record: dict[str, Any], trace: dict[str, Any] | None = None
 ) -> tuple[list[str], dict[str, Any]]:
@@ -170,6 +182,62 @@ def _memory_layer_edge(
     return layer_nodes, _edge(
         EDGE_MEMORY_LAYER, memory_id, "layer", [memory_node, *layer_nodes]
     )
+
+
+def _cross_layer_structure(
+    record: dict[str, Any],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """Build optional links between the three primary memory layers."""
+
+    memory_id = str(record["memory_id"])
+    memory_node = node_id(NODE_MEMORY, memory_id)
+    layer = memory_layer_for_record(record)
+    nodes: list[str] = []
+    edges: list[dict[str, Any]] = []
+
+    knowledge_nodes = [
+        node_id(NODE_CONTEXT, str(ref))
+        for ref in record.get("knowledge_refs", []) or []
+        if str(ref).strip()
+    ]
+    if knowledge_nodes:
+        nodes.extend(knowledge_nodes)
+        edges.append(
+            _edge(
+                EDGE_KNOWLEDGE_GROUNDING,
+                memory_id,
+                "knowledge-grounding",
+                [
+                    memory_node,
+                    node_id(NODE_MEMORY_LAYER, layer),
+                    node_id(NODE_MEMORY_LAYER, "knowledge"),
+                    *knowledge_nodes,
+                ],
+            )
+        )
+
+    source_memory_nodes = [
+        node_id(NODE_MEMORY, str(ref))
+        for ref in record.get("source_memory_ids", []) or []
+        if str(ref).strip() and str(ref) != memory_id
+    ]
+    if source_memory_nodes:
+        nodes.extend(source_memory_nodes)
+        edges.append(
+            _edge(
+                EDGE_EXPERIENCE_ABSTRACTION,
+                memory_id,
+                "experience-abstraction",
+                [
+                    memory_node,
+                    node_id(NODE_MEMORY_LAYER, layer),
+                    node_id(NODE_MEMORY_LAYER, "episodic"),
+                    *source_memory_nodes,
+                ],
+            )
+        )
+
+    return list(dict.fromkeys(nodes)), edges
 
 
 def _record_value_nodes(record: dict[str, Any], key: str, kind: str) -> list[str]:
@@ -219,16 +287,16 @@ def _gap_coverage_values(
     """
 
     gaps: set[str] = set()
-    layers = set(_memory_layers(record, trace))
-    if "evidence" in layers:
+    facets = set(_memory_facets(record, trace))
+    if "evidence" in facets:
         gaps.update({"external-supporting-facts", "needs-reasoning"})
-    if "experience" in layers:
+    if "experience" in facets:
         gaps.update(
             {"experience-distillation", "memory-grounded-reasoning", "partial-context"}
         )
-    if "trajectory" in layers:
+    if "trajectory" in facets:
         gaps.add("agent-trajectory")
-    if "outcome" in layers:
+    if "outcome" in facets:
         gaps.add("outcome-feedback")
 
     memory_type = str(record.get("memory_type", "evidence") or "evidence")
@@ -267,15 +335,11 @@ def _gap_coverage_values(
             if isinstance(trace.get("execution_result"), dict)
             else {}
         )
-        if (
-            task_meta.get("expected_reuse")
-            or trace.get("memory_hits")
-            or trace.get("memory_context")
-        ):
+        if trace.get("memory_hits") or trace.get("memory_context"):
             gaps.update(
                 {"missing-memory", "partial-context", "memory-grounded-reasoning"}
             )
-        if task_meta.get("supporting_facts") or trace.get("evidence"):
+        if trace.get("evidence"):
             gaps.add("external-supporting-facts")
         if trace.get("messages") or trace.get("agent_outputs"):
             gaps.add("agent-trajectory")
@@ -322,11 +386,6 @@ def _keyword_nodes(*texts: str, limit: int = 32) -> list[str]:
         if len(tokens) >= limit:
             break
     return [node_id(NODE_KEYWORD, token) for token in tokens]
-
-
-def _artifact_from_expected_reuse(value: str) -> str:
-    _, _, artifact = value.partition(".")
-    return artifact or value
 
 
 def _packet_list(value: Any) -> list[Any]:
@@ -513,6 +572,7 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
     agent_node = node_id(NODE_AGENT, record.get("source_agent", "unknown"))
     tag_nodes = [node_id(NODE_TAG, tag) for tag in tags]
     keyword_nodes = _keyword_nodes(task_topic, keyword_source, " ".join(tags), limit=48)
+    entity_nodes = _record_value_nodes(record, "entities", NODE_ENTITY)
     record_context_nodes = []
     for key, kind in (
         ("group_id", NODE_GROUP),
@@ -545,6 +605,7 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
         [memory_node, node_id(NODE_ARTIFACT, "experience-signature"), *signature_nodes],
     )
     chain_nodes, chain_edges, chain_summary = _evidence_chain_structure(record)
+    cross_layer_nodes, cross_layer_edges = _cross_layer_structure(record)
     hyperedge = _edge(
         EDGE_MEMORY_EVENT,
         memory_id,
@@ -555,6 +616,7 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
             agent_node,
             *tag_nodes,
             *keyword_nodes,
+            *entity_nodes,
             *record_context_nodes,
             *artifact_nodes,
             *layer_nodes,
@@ -562,6 +624,7 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
             *signature_nodes,
             *memory_alias_nodes,
             *chain_nodes,
+            *cross_layer_nodes,
         ],
     )
 
@@ -576,6 +639,7 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
         "memory_node": memory_node,
         "memory_type": memory_type,
         "memory_layers": _memory_layers(record),
+        "memory_facets": _memory_facets(record),
         "task_node": task_node,
         "task_label": task_topic,
         "agent_node": agent_node,
@@ -586,7 +650,9 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
         "gap_coverage_nodes": gap_coverage_nodes,
         "experience_signature_nodes": signature_nodes,
         "keyword_nodes": keyword_nodes,
+        "entity_nodes": entity_nodes,
         "evidence_chain_nodes": chain_nodes,
+        "cross_layer_nodes": cross_layer_nodes,
         "evidence_chain": chain_summary,
         "event_hyperedge": hyperedge,
         "memory_alias_nodes": memory_alias_nodes,
@@ -597,6 +663,7 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
             *([signature_edge] if signature_nodes else []),
             *([alias_edge] if memory_alias_nodes else []),
             *chain_edges,
+            *cross_layer_edges,
         ],
     }
 
@@ -643,6 +710,7 @@ def build_hypergraph_view(
     )
     memory_type = str(record.get("memory_type", "evidence") or "evidence")
     memory_layers = _memory_layers(record, trace)
+    memory_facets = _memory_facets(record, trace)
     layer_nodes, layer_edge = _memory_layer_edge(record, trace)
     distilled = distill_experience(record)
     gap_coverage_nodes = [
@@ -663,6 +731,7 @@ def build_hypergraph_view(
         [memory_node, node_id(NODE_ARTIFACT, "experience-signature"), *signature_nodes],
     )
     chain_nodes, chain_edges, chain_summary = _evidence_chain_structure(record)
+    cross_layer_nodes, cross_layer_edges = _cross_layer_structure(record)
 
     structured_nodes: list[str] = [
         *layer_nodes,
@@ -670,7 +739,10 @@ def build_hypergraph_view(
         *signature_nodes,
         *memory_alias_nodes,
         *chain_nodes,
+        *cross_layer_nodes,
     ]
+    entity_nodes = _record_value_nodes(record, "entities", NODE_ENTITY)
+    structured_nodes.extend(entity_nodes)
     hyperedges: list[dict[str, Any]] = [
         layer_edge,
         gap_coverage_edge,
@@ -688,7 +760,17 @@ def build_hypergraph_view(
             else []
         ),
         *chain_edges,
+        *cross_layer_edges,
     ]
+    if entity_nodes:
+        hyperedges.append(
+            _edge(
+                EDGE_EVIDENCE,
+                memory_id,
+                "entities",
+                [memory_node, node_id(NODE_ARTIFACT, "entities"), *entity_nodes],
+            )
+        )
 
     task_context_nodes = [memory_node, task_node]
     for key, kind in (
@@ -705,15 +787,6 @@ def build_hypergraph_view(
         artifact_node = node_id(NODE_ARTIFACT, str(value))
         structured_nodes.append(artifact_node)
         task_context_nodes.append(artifact_node)
-    for value in task_meta.get("expected_reuse", []):
-        if not value:
-            continue
-        reuse_node = node_id(NODE_EXPECTED_REUSE, str(value))
-        artifact_node = node_id(
-            NODE_ARTIFACT, _artifact_from_expected_reuse(str(value))
-        )
-        structured_nodes.extend([reuse_node, artifact_node])
-        task_context_nodes.extend([reuse_node, artifact_node])
     hyperedges.append(_edge(EDGE_TASK_CONTEXT, memory_id, "task", task_context_nodes))
 
     state_nodes = [memory_node]
@@ -827,7 +900,11 @@ def build_hypergraph_view(
         hyperedges.append(_edge(EDGE_EVIDENCE, memory_id, "evidence", evidence_nodes))
 
     supporting_fact_nodes = [memory_node, node_id(NODE_ARTIFACT, "supporting-facts")]
-    for index, fact in enumerate(task_meta.get("supporting_facts", []), start=1):
+    supporting_items = [
+        *record.get("supporting_facts", []),
+        *record.get("supporting_evidence", []),
+    ]
+    for index, fact in enumerate(supporting_items, start=1):
         title = ""
         sentence = ""
         if isinstance(fact, (list, tuple)) and fact:
@@ -1022,6 +1099,7 @@ def build_hypergraph_view(
         "memory_node": memory_node,
         "memory_type": memory_type,
         "memory_layers": memory_layers,
+        "memory_facets": memory_facets,
         "task_node": task_node,
         "task_label": task_topic,
         "agent_node": agent_node,
@@ -1032,6 +1110,7 @@ def build_hypergraph_view(
         "memory_alias_nodes": memory_alias_nodes,
         "keyword_nodes": keyword_nodes,
         "evidence_chain_nodes": chain_nodes,
+        "cross_layer_nodes": cross_layer_nodes,
         "evidence_chain": chain_summary,
         "event_hyperedge": event_hyperedge,
         "hyperedges": [event_hyperedge, *hyperedges],

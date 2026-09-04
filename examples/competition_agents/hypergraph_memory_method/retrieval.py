@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 from competition_agents.embedding import embed_text
 
-from .index import HypergraphIndex, _cosine_similarity
+from .index import _cosine_similarity, get_cached_hypergraph_index
 from .memory_model import normalize_memory_record
 from .text import tokenize
 
@@ -50,9 +50,6 @@ def _prepared(memory: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "evidence_chain_id",
             "evidence_chain_valid",
             "evidence_chain_completeness",
-            "embedding",
-            "embedding_provider",
-            "embedding_model",
         ):
             record.pop(key, None)
         record["memory_organization"] = "text"
@@ -75,13 +72,17 @@ def _compact_text_projection(record: dict[str, Any]) -> dict[str, Any]:
 
 
 def search_keyword_memory(
-    memory: list[dict[str, Any]], query: str, *, top_k: int
+    memory: list[dict[str, Any]],
+    query: str,
+    *,
+    top_k: int,
+    _records: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """使用带逆文档频率的关键词基线检索文本记忆。"""
 
     if top_k <= 0:
         return []
-    records = _prepared(memory)
+    records = _records if _records is not None else _prepared(memory)
     query_tokens = set(tokenize(query))
     if not query_tokens:
         return []
@@ -127,7 +128,11 @@ def search_keyword_memory(
 
 
 def search_tag_memory(
-    memory: list[dict[str, Any]], query: str, *, top_k: int
+    memory: list[dict[str, Any]],
+    query: str,
+    *,
+    top_k: int,
+    _records: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """使用精确标签交集检索文本记忆。"""
 
@@ -135,7 +140,8 @@ def search_tag_memory(
         return []
     query_tags = set(tokenize(query))
     scored: list[tuple[float, dict[str, Any]]] = []
-    for record in _prepared(memory):
+    records = _records if _records is not None else _prepared(memory)
+    for record in records:
         tags = {
             str(tag).strip().lower().replace("_", "-") for tag in record.get("tags", [])
         }
@@ -167,7 +173,11 @@ def search_tag_memory(
 
 
 def search_semantic_memory(
-    memory: list[dict[str, Any]], query: str, *, top_k: int
+    memory: list[dict[str, Any]],
+    query: str,
+    *,
+    top_k: int,
+    _records: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """在文本记忆上执行独立向量召回。"""
 
@@ -175,7 +185,8 @@ def search_semantic_memory(
         return []
     query_embedding = embed_text(query)
     scored: list[tuple[float, dict[str, Any]]] = []
-    for record in _prepared(memory):
+    records = _records if _records is not None else _prepared(memory)
+    for record in records:
         values = record.get("embedding")
         if not isinstance(values, list) or not values:
             document_embedding = embed_text(str(record.get("search_document") or ""))
@@ -218,35 +229,60 @@ def search_memory_by_mode(
     *,
     top_k: int,
     mode: RetrievalMode = "hypergraph",
+    memory_types: set[str] | None = None,
+    type_limits: dict[str, int] | None = None,
 ) -> list[dict[str, Any]]:
     """以稳定输入输出切换五种记忆检索模式。"""
 
+    candidate_k = len(memory) if type_limits else top_k
     if mode == "keyword":
-        return search_keyword_memory(memory, query, top_k=top_k)
+        return _limit_by_memory_type(
+            search_keyword_memory(memory, query, top_k=candidate_k),
+            top_k=top_k,
+            memory_types=memory_types,
+            type_limits=type_limits,
+        )
     if mode == "tag":
-        return search_tag_memory(memory, query, top_k=top_k)
+        return _limit_by_memory_type(
+            search_tag_memory(memory, query, top_k=candidate_k),
+            top_k=top_k,
+            memory_types=memory_types,
+            type_limits=type_limits,
+        )
     if mode == "semantic":
-        return search_semantic_memory(memory, query, top_k=top_k)
+        return _limit_by_memory_type(
+            search_semantic_memory(memory, query, top_k=candidate_k),
+            top_k=top_k,
+            memory_types=memory_types,
+            type_limits=type_limits,
+        )
     if mode == "hypergraph":
-        return [
+        hits = [
             {**hit, "memory_organization": "hypergraph"}
-            for hit in HypergraphIndex.from_memory_records(memory).search(
-                query, top_k=top_k
+            for hit in get_cached_hypergraph_index(memory).search(
+                query, top_k=candidate_k
             )
         ]
+        return _limit_by_memory_type(
+            hits,
+            top_k=top_k,
+            memory_types=memory_types,
+            type_limits=type_limits,
+        )
     if mode != "fusion":
         raise ValueError(f"Unsupported retrieval mode: {mode}")
 
-    candidate_k = max(top_k * 3, 6)
+    candidate_k = len(memory) if type_limits else max(top_k * 3, 6)
+    records = _prepared(memory)
     rankings = {
-        "keyword": search_keyword_memory(memory, query, top_k=candidate_k),
-        "tag": search_tag_memory(memory, query, top_k=candidate_k),
+        "keyword": search_keyword_memory(memory, query, top_k=candidate_k, _records=records),
+        "tag": search_tag_memory(memory, query, top_k=candidate_k, _records=records),
         "semantic": [
             hit
-            for hit in search_semantic_memory(memory, query, top_k=candidate_k)
+            for hit in search_semantic_memory(memory, query, top_k=candidate_k, _records=records)
             if not hit.get("semantic_fallback")
         ],
-        "hypergraph": HypergraphIndex.from_memory_records(memory).search(
+        "hypergraph": get_cached_hypergraph_index(memory).search(
             query, top_k=candidate_k
         ),
     }
@@ -267,7 +303,7 @@ def search_memory_by_mode(
     ordered = sorted(
         fused_scores, key=lambda memory_id: (-fused_scores[memory_id], memory_id)
     )
-    return [
+    hits = [
         {
             **candidates[memory_id],
             "retrieval_mode": "fusion",
@@ -276,8 +312,40 @@ def search_memory_by_mode(
             "retrieval_score": round(fused_scores[memory_id], 6),
             "fusion_channels": sorted(channels[memory_id]),
         }
-        for memory_id in ordered[:top_k]
+        for memory_id in ordered
     ]
+    return _limit_by_memory_type(
+        hits,
+        top_k=top_k,
+        memory_types=memory_types,
+        type_limits=type_limits,
+    )
+
+
+def _limit_by_memory_type(
+    hits: list[dict[str, Any]],
+    *,
+    top_k: int,
+    memory_types: set[str] | None,
+    type_limits: dict[str, int] | None,
+) -> list[dict[str, Any]]:
+    allowed = set(memory_types or [])
+    limits = {str(key): max(0, int(value)) for key, value in (type_limits or {}).items()}
+    if limits:
+        allowed |= set(limits)
+    selected: list[dict[str, Any]] = []
+    counts: Counter[str] = Counter()
+    for hit in hits:
+        memory_type = str(hit.get("memory_type", "evidence") or "evidence")
+        if allowed and memory_type not in allowed:
+            continue
+        if limits and counts[memory_type] >= limits.get(memory_type, 0):
+            continue
+        selected.append(hit)
+        counts[memory_type] += 1
+        if len(selected) >= top_k:
+            break
+    return selected
 
 
 def compare_retrieval_modes(

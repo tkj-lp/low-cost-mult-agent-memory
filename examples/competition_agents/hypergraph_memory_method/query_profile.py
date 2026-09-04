@@ -8,7 +8,6 @@ from .schema import (
     NODE_ARCHIVE_SCOPE,
     NODE_ARTIFACT,
     NODE_EVIDENCE_CHAIN,
-    NODE_EXPECTED_REUSE,
     NODE_EXPERIENCE,
     NODE_EXPERIENCE_RULE,
     NODE_FAILURE_PATTERN,
@@ -47,16 +46,6 @@ ARTIFACT_HINTS = {
 }
 
 
-def _artifact_from_expected_reuse(value: str) -> str:
-    _, _, artifact = value.partition(".")
-    return normalize_text(artifact or value)
-
-
-def _expected_turn_from_reuse(value: str) -> str:
-    source, _, _ = str(value or "").partition(".")
-    return normalize_text(source)
-
-
 def _line_values(normalized_query: str, labels: tuple[str, ...]) -> set[str]:
     values: set[str] = set()
     for label in labels:
@@ -78,15 +67,6 @@ def build_query_profile(
     task_meta = task_meta or {}
     raw_query = str(query or "").lower()
 
-    expected_reuse = {
-        normalize_text(match)
-        for match in re.findall(r"turn-\d+\.[a-zA-Z_][a-zA-Z0-9_]*", normalized_query)
-    }
-    if isinstance(task_meta, dict):
-        for value in task_meta.get("expected_reuse", []):
-            if value:
-                expected_reuse.add(normalize_text(str(value)))
-
     group_ids = _line_values(raw_query, ("group id", "group_id", "conversation group"))
     turn_ids = _line_values(raw_query, ("current turn", "turn id", "turn_id"))
     if isinstance(task_meta, dict):
@@ -94,17 +74,10 @@ def build_query_profile(
             group_ids.add(normalize_text(str(task_meta["group_id"])))
         if task_meta.get("turn_id"):
             turn_ids.add(normalize_text(str(task_meta["turn_id"])))
-    expected_turns = {
-        turn
-        for turn in (_expected_turn_from_reuse(value) for value in expected_reuse)
-        if turn
-    }
-
     artifacts: set[str] = set()
     for artifact, hints in ARTIFACT_HINTS.items():
         if tokens & hints or any(hint in normalized_query for hint in hints):
             artifacts.add(artifact)
-    artifacts.update(_artifact_from_expected_reuse(value) for value in expected_reuse)
     if (
         "previous" in normalized_query
         or "prior" in normalized_query
@@ -145,7 +118,7 @@ def build_query_profile(
         strategies.add("state-ref-passing")
     if {"memory", "reuse", "previous", "prior"} & tokens:
         strategies.add("memory-ref-passing")
-        strategies.add("expected-reuse-planning")
+        strategies.add("memory-reuse-planning")
 
     experiences = set()
     if {"evidence", "facts", "chain"} & tokens:
@@ -157,14 +130,12 @@ def build_query_profile(
         experiences.add("memory-grounded-reasoning")
 
     memory_layers = set()
-    if {"evidence", "facts", "fact", "answer"} & tokens:
-        memory_layers.add("evidence")
+    if {"evidence", "facts", "fact", "answer", "qa", "episode", "episodic"} & tokens:
+        memory_layers.add("episodic")
     if {"experience", "rule", "strategy", "failure", "trigger"} & tokens:
         memory_layers.add("experience")
-    if {"trace", "trajectory", "message", "handoff", "agent"} & tokens:
-        memory_layers.add("trajectory")
-    if {"outcome", "metric", "metrics", "benefit", "saving", "cost"} & tokens:
-        memory_layers.add("outcome")
+    if {"knowledge", "context", "knowledge-base"} & tokens:
+        memory_layers.add("knowledge")
 
     rule_nodes = {
         "problem_patterns": set(),
@@ -226,8 +197,6 @@ def build_query_profile(
 
     return {
         "intent": intent,
-        "expected_reuse": sorted(expected_reuse),
-        "expected_turns": sorted(expected_turns),
         "group_ids": sorted(group_ids),
         "turn_ids": sorted(turn_ids),
         "question": (
@@ -256,10 +225,6 @@ def profile_nodes(profile: dict[str, Any]) -> set[str]:
     intent = profile.get("intent")
     if intent:
         nodes.add(node_id(NODE_INTENT, str(intent)))
-    for value in profile.get("expected_reuse", []):
-        nodes.add(node_id(NODE_EXPECTED_REUSE, str(value)))
-    for value in profile.get("expected_turns", []):
-        nodes.add(node_id(NODE_TURN, str(value)))
     for value in profile.get("group_ids", []):
         nodes.add(node_id(NODE_GROUP, str(value)))
     for value in profile.get("turn_ids", []):
