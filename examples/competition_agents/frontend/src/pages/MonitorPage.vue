@@ -802,6 +802,24 @@ function eventsFromImportedPayload(payload) {
       payload_summary: task.agent_views?.reasoner?.display_text || task.final_answer || '',
       return_result: { summary: task.final_answer || '', final_answer: task.final_answer || '' }
     })
+    for (const write of importedMemoryWrites(task)) {
+      const normalizedWrite = normalizeMemoryWrite(write)
+      if (!normalizedWrite.memory_id) continue
+      events.push({
+        event_type: 'memory_write',
+        timestamp,
+        task_index: taskIndex,
+        task_id: taskId,
+        task_title: taskTitle,
+        from_agent: 'summarizer',
+        to_agent: 'memory',
+        action_type: 'write_memory',
+        memory_refs: [normalizedWrite.memory_id],
+        state_refs: normalizeList(normalizedWrite.state_refs || stateRefs),
+        payload_summary: normalizedWrite.summary,
+        return_result: normalizedWrite
+      })
+    }
     events.push({
       event_type: 'task_done',
       timestamp,
@@ -975,6 +993,50 @@ function importedContextHits(task) {
   return []
 }
 
+function importedMemoryWrites(task) {
+  const writes = []
+  const seen = new Set()
+  for (const value of [
+    task.latest_evidence_write,
+    task.latest_experience_write,
+    task.latest_memory_write,
+    task.memory_write,
+    task.memory_writes
+  ]) {
+    const items = Array.isArray(value) ? value : value && typeof value === 'object' ? [value] : []
+    for (const item of items) {
+      const normalized = normalizeMemoryWrite(item)
+      if (!normalized.memory_id || seen.has(normalized.memory_id)) continue
+      seen.add(normalized.memory_id)
+      writes.push(normalized)
+    }
+  }
+  return writes
+}
+
+function normalizeMemoryWrite(write) {
+  if (!write || typeof write !== 'object') return {}
+  const memoryType = write.memory_type || write.type || 'evidence'
+  const qualityStatus = write.quality_status || (memoryType === 'failed_experience' ? 'failed' : '')
+  return {
+    memory_id: write.memory_id || write.id || write.memory_ref || '',
+    memory_type: memoryType,
+    memory_type_label: memoryTypeLabel(memoryType, qualityStatus, write.use_as_positive),
+    quality_status: qualityStatus || '-',
+    source_agent: write.source_agent || 'summarizer',
+    task_topic: write.task_topic || write.topic || '',
+    summary: write.summary || write.text || write.content || '',
+    tags: normalizeList(write.tags),
+    state_refs: normalizeList(write.state_refs),
+    source_task_correct: write.source_task_correct,
+    use_as_positive: write.use_as_positive,
+    experience_source: write.experience_source || '',
+    abstraction_note: write.abstraction_note || '',
+    experience_rule_card: write.experience_rule_card || null,
+    source_case: write.source_case || write.distillation_case || null
+  }
+}
+
 function resultTaskForRound(taskResults, round) {
   const byIndex = taskResults.find((item) => Number(item?.task_index || item?.turn_index || 0) === round)
   return byIndex || taskResults[round - 1] || null
@@ -1030,7 +1092,7 @@ function metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult) {
     messageEvents.reduce((sum, event) => sum + (Number(event.text_chars) || 0), 0)
   return {
     messages: Number(doneResult.message_count) || Number(resultMetrics.message_count) || messageEvents.length,
-    textCost: textChars ? `${textChars} ??` : '--',
+    textCost: textChars ? `${textChars} 字符` : '--',
     stateTransfers: Number(doneResult.state_transfer_count) || Number(resultMetrics.latent_transfer_count) || stateEvents.length,
     memoryHits: Number(doneResult.memory_hit_count) || Number(taskResult?.memory_hit_count) || hitEvents.length
   }
@@ -1129,9 +1191,9 @@ function messagesFromRuntimeEvents(taskEvents, agents) {
 function selectFlowEvents(events) {
   if (events.length <= 10) return events
   const rest = events.filter((event) => event.event_type !== 'memory_write')
-  const latestMemoryWrite = [...events].reverse().find((event) => event.event_type === 'memory_write')
-  const selected = rest.slice(0, latestMemoryWrite ? 11 : 12)
-  return latestMemoryWrite ? [...selected, latestMemoryWrite] : selected
+  const memoryWrites = events.filter((event) => event.event_type === 'memory_write')
+  const selected = rest.slice(0, memoryWrites.length ? 11 : 12)
+  return memoryWrites.length ? [...selected, ...memoryWrites] : selected
 }
 
 function flowEdgeStyle(from, to, count) {
@@ -1378,7 +1440,37 @@ function protocolTransferContent(event) {
   return protocolContentSummary(event)
 }
 
+function memoryTypeLabel(memoryType, qualityStatus = '', useAsPositive = undefined) {
+  const type = String(memoryType || '').toLowerCase()
+  const quality = String(qualityStatus || '').toLowerCase()
+  if (type === 'failed_experience' || quality === 'failed' || useAsPositive === false) return '失败经验'
+  if (type === 'experience') return quality === 'verified' ? '可复用经验（已验证）' : '可复用经验'
+  if (type === 'evidence') return quality === 'verified' ? '正向事实记忆（已验证）' : '正向事实记忆'
+  if (quality === 'rejected') return '已拒绝记忆'
+  if (quality === 'suspect') return '待验证记忆'
+  return memoryType || '共享记忆'
+}
+
+function memoryWriteDetailText(result) {
+  if (!result || typeof result !== 'object') return '写回新的共享记忆单元'
+  const parts = [
+    `类型：${memoryTypeLabel(result.memory_type, result.quality_status, result.use_as_positive)}`,
+    `记忆ID：${result.memory_id || '-'}`,
+    `质量：${result.quality_status || '-'}`,
+    `正向复用：${result.use_as_positive === false ? '否' : '是'}`,
+    `摘要：${result.summary || '-'}`
+  ]
+  if (result.experience_source) parts.push(`经验来源：${result.experience_source}`)
+  if (result.abstraction_note) parts.push(`经验说明：${result.abstraction_note}`)
+  const rule = result.experience_rule_card || {}
+  if (rule && typeof rule === 'object' && Object.keys(rule).length) {
+    parts.push(`规则：problem=${rule.problem_pattern || '-'}；solution=${rule.solution_pattern || '-'}；avoid=${rule.failure_pattern || '-'}`)
+  }
+  return parts.join('\n')
+}
+
 function protocolMemorySectionLabel(event) {
+  if (event.event_type === 'memory_write') return '写回类型'
   return event.action_type === 'retrieve' ? '\u68c0\u7d22\u89c4\u5212' : '\u8bb0\u5fc6\u5f15\u7528'
 }
 
@@ -1386,6 +1478,10 @@ function protocolMemorySectionValue(event, memoryRefs) {
   const policy = (event.return_result || {}).retrieval_policy
   if (event.action_type === 'retrieve' && policy) {
     return `\u8bb0\u5fc6\u68c0\u7d22\uff1a${policy.need_memory ? '\u9700\u8981' : '\u8df3\u8fc7'}；\u77e5\u8bc6\u68c0\u7d22\uff1a${policy.need_knowledge === false ? '\u8df3\u8fc7' : '\u9700\u8981'}；\u7406\u7531\uff1a${policy.reason || '-'}`
+  }
+  if (event.event_type === 'memory_write') {
+    const result = event.return_result || {}
+    return memoryTypeLabel(result.memory_type, result.quality_status, result.use_as_positive)
   }
   return memoryRefs
 }
@@ -1402,7 +1498,7 @@ function protocolContentSummary(event) {
     return result.summary || result.memory_id || `\u547d\u4e2d ${eventMemoryCount(event)} \u6761\u8bb0\u5fc6`
   }
   if (event.event_type === 'memory_write') {
-    return result.summary || result.memory_id || '\u5199\u56de\u65b0\u7684\u5171\u4eab\u8bb0\u5fc6\u5355\u5143'
+    return memoryWriteDetailText(result)
   }
   if (event.event_type === 'state_transfer') {
     return event.summary || result.summary || `\u4f20\u9012 ${listText(event.state_refs)} \u72b6\u6001\u5f15\u7528`

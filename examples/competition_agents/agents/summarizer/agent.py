@@ -59,7 +59,7 @@ def _locate_latest_experience_write(
     source_question = str(source_case.get("question") or "")
 
     for record in reversed(memory):
-        if str(record.get("memory_type", "evidence")) != "experience":
+        if str(record.get("memory_type", "evidence")) not in {"experience", "failed_experience"}:
             continue
         if (
             str(record.get("problem_pattern") or "") == problem_pattern
@@ -206,6 +206,10 @@ def summarizer_agent(state: CompetitionState) -> dict:
         trace=trace,
     )
     memory_refine_ms = (time.perf_counter() - refine_started) * 1000
+    refine_case = refined.get("distillation_case", {}) or {}
+    exact_match = refine_case.get("exact_match")
+    positive_memory_allowed = exact_match is not False
+    positive_quality_status = "verified" if exact_match is True else "suspect"
     successful_experience_ids: list[str] = []
     if refined.get("experience_source") == "success-derived":
         successful_experience_ids = [
@@ -219,26 +223,35 @@ def summarizer_agent(state: CompetitionState) -> dict:
         successful_memory_ids=successful_experience_ids,
     )
     write_started = time.perf_counter()
-    evidence_memory = add_memory(
-        updated_memory,
-        source_agent="summarizer",
-        task_topic=task_text,
-        summary=summary,
-        tags=["langgraph", "multi-agent", "protocol", state["mode"]],
-        trace=trace,
-    )
-    latest_evidence_write = evidence_memory[-1] if evidence_memory else {}
+    if positive_memory_allowed:
+        evidence_memory = add_memory(
+            updated_memory,
+            source_agent="summarizer",
+            task_topic=task_text,
+            summary=summary,
+            tags=["langgraph", "multi-agent", "protocol", state["mode"], positive_quality_status],
+            trace=trace,
+            quality_status=positive_quality_status,
+            source_task_correct=exact_match,
+            use_as_positive=True,
+        )
+    else:
+        evidence_memory = updated_memory
+    latest_evidence_write = evidence_memory[-1] if positive_memory_allowed and evidence_memory else {}
     memory = evidence_memory
     latest_experience_write: dict = {}
     if refined.get("should_write", True):
+        experience_is_failure = exact_match is False or refined.get("experience_source") == "failure-derived"
+        experience_memory_type = "failed_experience" if experience_is_failure else "experience"
+        experience_quality_status = "failed" if experience_is_failure else positive_quality_status
         memory = add_memory(
             evidence_memory,
             source_agent="summarizer",
             task_topic=task_text,
             summary=refined["summary"],
-            tags=["langgraph", "multi-agent", "experience", state["mode"]],
+            tags=["langgraph", "multi-agent", experience_memory_type, state["mode"], experience_quality_status],
             trace=None,
-            memory_type="experience",
+            memory_type=experience_memory_type,
             problem_pattern=refined["problem_pattern"],
             solution_pattern=refined["solution_pattern"],
             failure_pattern=refined["failure_pattern"],
@@ -252,6 +265,9 @@ def summarizer_agent(state: CompetitionState) -> dict:
             reuse_benefits=refined["reuse_benefits"],
             experience_rule_card=refined["experience_rule_card"],
             experience_source=refined.get("experience_source", ""),
+            quality_status=experience_quality_status,
+            source_task_correct=exact_match,
+            use_as_positive=not experience_is_failure,
             distillation_case=refined.get("distillation_case", {}),
             abstraction_note=refined.get("abstraction_note", ""),
             distillation_mode=refined.get("distillation_mode", ""),
@@ -284,10 +300,12 @@ def summarizer_agent(state: CompetitionState) -> dict:
             "experience_rule_card": refined.get("experience_rule_card", {}),
             "distillation_mode": refined.get("distillation_mode", ""),
             "distillation_raw_output": refined.get("distillation_raw_output", ""),
+            "exact_match": exact_match,
+            "positive_memory_allowed": positive_memory_allowed,
         },
         "latest_evidence_write": latest_evidence_write,
         "latest_experience_write": latest_experience_write,
-        "memory_write_count": 2 if refined.get("should_write", True) else 1,
+        "memory_write_count": int(positive_memory_allowed) + (1 if refined.get("should_write", True) else 0),
         "experience_write_count": 1 if refined.get("should_write", True) else 0,
         "metrics": metrics,
         "agent_outputs": [

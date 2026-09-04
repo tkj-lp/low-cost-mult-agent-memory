@@ -250,8 +250,18 @@ def emit_task_result_events(
     base = _base_context({"mode": mode, "task_meta": _task_meta_from_item(task_index, task_item)}, _task_meta_from_item(task_index, task_item))
     memory_hits = result.get("memory_hits", []) or []
 
-    latest_memory = result.get("latest_memory_write") or result.get("latest_evidence_write") or {}
-    if latest_memory.get("memory_id"):
+    memory_writes = []
+    for latest_memory in (
+        result.get("latest_evidence_write") or {},
+        result.get("latest_experience_write") or {},
+        result.get("latest_memory_write") or {},
+    ):
+        if not latest_memory.get("memory_id"):
+            continue
+        if latest_memory.get("memory_id") in {item.get("memory_id") for item in memory_writes}:
+            continue
+        memory_writes.append(latest_memory)
+    for latest_memory in memory_writes:
         emit_runtime_event(
             {
                 **base,
@@ -267,6 +277,13 @@ def emit_task_result_events(
                     "memory_id": latest_memory.get("memory_id"),
                     "summary": latest_memory.get("summary"),
                     "memory_type": latest_memory.get("memory_type"),
+                    "quality_status": latest_memory.get("quality_status"),
+                    "source_task_correct": latest_memory.get("source_task_correct"),
+                    "use_as_positive": latest_memory.get("use_as_positive"),
+                    "experience_source": latest_memory.get("experience_source"),
+                    "abstraction_note": latest_memory.get("abstraction_note"),
+                    "experience_rule_card": latest_memory.get("experience_rule_card"),
+                    "source_case": latest_memory.get("source_case"),
                 },
             }
         )

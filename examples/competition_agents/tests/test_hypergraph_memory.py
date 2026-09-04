@@ -396,6 +396,45 @@ def test_search_memory_can_filter_by_memory_type() -> None:
     assert all(hit["memory_type"] == "experience" for hit in experience_hits)
 
 
+def test_search_memory_skips_failed_experience_by_default() -> None:
+    memory = []
+    memory = add_memory(
+        memory,
+        source_agent="summarizer",
+        task_topic="Question: what is the film about?",
+        summary="experience_rule_card: problem=definition_sentence_vs_metadata_conflict; solution=prefer_definition_sentence_over_metadata; avoid=select_release_or_production_information; triggers=definition_or_topic_query",
+        tags=["experience"],
+        memory_type="experience",
+        problem_pattern="definition_sentence_vs_metadata_conflict",
+        solution_pattern="prefer_definition_sentence_over_metadata",
+        failure_pattern="select_release_or_production_information",
+        trigger_conditions=["definition_or_topic_query"],
+        quality_status="verified",
+        source_task_correct=True,
+    )
+    memory = add_memory(
+        memory,
+        source_agent="summarizer",
+        task_topic="Question: what is the film about?",
+        summary="experience_rule_card: problem=definition_sentence_vs_metadata_conflict; solution=prefer_definition_sentence_over_metadata; avoid=copy_wrong_previous_answer; triggers=definition_or_topic_query",
+        tags=["failed_experience"],
+        memory_type="failed_experience",
+        problem_pattern="definition_sentence_vs_metadata_conflict",
+        solution_pattern="prefer_definition_sentence_over_metadata",
+        failure_pattern="copy_wrong_previous_answer",
+        trigger_conditions=["definition_or_topic_query"],
+        quality_status="failed",
+        source_task_correct=False,
+        use_as_positive=False,
+    )
+
+    positive_hits = search_memory(memory, "definition_or_topic_query film about", top_k=5, memory_types=["experience"])
+    failed_hits = search_memory(memory, "definition_or_topic_query film about", top_k=5, memory_types=["failed_experience"])
+
+    assert [hit["memory_type"] for hit in positive_hits] == ["experience"]
+    assert [hit["memory_type"] for hit in failed_hits] == ["failed_experience"]
+
+
 def test_build_hypergraph_view_adds_nodes_and_event_hyperedge() -> None:
     """一条记忆应被映射成多个类型节点和一条 memory_event 超边。"""
 

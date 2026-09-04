@@ -7788,6 +7788,7 @@ button {
   font-size: 13px;
   line-height: 1.45;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .protocol-raw-detail {

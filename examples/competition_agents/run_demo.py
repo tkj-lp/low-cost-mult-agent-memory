@@ -804,11 +804,6 @@ def build_task_result(
     latest_memory = all_memory[-1] if all_memory else {}
     latest_evidence_write = result.get("latest_evidence_write", {}) or {}
     latest_experience_write = result.get("latest_experience_write", {}) or {}
-    if not latest_evidence_write:
-        latest_evidence_write = next(
-            (item for item in reversed(all_memory) if item.get("memory_type", "evidence") == "evidence"),
-            {},
-        )
     has_latest_experience_write = bool(latest_experience_write and latest_experience_write.get("memory_id"))
     execution_result = result.get("execution_result", {})
     is_codeact = task_item.get("dataset_type") == "codeact"
@@ -872,6 +867,9 @@ def build_task_result(
                 "summary": latest_evidence_write.get("summary"),
                 "tags": latest_evidence_write.get("tags"),
                 "state_refs": latest_evidence_write.get("state_refs"),
+                "quality_status": latest_evidence_write.get("quality_status"),
+                "source_task_correct": latest_evidence_write.get("source_task_correct"),
+                "use_as_positive": latest_evidence_write.get("use_as_positive"),
                 "has_trace": "trace" in latest_evidence_write,
             }
         ),
@@ -885,6 +883,9 @@ def build_task_result(
                     "tags": latest_experience_write.get("tags"),
                     "state_refs": latest_experience_write.get("state_refs"),
                     "experience_source": latest_experience_write.get("experience_source", ""),
+                    "quality_status": latest_experience_write.get("quality_status"),
+                    "source_task_correct": latest_experience_write.get("source_task_correct"),
+                    "use_as_positive": latest_experience_write.get("use_as_positive"),
                     "abstraction_note": latest_experience_write.get("abstraction_note", ""),
                     "reuse_count": latest_experience_write.get("reuse_count", 0),
                     "reuse_success_count": latest_experience_write.get("reuse_success_count", 0),
@@ -906,6 +907,9 @@ def build_task_result(
                 "tags": latest_memory.get("tags"),
                 "state_refs": latest_memory.get("state_refs"),
                 "experience_source": latest_memory.get("experience_source", ""),
+                "quality_status": latest_memory.get("quality_status"),
+                "source_task_correct": latest_memory.get("source_task_correct"),
+                "use_as_positive": latest_memory.get("use_as_positive"),
                 "abstraction_note": latest_memory.get("abstraction_note", ""),
                 "reuse_count": latest_memory.get("reuse_count", 0),
                 "reuse_success_count": latest_memory.get("reuse_success_count", 0),

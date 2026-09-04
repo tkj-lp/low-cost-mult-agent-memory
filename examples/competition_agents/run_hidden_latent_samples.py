@@ -493,6 +493,14 @@ def _retrieve_hidden_memory(
 
     if not prior_memory:
         return []
+    prior_memory = [
+        memory
+        for memory in prior_memory
+        if memory.get("use_as_positive", True)
+        and str(memory.get("quality_status", "suspect") or "suspect") not in {"failed", "rejected"}
+    ]
+    if not prior_memory:
+        return []
     mode = configured_retrieval_mode()
     query = "\n".join(
         part.strip()
@@ -829,6 +837,8 @@ def generate_answer_with_hidden_state(
 def build_summary_memory(result: dict[str, Any]) -> dict[str, Any]:
     """把上一轮结果沉淀成轻量记忆，供连续任务后续 turn 复用。"""
 
+    exact_match = result.get("exact_match")
+    quality_status = "verified" if exact_match is True else "suspect"
     return {
         "memory_id": f"hidden-mem-{result['sample_id']}",
         "memory_type": "evidence",
@@ -836,6 +846,9 @@ def build_summary_memory(result: dict[str, Any]) -> dict[str, Any]:
         "task_topic": result["question"],
         "summary": f"{result['answer_candidate']} | evidence={'; '.join(result['evidence'])}",
         "state_refs": result["state_refs"],
+        "quality_status": quality_status,
+        "source_task_correct": exact_match,
+        "use_as_positive": exact_match is not False,
     }
 
 
@@ -856,6 +869,10 @@ def _hidden_memory_context(memory_hits: list[dict[str, Any]]) -> list[dict[str, 
             "supporting_evidence": memory.get("supporting_evidence", []),
             "evidence": memory.get("evidence", []),
             "state_refs": memory.get("state_refs", []),
+            "quality_status": memory.get("quality_status", ""),
+            "source_task_correct": memory.get("source_task_correct"),
+            "use_as_positive": memory.get("use_as_positive", True),
+            "experience_source": memory.get("experience_source", ""),
             "source_case": memory.get("source_case", {}),
             "trace": memory.get("trace", {}),
         }
@@ -917,7 +934,7 @@ def _hidden_refine_trace(result: dict[str, Any]) -> dict[str, Any]:
     retrieval_debug = result.get("retrieval_debug", {}) or {}
     memory_hits = result.get("memory_hits_full", []) or []
     execution_result = result.get("execution_result", {}) or {}
-    return {
+    trace = {
         "task_meta": {
             "task_id": result.get("sample_id"),
             "group_id": result.get("group_id"),
@@ -935,6 +952,15 @@ def _hidden_refine_trace(result: dict[str, Any]) -> dict[str, Any]:
         "agent_outputs": result.get("agent_outputs", {}),
         "retrieval_debug": retrieval_debug,
     }
+    if isinstance(trace["execution_result"], dict) and isinstance(result.get("exact_match"), bool):
+        trace["execution_result"] = {
+            **trace["execution_result"],
+            "exact_match": result.get("exact_match"),
+        }
+        trace["task_meta"]["exact_match"] = result.get("exact_match")
+        trace["task_meta"]["case_outcome"] = "success" if result.get("exact_match") else "failure"
+        trace["task_meta"]["outcome_note"] = "Inherited from hidden runner exact_match."
+    return trace
 
 
 def build_experience_memory(result: dict[str, Any]) -> dict[str, Any]:
@@ -946,9 +972,13 @@ def build_experience_memory(result: dict[str, Any]) -> dict[str, Any]:
         summary=str(result.get("answer_candidate") or ""),
         trace=trace,
     )
+    exact_match = result.get("exact_match")
+    is_failure = exact_match is False or refined.get("experience_source") == "failure-derived"
+    memory_type = "failed_experience" if is_failure else "experience"
+    quality_status = "failed" if is_failure else ("verified" if exact_match is True else "suspect")
     return {
         "memory_id": f"hidden-exp-{result['sample_id']}",
-        "memory_type": "experience",
+        "memory_type": memory_type,
         "source_agent": "summarizer",
         "task_topic": str(result.get("question") or ""),
         "summary": refined["summary"],
@@ -960,6 +990,9 @@ def build_experience_memory(result: dict[str, Any]) -> dict[str, Any]:
         "state_refs": result["state_refs"],
         "experience_rule_card": refined["experience_rule_card"],
         "experience_source": refined["experience_source"],
+        "quality_status": quality_status,
+        "source_task_correct": exact_match,
+        "use_as_positive": not is_failure,
         "abstraction_note": refined["abstraction_note"],
         "distillation_case": refined["distillation_case"],
         "distillation_mode": refined["distillation_mode"],
@@ -1126,18 +1159,23 @@ def run_sample(
         memory_hits=memory_hits,
         answer_mode=answer_mode,
     )
-    latest_evidence_write = build_summary_memory(
-        {
-            "sample_id": sample["id"],
-            "question": question,
-            "answer_candidate": answer_candidate,
-            "evidence": evidence,
-            "state_refs": {
-                "planner": planner_ref,
-                "evidence": evidence_ref,
-                "answer": answer_ref,
-            },
-        }
+    latest_evidence_write = (
+        build_summary_memory(
+            {
+                "sample_id": sample["id"],
+                "question": question,
+                "answer_candidate": answer_candidate,
+                "evidence": evidence,
+                "state_refs": {
+                    "planner": planner_ref,
+                    "evidence": evidence_ref,
+                    "answer": answer_ref,
+                },
+                "exact_match": exact_match,
+            }
+        )
+        if exact_match is not False
+        else {}
     )
     latest_experience_write = build_experience_memory(
         {
@@ -1266,7 +1304,7 @@ def run_sample(
             "planner_evidence_similarity": similarity,
             "transfer_latency_ms": transfer_latency_ms,
             "elapsed_ms": elapsed_ms,
-            "memory_write_count": 2,
+            "memory_write_count": int(exact_match is not False) + 1,
             "experience_write_count": 1,
         },
         "state_refs": {
@@ -1451,8 +1489,12 @@ def run_continuous_group(group: dict[str, Any], *, answer_mode: str = "generate"
         result["turn_id"] = turn["turn_id"]
         result["expected_reuse"] = turn.get("expected_reuse", [])
         results.append(result)
-        memory.append(build_summary_memory(result))
-        memory.append(build_experience_memory(result))
+        summary_memory = build_summary_memory(result) if result.get("exact_match") is not False else {}
+        experience_memory = build_experience_memory(result)
+        if summary_memory.get("memory_id") and summary_memory.get("use_as_positive", True):
+            memory.append(summary_memory)
+        if experience_memory.get("memory_id"):
+            memory.append(experience_memory)
     return results
 
 

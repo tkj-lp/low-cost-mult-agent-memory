@@ -43,6 +43,13 @@ def _case_feedback(trace: dict[str, Any] | None, summary: str) -> tuple[str, str
     execution_result = trace.get("execution_result", {})
     answer_candidate = str(execution_result.get("answer_candidate") or "").strip()
     final_answer = str(summary or "").strip()
+    explicit_exact_match = execution_result.get("exact_match", task_meta.get("exact_match"))
+    if isinstance(explicit_exact_match, bool):
+        return (
+            ("success", "Inherited exact_match=true from runner.", True)
+            if explicit_exact_match
+            else ("failure", "Inherited exact_match=false from runner.", False)
+        )
 
     if expected_structured is not None and execution_result.get("result") is not None:
         exact_match = execution_result.get("result") == expected_structured
@@ -1087,6 +1094,7 @@ def _trigger_overlap(left: Iterable[str], right: Iterable[str]) -> int:
 def _find_mergeable_experience(
     memory: list[dict],
     *,
+    memory_type: str,
     problem_pattern: str,
     solution_pattern: str,
     failure_pattern: str,
@@ -1098,7 +1106,7 @@ def _find_mergeable_experience(
         str(failure_pattern or "").strip(),
     )
     for index, record in enumerate(memory):
-        if str(record.get("memory_type", "evidence")) != "experience":
+        if str(record.get("memory_type", "evidence")) != memory_type:
             continue
         signature = _experience_signature(record)
         problem = str(record.get("problem_pattern") or "").strip()
@@ -1139,6 +1147,9 @@ def _merge_experience_record(
     experience_source: str,
     distillation_case: dict[str, Any] | None,
     abstraction_note: str,
+    quality_status: str,
+    source_task_correct: bool | None,
+    use_as_positive: bool,
 ) -> dict[str, Any]:
     merged = dict(record)
     merged["source_agent"] = source_agent
@@ -1164,6 +1175,9 @@ def _merge_experience_record(
     merged["experiences"] = _unique_keep_order([*(record.get("experiences", []) or []), *experiences])
     merged["reuse_benefits"] = _unique_keep_order([*(record.get("reuse_benefits", []) or []), *reuse_benefits])
     merged["experience_source"] = experience_source or record.get("experience_source", "")
+    merged["quality_status"] = quality_status or record.get("quality_status", "suspect")
+    merged["source_task_correct"] = source_task_correct
+    merged["use_as_positive"] = use_as_positive
     merged["abstraction_note"] = abstraction_note or record.get("abstraction_note", "")
     merged["source_case"] = _source_case(distillation_case) or record.get("source_case", {})
     merged["merge_count"] = int(record.get("merge_count", 0) or 0) + 1
@@ -1272,7 +1286,7 @@ def _embedding_text(
     failure_pattern: str,
     trigger_conditions: list[str],
 ) -> str:
-    if memory_type == "experience":
+    if memory_type in {"experience", "failed_experience"}:
         parts = [
             memory_type,
             problem_pattern,
@@ -1316,6 +1330,9 @@ def add_memory(
     reuse_benefits: list[str] | None = None,
     experience_rule_card: dict[str, Any] | None = None,
     experience_source: str = "",
+    quality_status: str = "",
+    source_task_correct: bool | None = None,
+    use_as_positive: bool | None = None,
     distillation_case: dict[str, Any] | None = None,
     abstraction_note: str = "",
     distillation_mode: str = "",
@@ -1325,13 +1342,29 @@ def add_memory(
 
     normalized_trigger_conditions = _normalize_trigger_conditions(trigger_conditions or [])
     task_meta = trace.get("task_meta", {}) if isinstance(trace, dict) and isinstance(trace.get("task_meta"), dict) else {}
-    artifact_types = ["experience", "strategy"] if memory_type == "experience" else ["answer", "evidence"]
+    if not quality_status:
+        if memory_type == "failed_experience" or experience_source == "failure-derived":
+            quality_status = "failed"
+        elif source_task_correct is True:
+            quality_status = "verified"
+        elif source_task_correct is False:
+            quality_status = "rejected"
+        else:
+            quality_status = "suspect"
+    if use_as_positive is None:
+        use_as_positive = quality_status not in {"failed", "rejected"} and memory_type != "failed_experience"
+    artifact_types = (
+        ["experience", "strategy", "failure"] if memory_type == "failed_experience"
+        else ["experience", "strategy"] if memory_type == "experience"
+        else ["answer", "evidence"]
+    )
     if task_meta.get("supporting_facts") or supporting_evidence:
         artifact_types.append("supporting-facts")
     artifact_types = list(dict.fromkeys(artifact_types))
-    if memory_type == "experience":
+    if memory_type in {"experience", "failed_experience"}:
         merge_index = _find_mergeable_experience(
             memory,
+            memory_type=memory_type,
             problem_pattern=problem_pattern,
             solution_pattern=solution_pattern,
             failure_pattern=failure_pattern,
@@ -1359,6 +1392,9 @@ def add_memory(
                 experience_source=experience_source,
                 distillation_case=distillation_case,
                 abstraction_note=abstraction_note,
+                quality_status=quality_status,
+                source_task_correct=source_task_correct,
+                use_as_positive=bool(use_as_positive),
             )
             updated_memory = list(memory)
             updated_memory[merge_index] = merged
@@ -1422,6 +1458,9 @@ def add_memory(
             abstraction_note=abstraction_note,
         ),
         "experience_source": experience_source,
+        "quality_status": quality_status,
+        "source_task_correct": source_task_correct,
+        "use_as_positive": bool(use_as_positive),
         "abstraction_note": abstraction_note,
         "source_case": _source_case(distillation_case)
         or {
@@ -1593,6 +1632,13 @@ def search_memory(
         if allowed_types
         else memory
     )
+    if not allowed_types or not (allowed_types <= {"failed_experience"}):
+        searchable_memory = [
+            record
+            for record in searchable_memory
+            if bool(record.get("use_as_positive", True))
+            and str(record.get("quality_status", "suspect") or "suspect") not in {"failed", "rejected"}
+        ]
     if not searchable_memory:
         return []
 
