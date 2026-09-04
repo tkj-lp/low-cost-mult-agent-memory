@@ -5,6 +5,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
+from .layers import memory_layer_for_record
 from .text import stable_id
 
 MEMORY_SCHEMA_VERSION = "1.0"
@@ -12,8 +13,11 @@ EVIDENCE_CHAIN_SCHEMA_VERSION = "1.0"
 EVALUATION_ONLY_FIELDS = {
     "expected",
     "expected_answer",
+    "expected_reuse",
     "gold",
     "reference_answer",
+    "reference_code",
+    "supporting_facts",
 }
 
 
@@ -46,6 +50,19 @@ def _confidence(value: Any, default: float = 0.5) -> float:
         return round(max(0.0, min(1.0, float(value))), 4)
     except (TypeError, ValueError):
         return default
+
+
+def _trace_knowledge_refs(trace: dict[str, Any]) -> list[str]:
+    refs: list[str] = []
+    for output in _as_list(trace.get("agent_outputs")):
+        if not isinstance(output, dict) or output.get("agent") != "RetrieverAgent":
+            continue
+        refs.extend(
+            str(value)
+            for value in _as_list(output.get("context_hit_ids"))
+            if str(value).strip()
+        )
+    return [str(value) for value in _unique(refs)]
 
 
 def compact_trace(trace: dict[str, Any] | None) -> dict[str, Any]:
@@ -485,6 +502,7 @@ def canonical_search_document(record: dict[str, Any]) -> str:
         if isinstance(step, dict)
     )
     parts = [
+        memory_layer_for_record(record),
         record.get("task_topic", ""),
         record.get("summary", ""),
         record.get("group_id", ""),
@@ -534,8 +552,10 @@ def normalize_memory_record(
             "archive_scope": str(normalized.get("archive_scope") or "task"),
             "lifecycle_stage": str(normalized.get("lifecycle_stage") or "episodic"),
             "record_version": int(normalized.get("record_version", 1) or 1),
+            "retrieval_count": int(normalized.get("retrieval_count", 0) or 0),
             "reuse_count": int(normalized.get("reuse_count", 0) or 0),
             "reuse_success_count": int(normalized.get("reuse_success_count", 0) or 0),
+            "reuse_failure_count": int(normalized.get("reuse_failure_count", 0) or 0),
             "entities": _as_list(normalized.get("entities")),
             "supporting_facts": _as_list(normalized.get("supporting_facts")),
             "supporting_evidence": _as_list(normalized.get("supporting_evidence")),
@@ -543,6 +563,7 @@ def normalize_memory_record(
             "state_refs": _as_list(normalized.get("state_refs")),
         }
     )
+    normalized["memory_layer"] = memory_layer_for_record(normalized)
     trace = normalized.get("trace") if isinstance(normalized.get("trace"), dict) else {}
     task_meta = (
         trace.get("task_meta") if isinstance(trace.get("task_meta"), dict) else {}
@@ -558,6 +579,21 @@ def normalize_memory_record(
     normalized["turn_id"] = str(normalized.get("turn_id") or task_meta.get("turn_id") or "")
     normalized["dataset_type"] = str(normalized.get("dataset_type") or task_meta.get("dataset_type") or "")
     normalized["task_type"] = str(normalized.get("task_type") or task_meta.get("task_type") or "")
+    normalized["knowledge_refs"] = [
+        str(value)
+        for value in _unique(
+            [
+                *_as_list(normalized.get("knowledge_refs")),
+                *_trace_knowledge_refs(trace),
+            ]
+        )
+        if str(value).strip()
+    ]
+    normalized["source_memory_ids"] = [
+        str(value)
+        for value in _unique(_as_list(normalized.get("source_memory_ids")))
+        if str(value).strip()
+    ]
     normalized["global_memory_id"] = str(
         normalized.get("global_memory_id")
         or "gmem-"
@@ -611,6 +647,7 @@ def compact_reuse_projection(
         "memory_id": normalized["memory_id"],
         "global_memory_id": normalized["global_memory_id"],
         "memory_type": normalized["memory_type"],
+        "memory_layer": normalized["memory_layer"],
         "memory_kinds": normalized["memory_kinds"],
         "summary": normalized["summary"],
         "tags": normalized["tags"],
@@ -619,4 +656,6 @@ def compact_reuse_projection(
         "evidence_chain_completeness": chain.get("completeness", 0.0),
         "evidence_chain_steps": steps,
         "source_memory_ids": chain.get("source_memory_ids", []),
+        "knowledge_refs": normalized.get("knowledge_refs", []),
+        "abstracted_from_memory_ids": normalized.get("source_memory_ids", []),
     }

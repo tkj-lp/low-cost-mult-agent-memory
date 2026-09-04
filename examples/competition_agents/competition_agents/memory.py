@@ -9,7 +9,9 @@ from typing import Any, Iterable
 from competition_agents.embedding import embed_text
 from competition_agents.llm import get_llm_client
 from hypergraph_memory_method import build_hypergraph_view, search_hypergraph_memory
-from hypergraph_memory_method.distill import distill_experience
+from hypergraph_memory_method.distill import distill_experience, lifecycle_stage
+from hypergraph_memory_method.entities import extract_canonical_entities
+from hypergraph_memory_method.layers import memory_layer_for_record, normalize_memory_layer
 
 
 def _question_text(task_topic: str, trace: dict[str, Any] | None) -> str:
@@ -64,7 +66,6 @@ def _case_feedback(trace: dict[str, Any] | None, summary: str) -> tuple[str, str
         if exact_match:
             return "success", "Predicted answer overlaps expected answer.", True
         return "failure", "Predicted answer does not match expected answer.", False
-
     limitations = execution_result.get("limitations", [])
     if limitations:
         return "unknown", str(limitations[0]), None
@@ -88,7 +89,6 @@ def _build_distillation_case(task_topic: str, summary: str, trace: dict[str, Any
         "group_id": task_meta.get("group_id"),
         "task_type": task_meta.get("task_type"),
         "tags": task_meta.get("tags", []),
-        "gold": task_meta.get("expected_answer") if task_meta.get("expected_answer") is not None else task_meta.get("expected"),
         "answer_candidate": answer_candidate,
         "reasoning_summary": execution_result.get("reasoning_summary", ""),
         "experience_hit_count": len(
@@ -865,7 +865,7 @@ def _case_lacks_transferable_lesson(case: dict[str, Any], hint_catalog: dict[str
 
     if str(case.get("dataset_type") or "") == "codeact":
         return False
-    if outcome != "success":
+    if outcome == "failure":
         return False
     if experience_hit_count > 0:
         return False
@@ -1145,6 +1145,7 @@ def _merge_experience_record(
     reuse_benefits: list[str],
     experience_rule_card: dict[str, Any] | None,
     experience_source: str,
+    source_memory_ids: list[str],
     distillation_case: dict[str, Any] | None,
     abstraction_note: str,
     quality_status: str,
@@ -1178,6 +1179,9 @@ def _merge_experience_record(
     merged["quality_status"] = quality_status or record.get("quality_status", "suspect")
     merged["source_task_correct"] = source_task_correct
     merged["use_as_positive"] = use_as_positive
+    merged["source_memory_ids"] = _unique_keep_order(
+        [*(record.get("source_memory_ids", []) or []), *source_memory_ids]
+    )
     merged["abstraction_note"] = abstraction_note or record.get("abstraction_note", "")
     merged["source_case"] = _source_case(distillation_case) or record.get("source_case", {})
     merged["merge_count"] = int(record.get("merge_count", 0) or 0) + 1
@@ -1333,6 +1337,7 @@ def add_memory(
     quality_status: str = "",
     source_task_correct: bool | None = None,
     use_as_positive: bool | None = None,
+    source_memory_ids: list[str] | None = None,
     distillation_case: dict[str, Any] | None = None,
     abstraction_note: str = "",
     distillation_mode: str = "",
@@ -1358,7 +1363,8 @@ def add_memory(
         else ["experience", "strategy"] if memory_type == "experience"
         else ["answer", "evidence"]
     )
-    if task_meta.get("supporting_facts") or supporting_evidence:
+    trace_evidence = trace.get("evidence", []) if isinstance(trace, dict) else []
+    if supporting_evidence or trace_evidence:
         artifact_types.append("supporting-facts")
     artifact_types = list(dict.fromkeys(artifact_types))
     if memory_type in {"experience", "failed_experience"}:
@@ -1390,6 +1396,7 @@ def add_memory(
                 reuse_benefits=reuse_benefits or [],
                 experience_rule_card=experience_rule_card,
                 experience_source=experience_source,
+                source_memory_ids=source_memory_ids or [],
                 distillation_case=distillation_case,
                 abstraction_note=abstraction_note,
                 quality_status=quality_status,
@@ -1422,7 +1429,13 @@ def add_memory(
         "embedding": embedding.vector,
         "embedding_provider": embedding.provider,
         "embedding_model": embedding.model,
-        "entities": [],
+        "entities": extract_canonical_entities(
+            task_topic,
+            summary,
+            *(supporting_evidence or []),
+            *trace_evidence,
+            explicit=[task_meta.get("topic"), task_meta.get("topic_section")],
+        ),
         "supporting_facts": [],
         "supporting_evidence": supporting_evidence or [],
         "evidence": [],
@@ -1435,8 +1448,10 @@ def add_memory(
         "turn_id": str(task_meta.get("turn_id") or ""),
         "dataset_type": str(task_meta.get("dataset_type") or ""),
         "task_type": str(task_meta.get("task_type") or ""),
+        "retrieval_count": 0,
         "reuse_count": 0,
         "reuse_success_count": 0,
+        "reuse_failure_count": 0,
         "problem_pattern": problem_pattern,
         "solution_pattern": solution_pattern,
         "failure_pattern": failure_pattern,
@@ -1461,6 +1476,7 @@ def add_memory(
         "quality_status": quality_status,
         "source_task_correct": source_task_correct,
         "use_as_positive": bool(use_as_positive),
+        "source_memory_ids": source_memory_ids or [],
         "abstraction_note": abstraction_note,
         "source_case": _source_case(distillation_case)
         or {
@@ -1482,8 +1498,6 @@ def add_memory(
             record["state_refs"] = [ref for ref in state_refs.values() if ref]
         record["evidence"] = trace.get("evidence", [])
         task_meta = trace.get("task_meta", {})
-        if isinstance(task_meta, dict):
-            record["supporting_facts"] = task_meta.get("supporting_facts", [])
     record["hypergraph"] = build_hypergraph_view(record)
     return [*memory, record]
 
@@ -1494,33 +1508,101 @@ def increment_reuse_counts(
     *,
     successful_memory_ids: Iterable[str] | None = None,
 ) -> list[dict]:
-    """命中历史记忆后累计 `reuse_count`，并在成功复用时更新 `reuse_success_count`。"""
+    """兼容旧接口：把传入记录视为既召回又进入推理。"""
 
-    hit_ids = {str(memory_id) for memory_id in memory_ids if memory_id}
-    successful_ids = {str(memory_id) for memory_id in (successful_memory_ids or []) if memory_id}
-    if not hit_ids:
+    memory_ids = list(memory_ids)
+    updated = record_memory_usage(
+        memory,
+        retrieved_memory_ids=memory_ids,
+        adopted_memory_ids=memory_ids,
+    )
+    successful_ids = list(successful_memory_ids or [])
+    return (
+        apply_memory_outcome(updated, successful_ids, successful=True)
+        if successful_ids
+        else updated
+    )
+
+
+def record_memory_usage(
+    memory: list[dict],
+    *,
+    retrieved_memory_ids: Iterable[str],
+    adopted_memory_ids: Iterable[str],
+) -> list[dict]:
+    """分别记录候选召回与进入推理上下文，避免把命中直接算成复用。"""
+
+    retrieved_ids = {str(memory_id) for memory_id in retrieved_memory_ids if memory_id}
+    adopted_ids = {str(memory_id) for memory_id in adopted_memory_ids if memory_id}
+    touched_ids = retrieved_ids | adopted_ids
+    if not touched_ids:
         return memory
 
+    now = datetime.now(timezone.utc).isoformat()
     updated: list[dict] = []
     for record in memory:
-        if str(record.get("memory_id")) in hit_ids:
+        memory_id = str(record.get("memory_id"))
+        if memory_id in touched_ids:
             next_record = dict(record)
-            next_record["reuse_count"] = int(record.get("reuse_count", 0)) + 1
-            if str(record.get("memory_id")) in successful_ids:
-                next_record["reuse_success_count"] = int(record.get("reuse_success_count", 0)) + 1
+            next_record.setdefault("retrieval_count", 0)
+            next_record.setdefault("reuse_count", 0)
+            next_record.setdefault("reuse_success_count", 0)
+            next_record.setdefault("reuse_failure_count", 0)
+            if memory_id in retrieved_ids:
+                next_record["retrieval_count"] = int(record.get("retrieval_count", 0)) + 1
+                next_record["last_retrieved_at"] = now
+            if memory_id in adopted_ids:
+                next_record["reuse_count"] = int(record.get("reuse_count", 0)) + 1
+                next_record["last_reused_at"] = now
+            next_record["updated_at"] = now
             updated.append(next_record)
         else:
             updated.append(record)
     return updated
 
 
-def _extract_query_structure(query: str) -> tuple[str, set[str], set[str], set[str], set[str], str]:
+def apply_memory_outcome(
+    memory: list[dict],
+    adopted_memory_ids: Iterable[str],
+    *,
+    successful: bool,
+) -> list[dict]:
+    """在任务完成并由评测器确认结果后更新复用成败与生命周期。"""
+
+    adopted_ids = {str(memory_id) for memory_id in adopted_memory_ids if memory_id}
+    if not adopted_ids:
+        return memory
+
+    now = datetime.now(timezone.utc).isoformat()
+    updated: list[dict] = []
+    for record in memory:
+        memory_id = str(record.get("memory_id"))
+        if memory_id not in adopted_ids:
+            updated.append(record)
+            continue
+        next_record = dict(record)
+        next_record.setdefault("retrieval_count", 0)
+        next_record.setdefault("reuse_count", 0)
+        next_record.setdefault("reuse_success_count", 0)
+        next_record.setdefault("reuse_failure_count", 0)
+        if successful:
+            next_record["reuse_success_count"] = int(record.get("reuse_success_count", 0)) + 1
+        else:
+            next_record["reuse_failure_count"] = int(record.get("reuse_failure_count", 0)) + 1
+
+        next_record["lifecycle_stage"] = lifecycle_stage(next_record)
+        next_record["last_evaluated_at"] = now
+        next_record["updated_at"] = now
+        next_record["record_version"] = int(record.get("record_version", 1) or 1) + 1
+        updated.append(next_record)
+    return updated
+
+
+def _extract_query_structure(query: str) -> tuple[str, set[str], set[str], str]:
     task_type = ""
     group_id = ""
     tags: set[str] = set()
     triggers: set[str] = set()
-    expected_turns: set[str] = set()
-    expected_artifacts: set[str] = set()
     for raw_line in str(query or "").splitlines():
         line = raw_line.strip()
         lowered = line.lower()
@@ -1528,21 +1610,6 @@ def _extract_query_structure(query: str) -> tuple[str, set[str], set[str], set[s
             task_type = line.split(":", 1)[1].strip().lower()
         elif lowered.startswith("group id:"):
             group_id = line.split(":", 1)[1].strip().lower()
-        elif lowered.startswith("expected reuse:"):
-            payload = line.split(":", 1)[1].strip()
-            for value in re.split(r"[,;\s]+", payload):
-                source, _, artifact = value.strip().lower().partition(".")
-                if source.startswith("turn-"):
-                    expected_turns.add(source)
-                if artifact:
-                    expected_artifacts.add(artifact)
-        elif lowered.startswith("required artifacts:"):
-            payload = line.split(":", 1)[1].strip()
-            expected_artifacts |= {
-                value.strip().lower()
-                for value in re.split(r"[,;\s]+", payload)
-                if value.strip()
-            }
         elif lowered.startswith("tags:"):
             payload = line.split(":", 1)[1].strip()
             try:
@@ -1552,19 +1619,12 @@ def _extract_query_structure(query: str) -> tuple[str, set[str], set[str], set[s
             except json.JSONDecodeError:
                 tags |= {token.strip().lower() for token in payload.split(",") if token.strip()}
     triggers |= set(_normalize_trigger_conditions(_sanitize_triggers(query)))
-    return task_type, tags, triggers, expected_turns, expected_artifacts, group_id
+    return task_type, tags, triggers, group_id
 
 
 def _rerank_memory_hits(hits: list[dict], query: str) -> list[dict]:
-    (
-        query_task_type,
-        query_tags,
-        query_triggers,
-        expected_turns,
-        expected_artifacts,
-        query_group_id,
-    ) = _extract_query_structure(query)
-    if not any([query_task_type, query_tags, query_triggers, expected_turns, expected_artifacts, query_group_id]):
+    query_task_type, query_tags, query_triggers, query_group_id = _extract_query_structure(query)
+    if not any([query_task_type, query_tags, query_triggers, query_group_id]):
         return hits
 
     rescored: list[tuple[float, dict[str, Any]]] = []
@@ -1581,13 +1641,7 @@ def _rerank_memory_hits(hits: list[dict], query: str) -> list[dict]:
             for item in hit.get("trigger_conditions", []) or []
             if str(item).strip()
         }
-        memory_turn = str(hit.get("turn_id") or "").strip().lower()
         memory_group = str(hit.get("group_id") or "").strip().lower()
-        memory_artifacts = {
-            str(item).strip().lower()
-            for item in hit.get("artifact_types", []) or []
-            if str(item).strip()
-        }
         if query_task_type and memory_task_type == query_task_type:
             score += 8.0
         if query_tags and memory_tags:
@@ -1596,13 +1650,6 @@ def _rerank_memory_hits(hits: list[dict], query: str) -> list[dict]:
             score += len(query_triggers & memory_triggers) * 4.0
         if query_group_id and memory_group == query_group_id:
             score += 4.0
-        if expected_turns and memory_turn in expected_turns:
-            score += 30.0
-        artifact_overlap = expected_artifacts & memory_artifacts
-        if artifact_overlap:
-            score += min(len(artifact_overlap) * 8.0, 16.0)
-        if expected_turns and memory_turn in expected_turns and artifact_overlap:
-            score += 20.0
         rescored.append((score, {**hit, "retrieval_score": round(score, 4), "_rank_index": index}))
 
     rescored.sort(
@@ -1620,27 +1667,75 @@ def search_memory(
     *,
     top_k: int,
     memory_types: Iterable[str] | None = None,
+    type_limits: dict[str, int] | None = None,
+    memory_layers: Iterable[str] | None = None,
+    layer_limits: dict[str, int] | None = None,
 ) -> list[dict]:
-    """使用超图索引检索记忆，并支持按 `memory_type` 过滤。"""
+    """使用超图索引检索记忆，并支持类型与三层语义过滤。"""
 
     if not memory:
         return []
 
+    effective_type_limits = dict(type_limits or {})
+    for layer, limit in (layer_limits or {}).items():
+        normalized_layer = normalize_memory_layer(layer)
+        if normalized_layer == "episodic":
+            effective_type_limits.setdefault("evidence", int(limit))
+        elif normalized_layer == "experience":
+            effective_type_limits.setdefault("experience", int(limit))
+
     allowed_types = {str(memory_type) for memory_type in memory_types} if memory_types else None
-    searchable_memory = (
-        [record for record in memory if str(record.get("memory_type", "evidence")) in allowed_types]
-        if allowed_types
-        else memory
+    if effective_type_limits:
+        allowed_types = {*allowed_types} if allowed_types else set()
+        allowed_types.update(str(memory_type) for memory_type in effective_type_limits)
+    allowed_layers = (
+        {normalize_memory_layer(layer) for layer in memory_layers}
+        if memory_layers
+        else None
     )
+    if layer_limits:
+        allowed_layers = {*allowed_layers} if allowed_layers else set()
+        allowed_layers.update(normalize_memory_layer(layer) for layer in layer_limits)
+
+    searchable_memory = [
+        record
+        for record in memory
+        if (not allowed_types or str(record.get("memory_type", "evidence")) in allowed_types)
+        and (not allowed_layers or memory_layer_for_record(record) in allowed_layers)
+    ]
     if not allowed_types or not (allowed_types <= {"failed_experience"}):
         searchable_memory = [
             record
             for record in searchable_memory
             if bool(record.get("use_as_positive", True))
-            and str(record.get("quality_status", "suspect") or "suspect") not in {"failed", "rejected"}
+            and str(record.get("quality_status", "suspect") or "suspect")
+            not in {"failed", "rejected"}
         ]
     if not searchable_memory:
         return []
 
-    hits = search_hypergraph_memory(searchable_memory, query, top_k=top_k)
-    return _rerank_memory_hits(hits, query)[:top_k]
+    hits = search_hypergraph_memory(
+        searchable_memory,
+        query,
+        top_k=top_k,
+        memory_types=allowed_types,
+        type_limits=effective_type_limits or None,
+    )
+    ranked_hits = _rerank_memory_hits(hits, query)
+    selected: list[dict] = []
+    layer_counts: dict[str, int] = {}
+    normalized_limits = {
+        normalize_memory_layer(layer): max(0, int(limit))
+        for layer, limit in (layer_limits or {}).items()
+    }
+    for hit in ranked_hits:
+        enriched = dict(hit)
+        layer = memory_layer_for_record(enriched)
+        enriched["memory_layer"] = layer
+        if layer in normalized_limits and layer_counts.get(layer, 0) >= normalized_limits[layer]:
+            continue
+        selected.append(enriched)
+        layer_counts[layer] = layer_counts.get(layer, 0) + 1
+        if len(selected) >= top_k:
+            break
+    return selected

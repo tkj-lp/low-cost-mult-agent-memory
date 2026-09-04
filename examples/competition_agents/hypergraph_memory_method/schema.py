@@ -19,6 +19,7 @@ NODE_ARTIFACT: Final = "artifact"
 NODE_STATE: Final = "state"
 NODE_STATE_REF: Final = "state_ref"
 NODE_MEMORY_REF: Final = "memory_ref"
+NODE_CONTEXT: Final = "context"
 NODE_GAP: Final = "gap"
 NODE_SUPPORTING_FACT: Final = "supporting_fact"
 NODE_EVIDENCE: Final = "evidence"
@@ -53,6 +54,8 @@ EDGE_AGENT_MESSAGE: Final = "agent_message"
 EDGE_TRAJECTORY: Final = "trajectory"
 EDGE_STATE_FLOW: Final = "state_flow"
 EDGE_MEMORY_REUSE: Final = "memory_reuse"
+EDGE_KNOWLEDGE_GROUNDING: Final = "knowledge_grounding"
+EDGE_EXPERIENCE_ABSTRACTION: Final = "experience_abstraction"
 EDGE_GAP: Final = "cognitive_gap"
 EDGE_GAP_COVERAGE: Final = "gap_coverage"
 EDGE_EVIDENCE: Final = "evidence"
@@ -81,6 +84,7 @@ STRUCTURED_NODE_KINDS: Final = {
     NODE_STATE,
     NODE_STATE_REF,
     NODE_MEMORY_REF,
+    NODE_CONTEXT,
     NODE_GAP,
     NODE_SUPPORTING_FACT,
     NODE_EVIDENCE,

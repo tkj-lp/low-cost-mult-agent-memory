@@ -7,8 +7,17 @@ from __future__ import annotations
 """
 
 from competition_agents.hypergraph_memory import build_hypergraph_view, search_hypergraph_memory
-from competition_agents.memory import _rule_card_summary, add_memory, increment_reuse_counts, refine_memory, search_memory
+from competition_agents.memory import (
+    _rule_card_summary,
+    add_memory,
+    apply_memory_outcome,
+    increment_reuse_counts,
+    record_memory_usage,
+    refine_memory,
+    search_memory,
+)
 from hypergraph_memory_method.distill import distill_experience
+from hypergraph_memory_method.evolution import maintain_memory
 
 
 def _record(
@@ -29,6 +38,43 @@ def _record(
     }
 
 
+def test_maintenance_merges_equivalent_experience_and_recomputes_lifecycle() -> None:
+    records = [
+        {
+            **_record("mem-0001"),
+            "memory_type": "experience",
+            "problem_pattern": "temporal_constraint",
+            "solution_pattern": "filter_then_select",
+            "trigger_conditions": ["temporal-query"],
+            "retrieval_count": 2,
+            "reuse_count": 1,
+            "reuse_success_count": 1,
+            "reuse_failure_count": 0,
+            "lifecycle_stage": "needs-validation",
+        },
+        {
+            **_record("mem-0002"),
+            "memory_type": "experience",
+            "problem_pattern": "temporal_constraint",
+            "solution_pattern": "filter_then_select",
+            "trigger_conditions": ["temporal-query"],
+            "retrieval_count": 3,
+            "reuse_count": 1,
+            "reuse_success_count": 1,
+            "reuse_failure_count": 0,
+            "lifecycle_stage": "needs-validation",
+        },
+    ]
+
+    maintained = maintain_memory(records)
+
+    assert len(maintained) == 1
+    assert maintained[0]["retrieval_count"] == 5
+    assert maintained[0]["reuse_count"] == 2
+    assert maintained[0]["reuse_success_count"] == 2
+    assert maintained[0]["lifecycle_stage"] == "validated"
+
+
 def test_add_memory_adds_hypergraph_and_default_fields() -> None:
     """add_memory 应同时保持旧字段兼容，并补齐后续超图检索会用的默认字段。"""
 
@@ -44,7 +90,7 @@ def test_add_memory_adds_hypergraph_and_default_fields() -> None:
     # hypergraph 是网页展示和后续索引构建的入口。
     assert "hypergraph" in record
     # 这些字段现在先给默认值，避免后续队友接入时再改 record schema。
-    assert record["entities"] == []
+    assert "protocol" in record["entities"]
     assert record["supporting_facts"] == []
     assert record["evidence"] == []
     assert record["reasoning_path"] == []
@@ -121,7 +167,8 @@ def test_trace_memory_builds_structured_hyperedges() -> None:
     assert "state_flow" in edge_types
     assert "memory_reuse" in edge_types
     assert "cognitive_gap" in edge_types
-    assert "supporting_fact" in edge_types
+    assert "supporting_fact" not in edge_types
+    assert "evidence" in edge_types
     assert "strategy" in edge_types
     assert "experience" in edge_types
     assert "reuse_benefit" in edge_types
@@ -154,6 +201,7 @@ def test_distill_experience_extracts_strategy_and_reuse_benefit() -> None:
                 }
             ],
             "memory_hits": [{"memory_id": "mem-0001"}],
+            "evidence": ["A: B"],
             "state_refs": {"evidence": "state-0002", "answer": "state-0003"},
             "metrics": {"latent_transfer_count": 3, "text_chars": 120},
             "execution_result": {"retrieval_mode": "hypergraph_memory"},
@@ -166,7 +214,10 @@ def test_distill_experience_extracts_strategy_and_reuse_benefit() -> None:
     assert distilled["lifecycle_stage"] == "promoted-candidate"
     assert "memory-ref-passing" in distilled["strategies"]
     assert "supporting-fact-chain" in distilled["experiences"]
-    assert "expected-reuse:answer" in distilled["reuse_benefits"]
+    assert not any(
+        value.startswith("expected-reuse:")
+        for value in distilled["reuse_benefits"]
+    )
     assert "memory-hit-count:1" in distilled["reuse_benefits"]
 
 
@@ -605,6 +656,43 @@ def test_tag_match_scores_higher_than_keyword_only_match() -> None:
     # 如果这条断言失败，说明强结构信号和弱文本信号的区分被破坏了。
     assert hits[0]["memory_id"] == "mem-0001"
     assert hits[0]["hypergraph_score"] > hits[1]["hypergraph_score"]
+
+
+def test_memory_usage_separates_retrieval_adoption_and_success() -> None:
+    """召回、进入推理和经结果验证是三个不同的维护信号。"""
+
+    memory = [_record("mem-0001"), _record("mem-0002")]
+    memory = record_memory_usage(
+        memory,
+        retrieved_memory_ids=["mem-0001", "mem-0002"],
+        adopted_memory_ids=["mem-0002"],
+    )
+
+    first, second = memory
+    assert first["retrieval_count"] == 1
+    assert first.get("reuse_count", 0) == 0
+    assert second["retrieval_count"] == 1
+    assert second["reuse_count"] == 1
+    assert second.get("reuse_success_count", 0) == 0
+
+    memory = apply_memory_outcome(memory, ["mem-0002"], successful=True)
+    second = memory[1]
+    assert second["reuse_success_count"] == 1
+    assert second["lifecycle_stage"] == "promoted-candidate"
+
+
+def test_failed_adopted_memory_is_not_counted_as_success() -> None:
+    memory = record_memory_usage(
+        [_record("mem-0001")],
+        retrieved_memory_ids=["mem-0001"],
+        adopted_memory_ids=["mem-0001"],
+    )
+
+    memory = apply_memory_outcome(memory, ["mem-0001"], successful=False)
+
+    assert memory[0]["reuse_success_count"] == 0
+    assert memory[0]["reuse_failure_count"] == 1
+    assert memory[0]["lifecycle_stage"] == "needs-validation"
 
 
 def test_search_result_contains_explanation_fields() -> None:

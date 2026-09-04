@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import threading
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -42,20 +43,91 @@ class StateStore:
     _items: dict[str, dict[str, Any]] = field(default_factory=dict)
     _lock: threading.Lock = field(default_factory=threading.Lock)
 
-    def put(self, state_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def put(
+        self,
+        state_id: str,
+        payload: dict[str, Any],
+        *,
+        scope: str = "task",
+        ttl_seconds: float | None = None,
+    ) -> dict[str, Any]:
         size = estimate_bytes(payload)
+        created_at = time.monotonic()
         record = {
             "state_id": state_id,
             "bytes": size,
             "payload": payload,
+            "scope": scope,
+            "created_at_monotonic": created_at,
+            "expires_at_monotonic": (
+                created_at + max(0.0, float(ttl_seconds))
+                if ttl_seconds is not None
+                else None
+            ),
         }
         with self._lock:
             self._items[state_id] = record
-        return {"state_id": state_id, "bytes": size, "storage": "process_state_store"}
+        return {
+            "state_id": state_id,
+            "bytes": size,
+            "storage": "process_state_store",
+            "scope": scope,
+        }
 
     def get(self, state_id: str) -> dict[str, Any] | None:
         with self._lock:
-            return self._items.get(state_id)
+            record = self._items.get(state_id)
+            if record is None:
+                return None
+            expires_at = record.get("expires_at_monotonic")
+            if expires_at is not None and time.monotonic() >= float(expires_at):
+                self._items.pop(state_id, None)
+                return None
+            return record
+
+    def resolve(
+        self,
+        state_id: str,
+        *,
+        expected_content_type: str | None = None,
+    ) -> dict[str, Any] | None:
+        record = self.get(state_id)
+        if record is None:
+            return None
+        payload = record.get("payload")
+        if not isinstance(payload, dict):
+            return None
+        if expected_content_type and payload.get("content_type") != expected_content_type:
+            return None
+        return payload
+
+    def release(self, state_id: str) -> bool:
+        with self._lock:
+            return self._items.pop(state_id, None) is not None
+
+    def clear_scope(self, scope: str) -> int:
+        with self._lock:
+            state_ids = [
+                state_id
+                for state_id, record in self._items.items()
+                if str(record.get("scope") or "task") == scope
+            ]
+            for state_id in state_ids:
+                self._items.pop(state_id, None)
+            return len(state_ids)
+
+    def clear_expired(self) -> int:
+        now = time.monotonic()
+        with self._lock:
+            state_ids = [
+                state_id
+                for state_id, record in self._items.items()
+                if record.get("expires_at_monotonic") is not None
+                and now >= float(record["expires_at_monotonic"])
+            ]
+            for state_id in state_ids:
+                self._items.pop(state_id, None)
+            return len(state_ids)
 
     def clear(self) -> None:
         with self._lock:
@@ -65,12 +137,46 @@ class StateStore:
 GLOBAL_STATE_STORE = StateStore()
 
 
-def put_state_payload(state_id: str, payload: dict[str, Any]) -> dict[str, Any]:
-    return GLOBAL_STATE_STORE.put(state_id, payload)
+def put_state_payload(
+    state_id: str,
+    payload: dict[str, Any],
+    *,
+    scope: str = "task",
+    ttl_seconds: float | None = None,
+) -> dict[str, Any]:
+    return GLOBAL_STATE_STORE.put(
+        state_id,
+        payload,
+        scope=scope,
+        ttl_seconds=ttl_seconds,
+    )
 
 
 def get_state_payload(state_id: str) -> dict[str, Any] | None:
     return GLOBAL_STATE_STORE.get(state_id)
+
+
+def resolve_state_payload(
+    state_id: str,
+    *,
+    expected_content_type: str | None = None,
+) -> dict[str, Any] | None:
+    return GLOBAL_STATE_STORE.resolve(
+        state_id,
+        expected_content_type=expected_content_type,
+    )
+
+
+def release_state_payload(state_id: str) -> bool:
+    return GLOBAL_STATE_STORE.release(state_id)
+
+
+def clear_state_scope(scope: str) -> int:
+    return GLOBAL_STATE_STORE.clear_scope(scope)
+
+
+def clear_expired_states() -> int:
+    return GLOBAL_STATE_STORE.clear_expired()
 
 
 def clear_state_store() -> None:

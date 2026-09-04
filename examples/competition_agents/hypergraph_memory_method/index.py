@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import math
-from collections import defaultdict
+import json
+import threading
+from collections import OrderedDict, defaultdict
 from typing import Any
 
 from competition_agents.embedding import embed_text
 
 from .builder import build_hypergraph_view
-from .evolution import prepare_searchable_memory
+from .entities import extract_canonical_entities
+from .evolution import prepare_searchable_memory, retention_profile
 from .gating import evaluate_candidate_gate
 from .memory_model import compact_reuse_projection, normalize_memory_record
 from .query_profile import build_query_profile, profile_nodes
@@ -26,7 +29,7 @@ from .schema import (
     STRUCTURED_NODE_KINDS,
 )
 from .scoring import node_kind, score_components
-from .text import node_id, normalize_text, tokenize
+from .text import node_id, normalize_text, stable_id, tokenize
 
 EXPANSION_NODE_KINDS = {
     NODE_ENTITY,
@@ -40,6 +43,70 @@ EXPANSION_NODE_KINDS = {
     NODE_CLAIM,
 }
 
+_INDEX_CACHE_LIMIT = 8
+_INDEX_CACHE: "OrderedDict[str, HypergraphIndex]" = OrderedDict()
+_INDEX_CACHE_LOCK = threading.Lock()
+
+
+def _memory_index_signature(memory: list[dict[str, Any]]) -> str:
+    """Fingerprint graph-relevant fields while ignoring mutable usage counters."""
+
+    rows = []
+    for record in memory:
+        rows.append(
+            {
+                "id": record.get("global_memory_id") or record.get("memory_id"),
+                "version": record.get("record_version", 1),
+                "memory_type": record.get("memory_type", "evidence"),
+                "task_topic": record.get("task_topic", ""),
+                "summary": record.get("summary", ""),
+                "tags": record.get("tags", []),
+                "entities": record.get("entities", []),
+                "group_id": record.get("group_id", ""),
+                "turn_id": record.get("turn_id", ""),
+                "artifact_types": record.get("artifact_types", []),
+                "problem_pattern": record.get("problem_pattern", ""),
+                "solution_pattern": record.get("solution_pattern", ""),
+                "failure_pattern": record.get("failure_pattern", ""),
+                "trigger_conditions": record.get("trigger_conditions", []),
+                "supporting_evidence": record.get("supporting_evidence", []),
+                "evidence": record.get("evidence", []),
+                "lifecycle_stage": record.get("lifecycle_stage", "episodic"),
+                "pruned": bool(record.get("pruned", False)),
+            }
+        )
+    serialized = json.dumps(rows, ensure_ascii=False, sort_keys=True, default=str)
+    return stable_id(serialized, length=32)
+
+
+def clear_hypergraph_index_cache() -> None:
+    with _INDEX_CACHE_LOCK:
+        _INDEX_CACHE.clear()
+
+
+def get_cached_hypergraph_index(memory: list[dict[str, Any]]) -> "HypergraphIndex":
+    """Reuse the immutable index for repeated queries over one memory snapshot."""
+
+    signature = _memory_index_signature(memory)
+    with _INDEX_CACHE_LOCK:
+        cached = _INDEX_CACHE.get(signature)
+        if cached is not None:
+            _INDEX_CACHE.move_to_end(signature)
+            cached.refresh_runtime_fields(memory)
+            return cached
+
+    built = HypergraphIndex.from_memory_records(memory)
+    with _INDEX_CACHE_LOCK:
+        cached = _INDEX_CACHE.get(signature)
+        if cached is not None:
+            _INDEX_CACHE.move_to_end(signature)
+            cached.refresh_runtime_fields(memory)
+            return cached
+        _INDEX_CACHE[signature] = built
+        while len(_INDEX_CACHE) > _INDEX_CACHE_LIMIT:
+            _INDEX_CACHE.popitem(last=False)
+    return built
+
 
 def query_nodes(query: str, profile: dict[str, Any] | None = None) -> set[str]:
     """Return graph nodes activated by the current query."""
@@ -48,6 +115,8 @@ def query_nodes(query: str, profile: dict[str, Any] | None = None) -> set[str]:
     for token in tokenize(query):
         nodes.add(node_id(NODE_KEYWORD, token))
         nodes.add(node_id(NODE_TAG, token))
+    for entity in extract_canonical_entities(query):
+        nodes.add(node_id(NODE_ENTITY, entity))
     return nodes
 
 
@@ -108,7 +177,6 @@ def _continuous_reuse_score(profile: dict[str, Any], record: dict[str, Any]) -> 
     """Boost records that satisfy the current continuous-task reuse contract."""
 
     group_ids = {normalize_text(str(value)) for value in profile.get("group_ids", []) if str(value).strip()}
-    expected_turns = {normalize_text(str(value)) for value in profile.get("expected_turns", []) if str(value).strip()}
     artifacts = {normalize_text(str(value)) for value in profile.get("artifacts", []) if str(value).strip()}
     record_group = normalize_text(str(record.get("group_id") or ""))
     record_turn = normalize_text(str(record.get("turn_id") or ""))
@@ -123,17 +191,10 @@ def _continuous_reuse_score(profile: dict[str, Any], record: dict[str, Any]) -> 
     if group_ids and record_group in group_ids:
         score += 4.0
         reasons.append("same_group")
-    if expected_turns and record_turn in expected_turns:
-        score += 12.0
-        reasons.append("expected_turn")
     artifact_overlap = artifacts & record_artifacts
     if artifact_overlap:
         score += min(len(artifact_overlap) * 4.0, 10.0)
         reasons.append("artifact_match")
-    if expected_turns and record_turn in expected_turns and artifact_overlap:
-        score += 6.0
-        reasons.append("expected_turn_artifact")
-
     return round(score, 4), {
         "record_group": record_group,
         "record_turn": record_turn,
@@ -419,3 +480,25 @@ class HypergraphIndex:
                 hit["memory_id"],
             ),
         )[:top_k]
+
+    def refresh_runtime_fields(self, memory: list[dict[str, Any]]) -> None:
+        """Refresh counters that affect ranking without rebuilding graph topology."""
+
+        dynamic_fields = (
+            "retrieval_count",
+            "reuse_count",
+            "reuse_success_count",
+            "reuse_failure_count",
+            "last_retrieved_at",
+            "last_reused_at",
+            "confidence",
+        )
+        for raw_record in memory:
+            memory_id = str(raw_record.get("memory_id") or "")
+            cached = self.memory_by_id.get(memory_id)
+            if cached is None:
+                continue
+            for field in dynamic_fields:
+                if field in raw_record:
+                    cached[field] = raw_record[field]
+            cached.update(retention_profile(cached))

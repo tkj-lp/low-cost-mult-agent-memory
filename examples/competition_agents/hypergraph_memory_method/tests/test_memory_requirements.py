@@ -20,6 +20,10 @@ from hypergraph_memory_method import (
     search_memory_by_mode,
     validate_evidence_chain,
 )
+from hypergraph_memory_method.index import (
+    clear_hypergraph_index_cache,
+    get_cached_hypergraph_index,
+)
 
 
 def _evidence_record(memory_id: str = "mem-0002") -> dict:
@@ -75,7 +79,7 @@ def test_evidence_chain_is_ordered_sourced_valid_and_reusable() -> None:
 
     assert chain["valid"] is True
     assert chain["completeness"] == 1.0
-    assert chain["evidence_count"] == 3
+    assert chain["evidence_count"] == 1
     assert [step["position"] for step in chain["steps"]] == list(
         range(1, len(chain["steps"]) + 1)
     )
@@ -146,8 +150,34 @@ def test_compact_trace_removes_recursive_memory_and_evaluation_answers() -> None
     compacted = compact_trace(trace)
 
     assert "expected_answer" not in compacted["task_meta"]
-    assert compacted["task_meta"]["expected_reuse"] == ["turn-1.answer"]
+    assert "expected_reuse" not in compacted["task_meta"]
     assert compacted["memory_hits"] == [{"memory_id": "mem-0001", "summary": "prior"}]
+
+
+def test_memory_graph_uses_canonical_entities_without_evaluation_labels() -> None:
+    source = _evidence_record()
+    source["trace"]["task_meta"]["expected_reuse"] = ["turn-1.answer"]
+    source["trace"]["task_meta"]["supporting_facts"] = [
+        ["Shirley Temple", "She served as Chief of Protocol."]
+    ]
+    memory = add_memory(
+        [],
+        source_agent=source["source_agent"],
+        task_topic=source["task_topic"],
+        summary=source["summary"],
+        tags=source["tags"],
+        trace=source["trace"],
+    )
+
+    record = memory[0]
+    graph_nodes = {
+        node
+        for edge in record["hypergraph"]["hyperedges"]
+        for node in edge.get("nodes", [])
+    }
+    assert "shirley temple" in record["entities"]
+    assert "entity:shirley temple" in graph_nodes
+    assert not any(node.startswith("expected_reuse:") for node in graph_nodes)
 
 
 def test_add_memory_remains_compatible_and_gains_chain_fields() -> None:
@@ -422,6 +452,18 @@ def test_hypergraph_ignores_high_degree_source_hub() -> None:
 
     assert hits[0]["memory_id"] == "mem-0029"
     assert all(hit["memory_id"] == "mem-0029" for hit in hits)
+
+
+def test_hypergraph_index_is_reused_for_an_unchanged_memory_snapshot() -> None:
+    clear_hypergraph_index_cache()
+    memory = [_evidence_record("mem-0001")]
+
+    first = get_cached_hypergraph_index(memory)
+    second = get_cached_hypergraph_index(memory)
+    changed = get_cached_hypergraph_index([*memory, _evidence_record("mem-0002")])
+
+    assert first is second
+    assert changed is not first
 
 
 def test_retrieval_modes_use_the_declared_memory_organization(monkeypatch) -> None:

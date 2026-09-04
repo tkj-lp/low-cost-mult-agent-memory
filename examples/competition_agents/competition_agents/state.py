@@ -41,7 +41,11 @@ class Metrics(TypedDict):
     memory_gate_skip_count: int
     memory_query_count: int
     knowledge_query_count: int
+    retrieval_batch_count: int
     planner_memory_decision_ms: float
+    state_store_write_count: int
+    state_store_read_count: int
+    state_store_bytes: int
 
 
 AGENT_CODES = {
@@ -74,6 +78,8 @@ class CompetitionState(TypedDict):
     mode: Literal["text", "protocol", "hidden"]
     plan: list[str]
     retrieval_policy: dict[str, Any]
+    retrieval_batches: list[dict[str, Any]]
+    memory_layer_hits: dict[str, list[dict[str, Any]]]
     evidence: list[str]
     execution_result: dict[str, Any]
     final_answer: str
@@ -111,6 +117,8 @@ def initial_state(
         "mode": mode,
         "plan": [],
         "retrieval_policy": {},
+        "retrieval_batches": [],
+        "memory_layer_hits": {},
         "evidence": [],
         "execution_result": {},
         "final_answer": "",
@@ -149,7 +157,11 @@ def initial_state(
             "memory_gate_skip_count": 0,
             "memory_query_count": 0,
             "knowledge_query_count": 0,
+            "retrieval_batch_count": 0,
             "planner_memory_decision_ms": 0.0,
+            "state_store_write_count": 0,
+            "state_store_read_count": 0,
+            "state_store_bytes": 0,
         },
     }
 
@@ -157,6 +169,53 @@ def initial_state(
 def simple_embedding(text: str, dimensions: int = 16) -> list[float]:
     # 保留旧接口，避免历史实验脚本需要同步大改。
     return hash_embedding(text, dimensions)
+
+
+def put_shared_state(
+    state: CompetitionState,
+    *,
+    producer: str,
+    topic: str,
+    content_type: str,
+    payload: dict[str, Any],
+    consumers: list[str] | None = None,
+    scope: str = "task",
+    prefix: str = "bundle",
+) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
+    """Store a structured data-plane object and expose only compact metadata."""
+
+    state_id = f"{prefix}-{len(state['latent_states']) + 1:04d}"
+    stored_payload = {"content_type": content_type, **payload}
+    store_info = put_state_payload(state_id, stored_payload, scope=scope)
+    summary = str(payload.get("summary") or topic or content_type)[:160]
+    state_meta = {
+        "state_id": state_id,
+        "type": "shared_state_ref",
+        "content_type": content_type,
+        "producer": producer,
+        "consumers": consumers or [],
+        "topic": topic,
+        "summary": summary,
+        "store_ref": state_id,
+        "storage": store_info["storage"],
+        "stored_payload_bytes": store_info["bytes"],
+        "scope": scope,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    metrics = dict(state["metrics"])
+    metrics["state_store_write_count"] = metrics.get("state_store_write_count", 0) + 1
+    metrics["state_store_bytes"] = metrics.get("state_store_bytes", 0) + int(store_info["bytes"])
+    emit_state_transfer_event(
+        state,
+        state_id=state_id,
+        producer=producer,
+        consumers=consumers or [],
+        content_type=content_type,
+        summary=summary,
+        shape=[],
+        bytes_size=int(store_info["bytes"]),
+    )
+    return state_id, {**state["latent_states"], state_id: state_meta}, metrics
 
 
 def put_latent_state(
@@ -188,6 +247,7 @@ def put_latent_state(
             "embedding_model": embedding.model,
             "vector": vector,
         },
+        scope=scope,
     )
     latent_state = {
         "state_id": state_id,
@@ -197,7 +257,6 @@ def put_latent_state(
         "consumers": consumers or [],
         "topic": topic,
         "summary": text[:160],
-        "source_text": text,
         "embedding_provider": embedding.provider,
         "embedding_model": embedding.model,
         "shape": [len(vector)],
@@ -214,6 +273,10 @@ def put_latent_state(
     # 简化估算：把向量按 32 位浮点数统计数据规模。
     metrics["latent_transfer_count"] += 1
     metrics["latent_bytes"] += len(vector) * 4
+    metrics["state_store_write_count"] = metrics.get("state_store_write_count", 0) + 1
+    metrics["state_store_bytes"] = metrics.get("state_store_bytes", 0) + int(
+        store_info["bytes"]
+    )
     metrics["state_generation_ms"] = metrics.get("state_generation_ms", 0.0) + generation_elapsed_ms
     emit_state_transfer_event(
         state,
@@ -259,7 +322,6 @@ def put_hidden_state(
         "consumers": consumers or [],
         "topic": topic,
         "summary": text[:160],
-        "source_text": text,
         "model": result.model_name,
         "layer": result.layer,
         "shape": result.shape,
@@ -292,12 +354,17 @@ def put_hidden_state(
             "shape": result.shape,
             "stored_shape": stored_hidden_shape(result),
         },
+        scope=scope,
     )
     latent_state["store_ref"] = store_info["state_id"]
     latent_state["stored_payload_bytes"] = store_info["bytes"]
     metrics = dict(state["metrics"])
     metrics["latent_transfer_count"] += 1
     metrics["latent_bytes"] += stored_hidden_bytes(result)
+    metrics["state_store_write_count"] = metrics.get("state_store_write_count", 0) + 1
+    metrics["state_store_bytes"] = metrics.get("state_store_bytes", 0) + int(
+        store_info["bytes"]
+    )
     metrics["state_generation_ms"] = metrics.get("state_generation_ms", 0.0) + generation_elapsed_ms
     emit_state_transfer_event(
         state,
@@ -355,7 +422,6 @@ def record_message(
         }
 
     # 结构化 payload 使用紧凑 JSON 统计传输大小。
-    serialized = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     serialized = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     protocol_bytes = len(serialized.encode("utf-8"))
     minimal_payload = minimal_wire_payload(state, sender=sender, receiver=receiver, action=action, payload=payload)

@@ -61,7 +61,12 @@ def _with_persistent_memory(memory: list[dict[str, Any]]) -> list[dict[str, Any]
 
 
 def search_hypergraph_memory(
-    memory: list[dict[str, Any]], query: str, *, top_k: int
+    memory: list[dict[str, Any]],
+    query: str,
+    *,
+    top_k: int,
+    memory_types: set[str] | None = None,
+    type_limits: dict[str, int] | None = None,
 ) -> list[dict[str, Any]]:
     """保持原接口不变，并按配置分派五种共享记忆检索方式。"""
 
@@ -71,4 +76,6 @@ def search_hypergraph_memory(
         query,
         top_k=top_k,
         mode=mode,
+        memory_types=memory_types,
+        type_limits=type_limits,
     )
