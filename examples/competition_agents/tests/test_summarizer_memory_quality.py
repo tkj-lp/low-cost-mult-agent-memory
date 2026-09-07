@@ -4,7 +4,7 @@ from agents.summarizer.agent import summarizer_agent
 from competition_agents.state import initial_state
 
 
-def test_summarizer_writes_failed_experience_without_positive_evidence(monkeypatch) -> None:
+def test_continuous_summarizer_writes_pending_qa_only(monkeypatch) -> None:
     monkeypatch.setenv("COMPETITION_SUMMARIZER_MODE", "direct")
     monkeypatch.setenv("COMPETITION_MEMORY_DISTILLATION_MODE", "local_fallback")
 
@@ -28,9 +28,8 @@ def test_summarizer_writes_failed_experience_without_positive_evidence(monkeypat
     result = summarizer_agent(state)
 
     assert result["memory_write_count"] == 1
-    assert result["experience_write_count"] == 1
-    assert result["latest_evidence_write"] == {}
-    assert result["latest_experience_write"]["memory_type"] == "failed_experience"
-    assert result["latest_experience_write"]["quality_status"] == "failed"
-    assert result["latest_experience_write"]["use_as_positive"] is False
+    assert result["experience_write_count"] == 0
+    assert result["latest_evidence_write"]["memory_type"] == "evidence"
+    assert result["latest_evidence_write"]["quality_status"] == "pending"
+    assert result["latest_experience_write"] == {}
     assert len(result["memory"]) == 1

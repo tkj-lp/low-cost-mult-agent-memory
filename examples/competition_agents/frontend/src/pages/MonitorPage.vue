@@ -44,7 +44,7 @@
             <i></i>
             <div class="task-strip-main">
               <div class="task-strip-head">
-                <strong>任务 {{ task.round }}</strong>
+                <strong>{{ task.displayLabel }}</strong>
                 <b>{{ task.status }}</b>
               </div>
               <p>{{ task.title }}</p>
@@ -383,7 +383,7 @@ const activeTransferDetail = computed(() => transferAgentDetailForSelectedMessag
 
 const summary = computed(() => [
   { label: '运行模式', value: runModeLabel.value, icon: '协', tone: 'green' },
-  { label: '当前轮次', value: tasks.value.length ? `第 ${selectedTask.value.round} 轮 / 共 ${tasks.value.length} 轮` : '--', icon: '轮', tone: 'blue' },
+  { label: '当前轮次', value: tasks.value.length ? `${selectedTask.value.roundText} / 共 ${tasks.value.length} 轮` : '--', icon: '轮', tone: 'blue' },
   { label: '消息次数', value: `${selectedTask.value.metrics.messages} 次`, icon: '信', tone: 'purple' },
   { label: '文本开销', value: selectedTask.value.metrics.textCost, icon: '文', tone: 'blue' },
   { label: '状态传递', value: `${selectedTask.value.metrics.stateTransfers} 次`, icon: '态', tone: 'green' },
@@ -396,8 +396,12 @@ watch(tasks, (nextTasks) => {
     selectedTaskId.value = ''
     return
   }
+  const runningTask = nextTasks.find((task) => task.state === 'running')
+  if (monitorSelectionLocked.value && runningTask) {
+    selectedTaskId.value = runningTask.id
+    return
+  }
   if (!nextTasks.some((task) => task.id === selectedTaskId.value)) {
-    const runningTask = nextTasks.find((task) => task.state === 'running')
     selectedTaskId.value = runningTask?.id ?? nextTasks[0].id
   }
 })
@@ -677,6 +681,7 @@ function formatArchiveTime(value) {
 function eventsFromImportedPayload(payload) {
   const primaryRun = latestPrimaryRun(payload) || {}
   const taskResults = Array.isArray(primaryRun.task_results) ? primaryRun.task_results : []
+  const batchSummaries = importedBatchSummaries(primaryRun, taskResults)
   const timestamp = payload?.archived_at || new Date().toISOString()
   const events = [
     {
@@ -691,12 +696,20 @@ function eventsFromImportedPayload(payload) {
     {
       event_type: 'task_queue',
       timestamp,
-      tasks: taskResults.map((task, index) => ({
-        task_index: index + 1,
-        task_id: task.task_id || `task-${index + 1}`,
-        task_title: task.task_title || task.question || task.task || `任务 ${index + 1}`,
-        expected_reuse: task.expected_reuse || []
-      }))
+      tasks: [
+        ...taskResults.map((task, index) => ({
+          task_index: index + 1,
+          task_id: task.task_id || `task-${index + 1}`,
+          task_title: task.task_title || task.question || task.task || `任务 ${index + 1}`,
+          expected_reuse: task.expected_reuse || []
+        })),
+        ...batchSummaries.map((summary, index) => ({
+          task_index: taskResults.length + index + 1,
+          task_id: `${summary.group_id || `batch-${index + 1}`}:batch-summary`,
+          task_title: '批次经验记忆总结写入',
+          expected_reuse: []
+        }))
+      ]
     }
   ]
 
@@ -708,6 +721,7 @@ function eventsFromImportedPayload(payload) {
     const memoryRefs = normalizeList(task.memory_refs || task.memory_hit_ids || task.memory_ids)
     const stateRefs = normalizeList(task.state_refs)
     const memoryHits = importedMemoryHits(task)
+    const experienceHits = importedExperienceHits(task)
     const contextHits = importedContextHits(task)
     const retrievalPolicy = importedRetrievalPolicy(task, memoryHits)
     events.push({
@@ -720,6 +734,16 @@ function eventsFromImportedPayload(payload) {
       to_agent: 'planner',
       action_type: 'start_task',
       return_result: { task_title: taskTitle }
+    })
+    pushImportedPlannerExperienceEvents(events, {
+      timestamp,
+      taskIndex,
+      taskId,
+      taskTitle,
+      stateRefs,
+      experienceHits,
+      retrievalPolicy,
+      task
     })
     events.push({
       event_type: 'agent_message',
@@ -840,8 +864,103 @@ function eventsFromImportedPayload(payload) {
       }
     })
   }
+  for (const [index, batch] of batchSummaries.entries()) {
+    pushImportedBatchExperienceEvents(events, {
+      timestamp,
+      taskIndex: taskResults.length + index + 1,
+      batch,
+      index
+    })
+  }
   events.push({ event_type: 'run_done', timestamp })
   return events
+}
+
+function importedBatchSummaries(primaryRun, taskResults) {
+  if (Array.isArray(primaryRun?.batch_summaries) && primaryRun.batch_summaries.length) {
+    return primaryRun.batch_summaries
+  }
+  return taskResults
+    .map((task) => task?.batch_summary)
+    .filter((summary) => summary && typeof summary === 'object')
+}
+
+function pushImportedBatchExperienceEvents(events, { timestamp, taskIndex, batch, index }) {
+  const groupId = batch.group_id || `batch-${index + 1}`
+  const taskId = `${groupId}:batch-summary`
+  const taskTitle = '批次经验记忆总结写入'
+  const writes = Array.isArray(batch.experience_writes) ? batch.experience_writes : []
+  events.push({
+    event_type: 'batch_experience_start',
+    timestamp,
+    task_index: taskIndex,
+    task_id: taskId,
+    task_title: taskTitle,
+    from_agent: 'evaluator',
+    to_agent: 'summarizer',
+    action_type: 'evaluate_batch',
+    input_params: {
+      group_id: groupId,
+      task_count: Number(batch.task_count || 0)
+    },
+    return_result: {
+      correct: Number(batch.correct || 0),
+      evaluated_tasks: Number(batch.task_count || 0)
+    }
+  })
+  for (const write of writes) {
+    const normalizedWrite = normalizeMemoryWrite(write)
+    if (!normalizedWrite.memory_id) continue
+    events.push({
+      event_type: 'memory_write',
+      timestamp,
+      task_index: taskIndex,
+      task_id: taskId,
+      task_title: taskTitle,
+      from_agent: 'summarizer',
+      to_agent: 'memory',
+      action_type: 'write_batch_experience',
+      memory_refs: [normalizedWrite.memory_id],
+      state_refs: normalizeList(normalizedWrite.state_refs),
+      payload_summary: normalizedWrite.summary,
+      return_result: normalizedWrite
+    })
+  }
+  events.push({
+    event_type: 'batch_experience_complete',
+    timestamp,
+    task_index: taskIndex,
+    task_id: taskId,
+    task_title: taskTitle,
+    from_agent: 'summarizer',
+    to_agent: 'memory',
+    action_type: 'complete_batch_experience',
+    memory_refs: writes.map((write) => write.memory_id).filter(Boolean),
+    return_result: {
+      experience_write_count: Number(batch.experience_write_count || writes.length),
+      qa_memory_cleared: batch.qa_memory_cleared !== false,
+      correct: Number(batch.correct || 0),
+      evaluated_tasks: Number(batch.task_count || 0)
+    },
+    elapsed_ms: Number(batch.elapsed_ms || 0)
+  })
+  events.push({
+    event_type: 'task_done',
+    timestamp,
+    task_index: taskIndex,
+    task_id: taskId,
+    task_title: taskTitle,
+    from_agent: 'summarizer',
+    to_agent: 'dashboard',
+    action_type: 'done',
+    memory_refs: writes.map((write) => write.memory_id).filter(Boolean),
+    elapsed_ms: Number(batch.elapsed_ms || 0),
+    return_result: {
+      message_count: writes.length + 2,
+      memory_hit_count: 0,
+      experience_write_count: Number(batch.experience_write_count || writes.length)
+    }
+  })
 }
 
 function normalizeList(value) {
@@ -888,9 +1007,10 @@ function pushImportedMemoryEvents(events, context) {
     action_type: 'query_memory',
     input_params: {
       query: task.retrieval_debug?.retrieval_query || task.question || taskTitle,
-      top_k: memoryHits.length || memoryRefs.length
+      top_k: memoryHits.length || memoryRefs.length,
+      memory_layer: 'episodic'
     },
-    return_result: { hit_count: memoryHits.length || memoryRefs.length },
+    return_result: { hit_count: memoryHits.length || memoryRefs.length, memory_layer: 'episodic' },
     state_refs: stateRefs,
     memory_refs: memoryRefs
   })
@@ -914,6 +1034,52 @@ function pushImportedMemoryEvents(events, context) {
         memory_type: hit.memory_type || hit.type || 'memory',
         selection_reason: hit.selection_reason || hit.reason || '',
         source_turn: hit.source_turn || hit.turn_id || ''
+      }
+    })
+  }
+}
+
+function pushImportedPlannerExperienceEvents(events, context) {
+  const { timestamp, taskIndex, taskId, taskTitle, stateRefs, experienceHits, retrievalPolicy, task } = context
+  const experienceRetrieval = retrievalPolicy.experience_retrieval || {}
+  const query = experienceRetrieval.query || task.retrieval_debug?.experience_query || task.question || taskTitle
+  events.push({
+    event_type: 'memory_query',
+    timestamp,
+    task_index: taskIndex,
+    task_id: taskId,
+    task_title: taskTitle,
+    from_agent: 'planner',
+    to_agent: 'experience',
+    action_type: 'query_experience',
+    input_params: { query, top_k: experienceHits.length || 2, memory_layer: 'experience' },
+    return_result: { hit_count: experienceHits.length, memory_layer: 'experience' },
+    state_refs,
+    memory_refs: experienceHits.map((hit) => hit.memory_id).filter(Boolean)
+  })
+  for (const hit of experienceHits) {
+    const memoryId = hit.memory_id || hit.id
+    if (!memoryId) continue
+    events.push({
+      event_type: 'memory_hit',
+      timestamp,
+      task_index: taskIndex,
+      task_id: taskId,
+      task_title: taskTitle,
+      from_agent: 'experience',
+      to_agent: 'planner',
+      action_type: 'return_experience',
+      state_refs,
+      memory_refs: [memoryId],
+      return_result: {
+        memory_id: memoryId,
+        summary: hit.summary || hit.text || hit.content || '',
+        memory_type: 'experience',
+        memory_layer: 'experience',
+        retrieval_score: hit.retrieval_score ?? hit.score ?? hit.confidence,
+        problem_pattern: hit.problem_pattern || '',
+        solution_pattern: hit.solution_pattern || '',
+        trigger_conditions: hit.trigger_conditions || []
       }
     })
   }
@@ -972,13 +1138,35 @@ function importedMemoryHits(task) {
     task.retrieved_memories,
     task.retrieval_debug?.memory_hits
   ]
+  let hadMemoryCandidates = false
   for (const value of candidates) {
-    if (Array.isArray(value) && value.length) return value
+    if (Array.isArray(value) && value.length) {
+      hadMemoryCandidates = true
+      const hits = value.filter((hit) => String(hit?.memory_type || hit?.type || '').toLowerCase() !== 'experience')
+      if (hits.length) return hits
+    }
   }
+  if (hadMemoryCandidates) return []
   return normalizeList(task.memory_refs || task.memory_hit_ids || task.memory_ids).map((memoryId) => ({
     memory_id: memoryId,
     summary: ''
   }))
+}
+
+function importedExperienceHits(task) {
+  const candidates = [
+    task.experience_hits,
+    task.retrieval_debug?.experience_hits,
+    task.agent_views?.retriever?.structured?.experience_hits,
+    task.memory_hits
+  ]
+  for (const value of candidates) {
+    if (!Array.isArray(value) || !value.length) continue
+    const hits = value.filter((hit) => String(hit?.memory_type || hit?.type || '').toLowerCase() === 'experience')
+    if (hits.length) return hits
+  }
+  const policyHits = normalizeList(task.agent_views?.planner?.structured?.retrieval_policy?.experience_retrieval?.hit_ids)
+  return policyHits.map((memoryId) => ({ memory_id: memoryId, summary: '' }))
 }
 
 function importedContextHits(task) {
@@ -1045,25 +1233,30 @@ function resultTaskForRound(taskResults, round) {
 function buildTasksFromRuntimeEvents(events, runPayload) {
   const primaryRun = latestPrimaryRun(runPayload)
   const resultTasks = Array.isArray(primaryRun?.task_results) ? primaryRun.task_results : []
-  const maxEventRound = Math.max(0, ...events.map((event) => Number(event.task_index) || 0))
-  const total = Math.max(Number(runMeta.value.task_count) || 0, taskQueue.value.length, maxEventRound, resultTasks.length)
+  const baseTaskCount = Math.max(Number(runMeta.value.task_count) || 0, resultTasks.length, taskQueue.value.filter((item) => !isBatchSummaryEvent(item)).length)
+  const displayEvents = withBatchSummaryRounds(events, baseTaskCount)
+  const maxEventRound = Math.max(0, ...displayEvents.map((event) => Number(event.task_index) || 0))
+  const total = Math.max(baseTaskCount, taskQueue.value.length, maxEventRound)
   const runDone = events.some((event) => event.event_type === 'run_done')
 
   return Array.from({ length: total }, (_, index) => {
     const round = index + 1
     const queueItem = taskQueue.value.find((item) => Number(item.task_index) === round) ?? {}
-    const taskEvents = events.filter((event) => Number(event.task_index) === round)
+    const taskEvents = displayEvents.filter((event) => Number(event.task_index) === round)
     const taskResult = resultTaskForRound(resultTasks, round)
     const startEvent = taskEvents.find((event) => event.event_type === 'task_start')
-    const doneEvent = [...taskEvents].reverse().find((event) => event.event_type === 'task_done')
+    const titleEvent = taskEvents.find((event) => event.task_title)
+    const batchSummary = taskEvents.some((event) => isBatchSummaryEvent(event))
+    const doneEvent = [...taskEvents].reverse().find((event) => ['task_done', 'batch_experience_complete'].includes(event.event_type))
     const state = taskResult || doneEvent ? 'done' : taskEvents.length && !runDone ? 'running' : 'waiting'
     const metrics = metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult)
     const agents = agentsFromRuntimeEvents(taskEvents)
     return {
       id: `task${round}`,
       round,
-      roundText: `任务 ${round}`,
-      title: startEvent?.task_title || queueItem.task_title || doneEvent?.task_title || `任务 ${round}`,
+      displayLabel: batchSummary ? '经验记忆写回' : `任务 ${round}`,
+      roundText: batchSummary ? '经验记忆写回' : `任务 ${round}`,
+      title: startEvent?.task_title || queueItem.task_title || titleEvent?.task_title || doneEvent?.task_title || `任务 ${round}`,
       state,
       status: stateText(state),
       progress: state === 'done' ? 100 : state === 'running' ? progressFromEvents(taskEvents) : 0,
@@ -1080,8 +1273,28 @@ function buildTasksFromRuntimeEvents(events, runPayload) {
   })
 }
 
+function isBatchSummaryEvent(event) {
+  return ['batch_experience_start', 'batch_experience_complete'].includes(event?.event_type) || String(event?.task_id || '').endsWith(':batch-summary')
+}
+
+function withBatchSummaryRounds(events, baseTaskCount) {
+  const batchIds = []
+  for (const event of events) {
+    if (!isBatchSummaryEvent(event)) continue
+    const batchId = String(event.task_id || event.group_id || 'batch-summary')
+    if (!batchIds.includes(batchId)) batchIds.push(batchId)
+  }
+  const roundByBatch = new Map(batchIds.map((batchId, index) => [batchId, baseTaskCount + index + 1]))
+  return events.map((event) => {
+    if (!isBatchSummaryEvent(event)) return event
+    const batchId = String(event.task_id || event.group_id || 'batch-summary')
+    return { ...event, task_index: roundByBatch.get(batchId) }
+  })
+}
+
 function metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult) {
   const messageEvents = taskEvents.filter((event) => event.event_type === 'agent_message')
+  const batchFlowEvents = taskEvents.filter((event) => ['batch_experience_start', 'batch_experience_complete', 'memory_write'].includes(event.event_type))
   const stateEvents = taskEvents.filter((event) => event.event_type === 'state_transfer')
   const hitEvents = taskEvents.filter((event) => event.event_type === 'memory_hit')
   const doneResult = doneEvent?.return_result ?? {}
@@ -1091,7 +1304,7 @@ function metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult) {
     Number(resultMetrics.text_chars) ||
     messageEvents.reduce((sum, event) => sum + (Number(event.text_chars) || 0), 0)
   return {
-    messages: Number(doneResult.message_count) || Number(resultMetrics.message_count) || messageEvents.length,
+    messages: Number(doneResult.message_count) || Number(resultMetrics.message_count) || messageEvents.length || batchFlowEvents.length,
     textCost: textChars ? `${textChars} 字符` : '--',
     stateTransfers: Number(doneResult.state_transfer_count) || Number(resultMetrics.latent_transfer_count) || stateEvents.length,
     memoryHits: Number(doneResult.memory_hit_count) || Number(taskResult?.memory_hit_count) || hitEvents.length
@@ -1100,7 +1313,7 @@ function metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult) {
 
 function progressFromEvents(taskEvents) {
   const executableEvents = taskEvents.filter((event) =>
-    ['handshake', 'capability_discovery', 'protocol_mapping', 'agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write'].includes(event.event_type)
+    ['handshake', 'capability_discovery', 'protocol_mapping', 'agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write', 'batch_experience_start', 'batch_experience_complete'].includes(event.event_type)
   )
   return Math.min(95, Math.max(8, executableEvents.length * 12))
 }
@@ -1118,7 +1331,9 @@ function runtimeCurrentAgent(taskEvents, state) {
 }
 
 function agentsFromRuntimeEvents(taskEvents) {
-  const ordered = ['Planner', 'Retriever', 'Memory', 'Knowledge', 'Reasoner', 'Executor', 'Summarizer']
+  const ordered = taskEvents.some((event) => isBatchSummaryEvent(event))
+    ? ['Evaluator', 'Summarizer', 'Memory']
+    : ['Planner', 'Experience', 'Retriever', 'Memory', 'Knowledge', 'Reasoner', 'Executor', 'Summarizer']
   const names = new Set()
   flowEventsFromRuntimeEvents(taskEvents).forEach((event) => {
     const route = visualRouteForEvent(event)
@@ -1132,7 +1347,9 @@ function agentsFromRuntimeEvents(taskEvents) {
 
 function flowEventsFromRuntimeEvents(taskEvents) {
   return taskEvents.flatMap((event) => {
-    if (!['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit'].includes(event.event_type)) {
+    // State references are retained in protocol details, rather than becoming
+    // extra arrows that obscure the business-level agent collaboration flow.
+    if (!['agent_message', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit', 'batch_experience_start', 'batch_experience_complete'].includes(event.event_type)) {
       return []
     }
     return [event]
@@ -1140,11 +1357,23 @@ function flowEventsFromRuntimeEvents(taskEvents) {
 }
 
 function visualRouteForEvent(event) {
+  if (event.event_type === 'batch_experience_start') {
+    return { from: 'Evaluator', to: 'Summarizer' }
+  }
+  if (event.event_type === 'batch_experience_complete') {
+    return { from: 'Summarizer', to: 'Memory' }
+  }
   if (event.flow_type === 'memory_query' || event.event_type === 'memory_query') {
-    return { from: 'Retriever', to: 'Memory' }
+    return {
+      from: normalizeAgentName(event.from_agent || 'retriever'),
+      to: memoryLayerForEvent(event) === 'experience' ? 'Experience' : 'Memory'
+    }
   }
   if (event.flow_type === 'memory_result' || event.event_type === 'memory_hit') {
-    return { from: 'Memory', to: 'Retriever' }
+    return {
+      from: memoryLayerForEvent(event) === 'experience' ? 'Experience' : 'Memory',
+      to: normalizeAgentName(event.to_agent || 'retriever')
+    }
   }
   if (event.event_type === 'knowledge_query') {
     return { from: 'Retriever', to: 'Knowledge' }
@@ -1165,6 +1394,19 @@ function visualRouteForEvent(event) {
     from: normalizeAgentName(event.from_agent || 'runtime'),
     to: normalizeAgentName(event.to_agent || event.from_agent || 'runtime')
   }
+}
+
+function memoryLayerForEvent(event) {
+  const input = event?.input_params || {}
+  const result = event?.return_result || {}
+  const layer = String(input.memory_layer || result.memory_layer || '').toLowerCase()
+  if (layer === 'experience') return 'experience'
+  // Runs recorded before `memory_layer` existed used Planner's query for the
+  // same experience lookup. Preserve that semantics when replaying them.
+  const from = String(event?.from_agent || '').toLowerCase()
+  const to = String(event?.to_agent || '').toLowerCase()
+  if (from === 'planner' || to === 'planner') return 'experience'
+  return String(result.memory_type || '').toLowerCase() === 'experience' ? 'experience' : 'episodic'
 }
 
 function messagesFromRuntimeEvents(taskEvents, agents) {
@@ -1190,10 +1432,16 @@ function messagesFromRuntimeEvents(taskEvents, agents) {
 
 function selectFlowEvents(events) {
   if (events.length <= 10) return events
-  const rest = events.filter((event) => event.event_type !== 'memory_write')
-  const memoryWrites = events.filter((event) => event.event_type === 'memory_write')
-  const selected = rest.slice(0, memoryWrites.length ? 11 : 12)
-  return memoryWrites.length ? [...selected, ...memoryWrites] : selected
+  const required = events.filter((event) =>
+    event.event_type === 'memory_write' ||
+    ((event.event_type === 'memory_query' || event.event_type === 'memory_hit') && memoryLayerForEvent(event) === 'experience')
+  )
+  const requiredSet = new Set(required)
+  const rest = events.filter((event) => !requiredSet.has(event))
+  const selected = new Set(required)
+  const capacity = Math.max(0, 12 - selected.size)
+  for (const event of rest.slice(0, capacity)) selected.add(event)
+  return events.filter((event) => selected.has(event))
 }
 
 function flowEdgeStyle(from, to, count) {
@@ -1216,7 +1464,7 @@ function protocolFromRuntimeEvents(round, state, taskEvents) {
 }
 
 function isProtocolDetailEvent(event) {
-  return ['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit'].includes(event.event_type)
+  return ['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit', 'batch_experience_start', 'batch_experience_complete'].includes(event.event_type)
 }
 
 function packetForSelectedMessage(task, message) {
@@ -1235,13 +1483,13 @@ function packetFromEvent(title, event, emptyDesc) {
   const result = resultText(event)
   return {
     title: `${normalizeAgentName(route.from)} \u2192 ${normalizeAgentName(route.to)}`,
-    badge: actionText(action),
+    badge: readableActionText(event),
     desc: protocolReadableDesc(event, route),
     sections: [
       { label: '\u53d1\u9001\u65b9', value: normalizeAgentName(route.from) },
       { label: '\u63a5\u6536\u65b9', value: normalizeAgentName(route.to) },
-      { label: '\u52a8\u4f5c\u7c7b\u578b', value: actionText(action) },
-      { label: '\u4f20\u9012\u5185\u5bb9', value: protocolTransferContent(event) },
+      { label: '\u52a8\u4f5c\u7c7b\u578b', value: readableActionText(event) },
+      { label: protocolTransferLabel(event), value: protocolTransferContent(event) },
       { label: '\u72b6\u6001\u5f15\u7528', value: stateRefs },
       { label: protocolMemorySectionLabel(event), value: protocolMemorySectionValue(event, memoryRefs) },
       { label: '\u901a\u4fe1\u5f00\u9500', value: protocolCostText(event) },
@@ -1314,9 +1562,12 @@ function transferAgentKeyFromMessage(message) {
   const action = String(event.action_type || '').toLowerCase()
   const from = String(event.from_agent || '').toLowerCase()
   const to = String(event.to_agent || '').toLowerCase()
-  if (event.event_type === 'knowledge_query' || event.event_type === 'knowledge_hit') return 'retriever'
-  if (event.event_type === 'memory_query' || event.event_type === 'memory_hit') return 'retriever'
+  if (event.event_type === 'knowledge_query') return from || 'retriever'
+  if (event.event_type === 'knowledge_hit') return to || 'retriever'
+  if (event.event_type === 'memory_query') return from || 'retriever'
+  if (event.event_type === 'memory_hit') return to || 'retriever'
   if (event.event_type === 'memory_write') return 'summarizer'
+  if (event.event_type === 'batch_experience_start' || event.event_type === 'batch_experience_complete') return 'summarizer'
   if (action === 'retrieve') return 'planner'
   if (action === 'summarize') return 'summarizer'
   if (action === 'execute' || from === 'executor' || to === 'executor') return 'executor'
@@ -1423,21 +1674,99 @@ function eventPayloadText(event) {
 }
 
 function protocolReadableDesc(event, route) {
+  if (isPlannerHandoff(event)) return 'Planner \u5c06\u57fa\u4e8e\u7ecf\u9a8c\u68c0\u7d22\u548c\u9898\u76ee\u5206\u6790\u5f97\u5230\u7684\u68c0\u7d22\u89c4\u5212\u4f20\u9012\u7ed9 Retriever\u3002'
+  if (isRetrieverHandoff(event)) return 'Retriever \u5c06\u95ee\u7b54\u8bb0\u5fc6\u548c\u77e5\u8bc6\u8d85\u56fe\u7684\u5b9e\u9645\u68c0\u7d22\u7ed3\u679c\u4f20\u9012\u7ed9 Reasoner\u3002'
+  if (isReasonerHandoff(event)) return 'Reasoner \u5c06\u57fa\u4e8e\u68c0\u7d22\u8bc1\u636e\u751f\u6210\u7684\u63a8\u7406\u7ed3\u679c\u4f20\u9012\u7ed9 Summarizer\u3002'
+  if (event.event_type === 'batch_experience_start') return 'Evaluator 对本批次十道连续任务统一核对答案，并将正确任务交给 Summarizer 提炼经验。'
+  if (event.event_type === 'batch_experience_complete') return 'Summarizer 完成本批次经验写回，问答记忆层随后按批次清理。'
   if (event.event_type === 'knowledge_query') return '\u0052\u0065\u0074\u0072\u0069\u0065\u0076\u0065\u0072 \u5411\u77e5\u8bc6\u8d85\u56fe\u53d1\u8d77\u4e0a\u4e0b\u6587\u8bc1\u636e\u68c0\u7d22\u3002'
   if (event.event_type === 'knowledge_hit') return '\u005b\u004b\u006e\u006f\u0077\u006c\u0065\u0064\u0067\u0065\u005d \u8fd4\u56de\u672c\u9898\u77e5\u8bc6\u8d85\u56fe\u53ec\u56de\u7684 supporting passage \u6216\u4e0a\u4e0b\u6587\u8bc1\u636e\u3002'
-  if (event.event_type === 'memory_query') return 'Retriever \u5411\u5171\u4eab\u8bb0\u5fc6\u6a21\u5757\u53d1\u8d77\u68c0\u7d22\u8bf7\u6c42\u3002'
-  if (event.event_type === 'memory_hit') return 'Memory \u8fd4\u56de\u53ef\u590d\u7528\u7684\u5386\u53f2\u8bb0\u5fc6\u6216\u8bc1\u636e\u547d\u4e2d\u3002'
+  if (event.event_type === 'memory_query' && memoryLayerForEvent(event) === 'experience') return 'Planner \u5148\u5411\u7ecf\u9a8c\u8bb0\u5fc6\u8d85\u56fe\u68c0\u7d22\u53ef\u590d\u7528\u7b56\u7565\uff0c\u518d\u636e\u6b64\u751f\u6210\u672c\u9898\u68c0\u7d22\u89c4\u5212\u3002'
+  if (event.event_type === 'memory_hit' && memoryLayerForEvent(event) === 'experience') return '\u7ecf\u9a8c\u8bb0\u5fc6\u8d85\u56fe\u5c06\u5b9e\u9645\u547d\u4e2d\u7684\u53ef\u590d\u7528\u7b56\u7565\u8fd4\u56de\u7ed9 Planner\u3002'
+  if (event.event_type === 'memory_query') return 'Retriever \u5411\u95ee\u7b54\u8bb0\u5fc6\u8d85\u56fe\u53d1\u8d77\u68c0\u7d22\u8bf7\u6c42\u3002'
+  if (event.event_type === 'memory_hit') return '\u95ee\u7b54\u8bb0\u5fc6\u8d85\u56fe\u8fd4\u56de\u4e0e\u5f53\u524d\u9898\u76ee\u76f8\u5173\u7684\u5386\u53f2\u95ee\u7b54\u547d\u4e2d\u3002'
   if (event.event_type === 'memory_write') return 'Summarizer \u5c06\u672c\u8f6e\u8bc1\u636e\u3001\u7ed3\u8bba\u6216\u7ecf\u9a8c\u5199\u56de\u5171\u4eab\u8bb0\u5fc6\u3002'
   if (event.event_type === 'state_transfer') return 'Agent \u4e4b\u95f4\u4f20\u9012\u975e\u6587\u672c\u72b6\u6001\u5f15\u7528\uff0c\u907f\u514d\u91cd\u590d\u4f20\u8f93\u957f\u6587\u672c\u3002'
   return `${normalizeAgentName(route.from)} \u5c06\u7ed3\u6784\u5316\u6d88\u606f\u53d1\u9001\u7ed9 ${normalizeAgentName(route.to)}\u3002`
 }
 
 function protocolTransferContent(event) {
-  const result = event.return_result || {}
-  if (event.action_type === 'retrieve') {
-    return event.payload_summary || result.summary || eventPayloadText(event) || '-'
-  }
+  if (isPlannerHandoff(event)) return plannerPlanContent(event)
+  if (isRetrieverHandoff(event)) return retrieverResultContent(event)
+  if (isReasonerHandoff(event)) return reasonerResultContent(event)
   return protocolContentSummary(event)
+}
+
+function protocolTransferLabel(event) {
+  if (isPlannerHandoff(event)) return '\u89c4\u5212\u5185\u5bb9'
+  if (isRetrieverHandoff(event)) return '\u68c0\u7d22\u7ed3\u679c'
+  if (isReasonerHandoff(event)) return '\u63a8\u7406\u7ed3\u679c'
+  return '\u4f20\u9012\u5185\u5bb9'
+}
+
+function isPlannerHandoff(event) {
+  return String(event?.from_agent || '').toLowerCase() === 'planner' &&
+    String(event?.to_agent || '').toLowerCase() === 'retriever' &&
+    String(event?.action_type || '').toLowerCase() === 'retrieve'
+}
+
+function isRetrieverHandoff(event) {
+  return String(event?.from_agent || '').toLowerCase() === 'retriever' &&
+    String(event?.to_agent || '').toLowerCase() === 'reasoner' &&
+    String(event?.action_type || '').toLowerCase() === 'reason'
+}
+
+function isReasonerHandoff(event) {
+  return String(event?.from_agent || '').toLowerCase() === 'reasoner' &&
+    String(event?.to_agent || '').toLowerCase() === 'summarizer' &&
+    String(event?.action_type || '').toLowerCase() === 'summarize'
+}
+
+function readableActionText(event) {
+  if (isPlannerHandoff(event)) return '\u89c4\u5212\u5185\u5bb9'
+  if (isRetrieverHandoff(event)) return '\u68c0\u7d22\u7ed3\u679c'
+  if (isReasonerHandoff(event)) return '\u63a8\u7406\u7ed3\u679c'
+  return actionText(event?.action_type || event?.event_type || '')
+}
+
+function plannerPlanContent(event) {
+  const params = event.input_params || {}
+  const policy = params.retrieval_policy || event.return_result?.retrieval_policy || {}
+  const qaNeeded = policy.need_qa_memory ?? policy.need_memory
+  const knowledgeNeeded = policy.need_knowledge !== false
+  const experience = policy.experience_retrieval || {}
+  const steps = Array.isArray(policy.knowledge_steps) ? policy.knowledge_steps : []
+  const stepText = steps
+    .map((step) => `\u6b65\u9aa4 ${step.step || '-'}\uff1a${step.goal || step.query || '-'}`)
+    .join('\n')
+  return [
+    `\u7ecf\u9a8c\u68c0\u7d22\uff1a${experience.performed === false ? '\u672a\u6267\u884c' : '\u5df2\u6267\u884c'}\uff0c\u547d\u4e2d ${Array.isArray(experience.hit_ids) ? experience.hit_ids.length : 0} \u6761`,
+    `\u95ee\u7b54\u8bb0\u5fc6\u68c0\u7d22\uff1a${qaNeeded ? '\u9700\u8981' : '\u4e0d\u9700\u8981'}`,
+    `\u77e5\u8bc6\u8d85\u56fe\u68c0\u7d22\uff1a${knowledgeNeeded ? '\u9700\u8981' : '\u4e0d\u9700\u8981'}`,
+    `\u89c4\u5212\u4f9d\u636e\uff1a${policy.qa_memory_reason || policy.reason || '-'}`,
+    stepText
+  ].filter(Boolean).join('\n')
+}
+
+function retrieverResultContent(event) {
+  const result = event.return_result || {}
+  const knowledgeSteps = Number(result.knowledge_steps || 0)
+  return [
+    `\u95ee\u7b54\u8bb0\u5fc6\u547d\u4e2d\uff1a${Number(result.hits || 0)} \u6761`,
+    `\u77e5\u8bc6\u8bc1\u636e\uff1a${Number(result.evidence_hits || 0)} \u6761`,
+    `\u7ecf\u9a8c\u547d\u4e2d\uff1a${Number(result.experience_hits || 0)} \u6761`,
+    knowledgeSteps ? `\u5df2\u6267\u884c\u77e5\u8bc6\u68c0\u7d22\u6b65\u9aa4\uff1a${knowledgeSteps}` : '',
+    event.payload_summary || ''
+  ].filter(Boolean).join('\n')
+}
+
+function reasonerResultContent(event) {
+  const result = event.return_result || {}
+  const answerRef = result.answer || listText(event.state_refs)
+  return [
+    `\u7b54\u6848\u5019\u9009\u7ed3\u679c\uff1a${answerRef || '-'}`,
+    event.payload_summary || ''
+  ].filter(Boolean).join('\n')
 }
 
 function memoryTypeLabel(memoryType, qualityStatus = '', useAsPositive = undefined) {
@@ -1471,6 +1800,7 @@ function memoryWriteDetailText(result) {
 
 function protocolMemorySectionLabel(event) {
   if (event.event_type === 'memory_write') return '写回类型'
+  if (event.event_type === 'batch_experience_start' || event.event_type === 'batch_experience_complete') return '批次结果'
   return event.action_type === 'retrieve' ? '\u68c0\u7d22\u89c4\u5212' : '\u8bb0\u5fc6\u5f15\u7528'
 }
 
@@ -1483,19 +1813,33 @@ function protocolMemorySectionValue(event, memoryRefs) {
     const result = event.return_result || {}
     return memoryTypeLabel(result.memory_type, result.quality_status, result.use_as_positive)
   }
+  if (event.event_type === 'batch_experience_start' || event.event_type === 'batch_experience_complete') {
+    return protocolContentSummary(event)
+  }
   return memoryRefs
 }
 
 function protocolContentSummary(event) {
   const result = event.return_result || {}
+  if (event.event_type === 'batch_experience_start') {
+    return `批次评测：${result.correct || 0}/${result.evaluated_tasks || event.input_params?.task_count || 0} 题正确，开始提炼成功经验`
+  }
+  if (event.event_type === 'batch_experience_complete') {
+    return `经验写回：${result.experience_write_count || 0} 条；问答记忆清理：${result.qa_memory_cleared === false ? '未完成' : '已完成'}`
+  }
   if (event.event_type === 'knowledge_query') {
     return `\u77e5\u8bc6\u68c0\u7d22 query=${event.input_params?.query || '-'}`
+  }
+  if (event.event_type === 'memory_query') {
+    const label = memoryLayerForEvent(event) === 'experience' ? '\u7ecf\u9a8c\u68c0\u7d22' : '\u95ee\u7b54\u8bb0\u5fc6\u68c0\u7d22'
+    return `${label} query=${event.input_params?.query || '-'}`
   }
   if (event.event_type === 'knowledge_hit') {
     return result.summary || result.context_id || `\u547d\u4e2d ${eventMemoryCount(event)} \u6761\u77e5\u8bc6\u8bc1\u636e`
   }
   if (event.event_type === 'memory_hit') {
-    return result.summary || result.memory_id || `\u547d\u4e2d ${eventMemoryCount(event)} \u6761\u8bb0\u5fc6`
+    const label = memoryLayerForEvent(event) === 'experience' ? '\u7ecf\u9a8c' : '\u95ee\u7b54\u8bb0\u5fc6'
+    return result.summary || result.memory_id || `\u547d\u4e2d ${eventMemoryCount(event)} \u6761${label}`
   }
   if (event.event_type === 'memory_write') {
     return memoryWriteDetailText(result)
@@ -1522,10 +1866,17 @@ function protocolCostText(event) {
 
 function protocolMappingText(event, route) {
   const action = event.action_type || event.event_type
+  if (isPlannerHandoff(event)) return '\u89c4\u5212\u5185\u5bb9 \u2192 retrieval_policy(qa_memory_gate, knowledge_steps, experience_context)'
+  if (isRetrieverHandoff(event)) return '\u68c0\u7d22\u7ed3\u679c \u2192 retrieved_evidence(memory_hits, knowledge_hits, evidence_refs)'
+  if (isReasonerHandoff(event)) return '\u63a8\u7406\u7ed3\u679c \u2192 answer_candidate(answer_ref, confidence, limitations)'
+  if (event.event_type === 'batch_experience_start') return '批次边界 → evaluate_batch(task_results, expected_answers) → distill_success_experience(correct_tasks)'
+  if (event.event_type === 'batch_experience_complete') return '批次收尾 → experience_memory.upsert(records) + qa_memory.clear(group_id)'
   if (event.event_type === 'knowledge_query') return '\u77e5\u8bc6\u68c0\u7d22\u610f\u56fe \u2192 knowledge_hypergraph.search(query, top_k, retrieval_mode)'
   if (event.event_type === 'knowledge_hit') return '\u77e5\u8bc6\u53ec\u56de \u2192 return_result(context_refs, passages, scores)'
-  if (event.event_type === 'memory_query') return '\u68c0\u7d22\u610f\u56fe \u2192 memory.search(query, top_k, retrieval_mode)'
-  if (event.event_type === 'memory_hit') return '\u5386\u53f2\u547d\u4e2d \u2192 return_result(memory_refs, summaries, scores)'
+  if (event.event_type === 'memory_query' && memoryLayerForEvent(event) === 'experience') return '\u7ecf\u9a8c\u68c0\u7d22 \u2192 experience_memory.search(query, top_k)'
+  if (event.event_type === 'memory_hit' && memoryLayerForEvent(event) === 'experience') return '\u7ecf\u9a8c\u547d\u4e2d \u2192 return_result(experience_refs, rules, scores)'
+  if (event.event_type === 'memory_query') return '\u95ee\u7b54\u68c0\u7d22 \u2192 qa_memory.search(query, top_k)'
+  if (event.event_type === 'memory_hit') return '\u95ee\u7b54\u547d\u4e2d \u2192 return_result(memory_refs, summaries, scores)'
   if (event.event_type === 'memory_write') return '\u603b\u7ed3\u5199\u56de \u2192 memory.write(memory_type, summary, source_agent, task_topic)'
   if (event.event_type === 'state_transfer') return '\u4e2d\u95f4\u72b6\u6001 \u2192 state_ref(content_type, producer, consumers, bytes)'
   const map = {
@@ -1544,7 +1895,7 @@ function tableRowsFromRuntimeEvents(taskEvents) {
     from: normalizeAgentName(event.from_agent || 'runtime'),
     to: normalizeAgentName(event.to_agent || 'dashboard'),
     type: event.event_type || 'event',
-    action: event.action_type || '-',
+    action: readableActionText(event),
     state: listText(event.state_refs),
     memory: listText(event.memory_refs),
     tokens: event.text_chars ? `${event.text_chars} 字符` : '0 字符',
@@ -1558,6 +1909,7 @@ function emptyTask() {
   return {
     id: '',
     round: '--',
+    displayLabel: '未运行',
     roundText: '未运行',
     title: '未运行',
     state: 'waiting',
@@ -1627,6 +1979,8 @@ function normalizeAgentName(name) {
     reasoner: 'Reasoner',
     executor: 'Executor',
     summarizer: 'Summarizer',
+    evaluator: 'Evaluator',
+    experience: 'Experience',
     memory: 'Memory',
     knowledge: 'Knowledge',
     runtime: 'Runtime',
@@ -1640,10 +1994,15 @@ function isSystemAgent(name) {
 }
 
 function eventLabel(event) {
+  if (isPlannerHandoff(event)) return '\u89c4\u5212\u5185\u5bb9'
+  if (isRetrieverHandoff(event)) return '\u68c0\u7d22\u7ed3\u679c'
+  if (isReasonerHandoff(event)) return '\u63a8\u7406\u7ed3\u679c'
+  if (event.event_type === 'batch_experience_start') return '批次评测与经验提炼'
+  if (event.event_type === 'batch_experience_complete') return '完成经验写回与问答清理'
   if (event.event_type === 'knowledge_query') return '\u68c0\u7d22\u77e5\u8bc6'
   if (event.event_type === 'knowledge_hit') return `\u547d\u4e2d\u77e5\u8bc6 ${event.return_result?.context_id || ''}`.trim()
-  if (event.flow_type === 'memory_query') return '检索记忆'
-  if (event.flow_type === 'memory_result') return `命中记忆 ${eventMemoryCount(event)}`
+  if (event.flow_type === 'memory_query') return memoryLayerForEvent(event) === 'experience' ? '检索经验' : '检索问答记忆'
+  if (event.flow_type === 'memory_result') return memoryLayerForEvent(event) === 'experience' ? `命中经验 ${listText(event.memory_refs)}` : `命中问答记忆 ${eventMemoryCount(event)}`
   const map = {
     run_start: '启动',
     task_queue: '任务队列',
@@ -1653,9 +2012,11 @@ function eventLabel(event) {
     protocol_mapping: '协议映射',
     agent_message: actionText(event.action_type),
     state_transfer: `STATE ${listText(event.state_refs)}`,
-    memory_query: '检索记忆',
-    memory_hit: `命中记忆 ${listText(event.memory_refs)}`,
+    memory_query: memoryLayerForEvent(event) === 'experience' ? '检索经验' : '检索问答记忆',
+    memory_hit: memoryLayerForEvent(event) === 'experience' ? `命中经验 ${listText(event.memory_refs)}` : `命中问答记忆 ${listText(event.memory_refs)}`,
     memory_write: `写回记忆 ${listText(event.memory_refs)}`,
+    batch_experience_start: '批次评测与经验提炼',
+    batch_experience_complete: '完成经验写回',
     task_done: '任务完成',
     run_done: '运行完成'
   }
@@ -1671,14 +2032,17 @@ function actionText(action) {
     start_task: '分发任务',
     open_session: '建立会话',
     discover_capability: '能力发现',
-    map_protocol: '协议映射'
+    map_protocol: '协议映射',
+    evaluate_batch: '批次评测',
+    write_batch_experience: '写回经验',
+    complete_batch_experience: '完成批次写回'
   }
   return map[action] || String(action || '消息').toUpperCase()
 }
 
 function eventTone(event) {
   if (event.event_type === 'state_transfer') return 'green'
-  if (event.flow_type || event.event_type === 'memory_query' || event.event_type === 'memory_hit' || event.event_type === 'memory_write') return 'orange'
+  if (event.flow_type || event.event_type === 'memory_query' || event.event_type === 'memory_hit' || event.event_type === 'memory_write' || event.event_type === 'batch_experience_complete') return 'orange'
   if (event.event_type === 'protocol_mapping' || String(event.to_agent || '').toLowerCase().includes('executor')) return 'purple'
   return 'blue'
 }

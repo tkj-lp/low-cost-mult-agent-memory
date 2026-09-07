@@ -128,8 +128,10 @@ def emit_memory_retrieval_events(
     *,
     query: str,
     hits: list[dict[str, Any]],
+    requester: str = "retriever",
+    memory_layer: str = "",
 ) -> None:
-    """在 Retriever 实际检索完成时写事件，避免前端只能在任务结束时看到记忆命中。"""
+    """Record a memory-layer query and only the hits that were actually returned."""
 
     task_meta = _task_meta(state)
     base = _base_context(state, task_meta)
@@ -138,11 +140,18 @@ def emit_memory_retrieval_events(
         {
             **base,
             "event_type": "memory_query",
-            "from_agent": "retriever",
+            "from_agent": requester,
             "to_agent": "memory",
-            "action_type": "query_memory",
-            "input_params": {"query": query[:500], "top_k": len(hits)},
-            "return_result": {"hit_count": len(memory_refs)},
+            "action_type": "query_experience" if memory_layer == "experience" else "query_memory",
+            "input_params": {
+                "query": query[:500],
+                "top_k": len(hits),
+                "memory_layer": memory_layer or "episodic",
+            },
+            "return_result": {
+                "hit_count": len(memory_refs),
+                "memory_layer": memory_layer or "episodic",
+            },
             "state_refs": [],
             "memory_refs": memory_refs,
             "text_chars": 0,
@@ -150,17 +159,28 @@ def emit_memory_retrieval_events(
         }
     )
     for hit in hits:
-        emit_memory_hit_event(base, hit)
+        emit_memory_hit_event(
+            base,
+            hit,
+            receiver=requester,
+            memory_layer=memory_layer,
+        )
 
 
-def emit_memory_hit_event(base: dict[str, Any], hit: dict[str, Any]) -> None:
+def emit_memory_hit_event(
+    base: dict[str, Any],
+    hit: dict[str, Any],
+    *,
+    receiver: str = "retriever",
+    memory_layer: str = "",
+) -> None:
     emit_runtime_event(
         {
             **base,
             "event_type": "memory_hit",
             "from_agent": "memory",
-            "to_agent": "retriever",
-            "action_type": "return_memory",
+            "to_agent": receiver,
+            "action_type": "return_experience" if memory_layer == "experience" else "return_memory",
             "state_refs": [],
             "memory_refs": [hit.get("memory_id")] if hit.get("memory_id") else [],
             "text_chars": 0,
@@ -170,6 +190,7 @@ def emit_memory_hit_event(base: dict[str, Any], hit: dict[str, Any]) -> None:
                 "summary": hit.get("summary"),
                 "retrieval_score": hit.get("retrieval_score"),
                 "memory_type": hit.get("memory_type"),
+                "memory_layer": memory_layer or hit.get("memory_layer") or "episodic",
                 "task_topic": hit.get("task_topic"),
                 "tags": hit.get("tags"),
                 "matched_terms": hit.get("matched_terms"),

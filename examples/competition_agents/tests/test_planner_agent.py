@@ -37,7 +37,7 @@ def test_planner_sanitizes_dialogue_script_output(monkeypatch) -> None:
     assert result["retrieval_policy"]["need_memory"] is False
     assert result["plan"] == [
         "Identify the question target and requested answer type.",
-        "Check expected reuse and prior memory for relevant earlier facts.",
+        "Decide whether this task needs prior question-answer memory.",
         "Retrieve the most relevant supporting evidence for the target.",
         "Route evidence to reasoning and summarize a concise final answer.",
     ]

@@ -12,6 +12,7 @@ from typing import Any
 from competition_agents.capabilities import build_capability_registry
 from competition_agents.graph import build_graph
 from competition_agents.llm.client import get_llm_provider
+from competition_agents.memory import add_memory, refine_memory
 from competition_agents.runtime_events import (
     DEFAULT_EVENT_LOG_FILE,
     configure_event_log,
@@ -22,6 +23,7 @@ from competition_agents.state_store import clear_state_store
 from competition_agents.state import initial_state
 from hypergraph_memory_method import (
     RETRIEVAL_MODE_VALUES,
+    memory_layer_for_record,
     memory_organization_for_mode,
 )
 from hypergraph_memory_method.reuse_metrics import evaluate_run_reuse
@@ -1130,6 +1132,204 @@ def warm_codeact_runtime(dataset_type: str) -> None:
     warm_persistent_codeact_worker()
 
 
+def _batch_experience_record(memory: list[dict[str, Any]], refined: dict[str, Any]) -> dict[str, Any]:
+    problem = str(refined.get("problem_pattern") or "")
+    solution = str(refined.get("solution_pattern") or "")
+    for record in reversed(memory):
+        if memory_layer_for_record(record) != "experience":
+            continue
+        if (
+            str(record.get("problem_pattern") or "") == problem
+            and str(record.get("solution_pattern") or "") == solution
+        ):
+            return record
+    return {}
+
+
+def _finalize_continuous_batch(
+    *,
+    mode: str,
+    group_id: str,
+    cases: list[dict[str, Any]],
+    working_memory: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], int, int, float]:
+    """Evaluate one continuous batch, distill successes, then drop episodic QA memory."""
+
+    started = time.perf_counter()
+    experience_writes: list[dict[str, Any]] = []
+    correct = 0
+    comparable = 0
+    emit_runtime_event(
+        {
+            "event_type": "batch_experience_start",
+            "mode": mode,
+            "task_index": cases[-1]["task_index"] if cases else 0,
+            "task_id": f"{group_id}:batch-summary",
+            "group_id": group_id,
+            "dataset_type": "continuous",
+            "task_title": "批次经验记忆总结写入",
+            "from_agent": "runtime",
+            "to_agent": "summarizer",
+            "action_type": "evaluate_batch",
+            "input_params": {"task_count": len(cases), "group_id": group_id},
+            "return_result": {},
+            "state_refs": [],
+            "memory_refs": [],
+            "text_chars": 0,
+            "elapsed_ms": 0,
+        }
+    )
+
+    for case in cases:
+        task_item = case["task_item"]
+        result = case["result"]
+        prediction = case["prediction"]
+        expected_answer = task_item.get("expected_answer")
+        exact_match = None
+        if expected_answer:
+            comparable += 1
+            exact_match = answers_match(prediction, str(expected_answer))
+            correct += int(exact_match)
+
+        task_result = case["task_result"]
+        task_result["exact_match"] = exact_match
+        task_result.setdefault("metrics", {})["exact_match"] = exact_match
+        case["exact_match"] = exact_match
+
+        emit_task_result_events(
+            mode=mode,
+            task_index=case["task_index"],
+            task_item=task_item,
+            result=result,
+            elapsed_ms=case["elapsed_ms"],
+            exact_match=exact_match,
+        )
+        if exact_match is not True:
+            continue
+
+        trace = {
+            "task_meta": {
+                **task_meta_from_item(task_item),
+                "exact_match": True,
+                "batch_id": group_id,
+            },
+            "plan": result.get("plan", []),
+            "messages": result.get("messages", []),
+            "evidence": result.get("evidence", []),
+            "memory_hits": result.get("memory_hits", []),
+            "memory_context": result.get("memory_context", []),
+            "retrieval_batches": result.get("retrieval_batches", []),
+            "memory_layer_hits": result.get("memory_layer_hits", {}),
+            "latent_states": result.get("latent_states", {}),
+            "state_refs": result.get("state_refs", {}),
+            "execution_result": {
+                **result.get("execution_result", {}),
+                "answer_candidate": prediction,
+                "exact_match": True,
+            },
+            "cognitive_gaps": result.get("cognitive_gaps", []),
+            "agent_outputs": result.get("agent_outputs", []),
+            "metrics": result.get("metrics", {}),
+        }
+        refined = refine_memory(
+            task_topic=str(task_item.get("question") or task_item.get("task") or ""),
+            summary=str(result.get("final_answer") or prediction),
+            trace=trace,
+        )
+        if not refined.get("should_write", True):
+            continue
+        qa_memory_id = str((result.get("latest_evidence_write") or {}).get("memory_id") or "")
+        working_memory = add_memory(
+            working_memory,
+            source_agent="batch_summarizer",
+            task_topic=str(task_item.get("question") or task_item.get("task") or ""),
+            summary=refined["summary"],
+            tags=["experience", "verified", "batch", group_id, mode],
+            memory_type="experience",
+            problem_pattern=refined["problem_pattern"],
+            solution_pattern=refined["solution_pattern"],
+            failure_pattern=refined["failure_pattern"],
+            trigger_conditions=refined["trigger_conditions"],
+            supporting_evidence=refined["supporting_evidence"],
+            confidence=refined["confidence"],
+            archive_scope="global",
+            lifecycle_stage=refined["lifecycle_stage"],
+            strategies=refined["strategies"],
+            experiences=refined["experiences"],
+            reuse_benefits=refined["reuse_benefits"],
+            experience_rule_card=refined["experience_rule_card"],
+            experience_source="success-derived",
+            source_memory_ids=[qa_memory_id] if qa_memory_id else [],
+            quality_status="verified",
+            source_task_correct=True,
+            use_as_positive=True,
+            distillation_case=refined.get("distillation_case", {}),
+            abstraction_note=refined.get("abstraction_note", ""),
+            distillation_mode=refined.get("distillation_mode", ""),
+            distillation_raw_output=refined.get("distillation_raw_output", ""),
+        )
+        written = _batch_experience_record(working_memory, refined)
+        if written:
+            experience_writes.append(written)
+            emit_runtime_event(
+                {
+                    "event_type": "memory_write",
+                    "mode": mode,
+                    "task_index": cases[-1]["task_index"] if cases else 0,
+                    "task_id": f"{group_id}:batch-summary",
+                    "group_id": group_id,
+                    "dataset_type": "continuous",
+                    "task_title": "批次经验记忆总结写入",
+                    "from_agent": "summarizer",
+                    "to_agent": "memory",
+                    "action_type": "write_batch_experience",
+                    "input_params": {
+                        "source_task_id": task_item.get("task_id") or task_item.get("id"),
+                        "source_task_index": case["task_index"],
+                        "memory_type": "experience",
+                    },
+                    "return_result": _frontend_safe(written),
+                    "state_refs": written.get("state_refs", []),
+                    "memory_refs": [written.get("memory_id")],
+                    "text_chars": 0,
+                    "elapsed_ms": 0,
+                }
+            )
+
+    # The hypergraph storage owner can replace this boundary filter with a
+    # persistent clear_batch_qa_memory(group_id) implementation later.
+    persistent_memory = [
+        record
+        for record in working_memory
+        if memory_layer_for_record(record) == "experience"
+    ]
+    elapsed_ms = (time.perf_counter() - started) * 1000
+    emit_runtime_event(
+        {
+            "event_type": "batch_experience_complete",
+            "mode": mode,
+            "task_index": cases[-1]["task_index"] if cases else 0,
+            "task_id": f"{group_id}:batch-summary",
+            "group_id": group_id,
+            "dataset_type": "continuous",
+            "task_title": "批次经验记忆总结写入",
+            "from_agent": "summarizer",
+            "to_agent": "memory",
+            "action_type": "write_batch_experience",
+            "input_params": {"successful_tasks": correct, "evaluated_tasks": comparable},
+            "return_result": {
+                "experience_write_count": len(experience_writes),
+                "qa_memory_cleared": len(working_memory) - len(persistent_memory),
+            },
+            "state_refs": [],
+            "memory_refs": [record.get("memory_id") for record in experience_writes],
+            "text_chars": 0,
+            "elapsed_ms": elapsed_ms,
+        }
+    )
+    return persistent_memory, experience_writes, correct, comparable, elapsed_ms
+
+
 def run_mode(
     mode: str,
     tasks: list[dict[str, Any]],
@@ -1148,7 +1348,10 @@ def run_mode(
     os.environ["LOCAL_CAPTURE_HIDDEN"] = "0"
     graph = build_graph()
     global_memory: list[dict[str, Any]] = []
+    persistent_experience_memory: list[dict[str, Any]] = []
     group_memory: dict[str, list[dict[str, Any]]] = {}
+    pending_batches: dict[str, list[dict[str, Any]]] = {}
+    batch_summaries: list[dict[str, Any]] = []
     total_elapsed = 0.0
     total_memory_hits = 0
     correct = 0
@@ -1184,7 +1387,11 @@ def run_mode(
         "memory_gate_skip_count": 0,
         "memory_query_count": 0,
         "knowledge_query_count": 0,
+        "retrieval_batch_count": 0,
         "planner_memory_decision_ms": 0.0,
+        "state_store_write_count": 0,
+        "state_store_read_count": 0,
+        "state_store_bytes": 0,
     }
 
     print(f"\n=== {mode} mode ===")
@@ -1193,8 +1400,17 @@ def run_mode(
     warm_codeact_runtime(dataset_type)
     for index, task_item in enumerate(tasks, start=1):
         group_id = task_item.get("group_id", "default")
-        memory = group_memory.get(group_id, []) if dataset_type == "continuous" else global_memory
+        memory = (
+            [*persistent_experience_memory, *group_memory.get(group_id, [])]
+            if dataset_type == "continuous"
+            else global_memory
+        )
         task_meta = {**task_meta_from_item(task_item), "task_index": index}
+        if dataset_type == "continuous":
+            # Gold answers are held by the batch evaluator, never exposed to Agents.
+            task_meta.pop("expected_answer", None)
+            task_meta.pop("expected", None)
+            task_meta.pop("expected_reuse", None)
         emit_runtime_event(
             {
                 "event_type": "task_start",
@@ -1318,7 +1534,11 @@ def run_mode(
         total_elapsed += elapsed
 
         if dataset_type == "continuous":
-            group_memory[group_id] = result["memory"]
+            group_memory[group_id] = [
+                record
+                for record in result["memory"]
+                if memory_layer_for_record(record) == "episodic"
+            ]
         else:
             global_memory = result["memory"]
 
@@ -1342,27 +1562,28 @@ def run_mode(
             actual_result = result.get("execution_result", {}).get("result")
             exact_match = actual_result == expected_result
             correct += int(exact_match)
-        elif expected_answer:
+        elif expected_answer and dataset_type != "continuous":
             comparable += 1
             exact_match = answers_match(prediction, str(expected_answer))
             correct += int(exact_match)
         if exact_match and int(result.get("execution_result", {}).get("experience_used_count", 0)) > 0:
             total_metrics["reuse_success_count"] += 1
 
-        emit_task_result_events(
-            mode=mode,
-            task_index=index,
-            task_item=task_item,
-            result=result,
-            elapsed_ms=elapsed * 1000,
-            exact_match=exact_match,
-        )
+        if dataset_type != "continuous":
+            emit_task_result_events(
+                mode=mode,
+                task_index=index,
+                task_item=task_item,
+                result=result,
+                elapsed_ms=elapsed * 1000,
+                exact_match=exact_match,
+            )
 
         print(f"task {index}: {task_item['task_id']}")
         if task_item.get("question"):
             print(f"question: {task_item['question']}")
         print(f"answer: {result['final_answer']}")
-        if expected_answer:
+        if expected_answer and dataset_type != "continuous":
             print(f"gold: {expected_answer}")
             print(f"exact_match: {exact_match}")
         if dataset_type == "codeact":
@@ -1404,16 +1625,77 @@ def run_mode(
         if show_state:
             print_state_trace(task_item, result)
 
-        task_results.append(
-            build_task_result(
-                task_index=index,
-                task_item=task_item,
-                result=result,
-                elapsed_ms=elapsed * 1000,
-                exact_match=exact_match,
-                prediction=prediction,
-            )
+        task_result = build_task_result(
+            task_index=index,
+            task_item=task_item,
+            result=result,
+            elapsed_ms=elapsed * 1000,
+            exact_match=exact_match,
+            prediction=prediction,
         )
+        task_results.append(task_result)
+
+        if dataset_type == "continuous":
+            pending_batches.setdefault(group_id, []).append(
+                {
+                    "task_index": index,
+                    "task_item": task_item,
+                    "result": result,
+                    "prediction": prediction,
+                    "elapsed_ms": elapsed * 1000,
+                    "task_result": task_result,
+                }
+            )
+            next_group_id = (
+                tasks[index].get("group_id", "default")
+                if index < len(tasks)
+                else None
+            )
+            if next_group_id != group_id:
+                working_memory = [
+                    *persistent_experience_memory,
+                    *group_memory.get(group_id, []),
+                ]
+                (
+                    persistent_experience_memory,
+                    experience_writes,
+                    batch_correct,
+                    batch_comparable,
+                    batch_elapsed_ms,
+                ) = _finalize_continuous_batch(
+                    mode=mode,
+                    group_id=group_id,
+                    cases=pending_batches.pop(group_id),
+                    working_memory=working_memory,
+                )
+                group_memory.pop(group_id, None)
+                correct += batch_correct
+                comparable += batch_comparable
+                total_elapsed += batch_elapsed_ms / 1000
+                total_metrics["memory_write_count"] += len(experience_writes)
+                total_metrics["experience_write_count"] += len(experience_writes)
+                total_metrics["memory_refine_ms"] += batch_elapsed_ms
+                batch_summary = {
+                    "group_id": group_id,
+                    "task_count": batch_comparable,
+                    "correct": batch_correct,
+                    "exact_match": (
+                        batch_correct / batch_comparable
+                        if batch_comparable
+                        else None
+                    ),
+                    "experience_write_count": len(experience_writes),
+                    "experience_writes": _frontend_safe(experience_writes),
+                    "qa_memory_cleared": True,
+                    "elapsed_ms": batch_elapsed_ms,
+                }
+                batch_summaries.append(batch_summary)
+                task_result["batch_summary"] = batch_summary
+                print(
+                    "batch summary: "
+                    f"group={group_id}, correct={batch_correct}/{batch_comparable}, "
+                    f"experience_writes={len(experience_writes)}, qa_memory_cleared=true"
+                )
 
     hit_task_count = sum(1 for task_result in task_results if task_result.get("memory_hit_count", 0) > 0)
     memory_hit_rate = hit_task_count / len(tasks) if tasks else 0.0
@@ -1473,6 +1755,7 @@ def run_mode(
         "elapsed_ms": elapsed_ms,
         "exact_match": exact_match_rate,
         "task_results": task_results,
+        "batch_summaries": batch_summaries,
     }
     return run_result
 

@@ -24,7 +24,7 @@ def test_retriever_keeps_memory_context_in_state_and_sends_refs_only() -> None:
     assert result["memory_context"][0]["summary"] == unique_summary
     evidence_ref = result["state_refs"]["evidence"]
     evidence_state = result["latent_states"][evidence_ref]
-    assert unique_summary not in evidence_state["source_text"]
+    assert "source_text" not in evidence_state
 
     payload = result["messages"][-1]["payload"]
     assert payload["m"] == ["mem-0001"]
@@ -37,7 +37,7 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
 
     captured: dict[str, object] = {}
 
-    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None, **kwargs) -> list[dict]:
         captured["query"] = query
         captured["top_k"] = top_k
         return []
@@ -50,6 +50,11 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
         "Retrieve biographical details about Shirley Temple.",
         "Extract the government position she later held.",
     ]
+    state["retrieval_policy"] = {
+        "need_qa_memory": True,
+        "need_memory": True,
+        "need_knowledge": True,
+    }
 
     result = retriever_agent(state)
 
@@ -68,7 +73,7 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
     assert not any("Planner-guided retrieval focus:" in item for item in result["evidence"])
 
 
-def test_expected_reuse_rerank_prioritizes_target_turn() -> None:
+def test_expected_reuse_metadata_does_not_override_retrieval_score() -> None:
     """连续任务排序应优先复用 expected_reuse 指向的历史轮次。"""
 
     hits = [
@@ -98,7 +103,7 @@ def test_expected_reuse_rerank_prioritizes_target_turn() -> None:
 
     reranked = _rerank_memory_hits(hits, query)
 
-    assert reranked[0]["memory_id"] == "mem-0007"
+    assert reranked[0]["memory_id"] == "mem-0006"
     assert reranked[0]["retrieval_score"] > reranked[1]["retrieval_score"]
 
 
@@ -126,7 +131,7 @@ def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
         },
     ]
 
-    def fake_search_memory(memory_records: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
+    def fake_search_memory(memory_records: list[dict], query: str, *, top_k: int, memory_types=None, **kwargs) -> list[dict]:
         if memory_types == ["evidence"]:
             return [memory_records[0]]
         if memory_types == ["experience"]:
@@ -136,6 +141,12 @@ def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
     monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
 
     state = initial_state("when was dunkirk released on dvd in the united kingdom?", "protocol", memory)
+    state["experience_hits"] = [memory[1]]
+    state["retrieval_policy"] = {
+        "need_qa_memory": True,
+        "need_memory": True,
+        "need_knowledge": True,
+    }
     state["plan"] = [
         "Retrieve the film release sentence.",
         "Check the United Kingdom constraint.",
@@ -156,7 +167,7 @@ def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
 def test_retriever_extracts_context_evidence_from_planner_focus(monkeypatch) -> None:
     """Retriever 应按 Planner 规划从 Context 中抽 supporting facts 给 Reasoner。"""
 
-    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None, **kwargs) -> list[dict]:
         return []
 
     monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)
@@ -199,7 +210,7 @@ def test_retriever_extracts_context_evidence_from_planner_focus(monkeypatch) -> 
 def test_retriever_prioritizes_answer_bearing_sentence_over_title_overlap(monkeypatch) -> None:
     """Retriever 应优先保留承载答案的职位句，而不是只和片名重合的干扰句。"""
 
-    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None) -> list[dict]:
+    def fake_search_memory(memory: list[dict], query: str, *, top_k: int, memory_types=None, **kwargs) -> list[dict]:
         return []
 
     monkeypatch.setattr("agents.retriever.agent.search_memory", fake_search_memory)

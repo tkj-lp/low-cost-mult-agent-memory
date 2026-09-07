@@ -8,8 +8,19 @@ from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
 from competition_agents.runtime_events import emit_knowledge_retrieval_events, emit_memory_retrieval_events
-from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
-from hypergraph_memory_method import search_context
+from competition_agents.state import (
+    CompetitionState,
+    put_hidden_state,
+    put_latent_state,
+    put_shared_state,
+    record_message,
+)
+from hypergraph_memory_method import (
+    KNOWLEDGE_FOLLOWUP_BATCH,
+    MEMORY_ROUTE_BATCH,
+    search_context,
+    update_retrieval_batch,
+)
 
 
 def _shorten(value: object, limit: int = 220) -> str:
@@ -581,6 +592,54 @@ def _task_specific_evidence(task: str) -> list[str]:
     return []
 
 
+def _planned_knowledge_steps(
+    retrieval_policy: dict,
+    *,
+    fallback_query: str,
+) -> list[dict]:
+    raw_steps = retrieval_policy.get("knowledge_steps", []) or []
+    steps: list[dict] = []
+    for index, raw_step in enumerate(raw_steps, start=1):
+        if not isinstance(raw_step, dict):
+            continue
+        query = str(raw_step.get("query") or raw_step.get("goal") or "").strip()
+        if not query:
+            continue
+        steps.append(
+            {
+                "step": int(raw_step.get("step") or index),
+                "goal": str(raw_step.get("goal") or query).strip(),
+                "query": query,
+                "depends_on": raw_step.get("depends_on"),
+            }
+        )
+    return steps or [
+        {
+            "step": 1,
+            "goal": "Retrieve evidence needed to answer the question",
+            "query": fallback_query,
+            "depends_on": None,
+        }
+    ]
+
+
+def _dedupe_records(records: list[dict], *, id_key: str) -> list[dict]:
+    selected: list[dict] = []
+    seen: set[str] = set()
+    for record in records:
+        record_id = str(record.get(id_key) or "")
+        fingerprint = record_id or repr(sorted(record.items()))
+        if fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        selected.append(record)
+    return selected
+
+
+def _dedupe_text(values: list[str]) -> list[str]:
+    return list(dict.fromkeys(value for value in values if str(value).strip()))
+
+
 def retriever_agent(state: CompetitionState) -> dict:
     """检索可复用记忆，并生成非文本状态引用。"""
 
@@ -607,43 +666,103 @@ def retriever_agent(state: CompetitionState) -> dict:
         "reason": "fallback_policy",
         "signals": {"memory_available": bool(state.get("memory"))},
     }
-    experience_query = _build_experience_query(state["task"], state.get("plan", []), question, task_meta)
+    experience_query = str(
+        (retrieval_policy.get("experience_retrieval") or {}).get("query")
+        or _build_experience_query(state["task"], state.get("plan", []), question, task_meta)
+    )
     context_source = str(task_meta.get("context_source") or "inline")
     context_hits: list[dict] = []
     evidence_top_k = _memory_top_k(task_meta, base=2, limit=6)
     memory_started = time.perf_counter()
-    if retrieval_policy.get("need_memory"):
-        evidence_hits = search_memory(state["memory"], retrieval_query, top_k=evidence_top_k, memory_types=["evidence"])
-        raw_experience_hits = search_memory(state["memory"], experience_query, top_k=2, memory_types=["experience"])
-        experience_hits = _rerank_experience_hits(question, raw_experience_hits, top_k=2)
-        memory_query_count = 2
+    need_qa_memory = bool(
+        retrieval_policy.get("need_qa_memory", retrieval_policy.get("need_memory"))
+    )
+    experience_hits = list(state.get("experience_hits", []))
+    if need_qa_memory:
+        qa_query = str(retrieval_policy.get("qa_memory_query") or retrieval_query)
+        evidence_hits = search_memory(
+            state["memory"],
+            qa_query,
+            top_k=evidence_top_k,
+            memory_types=["evidence"],
+            memory_layers=["episodic"],
+            layer_limits={"episodic": evidence_top_k},
+        )
+        memory_query_count = 1
     else:
         evidence_hits = []
-        raw_experience_hits = []
-        experience_hits = []
         memory_query_count = 0
     memory_elapsed_ms = (time.perf_counter() - memory_started) * 1000
     combined_hits = evidence_hits + [
         hit for hit in experience_hits if hit.get("memory_id") not in {item.get("memory_id") for item in evidence_hits}
     ]
     hits = combined_hits[: max(4, evidence_top_k)]
-    if retrieval_policy.get("need_memory"):
-        emit_memory_retrieval_events(state, query=retrieval_query, hits=hits)
+    if need_qa_memory:
+        emit_memory_retrieval_events(
+            state,
+            query=qa_query,
+            hits=evidence_hits,
+            memory_layer="episodic",
+        )
     memory_context = _compact_memory_context(hits)
     experience_rules = _build_experience_rules(experience_hits)
-    knowledge_query = _augment_knowledge_query(retrieval_query, memory_context, retrieval_policy)
+    knowledge_steps = _planned_knowledge_steps(
+        retrieval_policy,
+        fallback_query=_augment_knowledge_query(retrieval_query, memory_context, retrieval_policy),
+    )
     context_started = time.perf_counter()
     if not retrieval_policy.get("need_knowledge", True):
         retrieved_context_evidence = []
         knowledge_query_count = 0
-    elif context_source == "hypergraph":
-        retrieved_context_evidence, context_hits = _extract_hypergraph_context(task_meta, planner_focus, query=knowledge_query)
-        emit_knowledge_retrieval_events(state, query=knowledge_query, hits=context_hits)
-        knowledge_query_count = 1
     else:
-        retrieved_context_evidence = _extract_context_evidence(task_meta, planner_focus)
-        knowledge_query_count = 1
+        retrieved_context_evidence = []
+        prior_findings: list[str] = []
+        for step in knowledge_steps:
+            step_query = str(step["query"])
+            if prior_findings:
+                step_query += "\nPrior step findings: " + " | ".join(prior_findings[-2:])[:420]
+            step_focus = [str(step.get("goal") or step_query)]
+            if context_source == "hypergraph":
+                step_evidence, step_hits = _extract_hypergraph_context(
+                    task_meta,
+                    step_focus,
+                    query=step_query,
+                    limit=3,
+                )
+                annotated_hits = [
+                    {**hit, "retrieval_step": step.get("step"), "step_goal": step.get("goal")}
+                    for hit in step_hits
+                ]
+                context_hits.extend(annotated_hits)
+                emit_knowledge_retrieval_events(state, query=step_query, hits=annotated_hits)
+            else:
+                step_evidence = _extract_context_evidence(task_meta, step_focus, limit=3)
+            retrieved_context_evidence.extend(step_evidence)
+            prior_findings.extend(step_evidence[:2])
+        retrieved_context_evidence = _dedupe_text(retrieved_context_evidence)
+        context_hits = _dedupe_records(context_hits, id_key="context_id")
+        knowledge_query_count = len(knowledge_steps)
+    knowledge_query = "\n\n".join(str(step["query"]) for step in knowledge_steps)
     context_elapsed_ms = (time.perf_counter() - context_started) * 1000
+
+    retrieval_batches = list(state.get("retrieval_batches", []))
+    retrieval_batches = update_retrieval_batch(
+        retrieval_batches,
+        MEMORY_ROUTE_BATCH,
+        status="completed",
+        query_count=1 + memory_query_count,
+        hit_counts={"episodic": len(evidence_hits), "experience": len(experience_hits)},
+    )
+    retrieval_batches = update_retrieval_batch(
+        retrieval_batches,
+        KNOWLEDGE_FOLLOWUP_BATCH,
+        status="completed" if knowledge_query_count else "skipped",
+        query_count=knowledge_query_count,
+        hit_counts={"knowledge": len(context_hits) or len(retrieved_context_evidence)},
+        decision="run" if knowledge_query_count else "skip",
+        decision_source="planner",
+        decision_reason=str(retrieval_policy.get("reason") or "planner_retrieval_plan"),
+    )
 
     # 把 Planner 的显式计划并入 query，让检索不再只依赖原始任务文本。
     evidence_top_k = _memory_top_k(task_meta, base=2, limit=6)
@@ -651,7 +770,7 @@ def retriever_agent(state: CompetitionState) -> dict:
         *retrieved_context_evidence,
         (
             "Planner-approved memory retrieval used hypergraph structural matching plus embedding similarity fusion ranking."
-            if retrieval_policy.get("need_memory")
+            if need_qa_memory
             else "Planner skipped memory retrieval and used knowledge retrieval only."
         ),
         *_task_specific_evidence(state["task"]),
@@ -682,6 +801,30 @@ def retriever_agent(state: CompetitionState) -> dict:
             topic=state["task"],
             text=" ".join(evidence),
             consumers=["executor", "summarizer"],
+        )
+
+    retrieval_ref = ""
+    if state["mode"] in {"protocol", "hidden"}:
+        retrieval_ref, latent_states, metrics = put_shared_state(
+            {**state, "latent_states": latent_states, "metrics": metrics},
+            producer="retriever",
+            topic=state["task"],
+            content_type="retrieval.layered_result",
+            payload={
+                "summary": (
+                    f"experience={len(experience_hits)}, episodic={len(evidence_hits)}, "
+                    f"knowledge={len(context_hits) or len(retrieved_context_evidence)}"
+                ),
+                "batches": retrieval_batches,
+                "layer_hit_ids": {
+                    "experience": [hit.get("memory_id") for hit in experience_hits],
+                    "episodic": [hit.get("memory_id") for hit in evidence_hits],
+                    "knowledge": [hit.get("context_id") for hit in context_hits],
+                },
+            },
+            consumers=["reasoner", "summarizer"],
+            scope="task",
+            prefix="retrieval",
         )
 
     if state["mode"] == "text":
@@ -726,9 +869,10 @@ def retriever_agent(state: CompetitionState) -> dict:
                 "hits": len(hits),
                 "evidence_hits": len(evidence_hits),
                 "experience_hits": len(experience_hits),
-                "memory_gate": bool(retrieval_policy.get("need_memory")),
+                "memory_gate": need_qa_memory,
+                "knowledge_steps": len(knowledge_steps),
             },
-            state_refs=[latent_ref],
+            state_refs=[ref for ref in (latent_ref, retrieval_ref) if ref],
             memory_refs=[hit["memory_id"] for hit in hits],
             capability_required=["reason"],
             cognitive_gap=cognitive_gap,
@@ -749,14 +893,25 @@ def retriever_agent(state: CompetitionState) -> dict:
     metrics["retriever_memory_ms"] = metrics.get("retriever_memory_ms", 0.0) + memory_elapsed_ms
     metrics["memory_query_count"] = metrics.get("memory_query_count", 0) + memory_query_count
     metrics["knowledge_query_count"] = metrics.get("knowledge_query_count", 0) + knowledge_query_count
+    metrics["retrieval_batch_count"] = metrics.get("retrieval_batch_count", 0) + memory_query_count + knowledge_query_count
     return {
         "evidence": evidence,
         "memory_hits": hits,
         "experience_hits": experience_hits,
         "experience_rules": experience_rules,
         "memory_context": memory_context,
+        "retrieval_batches": retrieval_batches,
+        "memory_layer_hits": {
+            "experience": experience_hits,
+            "episodic": evidence_hits,
+            "knowledge": context_hits,
+        },
         "latent_states": latent_states,
-        "state_refs": {**state.get("state_refs", {}), "evidence": latent_ref},
+        "state_refs": {
+            **state.get("state_refs", {}),
+            "evidence": latent_ref,
+            **({"retrieval_result": retrieval_ref} if retrieval_ref else {}),
+        },
         "messages": messages,
         "metrics": metrics,
         "agent_outputs": [
@@ -766,6 +921,7 @@ def retriever_agent(state: CompetitionState) -> dict:
                 "retrieval_query": retrieval_query,
                 "experience_query": experience_query,
                 "knowledge_query": knowledge_query,
+                "knowledge_steps": knowledge_steps,
                 "retrieval_policy": retrieval_policy,
                 "planner_focus": planner_focus,
                 "expected_reuse": _reuse_specs(task_meta),
