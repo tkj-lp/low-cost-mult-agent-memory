@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "@js-monorepo-example/shared": "*",
-    "@langchain/core": "^1.1.42",
-    "@langchain/langgraph": "^1.2.9"
+    "@langchain/core": "^1.2.10",
+    "@langchain/langgraph": "^1.4.14"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
