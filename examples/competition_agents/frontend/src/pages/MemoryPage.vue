@@ -173,6 +173,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   collaborationModes,
+  datasetKeyForFile,
   datasets,
   defaultExperimentConfig,
   labelOf,
@@ -759,12 +760,7 @@ function importedPayloadForCurrentConfig(items, currentConfig) {
 }
 
 function datasetKey(file) {
-  const text = String(file || '')
-  if (text.includes('topiocqa_1_10turns')) return 'topiocqa-1'
-  if (text.includes('topiocqa_2_10turns')) return 'topiocqa-2'
-  if (text.includes('codeact_1_10tasks')) return 'codeact-1'
-  if (text.includes('codeact_2_10tasks')) return 'codeact-2'
-  return text
+  return datasetKeyForFile(file)
 }
 
 function payloadMatchesCurrentConfig(payload, currentConfig) {
@@ -942,10 +938,8 @@ function modeLabel(value) {
 
 function datasetLabelFromMeta(meta) {
   const file = String(meta.dataset_file || '')
-  if (file.includes('topiocqa_1_10turns')) return 'TopiOCQA 第 1 组（10轮）'
-  if (file.includes('topiocqa_2_10turns')) return 'TopiOCQA 第 2 组（10轮）'
-  if (file.includes('codeact_1_10tasks')) return 'CodeAct 第 1 组（10题）'
-  if (file.includes('codeact_2_10tasks')) return 'CodeAct 第 2 组（10题）'
+  const dataset = datasets.find((item) => file.includes(item.file.split('/').pop()))
+  if (dataset) return dataset.label
   return meta.dataset_type || '等待运行'
 }
 

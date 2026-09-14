@@ -16,6 +16,62 @@ export const datasets = [
     file: 'examples/competition_agents/data/topiocqa_2_10turns.json'
   },
   {
+    label: 'TopiOCQA \u5b98\u65b9\u7b2c 1 \u7ec4\uff0810\u8f6e\uff09',
+    value: 'topiocqa-official-1',
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: 'examples/competition_agents/data/official_topiocqa_001_10turns.json'
+  },
+  {
+    label: 'TopiOCQA \u5b98\u65b9\u7b2c 2 \u7ec4\uff0810\u8f6e\uff09',
+    value: 'topiocqa-official-2',
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: 'examples/competition_agents/data/official_topiocqa_002_10turns.json'
+  },
+  {
+    label: 'TopiOCQA \u5b98\u65b9\u7b2c 3 \u7ec4\uff0810\u8f6e\uff09',
+    value: 'topiocqa-official-3',
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: 'examples/competition_agents/data/official_topiocqa_003_10turns.json'
+  },
+  {
+    label: 'QReCC \u5b98\u65b9\u7b2c 1 \u7ec4\uff0810\u8f6e\uff09',
+    value: 'qrecc-official-1',
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: 'examples/competition_agents/data/official_qrecc_001_10turns.json'
+  },
+  {
+    label: 'QReCC \u5b98\u65b9\u7b2c 2 \u7ec4\uff0810\u8f6e\uff09',
+    value: 'qrecc-official-2',
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: 'examples/competition_agents/data/official_qrecc_002_10turns.json'
+  },
+  {
+    label: 'QReCC \u5b98\u65b9\u7b2c 3 \u7ec4\uff0810\u8f6e\uff09',
+    value: 'qrecc-official-3',
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: 'examples/competition_agents/data/official_qrecc_003_10turns.json'
+  },
+  {
+    label: '\u5b98\u65b9 TopiOCQA + QReCC\uff086\u7ec4 / 60\u8f6e\uff09',
+    value: 'official-topiocqa-qrecc-6chains',
+    taskCount: 60,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: 'examples/competition_agents/data/official_topiocqa_qrecc_6chains_10turns.json'
+  },
+  {
     label: 'CodeAct 第 1 组（10题）',
     value: 'codeact-1',
     taskCount: 10,
@@ -95,6 +151,13 @@ export function labelOf(options, value, fallback = value) {
 
 export function selectedDataset(config) {
   return datasets.find((item) => item.value === config.dataset) ?? datasets[0]
+}
+
+export function datasetKeyForFile(file) {
+  const text = String(file || '')
+  if (datasets.some((item) => item.value === text)) return text
+  const matched = datasets.find((item) => text.includes(item.file.split('/').pop()))
+  return matched?.value ?? text
 }
 
 export function selectedCollaboration(config) {

@@ -106,6 +106,8 @@ import StateTransferCard from '../components/metrics/StateTransferCard.vue'
 import MethodComparisonTable from '../components/metrics/MethodComparisonTable.vue'
 import {
   collaborationModes,
+  datasetKeyForFile,
+  datasets,
   defaultExperimentConfig,
   labelOf,
   memoryModes,
@@ -711,12 +713,7 @@ function recordTimeText(record) {
 }
 
 function datasetOptions() {
-  return [
-    { label: 'TopiOCQA 第 1 组（10轮）', value: 'topiocqa-1' },
-    { label: 'TopiOCQA 第 2 组（10轮）', value: 'topiocqa-2' },
-    { label: 'CodeAct 第 1 组（10题）', value: 'codeact-1' },
-    { label: 'CodeAct 第 2 组（10题）', value: 'codeact-2' }
-  ]
+  return datasets.map(({ label, value }) => ({ label, value }))
 }
 
 function shortMethodLabel(record, index = 0, total = 1) {
@@ -912,13 +909,7 @@ function numberOrNull(value) {
 }
 
 function datasetKey(file) {
-  const text = String(file || '')
-  if (text.includes('topiocqa_1_10turns')) return 'topiocqa-1'
-  if (text.includes('topiocqa_2_10turns')) return 'topiocqa-2'
-  if (text.includes('codeact_1_10tasks')) return 'codeact-1'
-  if (text.includes('codeact_2_10tasks')) return 'codeact-2'
-  if (text === 'codeact_2_10tasks.json') return 'codeact-2'
-  return text
+  return datasetKeyForFile(file)
 }
 
 function collaborationKey(mode) {

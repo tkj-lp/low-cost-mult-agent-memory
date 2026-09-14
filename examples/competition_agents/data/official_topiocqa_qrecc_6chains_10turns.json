@@ -1,0 +1,2374 @@
+[
+  {
+    "group_id": "topiocqa-official-001",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 48,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "Oribi -> Gashaka Gumti National Park",
+    "context": [
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day."
+        ]
+      },
+      {
+        "title": "Oribi [SEP] Description",
+        "sentences": [
+          "The oribi is a small, slender antelope; it reaches nearly at the shoulder and weighs . The head-and-body length is typically between . Sexually dimorphic, males are slightly smaller than females (except for \"O. o. ourebi\", in which females are smaller). This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides (except in \"O. o. hastata\", that has a completely black tail). The subspecies show some variation in colouration; \"O."
+        ]
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species. Mineral licks are also visited regularly. Oribi have been observed feeding on flowers and \"Boletus\" mushrooms. Groups of oribi congregate in the rainy season, when grasses are abundant."
+        ]
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock. The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St.",
+          "Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia)."
+        ]
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          "The fauna of the national park is very diverse. 103 species of mammals have been recorded at censuses. Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park. To protect the animals and the ecosystem, the Gashaka Primate Project was launched. Living in the national park are also the African elephant (\"Loxodonta africana\"), the klipspringer (\"Oreotragus oreotragus\"), the West African wild dog (\"Lycaon pictus manguensis\"), the hartebeest (\"Alcelaphus buselaphus\"), the world's largest antelope, the giant eland (\"Taurotragus Derbianus\"), the roan antelope (\"Hippotragus equinus\"), the kob antelope (\"Kobus kob\"), the oribi (\"Ourebia ourebi\"), and the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\") in larger stocks."
+        ]
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest."
+        ]
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria, It was gazetted from two game reserves in 1991 and is Nigeria’s largest national park. It is located in the eastern provinces of Taraba and Adamawa to the border with Cameroon. The total area covers about 6,402 km, much of the northern GGNP is savannah grassland, while the southern GGNP sector of the park has a rugged terrain characterized by very mountainous, steep slopes as well as deep valleys and gorges, and is home to montane forests. Altitude ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi, Nigeria’s highest mountain in the park's southern sections."
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "Oribi [SEP] Introduction",
+        "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day."
+      ],
+      [
+        "Oribi [SEP] Introduction",
+        "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day."
+      ],
+      [
+        "Oribi [SEP] Description",
+        "The oribi is a small, slender antelope; it reaches nearly at the shoulder and weighs . The head-and-body length is typically between . Sexually dimorphic, males are slightly smaller than females (except for \"O. o. ourebi\", in which females are smaller). This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides (except in \"O. o. hastata\", that has a completely black tail). The subspecies show some variation in colouration; \"O."
+      ],
+      [
+        "Oribi [SEP] Introduction",
+        "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day."
+      ],
+      [
+        "Oribi [SEP] Diet",
+        "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species. Mineral licks are also visited regularly. Oribi have been observed feeding on flowers and \"Boletus\" mushrooms. Groups of oribi congregate in the rainy season, when grasses are abundant."
+      ],
+      [
+        "Oribi [SEP] Threats and conservation",
+        "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock. The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St."
+      ],
+      [
+        "Oribi [SEP] Threats and conservation",
+        "Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia)."
+      ],
+      [
+        "Gashaka Gumti National Park [SEP] Fauna",
+        "The fauna of the national park is very diverse. 103 species of mammals have been recorded at censuses. Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park. To protect the animals and the ecosystem, the Gashaka Primate Project was launched. Living in the national park are also the African elephant (\"Loxodonta africana\"), the klipspringer (\"Oreotragus oreotragus\"), the West African wild dog (\"Lycaon pictus manguensis\"), the hartebeest (\"Alcelaphus buselaphus\"), the world's largest antelope, the giant eland (\"Taurotragus Derbianus\"), the roan antelope (\"Hippotragus equinus\"), the kob antelope (\"Kobus kob\"), the oribi (\"Ourebia ourebi\"), and the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\") in larger stocks."
+      ],
+      [
+        "Gashaka Gumti National Park [SEP] Flora",
+        "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest."
+      ],
+      [
+        "Gashaka Gumti National Park [SEP] Introduction",
+        "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria, It was gazetted from two game reserves in 1991 and is Nigeria’s largest national park. It is located in the eastern provinces of Taraba and Adamawa to the border with Cameroon. The total area covers about 6,402 km, much of the northern GGNP is savannah grassland, while the southern GGNP sector of the park has a rugged terrain characterized by very mountainous, steep slopes as well as deep valleys and gorges, and is home to montane forests. Altitude ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi, Nigeria’s highest mountain in the park's southern sections."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "Introduction",
+        "question": "what is an oribi?",
+        "expected_answer": "It is a small antelope.",
+        "expected_reuse": [],
+        "topic": "Oribi",
+        "topic_section": "Introduction",
+        "conversation_context": [],
+        "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
+        "rationale": "small antelope",
+        "gold_passage_id": "wiki:23843441",
+        "gold_passage_title": "Oribi [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "Introduction",
+        "question": "where is it found?",
+        "expected_answer": "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Oribi",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope."
+        ],
+        "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
+        "rationale": "found in eastern, southern and western Africa.",
+        "gold_passage_id": "wiki:23843441",
+        "gold_passage_title": "Oribi [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "Description",
+        "question": "how does it look like?",
+        "expected_answer": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Oribi",
+        "topic_section": "Description",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands"
+        ],
+        "supporting_passage": "The oribi is a small, slender antelope; it reaches nearly at the shoulder and weighs . The head-and-body length is typically between . Sexually dimorphic, males are slightly smaller than females (except for \"O. o. ourebi\", in which females are smaller). This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides (except in \"O. o. hastata\", that has a completely black tail). The subspecies show some variation in colouration; \"O.",
+        "rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides",
+        "gold_passage_id": "wiki:23843446",
+        "gold_passage_title": "Oribi [SEP] Description"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "Introduction",
+        "question": "what family does it belong to?",
+        "expected_answer": "It was the sole member of its genus",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Oribi",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "how does it look like?",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides."
+        ],
+        "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
+        "rationale": "The sole member of its genus,",
+        "gold_passage_id": "wiki:23843441",
+        "gold_passage_title": "Oribi [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "Diet",
+        "question": "can you tell me about its diet?",
+        "expected_answer": "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Oribi",
+        "topic_section": "Diet",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "how does it look like?",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "what family does it belong to?",
+          "It was the sole member of its genus"
+        ],
+        "supporting_passage": "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species. Mineral licks are also visited regularly. Oribi have been observed feeding on flowers and \"Boletus\" mushrooms. Groups of oribi congregate in the rainy season, when grasses are abundant.",
+        "rationale": "oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+        "gold_passage_id": "wiki:23843451",
+        "gold_passage_title": "Oribi [SEP] Diet"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "Threats and conservation",
+        "question": "is it under threat of extinction?",
+        "expected_answer": "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Oribi",
+        "topic_section": "Threats and conservation",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "how does it look like?",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "what family does it belong to?",
+          "It was the sole member of its genus",
+          "can you tell me about its diet?",
+          "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia"
+        ],
+        "supporting_passage": "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock. The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St.",
+        "rationale": "The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock.",
+        "gold_passage_id": "wiki:23843456",
+        "gold_passage_title": "Oribi [SEP] Threats and conservation"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "Threats and conservation",
+        "question": "have any steps been taken for their protection?",
+        "expected_answer": "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Oribi",
+        "topic_section": "Threats and conservation",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "how does it look like?",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "what family does it belong to?",
+          "It was the sole member of its genus",
+          "can you tell me about its diet?",
+          "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+          "is it under threat of extinction?",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock."
+        ],
+        "supporting_passage": "Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia).",
+        "rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+        "gold_passage_id": "wiki:23843457",
+        "gold_passage_title": "Oribi [SEP] Threats and conservation"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "Fauna",
+        "question": "what type of other animals are found in the first park?",
+        "expected_answer": "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Gashaka Gumti National Park",
+        "topic_section": "Fauna",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "how does it look like?",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "what family does it belong to?",
+          "It was the sole member of its genus",
+          "can you tell me about its diet?",
+          "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+          "is it under threat of extinction?",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "have any steps been taken for their protection?",
+          "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);"
+        ],
+        "supporting_passage": "The fauna of the national park is very diverse. 103 species of mammals have been recorded at censuses. Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park. To protect the animals and the ecosystem, the Gashaka Primate Project was launched. Living in the national park are also the African elephant (\"Loxodonta africana\"), the klipspringer (\"Oreotragus oreotragus\"), the West African wild dog (\"Lycaon pictus manguensis\"), the hartebeest (\"Alcelaphus buselaphus\"), the world's largest antelope, the giant eland (\"Taurotragus Derbianus\"), the roan antelope (\"Hippotragus equinus\"), the kob antelope (\"Kobus kob\"), the oribi (\"Ourebia ourebi\"), and the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\") in larger stocks.",
+        "rationale": ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "gold_passage_id": "wiki:717980",
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Fauna"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "Flora",
+        "question": "and plant species?",
+        "expected_answer": "Red sunbird bush, an ornate species of the acanthus family",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Gashaka Gumti National Park",
+        "topic_section": "Flora",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "how does it look like?",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "what family does it belong to?",
+          "It was the sole member of its genus",
+          "can you tell me about its diet?",
+          "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+          "is it under threat of extinction?",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "have any steps been taken for their protection?",
+          "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+          "what type of other animals are found in the first park?",
+          "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")"
+        ],
+        "supporting_passage": "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
+        "rationale": "red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
+        "gold_passage_id": "wiki:717982",
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Flora"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "Introduction",
+        "question": "where is this park located?",
+        "expected_answer": "Nigeria",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Gashaka Gumti National Park",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "what is an oribi?",
+          "It is a small antelope.",
+          "where is it found?",
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "how does it look like?",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "what family does it belong to?",
+          "It was the sole member of its genus",
+          "can you tell me about its diet?",
+          "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+          "is it under threat of extinction?",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "have any steps been taken for their protection?",
+          "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+          "what type of other animals are found in the first park?",
+          "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+          "and plant species?",
+          "Red sunbird bush, an ornate species of the acanthus family"
+        ],
+        "supporting_passage": "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria, It was gazetted from two game reserves in 1991 and is Nigeria’s largest national park. It is located in the eastern provinces of Taraba and Adamawa to the border with Cameroon. The total area covers about 6,402 km, much of the northern GGNP is savannah grassland, while the southern GGNP sector of the park has a rugged terrain characterized by very mountainous, steep slopes as well as deep valleys and gorges, and is home to montane forests. Altitude ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi, Nigeria’s highest mountain in the park's southern sections.",
+        "rationale": "Nigeria,",
+        "gold_passage_id": "wiki:717978",
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Introduction"
+      }
+    ]
+  },
+  {
+    "group_id": "topiocqa-official-002",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 90,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "First Silesian War -> House of Hohenzollern -> Swabia -> Swabian German",
+    "context": [
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+        ]
+      },
+      {
+        "title": "First Silesian War [SEP] Context and causes",
+        "sentences": [
+          "In the early 18th century, Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. Besides its value as a source of tax revenue, industrial output (particularly minerals) and military recruits, Silesia held great geostrategic importance to the belligerents. The valley of the Upper Oder formed a natural military conduit between Brandenburg, the Kingdom of Bohemia and the Margraviate of Moravia, and whichever power held the territory could threaten its neighbours. Silesia also lay along the north-eastern frontier of the Holy Roman Empire, allowing its controller to limit the influence of the Polish–Lithuanian Commonwealth and of the Russian Empire within Germany."
+        ]
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947."
+        ]
+      },
+      {
+        "title": "Swabia [SEP] Introduction",
+        "sentences": [
+          "Swabia is a cultural, historic and linguistic region in southwestern Germany. The name is ultimately derived from the medieval Duchy of Swabia, one of the German stem duchies, representing the territory of Alemannia, whose inhabitants interchangeably were called \"Alemanni\" or \"Suebi\". This territory would include all of the Alemannic German area, but the modern concept of Swabia is more restricted, due to the collapse of the duchy of Swabia in the thirteenth century. Swabia as understood in modern ethnography roughly coincides with the Swabian Circle of the Holy Roman Empire as it stood during the Early Modern period, now divided between the states of Bavaria and Baden-Württemberg."
+        ]
+      },
+      {
+        "title": "Swabia [SEP] Language",
+        "sentences": [
+          "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg."
+        ]
+      },
+      {
+        "title": "Swabian German [SEP] Classification and variation",
+        "sentences": [
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg. The Swabian dialect is composed of numerous sub-dialects, each of which has its own variations. These sub-dialects can be categorized by the difference in the formation of the past participle of 'sein' (to be) into \"gwäa\" and \"gsei.\" The Gsei group is nearer to other Alemannic dialects, such as Swiss German. It can be divided into South-East Swabian, West Swabian and Central Swabian."
+        ]
+      },
+      {
+        "title": "Swabian German [SEP] Characteristics",
+        "sentences": [
+          "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North."
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "First Silesian War [SEP] Introduction",
+        "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+      ],
+      [
+        "First Silesian War [SEP] Introduction",
+        "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+      ],
+      [
+        "First Silesian War [SEP] Introduction",
+        "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+      ],
+      [
+        "First Silesian War [SEP] Context and causes",
+        "In the early 18th century, Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. Besides its value as a source of tax revenue, industrial output (particularly minerals) and military recruits, Silesia held great geostrategic importance to the belligerents. The valley of the Upper Oder formed a natural military conduit between Brandenburg, the Kingdom of Bohemia and the Margraviate of Moravia, and whichever power held the territory could threaten its neighbours. Silesia also lay along the north-eastern frontier of the Holy Roman Empire, allowing its controller to limit the influence of the Polish–Lithuanian Commonwealth and of the Russian Empire within Germany."
+      ],
+      [
+        "House of Hohenzollern [SEP] Introduction",
+        "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947."
+      ],
+      [
+        "House of Hohenzollern [SEP] Introduction",
+        "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947."
+      ],
+      [
+        "Swabia [SEP] Introduction",
+        "Swabia is a cultural, historic and linguistic region in southwestern Germany. The name is ultimately derived from the medieval Duchy of Swabia, one of the German stem duchies, representing the territory of Alemannia, whose inhabitants interchangeably were called \"Alemanni\" or \"Suebi\". This territory would include all of the Alemannic German area, but the modern concept of Swabia is more restricted, due to the collapse of the duchy of Swabia in the thirteenth century. Swabia as understood in modern ethnography roughly coincides with the Swabian Circle of the Holy Roman Empire as it stood during the Early Modern period, now divided between the states of Bavaria and Baden-Württemberg."
+      ],
+      [
+        "Swabia [SEP] Language",
+        "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg."
+      ],
+      [
+        "Swabian German [SEP] Classification and variation",
+        "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg. The Swabian dialect is composed of numerous sub-dialects, each of which has its own variations. These sub-dialects can be categorized by the difference in the formation of the past participle of 'sein' (to be) into \"gwäa\" and \"gsei.\" The Gsei group is nearer to other Alemannic dialects, such as Swiss German. It can be divided into South-East Swabian, West Swabian and Central Swabian."
+      ],
+      [
+        "Swabian German [SEP] Characteristics",
+        "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "Introduction",
+        "question": "when did the first silesian war take place?",
+        "expected_answer": "1740",
+        "expected_reuse": [],
+        "topic": "First Silesian War",
+        "topic_section": "Introduction",
+        "conversation_context": [],
+        "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
+        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria.",
+        "gold_passage_id": "wiki:10854643",
+        "gold_passage_title": "First Silesian War [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "Introduction",
+        "question": "where?",
+        "expected_answer": "Silesia, Moravia and Bohemia",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "First Silesian War",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740"
+        ],
+        "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
+        "rationale": "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia.",
+        "gold_passage_id": "wiki:10854643",
+        "gold_passage_title": "First Silesian War [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "Introduction",
+        "question": "between whom?",
+        "expected_answer": "Prussia and Austria",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "First Silesian War",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia"
+        ],
+        "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
+        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria.",
+        "gold_passage_id": "wiki:10854643",
+        "gold_passage_title": "First Silesian War [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "Context and causes",
+        "question": "what was its prime cause?",
+        "expected_answer": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "First Silesian War",
+        "topic_section": "Context and causes",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria"
+        ],
+        "supporting_passage": "In the early 18th century, Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. Besides its value as a source of tax revenue, industrial output (particularly minerals) and military recruits, Silesia held great geostrategic importance to the belligerents. The valley of the Upper Oder formed a natural military conduit between Brandenburg, the Kingdom of Bohemia and the Margraviate of Moravia, and whichever power held the territory could threaten its neighbours. Silesia also lay along the north-eastern frontier of the Holy Roman Empire, allowing its controller to limit the influence of the Polish–Lithuanian Commonwealth and of the Russian Empire within Germany.",
+        "rationale": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg.",
+        "gold_passage_id": "wiki:10854646",
+        "gold_passage_title": "First Silesian War [SEP] Context and causes"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "Introduction",
+        "question": "when was this ruling house established?",
+        "expected_answer": "The family arose during the 11th century",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "House of Hohenzollern",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia"
+        ],
+        "supporting_passage": "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947.",
+        "rationale": "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061.",
+        "gold_passage_id": "wiki:7718013",
+        "gold_passage_title": "House of Hohenzollern [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "Introduction",
+        "question": "where did they live?",
+        "expected_answer": "The family arose in the area around the town of Hechingen in Swabia",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "House of Hohenzollern",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century"
+        ],
+        "supporting_passage": "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947.",
+        "rationale": "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle.",
+        "gold_passage_id": "wiki:7718013",
+        "gold_passage_title": "House of Hohenzollern [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "Introduction",
+        "question": "what is the geographical location of this last place?",
+        "expected_answer": "Southwestern Germany",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabia",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia"
+        ],
+        "supporting_passage": "Swabia is a cultural, historic and linguistic region in southwestern Germany. The name is ultimately derived from the medieval Duchy of Swabia, one of the German stem duchies, representing the territory of Alemannia, whose inhabitants interchangeably were called \"Alemanni\" or \"Suebi\". This territory would include all of the Alemannic German area, but the modern concept of Swabia is more restricted, due to the collapse of the duchy of Swabia in the thirteenth century. Swabia as understood in modern ethnography roughly coincides with the Swabian Circle of the Holy Roman Empire as it stood during the Early Modern period, now divided between the states of Bavaria and Baden-Württemberg.",
+        "rationale": "Swabia is a cultural, historic and linguistic region in southwestern Germany.",
+        "gold_passage_id": "wiki:13058420",
+        "gold_passage_title": "Swabia [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "Language",
+        "question": "which language did they speak?",
+        "expected_answer": "Swabian, Swabian German",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabia",
+        "topic_section": "Language",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia",
+          "what is the geographical location of this last place?",
+          "Southwestern Germany"
+        ],
+        "supporting_passage": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
+        "rationale": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
+        "gold_passage_id": "wiki:13058434",
+        "gold_passage_title": "Swabia [SEP] Language"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "Classification and variation",
+        "question": "how is this latter one classified?",
+        "expected_answer": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabian German",
+        "topic_section": "Classification and variation",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia",
+          "what is the geographical location of this last place?",
+          "Southwestern Germany",
+          "which language did they speak?",
+          "Swabian, Swabian German"
+        ],
+        "supporting_passage": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg. The Swabian dialect is composed of numerous sub-dialects, each of which has its own variations. These sub-dialects can be categorized by the difference in the formation of the past participle of 'sein' (to be) into \"gwäa\" and \"gsei.\" The Gsei group is nearer to other Alemannic dialects, such as Swiss German. It can be divided into South-East Swabian, West Swabian and Central Swabian.",
+        "rationale": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian).",
+        "gold_passage_id": "wiki:12098276",
+        "gold_passage_title": "Swabian German [SEP] Classification and variation"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "Characteristics",
+        "question": "can you mention one of its characteristic?",
+        "expected_answer": "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabian German",
+        "topic_section": "Characteristics",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia",
+          "what is the geographical location of this last place?",
+          "Southwestern Germany",
+          "which language did they speak?",
+          "Swabian, Swabian German",
+          "how is this latter one classified?",
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects"
+        ],
+        "supporting_passage": "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+        "rationale": "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+        "gold_passage_id": "wiki:12098275",
+        "gold_passage_title": "Swabian German [SEP] Characteristics"
+      }
+    ]
+  },
+  {
+    "group_id": "topiocqa-official-003",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 120,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "British contribution to the Manhattan Project -> James Chadwick -> Neutron -> Klaus Fuchs -> Official Secrets Act",
+    "context": [
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
+          "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys."
+        ]
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\")."
+        ]
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics. The chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number."
+        ]
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Early life",
+        "sentences": [
+          "He became involved in student politics, joining the student branch of the Social Democratic Party of Germany (SPD), a party that his father had joined in 1912, and the \"Reichsbanner Schwarz-Rot-Gold\", the party's paramilitary organisation. His father took up a new position as professor of religion at the Pedagogical Academy in Kiel, and in the autumn Fuchs transferred to the University of Kiel, which his brother Gerhard and sister Elisabeth also attended. Fuchs continued his studies in mathematics and physics at the university. In October 1931, his mother committed suicide by drinking hydrochloric acid. The family later discovered that his maternal grandmother had also taken her own life."
+        ]
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952."
+        ]
+      },
+      {
+        "title": "Official Secrets Act [SEP] Introduction",
+        "sentences": [
+          "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, There were earlier English and British precedents, long before the acts enumerated here. As early as the 16th Century, following Francis Drake's circumnavigation, Queen Elizabeth I declared that all written accounts of Drake's voyages were to become the 'Queen's secrets of the Realm'. In addition, Drake and the other participants of his voyages were sworn to their secrecy on the pain of death; the Queen intended to keep Drake's activities away from the eyes of rival Spain."
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "British contribution to the Manhattan Project [SEP] Introduction",
+        "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy."
+      ],
+      [
+        "James Chadwick [SEP] Introduction",
+        "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\")."
+      ],
+      [
+        "James Chadwick [SEP] Introduction",
+        "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\")."
+      ],
+      [
+        "Neutron [SEP] Introduction",
+        "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics. The chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number."
+      ],
+      [
+        "British contribution to the Manhattan Project [SEP] Introduction",
+        "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys."
+      ],
+      [
+        "British contribution to the Manhattan Project [SEP] Introduction",
+        "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy."
+      ],
+      [
+        "Klaus Fuchs [SEP] Early life",
+        "He became involved in student politics, joining the student branch of the Social Democratic Party of Germany (SPD), a party that his father had joined in 1912, and the \"Reichsbanner Schwarz-Rot-Gold\", the party's paramilitary organisation. His father took up a new position as professor of religion at the Pedagogical Academy in Kiel, and in the autumn Fuchs transferred to the University of Kiel, which his brother Gerhard and sister Elisabeth also attended. Fuchs continued his studies in mathematics and physics at the university. In October 1931, his mother committed suicide by drinking hydrochloric acid. The family later discovered that his maternal grandmother had also taken her own life."
+      ],
+      [
+        "Klaus Fuchs [SEP] Trial and imprisonment",
+        "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952."
+      ],
+      [
+        "Klaus Fuchs [SEP] Trial and imprisonment",
+        "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952."
+      ],
+      [
+        "Official Secrets Act [SEP] Introduction",
+        "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, There were earlier English and British precedents, long before the acts enumerated here. As early as the 16th Century, following Francis Drake's circumnavigation, Queen Elizabeth I declared that all written accounts of Drake's voyages were to become the 'Queen's secrets of the Realm'. In addition, Drake and the other participants of his voyages were sworn to their secrecy on the pain of death; the Queen intended to keep Drake's activities away from the eyes of rival Spain."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "Introduction",
+        "question": "who headed up the manhattan project in britain",
+        "expected_answer": "James Chadwick",
+        "expected_reuse": [],
+        "topic": "British contribution to the Manhattan Project",
+        "topic_section": "Introduction",
+        "conversation_context": [],
+        "supporting_passage": "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
+        "rationale": "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor,",
+        "gold_passage_id": "wiki:7566712",
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "Introduction",
+        "question": "who is he?",
+        "expected_answer": "He was a British physicist.",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "James Chadwick",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick"
+        ],
+        "supporting_passage": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\").",
+        "rationale": "was a British physicist",
+        "gold_passage_id": "wiki:5293636",
+        "gold_passage_title": "James Chadwick [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "Introduction",
+        "question": "what was he known for?",
+        "expected_answer": "His discovery of the neutron.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "James Chadwick",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist."
+        ],
+        "supporting_passage": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\").",
+        "rationale": "discovery of the neutron i",
+        "gold_passage_id": "wiki:5293636",
+        "gold_passage_title": "James Chadwick [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "Introduction",
+        "question": "can you describe this thing he discovered?",
+        "expected_answer": "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Neutron",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist.",
+          "what was he known for?",
+          "His discovery of the neutron."
+        ],
+        "supporting_passage": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics. The chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number.",
+        "rationale": "is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+        "gold_passage_id": "wiki:25682377",
+        "gold_passage_title": "Neutron [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "Introduction",
+        "question": "why was the above project started?",
+        "expected_answer": "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "British contribution to the Manhattan Project",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist.",
+          "what was he known for?",
+          "His discovery of the neutron.",
+          "can you describe this thing he discovered?",
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton."
+        ],
+        "supporting_passage": "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys.",
+        "rationale": "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+        "gold_passage_id": "wiki:7566710",
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "Introduction",
+        "question": "any other scientist were involved in it?",
+        "expected_answer": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "British contribution to the Manhattan Project",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist.",
+          "what was he known for?",
+          "His discovery of the neutron.",
+          "can you describe this thing he discovered?",
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "why was the above project started?",
+          "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise."
+        ],
+        "supporting_passage": "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
+        "rationale": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+        "gold_passage_id": "wiki:7566712",
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "Early life",
+        "question": "what field did the last scientist study?",
+        "expected_answer": "Mathematics and physics",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Klaus Fuchs",
+        "topic_section": "Early life",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist.",
+          "what was he known for?",
+          "His discovery of the neutron.",
+          "can you describe this thing he discovered?",
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "why was the above project started?",
+          "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+          "any other scientist were involved in it?",
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs"
+        ],
+        "supporting_passage": "He became involved in student politics, joining the student branch of the Social Democratic Party of Germany (SPD), a party that his father had joined in 1912, and the \"Reichsbanner Schwarz-Rot-Gold\", the party's paramilitary organisation. His father took up a new position as professor of religion at the Pedagogical Academy in Kiel, and in the autumn Fuchs transferred to the University of Kiel, which his brother Gerhard and sister Elisabeth also attended. Fuchs continued his studies in mathematics and physics at the university. In October 1931, his mother committed suicide by drinking hydrochloric acid. The family later discovered that his maternal grandmother had also taken her own life.",
+        "rationale": "mathematics and physics",
+        "gold_passage_id": "wiki:7675253",
+        "gold_passage_title": "Klaus Fuchs [SEP] Early life"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "Trial and imprisonment",
+        "question": "why was he sent to prison?",
+        "expected_answer": "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Klaus Fuchs",
+        "topic_section": "Trial and imprisonment",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist.",
+          "what was he known for?",
+          "His discovery of the neutron.",
+          "can you describe this thing he discovered?",
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "why was the above project started?",
+          "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+          "any other scientist were involved in it?",
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+          "what field did the last scientist study?",
+          "Mathematics and physics"
+        ],
+        "supporting_passage": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.",
+        "rationale": "was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+        "gold_passage_id": "wiki:7675274",
+        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "Trial and imprisonment",
+        "question": "what was the sentence announced by the court?",
+        "expected_answer": "14 years imprisonment",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Klaus Fuchs",
+        "topic_section": "Trial and imprisonment",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist.",
+          "what was he known for?",
+          "His discovery of the neutron.",
+          "can you describe this thing he discovered?",
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "why was the above project started?",
+          "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+          "any other scientist were involved in it?",
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+          "what field did the last scientist study?",
+          "Mathematics and physics",
+          "why was he sent to prison?",
+          "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy."
+        ],
+        "supporting_passage": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.",
+        "rationale": "14 years' imprisonment",
+        "gold_passage_id": "wiki:7675274",
+        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "Introduction",
+        "question": "can you explain the act that he broke?",
+        "expected_answer": "It is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Official Secrets Act",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who headed up the manhattan project in britain",
+          "James Chadwick",
+          "who is he?",
+          "He was a British physicist.",
+          "what was he known for?",
+          "His discovery of the neutron.",
+          "can you describe this thing he discovered?",
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "why was the above project started?",
+          "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+          "any other scientist were involved in it?",
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+          "what field did the last scientist study?",
+          "Mathematics and physics",
+          "why was he sent to prison?",
+          "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+          "what was the sentence announced by the court?",
+          "14 years imprisonment"
+        ],
+        "supporting_passage": "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, There were earlier English and British precedents, long before the acts enumerated here. As early as the 16th Century, following Francis Drake's circumnavigation, Queen Elizabeth I declared that all written accounts of Drake's voyages were to become the 'Queen's secrets of the Realm'. In addition, Drake and the other participants of his voyages were sworn to their secrecy on the pain of death; the Queen intended to keep Drake's activities away from the eyes of rival Spain.",
+        "rationale": "is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+        "gold_passage_id": "wiki:4732088",
+        "gold_passage_title": "Official Secrets Act [SEP] Introduction"
+      }
+    ]
+  },
+  {
+    "group_id": "qrecc-official-001",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 2,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方测试集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "What are the main breeds of goat?",
+    "context": [
+      {
+        "title": "QReCC conversation 2 turn 1",
+        "sentences": [
+          "Rewrite: What are the main breeds of goat?",
+          "Answer: Abaza...Zhongwei",
+          "Source URL: https://en.wikipedia.org/wiki/List_of_goat_breeds"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 2",
+        "sentences": [
+          "Rewrite: Tell me about boer goats",
+          "Answer: The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "Source URL: https://en.wikipedia.org/wiki/Boer_goat"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 3",
+        "sentences": [
+          "Rewrite: What breed of goats is good for meat",
+          "Answer: Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Source URL: https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 4",
+        "sentences": [
+          "Rewrite: Are angora goats good for meat?",
+          "Answer: Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Source URL: https://www.motherearthnews.com/homesteading-and-livestock/goats-for-milk-meat-and-more"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 5",
+        "sentences": [
+          "Rewrite: Are boer goats good for meat?",
+          "Answer: Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "Source URL: https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 6",
+        "sentences": [
+          "Rewrite: What are pygmy goats used for?",
+          "Answer: While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "Source URL: https://www.wideopenpets.com/everything-you-need-to-know-about-the-pygmy-goat/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 7",
+        "sentences": [
+          "Rewrite: What is the best goat for fiber production?",
+          "Answer: Mohair goats are the most productive fiber producing animals.",
+          "Source URL: https://info.mannapro.com/homestead/raising-fiber-goats-101"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 8",
+        "sentences": [
+          "Rewrite: How long do Angora goats live?",
+          "Answer: In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+          "Source URL: https://angoragoat.com/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 9",
+        "sentences": [
+          "Rewrite: Can you milk Angora goats?",
+          "Answer: Angora mothers have been known to not produce enough milk if they give birth to more than 1.",
+          "Source URL: https://homestead.motherearthnews.com/making-money-angora-goats-part-1/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 10",
+        "sentences": [
+          "Rewrite: How many goats can you have per acre?",
+          "Answer: Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre.",
+          "Source URL: http://livestocktrail.illinois.edu/sheepnet/paperDisplay.cfm?ContentID=9808"
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "QReCC turn 1: What are the main breeds of goat?",
+        "Abaza...Zhongwei"
+      ],
+      [
+        "QReCC turn 2: Tell me about boer goats",
+        "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer."
+      ],
+      [
+        "QReCC turn 3: What breed of goats is good for meat",
+        "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico."
+      ],
+      [
+        "QReCC turn 4: Are angora goats good for meat?",
+        "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa."
+      ],
+      [
+        "QReCC turn 5: Are boer goats good for meat?",
+        "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility."
+      ],
+      [
+        "QReCC turn 6: What are pygmy goats used for?",
+        "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk."
+      ],
+      [
+        "QReCC turn 7: What is the best goat for fiber production?",
+        "Mohair goats are the most productive fiber producing animals."
+      ],
+      [
+        "QReCC turn 8: How long do Angora goats live?",
+        "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground."
+      ],
+      [
+        "QReCC turn 9: Can you milk Angora goats?",
+        "Angora mothers have been known to not produce enough milk if they give birth to more than 1."
+      ],
+      [
+        "QReCC turn 10: How many goats can you have per acre?",
+        "Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "trec",
+        "question": "What are the main breeds of goat?",
+        "rewrite": "What are the main breeds of goat?",
+        "expected_answer": "Abaza...Zhongwei",
+        "expected_reuse": [],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [],
+        "supporting_passage": "Abaza...Zhongwei",
+        "answer_url": "https://en.wikipedia.org/wiki/List_of_goat_breeds"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "trec",
+        "question": "Tell me about boer goats.",
+        "rewrite": "Tell me about boer goats",
+        "expected_answer": "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei"
+        ],
+        "supporting_passage": "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+        "answer_url": "https://en.wikipedia.org/wiki/Boer_goat"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "trec",
+        "question": "What breed is good for meat?",
+        "rewrite": "What breed of goats is good for meat",
+        "expected_answer": "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer."
+        ],
+        "supporting_passage": "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+        "answer_url": "https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "trec",
+        "question": "Are angora goats good for it?",
+        "rewrite": "Are angora goats good for meat?",
+        "expected_answer": "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico."
+        ],
+        "supporting_passage": "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+        "answer_url": "https://www.motherearthnews.com/homesteading-and-livestock/goats-for-milk-meat-and-more"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "trec",
+        "question": "What about boer goats?",
+        "rewrite": "Are boer goats good for meat?",
+        "expected_answer": "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa."
+        ],
+        "supporting_passage": "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+        "answer_url": "https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "trec",
+        "question": "What are pygmies used for?",
+        "rewrite": "What are pygmy goats used for?",
+        "expected_answer": "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility."
+        ],
+        "supporting_passage": "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+        "answer_url": "https://www.wideopenpets.com/everything-you-need-to-know-about-the-pygmy-goat/"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "trec",
+        "question": "What is the best for fiber production?",
+        "rewrite": "What is the best goat for fiber production?",
+        "expected_answer": "Mohair goats are the most productive fiber producing animals.",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk."
+        ],
+        "supporting_passage": "Mohair goats are the most productive fiber producing animals.",
+        "answer_url": "https://info.mannapro.com/homestead/raising-fiber-goats-101"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "trec",
+        "question": "How long do Angora goats live?",
+        "rewrite": "How long do Angora goats live?",
+        "expected_answer": "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "What is the best goat for fiber production?",
+          "Mohair goats are the most productive fiber producing animals."
+        ],
+        "supporting_passage": "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+        "answer_url": "https://angoragoat.com/"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "trec",
+        "question": "Can you milk them?",
+        "rewrite": "Can you milk Angora goats?",
+        "expected_answer": "Angora mothers have been known to not produce enough milk if they give birth to more than 1.",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "What is the best goat for fiber production?",
+          "Mohair goats are the most productive fiber producing animals.",
+          "How long do Angora goats live?",
+          "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground."
+        ],
+        "supporting_passage": "Angora mothers have been known to not produce enough milk if they give birth to more than 1.",
+        "answer_url": "https://homestead.motherearthnews.com/making-money-angora-goats-part-1/"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "trec",
+        "question": "How many can you have per acre?",
+        "rewrite": "How many goats can you have per acre?",
+        "expected_answer": "Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre.",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "What is the best goat for fiber production?",
+          "Mohair goats are the most productive fiber producing animals.",
+          "How long do Angora goats live?",
+          "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+          "Can you milk Angora goats?",
+          "Angora mothers have been known to not produce enough milk if they give birth to more than 1."
+        ],
+        "supporting_passage": "Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre.",
+        "answer_url": "http://livestocktrail.illinois.edu/sheepnet/paperDisplay.cfm?ContentID=9808"
+      }
+    ]
+  },
+  {
+    "group_id": "qrecc-official-002",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 7,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方测试集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "What are the different types of macromolecules?",
+    "context": [
+      {
+        "title": "QReCC conversation 7 turn 1",
+        "sentences": [
+          "Rewrite: What are the different types of macromolecules?",
+          "Answer: Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Source URL: https://www.ck12.org/biology/organic-compounds/lesson/Organic-Compounds-MS-LS/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 2",
+        "sentences": [
+          "Rewrite: Tell me about the characteristics of carbohydrates.",
+          "Answer: Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "Source URL: https://www.livestrong.com/article/366208-what-are-the-characteristics-of-carbohydrates/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 3",
+        "sentences": [
+          "Rewrite: What are carbohydrates composed of?",
+          "Answer: Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "Source URL: https://www.rsc.org/Education/Teachers/Resources/cfb/carbohydrates.htm"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 4",
+        "sentences": [
+          "Rewrite: What are carbohydrates basic structure?",
+          "Answer: The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "Source URL: https://en.wikibooks.org/wiki/Structural_Biochemistry/Carbohydrates"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 5",
+        "sentences": [
+          "Rewrite: What are the main types of carbohydrates with examples of each?",
+          "Answer: glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Source URL: https://www.thoughtco.com/examples-of-carbohydrates-603884"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 6",
+        "sentences": [
+          "Rewrite: Tell me about lipids.",
+          "Answer: Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "Source URL: https://www.news-medical.net/life-sciences/What-are-Lipids.aspx"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 7",
+        "sentences": [
+          "Rewrite: What are the functions of lipids.",
+          "Answer: The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+          "Source URL: https://en.wikipedia.org/wiki/Lipid"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 8",
+        "sentences": [
+          "Rewrite: What are the types of lipids?",
+          "Answer: Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+          "Source URL: https://courses.lumenlearning.com/suny-wmopen-biology1/chapter/lipids/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 9",
+        "sentences": [
+          "Rewrite: What is the most common lipid?",
+          "Answer: Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils.",
+          "Source URL: https://www.thoughtco.com/what-are-lipids-608210"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 10",
+        "sentences": [
+          "Rewrite: What is the difference between lipids and carbohydrates?",
+          "Answer: Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)",
+          "Source URL: http://www.old-ib.bioninja.com.au/standard-level/topic-3-chemicals-of-life/32-carbohydrates-lipids-and.html"
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "QReCC turn 1: What are the different types of macromolecules?",
+        "Proteins.Carbohydrates.Lipids.Nucleic Acids."
+      ],
+      [
+        "QReCC turn 2: Tell me about the characteristics of carbohydrates.",
+        "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides."
+      ],
+      [
+        "QReCC turn 3: What are carbohydrates composed of?",
+        "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen."
+      ],
+      [
+        "QReCC turn 4: What are carbohydrates basic structure?",
+        "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources."
+      ],
+      [
+        "QReCC turn 5: What are the main types of carbohydrates with examples of each?",
+        "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)"
+      ],
+      [
+        "QReCC turn 6: Tell me about lipids.",
+        "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein."
+      ],
+      [
+        "QReCC turn 7: What are the functions of lipids.",
+        "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes."
+      ],
+      [
+        "QReCC turn 8: What are the types of lipids?",
+        "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides."
+      ],
+      [
+        "QReCC turn 9: What is the most common lipid?",
+        "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils."
+      ],
+      [
+        "QReCC turn 10: What is the difference between lipids and carbohydrates?",
+        "Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)"
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "trec",
+        "question": "What are the different types of macromolecules?",
+        "rewrite": "What are the different types of macromolecules?",
+        "expected_answer": "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+        "expected_reuse": [],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [],
+        "supporting_passage": "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+        "answer_url": "https://www.ck12.org/biology/organic-compounds/lesson/Organic-Compounds-MS-LS/"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "trec",
+        "question": "Tell me about the characteristics of carbohydrates.",
+        "rewrite": "Tell me about the characteristics of carbohydrates.",
+        "expected_answer": "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids."
+        ],
+        "supporting_passage": "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+        "answer_url": "https://www.livestrong.com/article/366208-what-are-the-characteristics-of-carbohydrates/"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "trec",
+        "question": "What are they composed of?",
+        "rewrite": "What are carbohydrates composed of?",
+        "expected_answer": "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides."
+        ],
+        "supporting_passage": "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+        "answer_url": "https://www.rsc.org/Education/Teachers/Resources/cfb/carbohydrates.htm"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "trec",
+        "question": "What is their basic structure?",
+        "rewrite": "What are carbohydrates basic structure?",
+        "expected_answer": "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen."
+        ],
+        "supporting_passage": "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+        "answer_url": "https://en.wikibooks.org/wiki/Structural_Biochemistry/Carbohydrates"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "trec",
+        "question": "What are the main types with examples of each?",
+        "rewrite": "What are the main types of carbohydrates with examples of each?",
+        "expected_answer": "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources."
+        ],
+        "supporting_passage": "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+        "answer_url": "https://www.thoughtco.com/examples-of-carbohydrates-603884"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "trec",
+        "question": "Tell me about lipids.",
+        "rewrite": "Tell me about lipids.",
+        "expected_answer": "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)"
+        ],
+        "supporting_passage": "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+        "answer_url": "https://www.news-medical.net/life-sciences/What-are-Lipids.aspx"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "trec",
+        "question": "What is their function?",
+        "rewrite": "What are the functions of lipids.",
+        "expected_answer": "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein."
+        ],
+        "supporting_passage": "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+        "answer_url": "https://en.wikipedia.org/wiki/Lipid"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "trec",
+        "question": "What are the types of lipids?",
+        "rewrite": "What are the types of lipids?",
+        "expected_answer": "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "What are the functions of lipids.",
+          "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes."
+        ],
+        "supporting_passage": "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+        "answer_url": "https://courses.lumenlearning.com/suny-wmopen-biology1/chapter/lipids/"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "trec",
+        "question": "What is the most common?",
+        "rewrite": "What is the most common lipid?",
+        "expected_answer": "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils.",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "What are the functions of lipids.",
+          "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+          "What are the types of lipids?",
+          "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides."
+        ],
+        "supporting_passage": "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils.",
+        "answer_url": "https://www.thoughtco.com/what-are-lipids-608210"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "trec",
+        "question": "What is the difference between them and carbohydrates?",
+        "rewrite": "What is the difference between lipids and carbohydrates?",
+        "expected_answer": "Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "What are the functions of lipids.",
+          "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+          "What are the types of lipids?",
+          "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+          "What is the most common lipid?",
+          "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils."
+        ],
+        "supporting_passage": "Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)",
+        "answer_url": "http://www.old-ib.bioninja.com.au/standard-level/topic-3-chemicals-of-life/32-carbohydrates-lipids-and.html"
+      }
+    ]
+  },
+  {
+    "group_id": "qrecc-official-003",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 18,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方测试集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "Describe Uranus.",
+    "context": [
+      {
+        "title": "QReCC conversation 18 turn 1",
+        "sentences": [
+          "Rewrite: Describe Uranus.",
+          "Answer: Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "Source URL: https://en.wikipedia.org/wiki/Uranus"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 2",
+        "sentences": [
+          "Rewrite: What makes Uranus so unusual?",
+          "Answer: Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Source URL: https://www.space.com/45-uranus-seventh-planet-in-earths-solar-system-was-first-discovered-planet.html"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 3",
+        "sentences": [
+          "Rewrite: Tell me about Uranus's orbit.",
+          "Answer: Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Source URL: https://en.wikipedia.org/wiki/Uranus"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 4",
+        "sentences": [
+          "Rewrite: Why is Uranus tilted?",
+          "Answer: Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "Source URL: https://solarsystem.nasa.gov/planets/uranus/in-depth/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 5",
+        "sentences": [
+          "Rewrite: How is its rotation of Uranus different from other planets?",
+          "Answer: Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Source URL: https://spaceplace.nasa.gov/all-about-uranus/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 6",
+        "sentences": [
+          "Rewrite: What is peculiar about Uranus's seasons?",
+          "Answer: For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Source URL: https://earthsky.org/space/what-are-the-seasons-like-on-uranus"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 7",
+        "sentences": [
+          "Rewrite: Are there any other planets similar to Uranus?",
+          "Answer: The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Source URL: https://solarsystem.nasa.gov/planets/uranus/overview/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 8",
+        "sentences": [
+          "Rewrite: Describe the characteristics of Neptune.",
+          "Answer: Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+          "Source URL: https://space-facts.com/neptune/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 9",
+        "sentences": [
+          "Rewrite: Why is Neptune important to our solar system?",
+          "Answer: While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies.",
+          "Source URL: https://www.space.com/41-neptune-the-other-blue-planet-in-our-solar-system.html"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 10",
+        "sentences": [
+          "Rewrite: How is Uranus and Neptune similar to each other?",
+          "Answer: Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets.",
+          "Source URL: https://www.quora.com/What-are-the-differences-and-similarities-between-Uranus-and-Neptune"
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "QReCC turn 1: Describe Uranus.",
+        "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System."
+      ],
+      [
+        "QReCC turn 2: What makes Uranus so unusual?",
+        "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star."
+      ],
+      [
+        "QReCC turn 3: Tell me about Uranus's orbit.",
+        "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781."
+      ],
+      [
+        "QReCC turn 4: Why is Uranus tilted?",
+        "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago."
+      ],
+      [
+        "QReCC turn 5: How is its rotation of Uranus different from other planets?",
+        "Like Venus, Uranus rotates in the opposite direction as most other planets."
+      ],
+      [
+        "QReCC turn 6: What is peculiar about Uranus's seasons?",
+        "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years."
+      ],
+      [
+        "QReCC turn 7: Are there any other planets similar to Uranus?",
+        "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets."
+      ],
+      [
+        "QReCC turn 8: Describe the characteristics of Neptune.",
+        "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases."
+      ],
+      [
+        "QReCC turn 9: Why is Neptune important to our solar system?",
+        "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies."
+      ],
+      [
+        "QReCC turn 10: How is Uranus and Neptune similar to each other?",
+        "Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "trec",
+        "question": "Describe Uranus.",
+        "rewrite": "Describe Uranus.",
+        "expected_answer": "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+        "expected_reuse": [],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [],
+        "supporting_passage": "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+        "answer_url": "https://en.wikipedia.org/wiki/Uranus"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "trec",
+        "question": "What makes it so unusual?",
+        "rewrite": "What makes Uranus so unusual?",
+        "expected_answer": "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System."
+        ],
+        "supporting_passage": "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+        "answer_url": "https://www.space.com/45-uranus-seventh-planet-in-earths-solar-system-was-first-discovered-planet.html"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "trec",
+        "question": "Tell me about its orbit.",
+        "rewrite": "Tell me about Uranus's orbit.",
+        "expected_answer": "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star."
+        ],
+        "supporting_passage": "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+        "answer_url": "https://en.wikipedia.org/wiki/Uranus"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "trec",
+        "question": "Why is it tilted?",
+        "rewrite": "Why is Uranus tilted?",
+        "expected_answer": "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781."
+        ],
+        "supporting_passage": "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+        "answer_url": "https://solarsystem.nasa.gov/planets/uranus/in-depth/"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "trec",
+        "question": "How is its rotation different from other planets?",
+        "rewrite": "How is its rotation of Uranus different from other planets?",
+        "expected_answer": "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago."
+        ],
+        "supporting_passage": "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "answer_url": "https://spaceplace.nasa.gov/all-about-uranus/"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "trec",
+        "question": "What is peculiar about its seasons?",
+        "rewrite": "What is peculiar about Uranus's seasons?",
+        "expected_answer": "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets."
+        ],
+        "supporting_passage": "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+        "answer_url": "https://earthsky.org/space/what-are-the-seasons-like-on-uranus"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "trec",
+        "question": "Are there any other planets similar to it?",
+        "rewrite": "Are there any other planets similar to Uranus?",
+        "expected_answer": "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years."
+        ],
+        "supporting_passage": "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "answer_url": "https://solarsystem.nasa.gov/planets/uranus/overview/"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "trec",
+        "question": "Describe the characteristics of Neptune.",
+        "rewrite": "Describe the characteristics of Neptune.",
+        "expected_answer": "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Are there any other planets similar to Uranus?",
+          "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets."
+        ],
+        "supporting_passage": "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+        "answer_url": "https://space-facts.com/neptune/"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "trec",
+        "question": "Why is it important to our solar system?",
+        "rewrite": "Why is Neptune important to our solar system?",
+        "expected_answer": "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies.",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Are there any other planets similar to Uranus?",
+          "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Describe the characteristics of Neptune.",
+          "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases."
+        ],
+        "supporting_passage": "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies.",
+        "answer_url": "https://www.space.com/41-neptune-the-other-blue-planet-in-our-solar-system.html"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "trec",
+        "question": "How are these two planets similar to each other?",
+        "rewrite": "How is Uranus and Neptune similar to each other?",
+        "expected_answer": "Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets.",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Are there any other planets similar to Uranus?",
+          "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Describe the characteristics of Neptune.",
+          "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+          "Why is Neptune important to our solar system?",
+          "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies."
+        ],
+        "supporting_passage": "Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets.",
+        "answer_url": "https://www.quora.com/What-are-the-differences-and-similarities-between-Uranus-and-Neptune"
+      }
+    ]
+  }
+]
