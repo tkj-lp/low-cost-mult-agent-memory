@@ -42,6 +42,41 @@ DATASETS = {
         "dataset_type": "continuous",
         "file": "examples/competition_agents/data/topiocqa_2_10turns.json",
     },
+    "topiocqa-official-1": {
+        "task_count": 10,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/official_topiocqa_001_10turns.json",
+    },
+    "topiocqa-official-2": {
+        "task_count": 10,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/official_topiocqa_002_10turns.json",
+    },
+    "topiocqa-official-3": {
+        "task_count": 10,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/official_topiocqa_003_10turns.json",
+    },
+    "qrecc-official-1": {
+        "task_count": 10,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/official_qrecc_001_10turns.json",
+    },
+    "qrecc-official-2": {
+        "task_count": 10,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/official_qrecc_002_10turns.json",
+    },
+    "qrecc-official-3": {
+        "task_count": 10,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/official_qrecc_003_10turns.json",
+    },
+    "official-topiocqa-qrecc-6chains": {
+        "task_count": 60,
+        "dataset_type": "continuous",
+        "file": "examples/competition_agents/data/official_topiocqa_qrecc_6chains_10turns.json",
+    },
     "codeact-1": {
         "task_count": 10,
         "dataset_type": "codeact",

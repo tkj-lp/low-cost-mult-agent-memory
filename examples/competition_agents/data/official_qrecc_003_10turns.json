@@ -1,0 +1,412 @@
+[
+  {
+    "group_id": "qrecc-official-003",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 18,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方测试集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "Describe Uranus.",
+    "context": [
+      {
+        "title": "QReCC conversation 18 turn 1",
+        "sentences": [
+          "Rewrite: Describe Uranus.",
+          "Answer: Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "Source URL: https://en.wikipedia.org/wiki/Uranus"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 2",
+        "sentences": [
+          "Rewrite: What makes Uranus so unusual?",
+          "Answer: Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Source URL: https://www.space.com/45-uranus-seventh-planet-in-earths-solar-system-was-first-discovered-planet.html"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 3",
+        "sentences": [
+          "Rewrite: Tell me about Uranus's orbit.",
+          "Answer: Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Source URL: https://en.wikipedia.org/wiki/Uranus"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 4",
+        "sentences": [
+          "Rewrite: Why is Uranus tilted?",
+          "Answer: Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "Source URL: https://solarsystem.nasa.gov/planets/uranus/in-depth/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 5",
+        "sentences": [
+          "Rewrite: How is its rotation of Uranus different from other planets?",
+          "Answer: Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Source URL: https://spaceplace.nasa.gov/all-about-uranus/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 6",
+        "sentences": [
+          "Rewrite: What is peculiar about Uranus's seasons?",
+          "Answer: For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Source URL: https://earthsky.org/space/what-are-the-seasons-like-on-uranus"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 7",
+        "sentences": [
+          "Rewrite: Are there any other planets similar to Uranus?",
+          "Answer: The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Source URL: https://solarsystem.nasa.gov/planets/uranus/overview/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 8",
+        "sentences": [
+          "Rewrite: Describe the characteristics of Neptune.",
+          "Answer: Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+          "Source URL: https://space-facts.com/neptune/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 9",
+        "sentences": [
+          "Rewrite: Why is Neptune important to our solar system?",
+          "Answer: While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies.",
+          "Source URL: https://www.space.com/41-neptune-the-other-blue-planet-in-our-solar-system.html"
+        ]
+      },
+      {
+        "title": "QReCC conversation 18 turn 10",
+        "sentences": [
+          "Rewrite: How is Uranus and Neptune similar to each other?",
+          "Answer: Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets.",
+          "Source URL: https://www.quora.com/What-are-the-differences-and-similarities-between-Uranus-and-Neptune"
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "QReCC turn 1: Describe Uranus.",
+        "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System."
+      ],
+      [
+        "QReCC turn 2: What makes Uranus so unusual?",
+        "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star."
+      ],
+      [
+        "QReCC turn 3: Tell me about Uranus's orbit.",
+        "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781."
+      ],
+      [
+        "QReCC turn 4: Why is Uranus tilted?",
+        "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago."
+      ],
+      [
+        "QReCC turn 5: How is its rotation of Uranus different from other planets?",
+        "Like Venus, Uranus rotates in the opposite direction as most other planets."
+      ],
+      [
+        "QReCC turn 6: What is peculiar about Uranus's seasons?",
+        "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years."
+      ],
+      [
+        "QReCC turn 7: Are there any other planets similar to Uranus?",
+        "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets."
+      ],
+      [
+        "QReCC turn 8: Describe the characteristics of Neptune.",
+        "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases."
+      ],
+      [
+        "QReCC turn 9: Why is Neptune important to our solar system?",
+        "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies."
+      ],
+      [
+        "QReCC turn 10: How is Uranus and Neptune similar to each other?",
+        "Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "trec",
+        "question": "Describe Uranus.",
+        "rewrite": "Describe Uranus.",
+        "expected_answer": "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+        "expected_reuse": [],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [],
+        "supporting_passage": "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+        "answer_url": "https://en.wikipedia.org/wiki/Uranus"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "trec",
+        "question": "What makes it so unusual?",
+        "rewrite": "What makes Uranus so unusual?",
+        "expected_answer": "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System."
+        ],
+        "supporting_passage": "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+        "answer_url": "https://www.space.com/45-uranus-seventh-planet-in-earths-solar-system-was-first-discovered-planet.html"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "trec",
+        "question": "Tell me about its orbit.",
+        "rewrite": "Tell me about Uranus's orbit.",
+        "expected_answer": "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star."
+        ],
+        "supporting_passage": "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+        "answer_url": "https://en.wikipedia.org/wiki/Uranus"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "trec",
+        "question": "Why is it tilted?",
+        "rewrite": "Why is Uranus tilted?",
+        "expected_answer": "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781."
+        ],
+        "supporting_passage": "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+        "answer_url": "https://solarsystem.nasa.gov/planets/uranus/in-depth/"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "trec",
+        "question": "How is its rotation different from other planets?",
+        "rewrite": "How is its rotation of Uranus different from other planets?",
+        "expected_answer": "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago."
+        ],
+        "supporting_passage": "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "answer_url": "https://spaceplace.nasa.gov/all-about-uranus/"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "trec",
+        "question": "What is peculiar about its seasons?",
+        "rewrite": "What is peculiar about Uranus's seasons?",
+        "expected_answer": "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets."
+        ],
+        "supporting_passage": "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+        "answer_url": "https://earthsky.org/space/what-are-the-seasons-like-on-uranus"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "trec",
+        "question": "Are there any other planets similar to it?",
+        "rewrite": "Are there any other planets similar to Uranus?",
+        "expected_answer": "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years."
+        ],
+        "supporting_passage": "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+        "answer_url": "https://solarsystem.nasa.gov/planets/uranus/overview/"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "trec",
+        "question": "Describe the characteristics of Neptune.",
+        "rewrite": "Describe the characteristics of Neptune.",
+        "expected_answer": "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Are there any other planets similar to Uranus?",
+          "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets."
+        ],
+        "supporting_passage": "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+        "answer_url": "https://space-facts.com/neptune/"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "trec",
+        "question": "Why is it important to our solar system?",
+        "rewrite": "Why is Neptune important to our solar system?",
+        "expected_answer": "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies.",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Are there any other planets similar to Uranus?",
+          "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Describe the characteristics of Neptune.",
+          "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases."
+        ],
+        "supporting_passage": "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies.",
+        "answer_url": "https://www.space.com/41-neptune-the-other-blue-planet-in-our-solar-system.html"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "trec",
+        "question": "How are these two planets similar to each other?",
+        "rewrite": "How is Uranus and Neptune similar to each other?",
+        "expected_answer": "Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets.",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Describe Uranus.",
+        "topic_section": "trec",
+        "conversation_context": [
+          "Describe Uranus.",
+          "Uranus (from the Latin name Ūranus for the Greek god Οὐρανός) is the seventh planet from the Sun. It has the third-largest planetary radius and fourth-largest planetary mass in the Solar System.",
+          "What makes Uranus so unusual?",
+          "Unlike the other planets of the solar system, Uranus is tilted so far that it essentially orbits the sun on its side, with the axis of its spin nearly pointing at the star.",
+          "Tell me about Uranus's orbit.",
+          "Uranus orbits the Sun once every 84 years, taking an average of seven years to pass through each constellation of the zodiac. In 2033, the planet will have made its third complete orbit around the Sun since being discovered in 1781.",
+          "Why is Uranus tilted?",
+          "Uranus is the only planet whose equator is nearly at a right angle to its orbit, with a tilt of 97.77 degrees—possibly the result of a collision with an Earth-sized object long ago.",
+          "How is its rotation of Uranus different from other planets?",
+          "Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "What is peculiar about Uranus's seasons?",
+          "For two 21-year seasons on Uranus – the winter-summer seasons – the poles of Uranus are pointed (more or less) either toward the sun, or away from it. During Uranus' winter-summer season, the winter side of the planet never sees the sun. It doesn't see the sun for 21 long years.",
+          "Are there any other planets similar to Uranus?",
+          "The seventh planet from the sun with the third largest diameter in our solar system, ... Like Venus, Uranus rotates in the opposite direction as most other planets.",
+          "Describe the characteristics of Neptune.",
+          "Despite being smaller than Uranus, Neptune has a greater mass. Below its heavy atmosphere, Uranus is made of layers of hydrogen, helium, and methane gases.",
+          "Why is Neptune important to our solar system?",
+          "While Neptune is of interest because it is in our own solar system, astronomers are also interested in learning more about the planet to assist with exoplanet studies."
+        ],
+        "supporting_passage": "Consistanly , Neptune and Uranus both are a shade of blue- green colored planets. They both have gas in there cloudy atmosphere which creates the color of the planets.",
+        "answer_url": "https://www.quora.com/What-are-the-differences-and-similarities-between-Uranus-and-Neptune"
+      }
+    ]
+  }
+]

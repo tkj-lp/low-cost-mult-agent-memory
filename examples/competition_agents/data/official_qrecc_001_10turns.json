@@ -1,0 +1,412 @@
+[
+  {
+    "group_id": "qrecc-official-001",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 2,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方测试集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "What are the main breeds of goat?",
+    "context": [
+      {
+        "title": "QReCC conversation 2 turn 1",
+        "sentences": [
+          "Rewrite: What are the main breeds of goat?",
+          "Answer: Abaza...Zhongwei",
+          "Source URL: https://en.wikipedia.org/wiki/List_of_goat_breeds"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 2",
+        "sentences": [
+          "Rewrite: Tell me about boer goats",
+          "Answer: The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "Source URL: https://en.wikipedia.org/wiki/Boer_goat"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 3",
+        "sentences": [
+          "Rewrite: What breed of goats is good for meat",
+          "Answer: Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Source URL: https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 4",
+        "sentences": [
+          "Rewrite: Are angora goats good for meat?",
+          "Answer: Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Source URL: https://www.motherearthnews.com/homesteading-and-livestock/goats-for-milk-meat-and-more"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 5",
+        "sentences": [
+          "Rewrite: Are boer goats good for meat?",
+          "Answer: Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "Source URL: https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 6",
+        "sentences": [
+          "Rewrite: What are pygmy goats used for?",
+          "Answer: While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "Source URL: https://www.wideopenpets.com/everything-you-need-to-know-about-the-pygmy-goat/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 7",
+        "sentences": [
+          "Rewrite: What is the best goat for fiber production?",
+          "Answer: Mohair goats are the most productive fiber producing animals.",
+          "Source URL: https://info.mannapro.com/homestead/raising-fiber-goats-101"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 8",
+        "sentences": [
+          "Rewrite: How long do Angora goats live?",
+          "Answer: In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+          "Source URL: https://angoragoat.com/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 9",
+        "sentences": [
+          "Rewrite: Can you milk Angora goats?",
+          "Answer: Angora mothers have been known to not produce enough milk if they give birth to more than 1.",
+          "Source URL: https://homestead.motherearthnews.com/making-money-angora-goats-part-1/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 2 turn 10",
+        "sentences": [
+          "Rewrite: How many goats can you have per acre?",
+          "Answer: Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre.",
+          "Source URL: http://livestocktrail.illinois.edu/sheepnet/paperDisplay.cfm?ContentID=9808"
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "QReCC turn 1: What are the main breeds of goat?",
+        "Abaza...Zhongwei"
+      ],
+      [
+        "QReCC turn 2: Tell me about boer goats",
+        "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer."
+      ],
+      [
+        "QReCC turn 3: What breed of goats is good for meat",
+        "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico."
+      ],
+      [
+        "QReCC turn 4: Are angora goats good for meat?",
+        "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa."
+      ],
+      [
+        "QReCC turn 5: Are boer goats good for meat?",
+        "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility."
+      ],
+      [
+        "QReCC turn 6: What are pygmy goats used for?",
+        "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk."
+      ],
+      [
+        "QReCC turn 7: What is the best goat for fiber production?",
+        "Mohair goats are the most productive fiber producing animals."
+      ],
+      [
+        "QReCC turn 8: How long do Angora goats live?",
+        "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground."
+      ],
+      [
+        "QReCC turn 9: Can you milk Angora goats?",
+        "Angora mothers have been known to not produce enough milk if they give birth to more than 1."
+      ],
+      [
+        "QReCC turn 10: How many goats can you have per acre?",
+        "Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "trec",
+        "question": "What are the main breeds of goat?",
+        "rewrite": "What are the main breeds of goat?",
+        "expected_answer": "Abaza...Zhongwei",
+        "expected_reuse": [],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [],
+        "supporting_passage": "Abaza...Zhongwei",
+        "answer_url": "https://en.wikipedia.org/wiki/List_of_goat_breeds"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "trec",
+        "question": "Tell me about boer goats.",
+        "rewrite": "Tell me about boer goats",
+        "expected_answer": "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei"
+        ],
+        "supporting_passage": "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+        "answer_url": "https://en.wikipedia.org/wiki/Boer_goat"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "trec",
+        "question": "What breed is good for meat?",
+        "rewrite": "What breed of goats is good for meat",
+        "expected_answer": "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer."
+        ],
+        "supporting_passage": "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+        "answer_url": "https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "trec",
+        "question": "Are angora goats good for it?",
+        "rewrite": "Are angora goats good for meat?",
+        "expected_answer": "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico."
+        ],
+        "supporting_passage": "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+        "answer_url": "https://www.motherearthnews.com/homesteading-and-livestock/goats-for-milk-meat-and-more"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "trec",
+        "question": "What about boer goats?",
+        "rewrite": "Are boer goats good for meat?",
+        "expected_answer": "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa."
+        ],
+        "supporting_passage": "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+        "answer_url": "https://www.thespruce.com/choose-meat-goat-breeds-3016784"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "trec",
+        "question": "What are pygmies used for?",
+        "rewrite": "What are pygmy goats used for?",
+        "expected_answer": "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility."
+        ],
+        "supporting_passage": "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+        "answer_url": "https://www.wideopenpets.com/everything-you-need-to-know-about-the-pygmy-goat/"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "trec",
+        "question": "What is the best for fiber production?",
+        "rewrite": "What is the best goat for fiber production?",
+        "expected_answer": "Mohair goats are the most productive fiber producing animals.",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk."
+        ],
+        "supporting_passage": "Mohair goats are the most productive fiber producing animals.",
+        "answer_url": "https://info.mannapro.com/homestead/raising-fiber-goats-101"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "trec",
+        "question": "How long do Angora goats live?",
+        "rewrite": "How long do Angora goats live?",
+        "expected_answer": "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "What is the best goat for fiber production?",
+          "Mohair goats are the most productive fiber producing animals."
+        ],
+        "supporting_passage": "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+        "answer_url": "https://angoragoat.com/"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "trec",
+        "question": "Can you milk them?",
+        "rewrite": "Can you milk Angora goats?",
+        "expected_answer": "Angora mothers have been known to not produce enough milk if they give birth to more than 1.",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "What is the best goat for fiber production?",
+          "Mohair goats are the most productive fiber producing animals.",
+          "How long do Angora goats live?",
+          "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground."
+        ],
+        "supporting_passage": "Angora mothers have been known to not produce enough milk if they give birth to more than 1.",
+        "answer_url": "https://homestead.motherearthnews.com/making-money-angora-goats-part-1/"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "trec",
+        "question": "How many can you have per acre?",
+        "rewrite": "How many goats can you have per acre?",
+        "expected_answer": "Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre.",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the main breeds of goat?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the main breeds of goat?",
+          "Abaza...Zhongwei",
+          "Tell me about boer goats",
+          "The Boer goat is a breed of goat that was developed in South Africa in the early 1900s for meat production. Their name is derived from the Afrikaans (Dutch) word boer, meaning farmer.",
+          "What breed of goats is good for meat",
+          "Before Boer goats became available in the United States in the late 1980s, Spanish goats were the standard meat goat breed, especially in the South. These goats are descendants of the goats brought by Spanish explorers, making their way to the United States via Mexico.",
+          "Are angora goats good for meat?",
+          "Surplus or cull Angora and cashmere goats are also used for meat, although a good fiber-producing goat is generally a poor meat goat and vice versa.",
+          "Are boer goats good for meat?",
+          "Boer goats were bred in South Africa for meat and selected for their superior body shape, high growth rate, and fertility.",
+          "What are pygmy goats used for?",
+          "While Pygmy goats are most commonly kept as pets or used as meat goats, they can also be used for milk production. Pygmy goats can produce, on average, between one to two quarts of 4.5% to 11% butterfat milk.",
+          "What is the best goat for fiber production?",
+          "Mohair goats are the most productive fiber producing animals.",
+          "How long do Angora goats live?",
+          "In our flock, it is not uncommon for our girls to go 9-11 years- undoubtedly we could push them longer, but they do not stay unless they can put kids on the ground.",
+          "Can you milk Angora goats?",
+          "Angora mothers have been known to not produce enough milk if they give birth to more than 1."
+        ],
+        "supporting_passage": "Poor ground may support 2-4 goats per acre while better pasture may be able to support 6-8 goats per acre.",
+        "answer_url": "http://livestocktrail.illinois.edu/sheepnet/paperDisplay.cfm?ContentID=9808"
+      }
+    ]
+  }
+]

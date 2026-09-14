@@ -1,0 +1,384 @@
+[
+  {
+    "group_id": "topiocqa-official-002",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 90,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "First Silesian War -> House of Hohenzollern -> Swabia -> Swabian German",
+    "context": [
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+        ]
+      },
+      {
+        "title": "First Silesian War [SEP] Context and causes",
+        "sentences": [
+          "In the early 18th century, Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. Besides its value as a source of tax revenue, industrial output (particularly minerals) and military recruits, Silesia held great geostrategic importance to the belligerents. The valley of the Upper Oder formed a natural military conduit between Brandenburg, the Kingdom of Bohemia and the Margraviate of Moravia, and whichever power held the territory could threaten its neighbours. Silesia also lay along the north-eastern frontier of the Holy Roman Empire, allowing its controller to limit the influence of the Polish–Lithuanian Commonwealth and of the Russian Empire within Germany."
+        ]
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947."
+        ]
+      },
+      {
+        "title": "Swabia [SEP] Introduction",
+        "sentences": [
+          "Swabia is a cultural, historic and linguistic region in southwestern Germany. The name is ultimately derived from the medieval Duchy of Swabia, one of the German stem duchies, representing the territory of Alemannia, whose inhabitants interchangeably were called \"Alemanni\" or \"Suebi\". This territory would include all of the Alemannic German area, but the modern concept of Swabia is more restricted, due to the collapse of the duchy of Swabia in the thirteenth century. Swabia as understood in modern ethnography roughly coincides with the Swabian Circle of the Holy Roman Empire as it stood during the Early Modern period, now divided between the states of Bavaria and Baden-Württemberg."
+        ]
+      },
+      {
+        "title": "Swabia [SEP] Language",
+        "sentences": [
+          "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg."
+        ]
+      },
+      {
+        "title": "Swabian German [SEP] Classification and variation",
+        "sentences": [
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg. The Swabian dialect is composed of numerous sub-dialects, each of which has its own variations. These sub-dialects can be categorized by the difference in the formation of the past participle of 'sein' (to be) into \"gwäa\" and \"gsei.\" The Gsei group is nearer to other Alemannic dialects, such as Swiss German. It can be divided into South-East Swabian, West Swabian and Central Swabian."
+        ]
+      },
+      {
+        "title": "Swabian German [SEP] Characteristics",
+        "sentences": [
+          "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North."
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "First Silesian War [SEP] Introduction",
+        "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+      ],
+      [
+        "First Silesian War [SEP] Introduction",
+        "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+      ],
+      [
+        "First Silesian War [SEP] Introduction",
+        "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war."
+      ],
+      [
+        "First Silesian War [SEP] Context and causes",
+        "In the early 18th century, Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. Besides its value as a source of tax revenue, industrial output (particularly minerals) and military recruits, Silesia held great geostrategic importance to the belligerents. The valley of the Upper Oder formed a natural military conduit between Brandenburg, the Kingdom of Bohemia and the Margraviate of Moravia, and whichever power held the territory could threaten its neighbours. Silesia also lay along the north-eastern frontier of the Holy Roman Empire, allowing its controller to limit the influence of the Polish–Lithuanian Commonwealth and of the Russian Empire within Germany."
+      ],
+      [
+        "House of Hohenzollern [SEP] Introduction",
+        "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947."
+      ],
+      [
+        "House of Hohenzollern [SEP] Introduction",
+        "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947."
+      ],
+      [
+        "Swabia [SEP] Introduction",
+        "Swabia is a cultural, historic and linguistic region in southwestern Germany. The name is ultimately derived from the medieval Duchy of Swabia, one of the German stem duchies, representing the territory of Alemannia, whose inhabitants interchangeably were called \"Alemanni\" or \"Suebi\". This territory would include all of the Alemannic German area, but the modern concept of Swabia is more restricted, due to the collapse of the duchy of Swabia in the thirteenth century. Swabia as understood in modern ethnography roughly coincides with the Swabian Circle of the Holy Roman Empire as it stood during the Early Modern period, now divided between the states of Bavaria and Baden-Württemberg."
+      ],
+      [
+        "Swabia [SEP] Language",
+        "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg."
+      ],
+      [
+        "Swabian German [SEP] Classification and variation",
+        "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg. The Swabian dialect is composed of numerous sub-dialects, each of which has its own variations. These sub-dialects can be categorized by the difference in the formation of the past participle of 'sein' (to be) into \"gwäa\" and \"gsei.\" The Gsei group is nearer to other Alemannic dialects, such as Swiss German. It can be divided into South-East Swabian, West Swabian and Central Swabian."
+      ],
+      [
+        "Swabian German [SEP] Characteristics",
+        "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North."
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "Introduction",
+        "question": "when did the first silesian war take place?",
+        "expected_answer": "1740",
+        "expected_reuse": [],
+        "topic": "First Silesian War",
+        "topic_section": "Introduction",
+        "conversation_context": [],
+        "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
+        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria.",
+        "gold_passage_id": "wiki:10854643",
+        "gold_passage_title": "First Silesian War [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "Introduction",
+        "question": "where?",
+        "expected_answer": "Silesia, Moravia and Bohemia",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "First Silesian War",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740"
+        ],
+        "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
+        "rationale": "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia.",
+        "gold_passage_id": "wiki:10854643",
+        "gold_passage_title": "First Silesian War [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "Introduction",
+        "question": "between whom?",
+        "expected_answer": "Prussia and Austria",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "First Silesian War",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia"
+        ],
+        "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
+        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria.",
+        "gold_passage_id": "wiki:10854643",
+        "gold_passage_title": "First Silesian War [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "Context and causes",
+        "question": "what was its prime cause?",
+        "expected_answer": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "First Silesian War",
+        "topic_section": "Context and causes",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria"
+        ],
+        "supporting_passage": "In the early 18th century, Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. Besides its value as a source of tax revenue, industrial output (particularly minerals) and military recruits, Silesia held great geostrategic importance to the belligerents. The valley of the Upper Oder formed a natural military conduit between Brandenburg, the Kingdom of Bohemia and the Margraviate of Moravia, and whichever power held the territory could threaten its neighbours. Silesia also lay along the north-eastern frontier of the Holy Roman Empire, allowing its controller to limit the influence of the Polish–Lithuanian Commonwealth and of the Russian Empire within Germany.",
+        "rationale": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg.",
+        "gold_passage_id": "wiki:10854646",
+        "gold_passage_title": "First Silesian War [SEP] Context and causes"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "Introduction",
+        "question": "when was this ruling house established?",
+        "expected_answer": "The family arose during the 11th century",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "House of Hohenzollern",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia"
+        ],
+        "supporting_passage": "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947.",
+        "rationale": "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061.",
+        "gold_passage_id": "wiki:7718013",
+        "gold_passage_title": "House of Hohenzollern [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "Introduction",
+        "question": "where did they live?",
+        "expected_answer": "The family arose in the area around the town of Hechingen in Swabia",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "House of Hohenzollern",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century"
+        ],
+        "supporting_passage": "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947.",
+        "rationale": "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle.",
+        "gold_passage_id": "wiki:7718013",
+        "gold_passage_title": "House of Hohenzollern [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "Introduction",
+        "question": "what is the geographical location of this last place?",
+        "expected_answer": "Southwestern Germany",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabia",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia"
+        ],
+        "supporting_passage": "Swabia is a cultural, historic and linguistic region in southwestern Germany. The name is ultimately derived from the medieval Duchy of Swabia, one of the German stem duchies, representing the territory of Alemannia, whose inhabitants interchangeably were called \"Alemanni\" or \"Suebi\". This territory would include all of the Alemannic German area, but the modern concept of Swabia is more restricted, due to the collapse of the duchy of Swabia in the thirteenth century. Swabia as understood in modern ethnography roughly coincides with the Swabian Circle of the Holy Roman Empire as it stood during the Early Modern period, now divided between the states of Bavaria and Baden-Württemberg.",
+        "rationale": "Swabia is a cultural, historic and linguistic region in southwestern Germany.",
+        "gold_passage_id": "wiki:13058420",
+        "gold_passage_title": "Swabia [SEP] Introduction"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "Language",
+        "question": "which language did they speak?",
+        "expected_answer": "Swabian, Swabian German",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabia",
+        "topic_section": "Language",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia",
+          "what is the geographical location of this last place?",
+          "Southwestern Germany"
+        ],
+        "supporting_passage": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
+        "rationale": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
+        "gold_passage_id": "wiki:13058434",
+        "gold_passage_title": "Swabia [SEP] Language"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "Classification and variation",
+        "question": "how is this latter one classified?",
+        "expected_answer": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabian German",
+        "topic_section": "Classification and variation",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia",
+          "what is the geographical location of this last place?",
+          "Southwestern Germany",
+          "which language did they speak?",
+          "Swabian, Swabian German"
+        ],
+        "supporting_passage": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg. The Swabian dialect is composed of numerous sub-dialects, each of which has its own variations. These sub-dialects can be categorized by the difference in the formation of the past participle of 'sein' (to be) into \"gwäa\" and \"gsei.\" The Gsei group is nearer to other Alemannic dialects, such as Swiss German. It can be divided into South-East Swabian, West Swabian and Central Swabian.",
+        "rationale": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian).",
+        "gold_passage_id": "wiki:12098276",
+        "gold_passage_title": "Swabian German [SEP] Classification and variation"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "Characteristics",
+        "question": "can you mention one of its characteristic?",
+        "expected_answer": "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "Swabian German",
+        "topic_section": "Characteristics",
+        "conversation_context": [
+          "when did the first silesian war take place?",
+          "1740",
+          "where?",
+          "Silesia, Moravia and Bohemia",
+          "between whom?",
+          "Prussia and Austria",
+          "what was its prime cause?",
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "when was this ruling house established?",
+          "The family arose during the 11th century",
+          "where did they live?",
+          "The family arose in the area around the town of Hechingen in Swabia",
+          "what is the geographical location of this last place?",
+          "Southwestern Germany",
+          "which language did they speak?",
+          "Swabian, Swabian German",
+          "how is this latter one classified?",
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects"
+        ],
+        "supporting_passage": "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+        "rationale": "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+        "gold_passage_id": "wiki:12098275",
+        "gold_passage_title": "Swabian German [SEP] Characteristics"
+      }
+    ]
+  }
+]

@@ -1,0 +1,412 @@
+[
+  {
+    "group_id": "qrecc-official-002",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 7,
+    "original_turn_count": 11,
+    "selected_turn_count": 10,
+    "selection_note": "官方测试集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
+    "topic": "What are the different types of macromolecules?",
+    "context": [
+      {
+        "title": "QReCC conversation 7 turn 1",
+        "sentences": [
+          "Rewrite: What are the different types of macromolecules?",
+          "Answer: Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Source URL: https://www.ck12.org/biology/organic-compounds/lesson/Organic-Compounds-MS-LS/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 2",
+        "sentences": [
+          "Rewrite: Tell me about the characteristics of carbohydrates.",
+          "Answer: Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "Source URL: https://www.livestrong.com/article/366208-what-are-the-characteristics-of-carbohydrates/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 3",
+        "sentences": [
+          "Rewrite: What are carbohydrates composed of?",
+          "Answer: Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "Source URL: https://www.rsc.org/Education/Teachers/Resources/cfb/carbohydrates.htm"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 4",
+        "sentences": [
+          "Rewrite: What are carbohydrates basic structure?",
+          "Answer: The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "Source URL: https://en.wikibooks.org/wiki/Structural_Biochemistry/Carbohydrates"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 5",
+        "sentences": [
+          "Rewrite: What are the main types of carbohydrates with examples of each?",
+          "Answer: glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Source URL: https://www.thoughtco.com/examples-of-carbohydrates-603884"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 6",
+        "sentences": [
+          "Rewrite: Tell me about lipids.",
+          "Answer: Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "Source URL: https://www.news-medical.net/life-sciences/What-are-Lipids.aspx"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 7",
+        "sentences": [
+          "Rewrite: What are the functions of lipids.",
+          "Answer: The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+          "Source URL: https://en.wikipedia.org/wiki/Lipid"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 8",
+        "sentences": [
+          "Rewrite: What are the types of lipids?",
+          "Answer: Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+          "Source URL: https://courses.lumenlearning.com/suny-wmopen-biology1/chapter/lipids/"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 9",
+        "sentences": [
+          "Rewrite: What is the most common lipid?",
+          "Answer: Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils.",
+          "Source URL: https://www.thoughtco.com/what-are-lipids-608210"
+        ]
+      },
+      {
+        "title": "QReCC conversation 7 turn 10",
+        "sentences": [
+          "Rewrite: What is the difference between lipids and carbohydrates?",
+          "Answer: Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)",
+          "Source URL: http://www.old-ib.bioninja.com.au/standard-level/topic-3-chemicals-of-life/32-carbohydrates-lipids-and.html"
+        ]
+      }
+    ],
+    "supporting_facts": [
+      [
+        "QReCC turn 1: What are the different types of macromolecules?",
+        "Proteins.Carbohydrates.Lipids.Nucleic Acids."
+      ],
+      [
+        "QReCC turn 2: Tell me about the characteristics of carbohydrates.",
+        "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides."
+      ],
+      [
+        "QReCC turn 3: What are carbohydrates composed of?",
+        "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen."
+      ],
+      [
+        "QReCC turn 4: What are carbohydrates basic structure?",
+        "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources."
+      ],
+      [
+        "QReCC turn 5: What are the main types of carbohydrates with examples of each?",
+        "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)"
+      ],
+      [
+        "QReCC turn 6: Tell me about lipids.",
+        "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein."
+      ],
+      [
+        "QReCC turn 7: What are the functions of lipids.",
+        "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes."
+      ],
+      [
+        "QReCC turn 8: What are the types of lipids?",
+        "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides."
+      ],
+      [
+        "QReCC turn 9: What is the most common lipid?",
+        "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils."
+      ],
+      [
+        "QReCC turn 10: What is the difference between lipids and carbohydrates?",
+        "Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)"
+      ]
+    ],
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "trec",
+        "question": "What are the different types of macromolecules?",
+        "rewrite": "What are the different types of macromolecules?",
+        "expected_answer": "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+        "expected_reuse": [],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [],
+        "supporting_passage": "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+        "answer_url": "https://www.ck12.org/biology/organic-compounds/lesson/Organic-Compounds-MS-LS/"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "trec",
+        "question": "Tell me about the characteristics of carbohydrates.",
+        "rewrite": "Tell me about the characteristics of carbohydrates.",
+        "expected_answer": "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+        "expected_reuse": [
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids."
+        ],
+        "supporting_passage": "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+        "answer_url": "https://www.livestrong.com/article/366208-what-are-the-characteristics-of-carbohydrates/"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "trec",
+        "question": "What are they composed of?",
+        "rewrite": "What are carbohydrates composed of?",
+        "expected_answer": "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+        "expected_reuse": [
+          "turn-2.answer",
+          "turn-1.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides."
+        ],
+        "supporting_passage": "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+        "answer_url": "https://www.rsc.org/Education/Teachers/Resources/cfb/carbohydrates.htm"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "trec",
+        "question": "What is their basic structure?",
+        "rewrite": "What are carbohydrates basic structure?",
+        "expected_answer": "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+        "expected_reuse": [
+          "turn-3.answer",
+          "turn-2.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen."
+        ],
+        "supporting_passage": "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+        "answer_url": "https://en.wikibooks.org/wiki/Structural_Biochemistry/Carbohydrates"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "trec",
+        "question": "What are the main types with examples of each?",
+        "rewrite": "What are the main types of carbohydrates with examples of each?",
+        "expected_answer": "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+        "expected_reuse": [
+          "turn-4.answer",
+          "turn-3.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources."
+        ],
+        "supporting_passage": "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+        "answer_url": "https://www.thoughtco.com/examples-of-carbohydrates-603884"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "trec",
+        "question": "Tell me about lipids.",
+        "rewrite": "Tell me about lipids.",
+        "expected_answer": "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+        "expected_reuse": [
+          "turn-5.answer",
+          "turn-4.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)"
+        ],
+        "supporting_passage": "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+        "answer_url": "https://www.news-medical.net/life-sciences/What-are-Lipids.aspx"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "trec",
+        "question": "What is their function?",
+        "rewrite": "What are the functions of lipids.",
+        "expected_answer": "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+        "expected_reuse": [
+          "turn-6.answer",
+          "turn-5.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein."
+        ],
+        "supporting_passage": "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+        "answer_url": "https://en.wikipedia.org/wiki/Lipid"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "trec",
+        "question": "What are the types of lipids?",
+        "rewrite": "What are the types of lipids?",
+        "expected_answer": "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+        "expected_reuse": [
+          "turn-7.answer",
+          "turn-6.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "What are the functions of lipids.",
+          "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes."
+        ],
+        "supporting_passage": "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+        "answer_url": "https://courses.lumenlearning.com/suny-wmopen-biology1/chapter/lipids/"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "trec",
+        "question": "What is the most common?",
+        "rewrite": "What is the most common lipid?",
+        "expected_answer": "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils.",
+        "expected_reuse": [
+          "turn-8.answer",
+          "turn-7.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "What are the functions of lipids.",
+          "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+          "What are the types of lipids?",
+          "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides."
+        ],
+        "supporting_passage": "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils.",
+        "answer_url": "https://www.thoughtco.com/what-are-lipids-608210"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "trec",
+        "question": "What is the difference between them and carbohydrates?",
+        "rewrite": "What is the difference between lipids and carbohydrates?",
+        "expected_answer": "Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)",
+        "expected_reuse": [
+          "turn-9.answer",
+          "turn-8.answer",
+          "group.supporting_facts"
+        ],
+        "topic": "What are the different types of macromolecules?",
+        "topic_section": "trec",
+        "conversation_context": [
+          "What are the different types of macromolecules?",
+          "Proteins.Carbohydrates.Lipids.Nucleic Acids.",
+          "Tell me about the characteristics of carbohydrates.",
+          "Its basic structure is composed of the elements carbon, hydrogen and oxygen, with generally twice the hydrogen as carbon and oxygen. In its simplest form, a carbohydrate is a chain of sugar molecules called monosaccharides.",
+          "What are carbohydrates composed of?",
+          "Carbohydrates (also called saccharides) are molecular compounds made from just three elements: carbon, hydrogen and oxygen.",
+          "What are carbohydrates basic structure?",
+          "The general empirical structure for carbohydrates is (CH2O)n. Monosaccharides, which are simple sugars that serve as fuel molecules as well as fundamental constituents of living organisms, are the simplest carbohydrates, and are required as energy sources.",
+          "What are the main types of carbohydrates with examples of each?",
+          "glucose (monosaccharide)fructose (monosaccharide)galactose (monosaccharide)sucrose (disaccharide)lactose (disaccharide)cellulose (polysaccharide)chitin (polysaccharide)",
+          "Tell me about lipids.",
+          "Lipids are molecules that contain hydrocarbons and make up the building blocks of the structure and function of living cells. Examples of lipids include fats, oils, waxes, certain vitamins (such as A, D, E and K), hormones and most of the cell membrane that is not made up of protein.",
+          "What are the functions of lipids.",
+          "The functions of lipids include storing energy, signaling, and acting as structural components of cell membranes.",
+          "What are the types of lipids?",
+          "Major types include fats and oils, waxes, phospholipids, and steroids. Fats are a stored form of energy and are also known as triacylglycerols or triglycerides.",
+          "What is the most common lipid?",
+          "Although there is no single common structure for lipids, the most commonly occurring class of lipids are triglycerides, which are fats and oils."
+        ],
+        "supporting_passage": "Animals tend to use carbohydrates primarily for short-term energy storage, while lipids are used more for long-term energy storage. Carbohydrates are stored as glycogen in animals while lipids are stored as fats (in plants carbohydrates are stored as cellulose and lipids as oils)",
+        "answer_url": "http://www.old-ib.bioninja.com.au/standard-level/topic-3-chemicals-of-life/32-carbohydrates-lipids-and.html"
+      }
+    ]
+  }
+]
