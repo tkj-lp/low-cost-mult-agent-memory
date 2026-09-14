@@ -10,12 +10,6 @@ from hypergraph_memory_method.memory_model import normalize_memory_record
 
 
 def _query_for_turn(group_id: str, turn: dict[str, Any]) -> str:
-    expected_reuse = [str(value) for value in turn.get("expected_reuse", []) or [] if str(value).strip()]
-    artifacts = []
-    for value in expected_reuse:
-        _, _, artifact = value.partition(".")
-        if artifact and artifact not in artifacts:
-            artifacts.append(artifact)
     lines = [
         str(turn.get("question") or ""),
         "Continuous task reuse hints:",
@@ -23,9 +17,6 @@ def _query_for_turn(group_id: str, turn: dict[str, Any]) -> str:
         f"- Current turn: {turn.get('turn_id')}",
         f"- Task type: {turn.get('task_type') or 'continuous'}",
     ]
-    if expected_reuse:
-        lines.append("- Expected reuse: " + ", ".join(expected_reuse))
-        lines.append("- Required artifacts: " + ", ".join(artifacts))
     return "\n".join(line for line in lines if line)
 
 

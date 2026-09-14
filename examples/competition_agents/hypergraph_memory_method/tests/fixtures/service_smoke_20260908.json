@@ -1,0 +1,21 @@
+{
+  "fixture_type": "synthetic_exact_lookup_only",
+  "answer_accuracy": null,
+  "record_count": 1000,
+  "query_count": 20,
+  "write_and_index_ms": 995.984,
+  "results": {
+    "legacy_keyword": {
+      "correct_lookups": 20,
+      "mean_ms": 136.552,
+      "p95_ms": 170.685
+    },
+    "indexed_keyword": {
+      "correct_lookups": 20,
+      "mean_ms": 0.674,
+      "p95_ms": 0.906
+    }
+  },
+  "indexed_max_records_loaded": 1,
+  "limitation": "This verifies indexed exact lookup and measures its API latency. It does not measure semantic relevance, answer accuracy or end-to-end agent performance."
+}

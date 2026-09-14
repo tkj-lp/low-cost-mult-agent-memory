@@ -64,6 +64,24 @@ from .search import (
     search_hypergraph_memory,
 )
 from .store import SQLiteHypergraphMemoryStore
+from .contracts import (
+    BatchPolicy,
+    EpisodeMemoryInput,
+    ExperienceMemoryInput,
+    ExperienceReview,
+    KnowledgeMemoryInput,
+    MaintenanceReport,
+    MemoryEncoder,
+    MemoryRelationUpdate,
+    RetrievalHit,
+    RetrievalRequest,
+    RetrievalResult,
+    TaskFeedback,
+    TaskMemoryCommit,
+    WriteReceipt,
+)
+from .service import MemoryService
+from .encoders import SentenceTransformerEncoder
 from .text_memory import (
     compare_retrieval_sets,
     retrieval_metrics,
@@ -72,6 +90,22 @@ from .text_memory import (
 )
 
 __all__ = [
+    "MemoryService",
+    "SentenceTransformerEncoder",
+    "MemoryEncoder",
+    "BatchPolicy",
+    "RetrievalRequest",
+    "TaskFeedback",
+    "TaskMemoryCommit",
+    "ExperienceReview",
+    "MemoryRelationUpdate",
+    "KnowledgeMemoryInput",
+    "EpisodeMemoryInput",
+    "ExperienceMemoryInput",
+    "WriteReceipt",
+    "RetrievalHit",
+    "RetrievalResult",
+    "MaintenanceReport",
     "archive_scope",
     "evaluate_retrieval_modes",
     "build_hypergraph_view",

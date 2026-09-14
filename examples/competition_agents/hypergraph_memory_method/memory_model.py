@@ -184,6 +184,13 @@ def build_evidence_chain(record: dict[str, Any]) -> dict[str, Any]:
     task_meta = (
         trace.get("task_meta") if isinstance(trace.get("task_meta"), dict) else {}
     )
+    task_meta = {
+        **{
+            key: record.get(key, "")
+            for key in ("task_id", "group_id", "turn_id", "dataset_type")
+        },
+        **task_meta,
+    }
     memory_id = str(
         record.get("memory_id") or f"mem-{stable_id(str(record), length=12)}"
     )
@@ -570,15 +577,42 @@ def normalize_memory_record(
     )
     artifact_types = _as_list(normalized.get("artifact_types"))
     if not artifact_types:
-        artifact_types = ["experience", "strategy"] if normalized["memory_type"] == "experience" else ["answer", "evidence"]
-        if normalized.get("supporting_facts") or normalized.get("supporting_evidence") or task_meta.get("supporting_facts"):
+        artifact_types = (
+            ["experience", "strategy"]
+            if normalized["memory_type"] == "experience"
+            else ["answer", "evidence"]
+        )
+        if (
+            normalized.get("supporting_facts")
+            or normalized.get("supporting_evidence")
+            or task_meta.get("supporting_facts")
+        ):
             artifact_types.append("supporting-facts")
-    normalized["artifact_types"] = sorted({str(value).strip().lower().replace("_", "-") for value in artifact_types if str(value).strip()})
-    normalized["task_id"] = str(normalized.get("task_id") or task_meta.get("task_id") or "")
-    normalized["group_id"] = str(normalized.get("group_id") or task_meta.get("group_id") or task_meta.get("chain_id") or "")
-    normalized["turn_id"] = str(normalized.get("turn_id") or task_meta.get("turn_id") or "")
-    normalized["dataset_type"] = str(normalized.get("dataset_type") or task_meta.get("dataset_type") or "")
-    normalized["task_type"] = str(normalized.get("task_type") or task_meta.get("task_type") or "")
+    normalized["artifact_types"] = sorted(
+        {
+            str(value).strip().lower().replace("_", "-")
+            for value in artifact_types
+            if str(value).strip()
+        }
+    )
+    normalized["task_id"] = str(
+        normalized.get("task_id") or task_meta.get("task_id") or ""
+    )
+    normalized["group_id"] = str(
+        normalized.get("group_id")
+        or task_meta.get("group_id")
+        or task_meta.get("chain_id")
+        or ""
+    )
+    normalized["turn_id"] = str(
+        normalized.get("turn_id") or task_meta.get("turn_id") or ""
+    )
+    normalized["dataset_type"] = str(
+        normalized.get("dataset_type") or task_meta.get("dataset_type") or ""
+    )
+    normalized["task_type"] = str(
+        normalized.get("task_type") or task_meta.get("task_type") or ""
+    )
     normalized["knowledge_refs"] = [
         str(value)
         for value in _unique(
@@ -631,6 +665,33 @@ def compact_reuse_projection(
 
     normalized = normalize_memory_record(record)
     chain = normalized["evidence_chain"]
+    if max_steps < 1:
+        raise ValueError("max_steps must be positive")
+    by_id = {
+        str(step.get("step_id")): step
+        for step in chain.get("steps", [])
+        if isinstance(step, dict) and step.get("step_id")
+    }
+    # Start at the conclusion; keep omitted dependencies explicit instead of
+    # silently presenting an evidence prefix as a complete support chain.
+    selected: set[str] = set()
+    pending = [str(chain.get("final_claim_id") or "")]
+    while pending and len(selected) < max_steps:
+        step_id = pending.pop(0)
+        if step_id not in by_id or step_id in selected:
+            continue
+        selected.add(step_id)
+        pending.extend(str(value) for value in by_id[step_id].get("depends_on", []))
+    if not selected:
+        selected.update(list(by_id)[:max_steps])
+    missing = sorted(
+        {
+            str(value)
+            for step_id in selected
+            for value in by_id[step_id].get("depends_on", [])
+            if str(value) not in selected
+        }
+    )
     steps = [
         {
             "step_id": step.get("step_id"),
@@ -640,8 +701,8 @@ def compact_reuse_projection(
             "depends_on": step.get("depends_on", []),
             "memory_refs": step.get("memory_refs", []),
         }
-        for step in chain.get("steps", [])[:max_steps]
-        if isinstance(step, dict)
+        for step in chain.get("steps", [])
+        if isinstance(step, dict) and str(step.get("step_id")) in selected
     ]
     return {
         "memory_id": normalized["memory_id"],
@@ -655,6 +716,9 @@ def compact_reuse_projection(
         "evidence_chain_valid": chain.get("valid", False),
         "evidence_chain_completeness": chain.get("completeness", 0.0),
         "evidence_chain_steps": steps,
+        "final_claim_id": chain.get("final_claim_id", ""),
+        "projection_complete": bool(chain.get("valid")) and not missing,
+        "omitted_dependency_ids": missing,
         "source_memory_ids": chain.get("source_memory_ids", []),
         "knowledge_refs": normalized.get("knowledge_refs", []),
         "abstracted_from_memory_ids": normalized.get("source_memory_ids", []),

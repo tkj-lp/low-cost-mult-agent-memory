@@ -12,7 +12,7 @@ from .text import normalize_text
 
 def _normalized_pattern(value: Any) -> str:
     text = normalize_text(str(value or ""))
-    return re.sub(r"[^a-z0-9-]+", "-", text).strip("-")
+    return re.sub(r"[^\w-]+", "-", text, flags=re.UNICODE).strip("-")
 
 
 def experience_identity(record: dict[str, Any]) -> str:
@@ -24,7 +24,9 @@ def experience_identity(record: dict[str, Any]) -> str:
     solution = _normalized_pattern(record.get("solution_pattern"))
     if not problem or not solution:
         return ""
-    primary_families = ",".join(sorted(record_primary_trigger_families(record))) or "unspecified"
+    primary_families = (
+        ",".join(sorted(record_primary_trigger_families(record))) or "unspecified"
+    )
     return f"{problem}|{solution}|{primary_families}"
 
 
@@ -71,7 +73,10 @@ def merge_experience_records(records: list[dict[str, Any]]) -> dict[str, Any]:
     merged_ids = _unique_values(
         value
         for record in records
-        for value in [record.get("memory_id"), *_as_list(record.get("merged_memory_ids"))]
+        for value in [
+            record.get("memory_id"),
+            *_as_list(record.get("merged_memory_ids")),
+        ]
         if value and value != merged.get("memory_id")
     )
 
@@ -99,7 +104,9 @@ def merge_experience_records(records: list[dict[str, Any]]) -> dict[str, Any]:
         if combined:
             merged[field] = combined
 
-    merged["reuse_count"] = sum(int(record.get("reuse_count", 0) or 0) for record in records)
+    merged["reuse_count"] = sum(
+        int(record.get("reuse_count", 0) or 0) for record in records
+    )
     merged["retrieval_count"] = sum(
         int(record.get("retrieval_count", 0) or 0) for record in records
     )
@@ -109,9 +116,13 @@ def merge_experience_records(records: list[dict[str, Any]]) -> dict[str, Any]:
     merged["reuse_failure_count"] = sum(
         int(record.get("reuse_failure_count", 0) or 0) for record in records
     )
-    merged["confidence"] = max(float(record.get("confidence", 0.0) or 0.0) for record in records)
+    merged["confidence"] = max(
+        float(record.get("confidence", 0.0) or 0.0) for record in records
+    )
     merged["merge_count"] = (
-        sum(int(record.get("merge_count", 0) or 0) for record in records) + len(records) - 1
+        sum(int(record.get("merge_count", 0) or 0) for record in records)
+        + len(records)
+        - 1
     )
     merged["merged_memory_ids"] = merged_ids
     merged["deduplication_identity"] = next(iter(identities))
@@ -154,7 +165,9 @@ def deduplicate_memory(memory: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     for identity, records in clusters.items():
         output[cluster_positions[identity]] = (
-            merge_experience_records(records) if len(records) > 1 else deepcopy(records[0])
+            merge_experience_records(records)
+            if len(records) > 1
+            else deepcopy(records[0])
         )
     return output
 
@@ -212,7 +225,9 @@ def retention_profile(
         ),
         None,
     )
-    age_days = max(0.0, (now - timestamp).total_seconds() / 86400.0) if timestamp else None
+    age_days = (
+        max(0.0, (now - timestamp).total_seconds() / 86400.0) if timestamp else None
+    )
     recency_score = 0.5 ** (age_days / half_life_days) if age_days is not None else 1.0
 
     reuse_count = int(record.get("reuse_count", 0) or 0)
@@ -220,7 +235,9 @@ def retention_profile(
     # A beta(1, 1) prior keeps untried memory neutral instead of treating it as failed.
     utility_score = (reuse_success_count + 1.0) / (reuse_count + 2.0)
     confidence_value = record.get("confidence", 0.5)
-    confidence_score = max(0.0, min(1.0, float(0.5 if confidence_value is None else confidence_value)))
+    confidence_score = max(
+        0.0, min(1.0, float(0.5 if confidence_value is None else confidence_value))
+    )
     stage = lifecycle_stage(record)
     lifecycle_score = LIFECYCLE_RETENTION.get(stage, 0.5)
     score = (
@@ -282,7 +299,10 @@ def prune_memory(
             continue
         if memory_type == "experience" and stage == "deprecated":
             continue
-        if aggressive and float(record.get("retention_score", 0.0)) < min_retention_score:
+        if (
+            aggressive
+            and float(record.get("retention_score", 0.0)) < min_retention_score
+        ):
             continue
         retained.append(record)
 
@@ -291,10 +311,17 @@ def prune_memory(
             str(record.get("memory_id"))
             for record in sorted(
                 retained,
-                key=lambda item: (-float(item.get("retention_score", 0.0)), str(item.get("memory_id", ""))),
+                key=lambda item: (
+                    -float(item.get("retention_score", 0.0)),
+                    str(item.get("memory_id", "")),
+                ),
             )[:max_records]
         }
-        retained = [record for record in retained if str(record.get("memory_id")) in selected_ids]
+        retained = [
+            record
+            for record in retained
+            if str(record.get("memory_id")) in selected_ids
+        ]
     return retained
 
 

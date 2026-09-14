@@ -75,7 +75,7 @@ def evaluate_retrieval_modes(
                     }
                     & available_ids
                 ]
-                if available_ids
+                if "available_memory_ids" in case
                 else memory
             )
             started = time.perf_counter()

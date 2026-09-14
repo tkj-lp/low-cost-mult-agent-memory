@@ -22,6 +22,7 @@ class SQLiteHypergraphMemoryStore:
     def __init__(self, path: str | Path = "hypergraph_memory.sqlite3") -> None:
         self.path = str(path)
         self._lock = threading.RLock()
+        self._transaction_depth = 0
         self._connection = sqlite3.connect(self.path, check_same_thread=False)
         self._connection.row_factory = sqlite3.Row
         self._connection.execute("PRAGMA journal_mode=WAL")
@@ -63,14 +64,43 @@ class SQLiteHypergraphMemoryStore:
             )
 
     @contextmanager
-    def transaction(self) -> Iterator[sqlite3.Connection]:
+    def transaction(self, *, write: bool = True) -> Iterator[sqlite3.Connection]:
         with self._lock:
+            depth = self._transaction_depth
+            savepoint = f"memory_tx_{depth}"
+            self._connection.execute(
+                ("BEGIN IMMEDIATE" if write else "BEGIN")
+                if depth == 0
+                else f"SAVEPOINT {savepoint}"
+            )
+            self._transaction_depth += 1
             try:
                 yield self._connection
-                self._connection.commit()
-            except Exception:
-                self._connection.rollback()
+                if depth == 0:
+                    self._connection.commit()
+                else:
+                    self._connection.execute(f"RELEASE SAVEPOINT {savepoint}")
+            except BaseException:
+                if depth == 0:
+                    self._connection.rollback()
+                else:
+                    self._connection.execute(f"ROLLBACK TO SAVEPOINT {savepoint}")
+                    self._connection.execute(f"RELEASE SAVEPOINT {savepoint}")
                 raise
+            finally:
+                self._transaction_depth -= 1
+
+    def read_rows(self, sql: str, parameters: Iterable[Any] = ()) -> list[sqlite3.Row]:
+        """Read under the same lock used by memory-service transactions."""
+
+        with self._lock:
+            return self._connection.execute(sql, tuple(parameters)).fetchall()
+
+    @property
+    def revision(self) -> tuple[int, int]:
+        with self._lock:
+            version = self._connection.execute("PRAGMA data_version").fetchone()[0]
+            return self._connection.total_changes, int(version)
 
     @staticmethod
     def _storage_record(record: dict[str, Any]) -> dict[str, Any]:
@@ -160,7 +190,8 @@ class SQLiteHypergraphMemoryStore:
         return normalized
 
     def upsert_many(self, records: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
-        return [self.upsert(record) for record in records]
+        with self.transaction():
+            return [self.upsert(record) for record in records]
 
     def get(self, memory_id: str) -> dict[str, Any] | None:
         with self._lock:
@@ -293,9 +324,7 @@ class SQLiteHypergraphMemoryStore:
         else:
             records = self.list(memory_layers=memory_layers)
         if memory_layers and candidate_ids:
-            allowed_layers = {
-                normalize_memory_layer(layer) for layer in memory_layers
-            }
+            allowed_layers = {normalize_memory_layer(layer) for layer in memory_layers}
             records = [
                 record
                 for record in records

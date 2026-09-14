@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import unicodedata
 
 
 STOPWORDS = {
@@ -71,3 +72,17 @@ def node_id(kind: str, value: str) -> str:
     """Build a typed node id so equal values in different namespaces stay apart."""
 
     return f"{kind}:{normalize_text(value)}"
+
+
+def indexed_tokens(text: str) -> list[str]:
+    """FTS terms retain numbers and use CJK bigrams without a model call."""
+
+    normalized = unicodedata.normalize("NFKC", str(text)).casefold()
+    tokens: list[str] = []
+    for match in re.finditer(r"[a-z0-9]+|[\u3400-\u9fff]+", normalized):
+        value = match.group()
+        if "\u3400" <= value[0] <= "\u9fff":
+            tokens.extend(value[i : i + 2] for i in range(max(1, len(value) - 1)))
+        elif value not in STOPWORDS:
+            tokens.append(value)
+    return tokens
