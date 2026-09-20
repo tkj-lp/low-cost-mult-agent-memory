@@ -326,6 +326,10 @@ def emit_task_result_events(
                 "state_transfer_count": metrics.get("latent_transfer_count", 0),
                 "state_generation_ms": metrics.get("state_generation_ms", 0),
                 "adjusted_elapsed_ms": max(0.0, elapsed_ms - float(metrics.get("state_generation_ms", 0) or 0)),
+                "elapsed_excluding_state_generation_ms": max(
+                    0.0,
+                    elapsed_ms - float(metrics.get("state_generation_ms", 0) or 0),
+                ),
                 "memory_hit_count": len(memory_hits),
                 "exact_match": exact_match,
                 "final_answer": result.get("final_answer", ""),

@@ -9,6 +9,7 @@
         @stop="stopExperiment"
         @import-result="importResult"
         @show-records="showRecords"
+        @clear-experience="clearExperienceMemory"
       />
     </section>
     <ExperimentMatrix
@@ -58,10 +59,35 @@ const runtime = reactive({
   messageCount: 0,
   textChars: 0,
   stateTransfers: 0,
-  memoryHits: 0
+  memoryHits: 0,
+  clearingMemory: false,
+  memoryClearMessage: ''
 })
 
 const matrixRows = computed(() => buildMatrixRows(config))
+
+async function clearExperienceMemory() {
+  if (runtime.clearingMemory) return
+  const selectedConfig = { ...config }
+  const model = selectedConfig.backend === 'local' ? selectedConfig.localModel : selectedConfig.remoteModel
+  if (!window.confirm(`清空当前模型 ${model} / ${selectedCollaboration(selectedConfig).label} 的经验记忆？范围包含当前记忆组织和检索方式。`)) return
+  runtime.clearingMemory = true
+  runtime.memoryClearMessage = ''
+  try {
+    const response = await fetch(`${RUNNER_API}/clear-experience`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: true, config: selectedConfig })
+    })
+    const payload = await response.json()
+    if (!response.ok) throw new Error(payload.error || '清空经验缓存失败')
+    runtime.memoryClearMessage = `已清空 ${model} / ${selectedCollaboration(selectedConfig).label} 的 ${payload.deletedCount} 条经验记忆`
+  } catch (error) {
+    runtime.memoryClearMessage = error instanceof Error ? error.message : String(error)
+  } finally {
+    runtime.clearingMemory = false
+  }
+}
 
 function applyConfig(nextConfig) {
   const normalized = normalizeExperimentConfig(nextConfig)
@@ -121,11 +147,21 @@ async function startExperiment(overrideConfig) {
     applyRunnerStatus(payload)
     startStatusPolling()
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (message.includes('已有实验正在运行')) {
+      // The runner can still be flushing an earlier run after emitting its
+      // final event. Restore that real status instead of leaving a false 0/10.
+      await refreshRunnerStatus()
+      if (runtime.status === 'running' || runtime.status === 'starting') {
+        startStatusPolling()
+        return
+      }
+    }
     runtime.status = 'error'
     runtime.statusText = '启动失败'
     runtime.currentAgent = '未运行'
     runtime.runningRowId = ''
-    runtime.lastError = error instanceof Error ? error.message : String(error)
+    runtime.lastError = message
   }
 }
 

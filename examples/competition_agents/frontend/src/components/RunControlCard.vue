@@ -46,6 +46,12 @@
         />
       </div>
 
+      <BaseButton variant="outline" :disabled="isBusy || runtime.clearingMemory" @click="$emit('clear-experience')">
+        <template #icon>&#x232B;</template>
+        {{ runtime.clearingMemory ? '清空中...' : '清空经验缓存' }}
+      </BaseButton>
+      <p v-if="runtime.memoryClearMessage" role="status">{{ runtime.memoryClearMessage }}</p>
+
       <section class="status-panel">
         <h3>当前运行状态</h3>
         <div class="status-grid">
@@ -126,7 +132,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['start', 'stop', 'import-result', 'show-records'])
+const emit = defineEmits(['start', 'stop', 'import-result', 'show-records', 'clear-experience'])
 const fileInput = ref(null)
 const isBusy = computed(() => props.runtime.status === 'running' || props.runtime.status === 'starting')
 

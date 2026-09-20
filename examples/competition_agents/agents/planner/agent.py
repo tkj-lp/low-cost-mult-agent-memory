@@ -7,6 +7,7 @@ import time
 
 from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.llm import get_llm_client
+from competition_agents.handoff import parse_planner_output
 from competition_agents.memory import search_memory
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
 from competition_agents.runtime_events import emit_memory_retrieval_events
@@ -106,7 +107,6 @@ def _build_planner_task(state: CompetitionState, experience_hits: list[dict]) ->
         return task
 
     lines = [
-        "Plan this QA task. Return task steps only, not a dialogue.",
         f"Question: {question}",
     ]
     topic = str(task_meta.get("topic") or "").strip()
@@ -115,12 +115,10 @@ def _build_planner_task(state: CompetitionState, experience_hits: list[dict]) ->
     if experience_hits:
         lines.append(
             "Previously verified experience:\n"
-            + json.dumps(_compact_experience_hits(experience_hits), ensure_ascii=False)
+            + json.dumps([{"solution": str(h.get("solution_pattern") or "")[:160],
+                           "avoid": str(h.get("failure_pattern") or "")[:100]}
+                          for h in experience_hits[:2]], ensure_ascii=False)
         )
-    lines.append(
-        "Decide whether pronouns or cross-turn references require question-answer memory, "
-        "then specify the knowledge facts that Retriever should obtain."
-    )
     return "\n".join(lines)
 
 
@@ -181,6 +179,8 @@ def _experience_recommends_qa_recall(experience_hits: list[dict]) -> bool:
 def _knowledge_steps(state: CompetitionState, plan: list[str]) -> list[dict[str, object]]:
     task_meta = state.get("task_meta", {}) or {}
     question = str(task_meta.get("question") or state.get("task") or "").strip()
+    topic = str(task_meta.get("topic") or "").strip()
+    section = str(task_meta.get("topic_section") or task_meta.get("task_type") or "").strip()
     candidates = [
         str(step).strip()
         for step in plan
@@ -195,11 +195,17 @@ def _knowledge_steps(state: CompetitionState, plan: list[str]) -> list[dict[str,
         candidates = ["Retrieve evidence needed to answer the question."]
     steps: list[dict[str, object]] = []
     for index, goal in enumerate(candidates[:3], start=1):
+        query_parts = [f"Question: {question}"]
+        if topic:
+            query_parts.append(f"Current topic: {topic}")
+        if section:
+            query_parts.append(f"Requested section or attribute: {section}")
+        query_parts.append(f"Retrieval goal: {goal.rstrip('.')}")
         steps.append(
             {
                 "step": index,
                 "goal": goal.rstrip("."),
-                "query": f"{question}\nRetrieval goal: {goal.rstrip('.')}",
+                "query": "\n".join(query_parts),
                 "depends_on": index - 1 if index > 1 else None,
             }
         )
@@ -210,49 +216,20 @@ def _build_retrieval_policy(
     state: CompetitionState,
     plan: list[str],
     experience_hits: list[dict],
+    classification: dict | None = None,
 ) -> tuple[dict[str, object], float]:
     started = time.perf_counter()
     task_meta = state.get("task_meta", {})
     task = state.get("task", "")
-    qa_memory_available = any(
-        str(item.get("memory_type", "evidence")) == "evidence"
-        for item in state.get("memory", [])
-    )
-    dataset_type = str(task_meta.get("dataset_type") or "")
-    turn_id = str(task_meta.get("turn_id") or "")
-    cross_turn_reference = _contains_cross_turn_reference(
-        str(task_meta.get("question") or task)
-    )
-    experience_recommends_recall = _experience_recommends_qa_recall(experience_hits)
-    need_qa_memory = qa_memory_available and (
-        cross_turn_reference or experience_recommends_recall
-    )
-    qa_reason = (
-        "question contains a pronoun or cross-turn reference"
-        if cross_turn_reference
-        else "verified experience recommends question-answer recall"
-        if experience_recommends_recall
-        else "question is self-contained"
-    )
-    reason_signals = {
-        "qa_memory_available": qa_memory_available,
-        "dataset_type": dataset_type,
-        "turn_id": turn_id,
-        "cross_turn_reference": cross_turn_reference,
-        "experience_hit_count": len(experience_hits),
-        "experience_recommends_qa_recall": experience_recommends_recall,
-    }
-    reasons = [key for key, value in reason_signals.items() if value]
-    if not qa_memory_available:
-        reasons.append("qa_memory_empty")
+    classification = classification or {"query_type": "unknown", "reference_target": ""}
     question = str(task_meta.get("question") or task or "").strip()
     policy = {
-        "need_memory": need_qa_memory,
-        "need_qa_memory": need_qa_memory,
+        "query_type": classification["query_type"],
+        "reference_target": classification["reference_target"],
+        "decision_source": "retriever_pending",
         "need_knowledge": True,
         "memory_first": True,
         "qa_memory_query": question,
-        "qa_memory_reason": qa_reason,
         "memory_query_hint": question,
         "knowledge_query_hint": question,
         "knowledge_steps": _knowledge_steps(state, plan),
@@ -261,8 +238,7 @@ def _build_retrieval_policy(
             "query": _experience_query(state),
             "hit_ids": [hit.get("memory_id") for hit in experience_hits],
         },
-        "reason": ", ".join(reasons) if reasons else "default_knowledge_only",
-        "signals": reason_signals,
+        "reason": "Planner classifies the query; Retriever decides QA retrieval.",
     }
     elapsed_ms = (time.perf_counter() - started) * 1000
     return policy, elapsed_ms
@@ -304,7 +280,9 @@ def planner_agent(state: CompetitionState) -> dict:
         os.environ["LOCAL_CAPTURE_HIDDEN"] = "1"
     try:
         planner_task = _build_planner_task(state, experience_hits)
-        if hasattr(client, "plan_with_raw"):
+        if hasattr(client, "plan_query"):
+            raw_output = client.plan_query(planner_task)
+        elif hasattr(client, "plan_with_raw"):
             plan, raw_output = client.plan_with_raw(planner_task)
         else:
             plan = client.plan(planner_task)
@@ -316,7 +294,10 @@ def planner_agent(state: CompetitionState) -> dict:
             else:
                 os.environ["LOCAL_CAPTURE_HIDDEN"] = previous_capture_hidden
     llm_elapsed_ms = (time.perf_counter() - llm_started) * 1000
-    plan, plan_sanitized = _sanitize_plan(state, plan)
+    classification, fallback_reason = parse_planner_output(
+        raw_output, getattr(client, "last_generation_metrics", {}))
+    plan = classification["steps"]
+    plan_sanitized = bool(fallback_reason)
     hidden_result = None
     hidden_tensor = None
     if state["mode"] == "hidden":
@@ -327,9 +308,10 @@ def planner_agent(state: CompetitionState) -> dict:
         state,
         plan,
         experience_hits,
+        classification,
     )
     retrieval_batches = build_retrieval_batches(
-        need_memory=bool(retrieval_policy.get("need_qa_memory")),
+        need_memory=True,
         need_knowledge=bool(retrieval_policy.get("need_knowledge", True)),
     )
     retrieval_batches = update_retrieval_batch(
@@ -338,6 +320,8 @@ def planner_agent(state: CompetitionState) -> dict:
         status="experience_complete",
         query_count=1,
         hit_counts={"episodic": 0, "experience": len(experience_hits)},
+        decision="run",
+        decision_reason="experience_complete_qa_decision_pending",
     )
     cognitive_gap = make_cognitive_gap(
         agent="planner",
@@ -357,9 +341,13 @@ def planner_agent(state: CompetitionState) -> dict:
                 producer="planner",
                 topic=task,
                 text="\n".join(plan),
-                consumers=["retriever", "reasoner"],
+                consumers=["retriever", "reasoner", "summarizer"],
                 hidden_result=hidden_result,
                 hidden_tensor=hidden_tensor,
+                semantic_payload={
+                    "plan": plan,
+                    "retrieval_policy": retrieval_policy,
+                },
             )
         else:
             plan_ref, latent_states, metrics = put_latent_state(
@@ -367,7 +355,11 @@ def planner_agent(state: CompetitionState) -> dict:
                 producer="planner",
                 topic=task,
                 text="\n".join(plan),
-                consumers=["reasoner", "summarizer"],
+                consumers=["retriever", "reasoner", "summarizer"],
+                semantic_payload={
+                    "plan": plan,
+                    "retrieval_policy": retrieval_policy,
+                },
             )
         experience_ref, latent_states, metrics = put_shared_state(
             {**state, "latent_states": latent_states, "metrics": metrics},
@@ -387,21 +379,10 @@ def planner_agent(state: CompetitionState) -> dict:
         experience_ref = ""
 
     if state["mode"] == "text":
-        # text 模式故意重复上下文，用来模拟传统自然语言协作的高开销。
-        payload = (
-            f"PlannerAgent received task: {task}. "
-            f"It creates a four-step plan: {', '.join(plan)}. "
-            "ReasonerAgent should answer from the task and plan because retrieval is skipped in this run. "
-            "For text-mode collaboration, the planner forwards the full task background, "
-            "role description, expected output format, and repeated natural-language context "
-            "so the next agent can reconstruct the internal planning state without reading "
-            f"structured state references. The planner says its capabilities are task decomposition, "
-            "capability routing, and cognitive gap detection. It also explains its cognitive gap: "
-            "it already knows the task goal and available agent capabilities, but it does not yet "
-            "know external supporting facts or historical memory, so it needs model reasoning and final "
-            "summary generation. Full task background repeated for baseline cost: "
-            f"{task}."
-        )
+        question = str(state.get("task_meta", {}).get("question") or task).strip()
+        knowledge_steps = retrieval_policy.get("knowledge_steps", [])
+        payload = json.dumps({"question": question, "plan": plan, "retrieval_policy": retrieval_policy},
+                             ensure_ascii=False, separators=(",", ":"))
         if autoform_enabled():
             payload, _autoform_audit = generate_autoform_message(
                 sender="planner",
@@ -416,12 +397,9 @@ def planner_agent(state: CompetitionState) -> dict:
             receiver="retriever",
             action="retrieve",
             content_type="hidden_state_ref" if state["mode"] == "hidden" else "state_ref",
-            params={"plan": plan_ref, "retrieval_policy": retrieval_policy},
-            result={"next": "retriever", "retrieval_policy": retrieval_policy},
+            params={"operation": "execute_retrieval_plan"},
             state_refs=[plan_ref],
             capability_required=["retrieve"],
-            cognitive_gap=cognitive_gap,
-            confidence=0.72,
         )
 
     # record_message 会追加消息，并更新通信开销指标。
@@ -438,9 +416,6 @@ def planner_agent(state: CompetitionState) -> dict:
     metrics["retriever_memory_ms"] = metrics.get("retriever_memory_ms", 0.0) + experience_elapsed_ms
     metrics["memory_query_count"] = metrics.get("memory_query_count", 0) + 1
     metrics["retrieval_batch_count"] = metrics.get("retrieval_batch_count", 0) + 1
-    metrics["memory_gate_count"] = metrics.get("memory_gate_count", 0) + 1
-    if not retrieval_policy.get("need_memory"):
-        metrics["memory_gate_skip_count"] = metrics.get("memory_gate_skip_count", 0) + 1
     metrics["planner_memory_decision_ms"] = metrics.get("planner_memory_decision_ms", 0.0) + planner_decision_ms
     return {
         "plan": plan,
@@ -464,6 +439,9 @@ def planner_agent(state: CompetitionState) -> dict:
             *state.get("agent_outputs", []),
             {
                 "agent": "PlannerAgent",
+                "query_classification": classification,
+                "planner_fallback_reason": fallback_reason,
+                "llm_call": dict(getattr(client, "last_generation_metrics", {})),
                 "raw_output": raw_output,
                 "plan_sanitized": plan_sanitized,
                 "retrieval_policy": retrieval_policy,

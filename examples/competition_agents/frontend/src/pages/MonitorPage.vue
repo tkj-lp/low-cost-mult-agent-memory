@@ -263,7 +263,8 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { loadResultTrace } from '../resultTrace'
 import {
   collaborationModes,
   datasetKeyForFile,
@@ -283,8 +284,10 @@ const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
 const RUNNER_RESULT_URL = 'http://127.0.0.1:8765/api/runner/result'
 const RUNNER_STATUS_URL = 'http://127.0.0.1:8765/api/runner/status'
 const RUNNER_METRICS_URL = 'http://127.0.0.1:8765/api/runner/metrics'
+const RUNNER_TRACE_URL = 'http://127.0.0.1:8765/api/runner/trace'
 
 const props = defineProps({
+  importedRecords: { type: Array, default: () => [] },
   importedPayloads: {
     type: Array,
     default: () => []
@@ -304,8 +307,11 @@ const monitorRecords = ref([])
 const selectedMonitorRecordId = ref('')
 const monitorLoadError = ref('')
 const monitorFilters = ref(withFilterDefaults(readSavedConfig()))
+const selectedTracePayload = shallowRef(null)
+const selectedTraceRecordId = ref('')
 let timer = null
 let eventTimer = null
+let snapshotPending = false
 
 const protocolViewTabs = [
   { label: '\u534f\u8bae\u5b57\u6bb5', value: 'protocol' },
@@ -321,16 +327,32 @@ const selectedMonitorRecord = computed(() =>
   monitorRecords.value.find((record) => record.recordId === selectedMonitorRecordId.value) ?? null
 )
 const importedRunPayload = computed(() => importedPayloadForCurrentConfig(props.importedPayloads, monitorFilters.value))
-const selectedArchivePayload = computed(() => importedRunPayload.value ?? selectedMonitorRecord.value?.payload ?? null)
+// A server-side archive is the canonical source for the collaboration trace.
+// Imported payloads remain a fallback for records that only exist in the browser.
+const selectedArchivePayload = computed(() => {
+  const archivePayload = selectedTraceRecordId.value === selectedMonitorRecord.value?.recordId
+    ? selectedTracePayload.value
+    : null
+  if (hasDetailedTaskTrace(archivePayload)) return archivePayload
+  if (hasDetailedTaskTrace(importedRunPayload.value)) return importedRunPayload.value
+  return null
+})
+const matchingLatestRunPayload = computed(() =>
+  payloadMatchesCurrentConfig(latestRunResult.value, monitorFilters.value) && hasDetailedTaskTrace(latestRunResult.value)
+    ? latestRunResult.value
+    : null
+)
 const effectiveRunResult = computed(() =>
-  monitorSelectionLocked.value ? latestRunResult.value : selectedArchivePayload.value ?? latestRunResult.value
+  monitorSelectionLocked.value ? latestRunResult.value : selectedArchivePayload.value ?? matchingLatestRunPayload.value
 )
 const effectiveRuntimeEvents = computed(() =>
   monitorSelectionLocked.value
     ? runtimeEvents.value
     : selectedArchivePayload.value
       ? eventsFromImportedPayload(selectedArchivePayload.value)
-      : runtimeEvents.value
+      : matchingLatestRunPayload.value
+        ? runtimeEvents.value
+        : []
 )
 const hasRuntimeEvents = computed(() => effectiveRuntimeEvents.value.length > 0 || Boolean(latestPrimaryRun(effectiveRunResult.value)))
 const monitorRecordOptions = computed(() =>
@@ -406,6 +428,21 @@ watch(tasks, (nextTasks) => {
     selectedTaskId.value = runningTask?.id ?? nextTasks[0].id
   }
 })
+
+watch(() => props.importedRecords, refreshMonitorRecords)
+
+watch(
+  () => [selectedMonitorRecord.value?.recordId, runnerRunning.value],
+  ([recordId]) => {
+    if (monitorSelectionLocked.value || !recordId) {
+      selectedTracePayload.value = null
+      selectedTraceRecordId.value = ''
+      return
+    }
+    loadSelectedTrace()
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   refreshSavedConfig()
@@ -495,8 +532,18 @@ function persistSharedFilters(value) {
 }
 
 async function refreshRuntimeSnapshot() {
-  await refreshRunnerStatus()
-  await Promise.all([refreshRuntimeEvents(), refreshRunResult()])
+  if (snapshotPending) return
+  snapshotPending = true
+  const wasRunning = runnerRunning.value
+  try {
+    await refreshRunnerStatus()
+    if (runnerRunning.value || wasRunning) {
+      await Promise.all([refreshRuntimeEvents(), refreshRunResult()])
+    }
+    if (wasRunning && !runnerRunning.value) await refreshMonitorRecords()
+  } finally {
+    snapshotPending = false
+  }
 }
 
 async function refreshRunnerStatus() {
@@ -515,6 +562,12 @@ async function refreshRunnerStatus() {
 
 async function refreshMonitorRecords() {
   if (monitorSelectionLocked.value) return
+  if (props.importedRecords.length) {
+    monitorRecords.value = normalizeMonitorRecords(props.importedRecords)
+    monitorLoadError.value = ''
+    syncSelectedMonitorRecord()
+    return
+  }
   try {
     const response = await fetch(`${RUNNER_METRICS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) throw new Error('历史结果服务未返回有效数据')
@@ -529,9 +582,27 @@ async function refreshMonitorRecords() {
   }
 }
 
+async function loadSelectedTrace() {
+  const record = selectedMonitorRecord.value
+  if (!record || monitorSelectionLocked.value) return
+  const requestedRecordId = record.recordId
+  selectedTracePayload.value = null
+  selectedTraceRecordId.value = ''
+  try {
+    const payload = await loadResultTrace(record)
+    if (selectedMonitorRecord.value?.recordId !== requestedRecordId) return
+    selectedTracePayload.value = payload
+    selectedTraceRecordId.value = requestedRecordId
+  } catch {
+    if (selectedMonitorRecord.value?.recordId === requestedRecordId) {
+      monitorLoadError.value = '该历史记录的链路明细读取失败，请确认本地运行服务仍在运行。'
+    }
+  }
+}
+
 function normalizeMonitorRecords(records) {
   return records
-    .filter((record) => record?.payload)
+    .filter((record) => record?.source || record?.payload)
     .map((record, index) => ({
       ...record,
       recordId: String(record.recordId || `${record.source || 'record'}-${index}`),
@@ -547,10 +618,6 @@ function syncSelectedMonitorRecord() {
   }
   if (!options.some((option) => option.value === selectedMonitorRecordId.value)) {
     selectedMonitorRecordId.value = options[0].value
-  }
-  monitorFilters.value = {
-    ...monitorFilters.value,
-    baselineRecordId: selectedMonitorRecordId.value
   }
 }
 
@@ -613,7 +680,13 @@ function latestPrimaryRun(payload) {
 function importedPayloadForCurrentConfig(items, currentConfig) {
   const payloads = Array.isArray(items) ? items.map((item) => item?.payload).filter(Boolean) : []
   if (!payloads.length) return null
-  return payloads.find((payload) => payloadMatchesCurrentConfig(payload, currentConfig)) ?? null
+  const matches = payloads.filter((payload) => payloadMatchesCurrentConfig(payload, currentConfig))
+  return matches.sort((left, right) => Number(hasDetailedTaskTrace(right)) - Number(hasDetailedTaskTrace(left)))[0] ?? null
+}
+
+function hasDetailedTaskTrace(payload) {
+  const taskResults = latestPrimaryRun(payload)?.task_results
+  return Array.isArray(taskResults) && taskResults.length > 0
 }
 
 function datasetKey(file) {
@@ -1050,7 +1123,7 @@ function pushImportedPlannerExperienceEvents(events, context) {
     action_type: 'query_experience',
     input_params: { query, top_k: experienceHits.length || 2, memory_layer: 'experience' },
     return_result: { hit_count: experienceHits.length, memory_layer: 'experience' },
-    state_refs,
+    state_refs: stateRefs,
     memory_refs: experienceHits.map((hit) => hit.memory_id).filter(Boolean)
   })
   for (const hit of experienceHits) {
@@ -1065,7 +1138,7 @@ function pushImportedPlannerExperienceEvents(events, context) {
       from_agent: 'experience',
       to_agent: 'planner',
       action_type: 'return_experience',
-      state_refs,
+      state_refs: stateRefs,
       memory_refs: [memoryId],
       return_result: {
         memory_id: memoryId,

@@ -5,7 +5,7 @@ from typing import Any
 
 from .entities import canonical_entity, extract_canonical_entities
 from .layers import KNOWLEDGE_LAYER
-from .text import limited_tokens, node_id, stable_id
+from .text import limited_tokens, node_id, question_content_tokens, stable_id
 
 
 ANSWER_LIKE_FIELDS = {
@@ -107,7 +107,27 @@ def _normalize_hotpot(task_meta: dict[str, Any], dataset_type: str, task_id: str
 
 
 def _normalize_topiocqa(task_meta: dict[str, Any], dataset_type: str, task_id: str) -> list[dict[str, Any]]:
-    units: list[dict[str, Any]] = []
+    units = _normalize_hotpot(task_meta, dataset_type, task_id)
+    documents = task_meta.get("context", []) or []
+    for position, unit in enumerate(units):
+        metadata = unit["metadata"]
+        document = documents[metadata["doc_index"]]
+        index = metadata["sentence_index"]
+        sentences = document.get("sentences", []) or []
+        start, end = max(0, index - 1), min(len(sentences), index + 2)
+        # A bounded overlapping window keeps a split statement with its continuation.
+        unit["text"] = " ".join(_text(sentence) for sentence in sentences[start:end] if _text(sentence))
+        title, separator, section = unit["title"].partition("[SEP]")
+        if separator:
+            unit["title"] = title.strip()
+            unit["section"] = unit["section"] or section.strip()
+        metadata.update({
+            "source": document.get("source", "dataset_context"),
+            "sentence_range": [start, end],
+        })
+        unit["context_id"] = _context_id(
+            task_id, unit["kind"], position, unit["title"], unit["section"], unit["text"],
+        )
     history = task_meta.get("conversation_context", []) or task_meta.get("context", []) or []
     if isinstance(history, list):
         for index, item in enumerate(history):
@@ -142,7 +162,15 @@ def _normalize_topiocqa(task_meta: dict[str, Any], dataset_type: str, task_id: s
                 text=passage,
             )
         )
-    return units
+    seen: set[tuple[str, str, str, str]] = set()
+    unique = []
+    for unit in units:
+        channel = "dialogue" if unit["kind"].startswith("dialogue_") else "knowledge"
+        key = (channel, unit["title"], unit["section"], unit["text"])
+        if key not in seen:
+            seen.add(key)
+            unique.append(unit)
+    return unique
 
 
 def _normalize_codeact(task_meta: dict[str, Any], dataset_type: str, task_id: str) -> list[dict[str, Any]]:
@@ -320,6 +348,7 @@ def search_context(
     dataset_type: str | None = None,
     planner_focus: list[str] | None = None,
     top_k: int = 4,
+    exclude_kinds: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Search dataset context through a lightweight context hypergraph.
 
@@ -327,11 +356,17 @@ def search_context(
     normalizes dataset-specific fields, builds a per-task context hypergraph,
     and returns compact evidence hits with matched nodes and hyperedges.
     Gold answers, expected results, and reference code are never used as online
-    retrieval context.
+    retrieval context. Structured TopiOCQA documents use overlapping, at-most
+    three-sentence windows. `exclude_kinds` filters candidates before ranking.
     """
 
     resolved_dataset = _dataset_name(task_meta, dataset_type)
     graph = _build_context_hypergraph(task_meta, resolved_dataset)
+    if exclude_kinds:
+        graph["context_units"] = [
+            unit for unit in graph["context_units"] if unit["kind"] not in exclude_kinds
+        ]
+    requested_tokens = question_content_tokens(_text(task_meta.get("question")))
     query_text = " ".join([_text(task_meta.get("question")), _text(task_meta.get("task")), _text(query)])
     query_tokens = _tokens(query_text)
     focus_tokens = _tokens(" ".join(planner_focus or []))
@@ -375,6 +410,7 @@ def search_context(
             focus_tokens,
             query_entities,
         )
+        score += 4.0 * len(requested_tokens & _tokens(unit.get("text", "")))
         scored_units.append(
             {
                 "unit": unit,
@@ -465,6 +501,7 @@ def search_context(
                 "title": unit.get("title", ""),
                 "section": unit.get("section", ""),
                 "text": unit["text"],
+                "metadata": unit.get("metadata", {}),
                 "context_score": round(score, 4),
                 "lexical_score": round(float(item["base_score"]), 4),
                 "graph_expansion_score": round(expansion_score, 4),

@@ -10,10 +10,12 @@
       <MonitorPage
         v-else-if="activeTab === '协作机制'"
         :imported-payloads="importedPayloads"
+        :imported-records="importedRecords"
       />
       <MemoryPage
         v-else-if="activeTab === '记忆复用'"
         :imported-payloads="importedPayloads"
+        :imported-records="importedRecords"
       />
       <MetricsPage
         v-else
@@ -41,7 +43,9 @@ import MemoryPage from './pages/MemoryPage.vue'
 import MetricsPage from './pages/MetricsPage.vue'
 import ResultImportDialog from './components/ResultImportDialog.vue'
 
-const IMPORTED_RESULTS_STORAGE_KEY = 'competition-agent-imported-results'
+const IMPORTED_RESULTS_STORAGE_KEY = 'competition-agent-imported-results-v2'
+const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
+const FILTER_SYNC_EVENT = 'competition-agent-filter-sync'
 const activeTab = ref('实验控制台')
 const recordDialogOpen = ref(false)
 const savedImportedResults = readSavedImportedResults()
@@ -58,8 +62,28 @@ function openRecordDialog() {
 
 function handleImportedResults(payload) {
   importedRecords.value = Array.isArray(payload.records) ? payload.records : []
-  importedPayloads.value = Array.isArray(payload.payloads) ? payload.payloads : []
+  importedPayloads.value = []
   persistImportedResults()
+  selectImportedRecord(importedRecords.value[0])
+}
+
+function selectImportedRecord(record) {
+  if (!record) return
+  try {
+    const current = JSON.parse(window.localStorage.getItem(CONFIG_STORAGE_KEY) || '{}')
+    window.localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify({
+      ...current,
+      dataset: record.dataset,
+      collaborationMode: record.collaborationMode,
+      memoryMode: record.memoryMode,
+      retrievalMode: record.retrievalMode,
+      baselineMode: 'none',
+      baselineRecordId: ''
+    }))
+    window.dispatchEvent(new CustomEvent(FILTER_SYNC_EVENT))
+  } catch {
+    // Imported records remain available on the metrics page if browser storage fails.
+  }
 }
 
 function readSavedImportedResults() {
@@ -80,7 +104,7 @@ function persistImportedResults() {
   try {
     window.localStorage.setItem(IMPORTED_RESULTS_STORAGE_KEY, JSON.stringify({
       records: importedRecords.value,
-      payloads: importedPayloads.value
+      payloads: []
     }))
   } catch {
     // 导入结果只用于前端展示，持久化失败时不影响本次页面内查看。

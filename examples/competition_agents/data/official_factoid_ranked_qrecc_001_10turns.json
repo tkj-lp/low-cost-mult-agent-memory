@@ -1,0 +1,406 @@
+[
+  {
+    "group_id": "qrecc-factoid-ranked-001",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 113,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 4/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "QReCC conversation 113",
+    "context": [
+      {
+        "title": "QReCC conversation 113 turn 1",
+        "sentences": [
+          "In may"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 2",
+        "sentences": [
+          "Prime Minister"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 3",
+        "sentences": [
+          "the BJP"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 4",
+        "sentences": [
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 5",
+        "sentences": [
+          "6,74,664 votes"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 6",
+        "sentences": [
+          "Aam Aadmi Party leader Arvind Kejriwal"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 7",
+        "sentences": [
+          "As of 2019 Narendra Modi is still Prime minister of India"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 8",
+        "sentences": [
+          "The BJP's campaign was assisted by its wide influence in the media"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 9",
+        "sentences": [
+          "from corporate donors"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 10",
+        "sentences": [
+          "Narendra Modi made extensive use of social media"
+        ],
+        "source": "official_answer_annotation"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/slupart/qrecc/resolve/35dd1d9b6306182f19a763b497e06dba9b3d48c9/qrecc_test.json",
+    "reference_source_sha256": "a410865623737c98e172bbc86515f416ebecca8971c5c0929a7fdda5256fa540",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_answer_annotations_existing_project_adapter",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "continuous",
+        "question": "in what month was the election?",
+        "rewrite": "in what month was the election?",
+        "expected_answer": "In may",
+        "reference_answers": [
+          "In may"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 113 turn 1",
+        "topic_section": "",
+        "conversation_context": [],
+        "supporting_passage": "In may",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Election identity is supplied by original context outside task answers.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "what position did he run for in the election?",
+        "rewrite": "what position did Narendra Modi run for in the election?",
+        "expected_answer": "Prime Minister",
+        "reference_answers": [
+          "Prime Minister"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 2",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may"
+        ],
+        "supporting_passage": "Prime Minister",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "The election refers to the preceding election.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "what political party was he in?",
+        "rewrite": "what political party was Narendra Modi in?",
+        "expected_answer": "the BJP",
+        "reference_answers": [
+          "the BJP"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 113 turn 3",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister"
+        ],
+        "supporting_passage": "the BJP",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "He is not identified by the first two gold answers; external context is needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "did he win the election?",
+        "rewrite": "did Narendra Modi win the election?",
+        "expected_answer": "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+        "reference_answers": [
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 4",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP"
+        ],
+        "supporting_passage": "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "The election refers to the earlier election.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "how many votes did he get?",
+        "rewrite": "how many votes did Narenda Modi get?",
+        "expected_answer": "6,74,664 votes",
+        "reference_answers": [
+          "6,74,664 votes"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 5",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019"
+        ],
+        "supporting_passage": "6,74,664 votes",
+        "answer_url": "https://www.indiatoday.in/elections/lok-sabha-2019/story/lok-sabha-elections-2019-prime-minister-narendra-modi-varanasi-1532443-2019-05-23",
+        "reuse_annotation_note": "Vote count concerns the election just discussed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "who was his opponent?",
+        "rewrite": "who was Narendra Modi opponent?",
+        "expected_answer": "Aam Aadmi Party leader Arvind Kejriwal",
+        "reference_answers": [
+          "Aam Aadmi Party leader Arvind Kejriwal"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 6",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes"
+        ],
+        "supporting_passage": "Aam Aadmi Party leader Arvind Kejriwal",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Opponent concerns the same candidate and election.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "for how long was he prime minister?",
+        "rewrite": "for how long was Narendra Modi prime minister?",
+        "expected_answer": "As of 2019 Narendra Modi is still Prime minister of India",
+        "reference_answers": [
+          "As of 2019 Narendra Modi is still Prime minister of India"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 7",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal"
+        ],
+        "supporting_passage": "As of 2019 Narendra Modi is still Prime minister of India",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Prime-minister tenure refers to the candidate's swearing-in.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "where did he do his campaigning?",
+        "rewrite": "where did Narendra modi do his campaigning?",
+        "expected_answer": "The BJP's campaign was assisted by its wide influence in the media",
+        "reference_answers": [
+          "The BJP's campaign was assisted by its wide influence in the media"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 8",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal",
+          "for how long was Narendra Modi prime minister?",
+          "As of 2019 Narendra Modi is still Prime minister of India"
+        ],
+        "supporting_passage": "The BJP's campaign was assisted by its wide influence in the media",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Campaigning concerns the same election candidate.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "where did he get the money from to pay for that cost?",
+        "rewrite": "where did Narendra Modi get the money from to pay for that cost?",
+        "expected_answer": "from corporate donors",
+        "reference_answers": [
+          "from corporate donors"
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 9",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal",
+          "for how long was Narendra Modi prime minister?",
+          "As of 2019 Narendra Modi is still Prime minister of India",
+          "where did Narendra modi do his campaigning?",
+          "The BJP's campaign was assisted by its wide influence in the media"
+        ],
+        "supporting_passage": "from corporate donors",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "That cost refers to campaigning mentioned in the prior question.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "what did he do when he campaigned?",
+        "rewrite": "what did Narendra Modi do when he campaigned?",
+        "expected_answer": "Narendra Modi made extensive use of social media",
+        "reference_answers": [
+          "Narendra Modi made extensive use of social media"
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 10",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal",
+          "for how long was Narendra Modi prime minister?",
+          "As of 2019 Narendra Modi is still Prime minister of India",
+          "where did Narendra modi do his campaigning?",
+          "The BJP's campaign was assisted by its wide influence in the media",
+          "where did Narendra Modi get the money from to pay for that cost?",
+          "from corporate donors"
+        ],
+        "supporting_passage": "Narendra Modi made extensive use of social media",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Campaigning refers to the earlier campaign discussion.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  }
+]

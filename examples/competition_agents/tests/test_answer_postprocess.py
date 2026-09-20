@@ -1,88 +1,75 @@
 from __future__ import annotations
 
-from competition_agents.llm.openai_compatible import _coerce_answer_candidate
-from run_demo import answers_match
+from competition_agents.llm.openai_compatible import (
+    _answer_repair_reason,
+    _coerce_answer_candidate,
+)
+from run_demo import answer_token_f1, answers_match
 
 
-def test_government_position_question_prefers_evidence_span() -> None:
-    """职位题应从证据中抽取职位短语，避免本地小模型只返回人物名。"""
-
+def test_answer_cleanup_removes_only_output_wrapper() -> None:
     answer = _coerce_answer_candidate(
-        "Shirley Temple",
-        [
-            (
-                "Shirley Temple: As an adult, she was named United States ambassador "
-                "to Ghana and to Czechoslovakia and also served as Chief of Protocol "
-                "of the United States."
-            )
-        ],
-        question="What government position was held by the woman who portrayed Corliss Archer?",
+        "Final answer: A reusable answer span",
+        ["Evidence contains a different phrase."],
+        question="What is requested?",
     )
 
-    assert answer == "Chief of Protocol"
+    assert answer == "A reusable answer span"
 
 
-def test_dvd_release_question_extracts_full_uk_date() -> None:
+def test_answer_cleanup_does_not_inject_fact_from_evidence() -> None:
     answer = _coerce_answer_candidate(
-        "December 2017",
-        [
-            (
-                "Dunkirk (2017 film): \"Dunkirk\" was released digitally on "
-                "12 December 2017, and on 4K Ultra HD, Blu-ray, and DVD on "
-                "18 December in the United Kingdom and 19 December in the United States."
-            )
-        ],
-        question="when was the 2017 film dunkirk released on dvd in the united kingdom?",
+        "Model-selected candidate",
+        ["Evidence: benchmark-specific gold answer"],
+        question="Which value is correct?",
     )
 
-    assert answer == "18 December 2017"
+    assert answer == "Model-selected candidate"
 
 
-def test_film_about_question_extracts_depicted_event() -> None:
-    answer = _coerce_answer_candidate(
-        "Dunkirk",
-        [
-            (
-                "Dunkirk (2017 film): Dunkirk is a 2017 war film written, directed, "
-                "and produced by Christopher Nolan that depicts the Dunkirk evacuation "
-                "of World War II."
-            )
+def test_grounded_location_is_not_rejected_by_incomplete_relation_patterns() -> None:
+    reason = _answer_repair_reason(
+        task="Question: where is this band from?\nResolved topic: U2",
+        evidence=[
+            "U2 are an Irish rock band from Dublin, formed in 1976.",
+            "The song was released in the Netherlands and West Germany.",
         ],
-        question="what is the film about?",
+        answer="Dublin",
     )
 
-    assert answer == "The Dunkirk evacuation of World War II"
+    assert reason == ""
+
+
+def test_answers_match_accepts_referential_conversational_gold() -> None:
+    assert answers_match(
+        "An oribi is a small antelope found in eastern, southern and western Africa.",
+        "It is a small antelope.",
+    )
+
+
+def test_answers_match_rejects_partial_topic_overlap() -> None:
     assert not answers_match("Dunkirk", "The Dunkirk evacuation of World War II")
 
 
-def test_cast_question_extracts_first_four_cast_members() -> None:
-    answer = _coerce_answer_candidate(
-        "Tom Hanks, Leonardo DiCaprio, Brad Pitt",
-        [
-            (
-                "Dunkirk (2017 film): Its ensemble cast includes Fionn Whitehead, "
-                "Tom Glynn-Carney, Jack Lowden, Harry Styles, Aneurin Barnard, "
-                "James D'Arcy, Barry Keoghan, Kenneth Branagh, Cillian Murphy, "
-                "Mark Rylance, and Tom Hardy."
-            )
-        ],
-        question="can you mention a few members of the cast?",
+def test_answer_token_f1_credits_partial_but_not_exact_answer() -> None:
+    prediction = "eastern, southern and western Africa"
+    gold = "Eastern, southern and western Africa from savannahs and grasslands"
+
+    score = answer_token_f1(prediction, gold)
+
+    assert 0.5 < score < 1.0
+    assert not answers_match(prediction, gold)
+
+
+def test_answers_match_accepts_superset_with_all_expected_list_entities() -> None:
+    gold = "Some species include alpha bird, beta fish, gamma deer, and delta cat"
+    prediction = "alpha bird, beta fish, gamma deer, delta cat, epsilon fox"
+
+    assert answers_match(prediction, gold)
+
+
+def test_answers_match_accepts_entity_without_appositive_description() -> None:
+    assert answers_match(
+        "sample bush",
+        "Sample bush, an ornamental species of the example family",
     )
-
-    assert answer == "Fionn Whitehead, Tom Glynn-Carney, Jack Lowden, Harry Styles"
-
-
-def test_fish_question_extracts_complete_fish_list() -> None:
-    answer = _coerce_answer_candidate(
-        "Common types of fish found in the ocean include tuna, salmon, mackerel, and cod.",
-        [
-            (
-                "North Sea: Cod, haddock, whiting, saithe, plaice, sole, mackerel, "
-                "herring, pouting, sprat, and sandeel are all very common in the "
-                "North Sea and are fished commercially."
-            )
-        ],
-        question="what kinds of fish are commonly found in this sea?",
-    )
-
-    assert answer == "Cod, haddock, whiting, saithe, plaice, sole, mackerel, herring, pouting, sprat, and sandeel"

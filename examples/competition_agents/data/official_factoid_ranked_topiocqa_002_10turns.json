@@ -1,0 +1,478 @@
+[
+  {
+    "group_id": "topiocqa-factoid-ranked-002",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 19,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 7/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "1880 Democratic National Convention -> Henry B. Payne -> James A. Garfield",
+    "context": [
+      {
+        "title": "1880 Democratic National Convention [SEP] Other contenders",
+        "sentences": [
+          "Several other candidates arrived in Cincinnati with delegates pledged to them. Former Representative Henry B. Payne, an Ohio millionaire, had gathered a number of former Tilden supporters to his cause."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Henry B. Payne [SEP] Introduction",
+        "sentences": [
+          "Henry B. Payne (November 30, 1810September 9, 1896) was an American politician from Ohio."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Nominations",
+        "sentences": [
+          "John Edgar McElrath, an Oakland attorney, rose to nominate Justice Stephen J. Field. Extolling Field's virtues and learning, McElrath promised that, if nominated, \"he will sweep California like the winds that blow through her Golden Gate.\" George Gray, Delaware's Attorney General and a future United States Senator, next nominated Thomas F. Bayard. Gray, in a speech that evinced his admiration for the Senator, said of Bayard:\nIllinois was the next state to offer a name, as former Representative Samuel S. Marshall rose to submit that of his erstwhile colleague, William R. Morrison. Marshall immediately antagonized the South by comparing Morrison to Abraham Lincoln, and proclaimed that Morrison's belief in tariff reduction would be a \"tower of strength\" in the election."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Balloting",
+        "sentences": [
+          "The results showed that the delegates had scattered their ballots to a variety of candidates, with no one close to the 492 necessary to nominate (at that time, Democratic conventions required a two-thirds majority for nomination)."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Balloting",
+        "sentences": [
+          "Nearly all of the remaining states now stampeded for Hancock. When the second vote was finally tallied, Hancock had 705. Only Indiana refrained completely from joining in, casting its 30 votes for Hendricks; two Bayard voters from Maryland and one Tilden man from Iowa were the remaining hold-outs. After the second round was tallied, the nomination was made unanimous. Several delegates then spoke to praise Hancock and promise that he would triumph in the coming election. Even Tammany's John Kelly was permitted to speak. Kelly pledged his faction's loyalty to the party, saying, \"Let us unite as a band of brothers and look upon each other kindly and favorably.\"\n* The candidate was not formally nominated."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Introduction",
+        "sentences": [
+          "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Introduction",
+        "sentences": [
+          "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated. English, a conservative politician from a swing state, was nominated for Vice President. Hancock and English were narrowly defeated in the race against Republicans James A. Garfield and Chester A. Arthur that autumn."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James A. Garfield [SEP] Childhood and early life",
+        "sentences": [
+          "James Garfield was born the youngest of five children on November 19, 1831"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James A. Garfield [SEP] Introduction",
+        "sentences": [
+          "James Abram Garfield (November 19, 1831September 19, 1881) was the 20th president of the United States, serving from March 4, 1881, until his death by assassination six and a half months later."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James A. Garfield [SEP] Education, marriage and early career",
+        "sentences": [
+          "Garfield was attracted to one of his fellow students, Lucretia Rudolph, whom he later married."
+        ],
+        "source": "official_annotated_rationale"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_annotated_rationales",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "can you name some people who attended this?",
+        "expected_answer": "Henry B. Payne",
+        "reference_answers": [
+          "Henry B. Payne",
+          "Susan B. Anthony, Henry Watterson, Henry Watterson",
+          "Hancock, Thomas F. Bayard,  Henry B. Payne, etc.",
+          "William Henry Barnum , George Hoadly and others."
+        ],
+        "expected_reuse": [],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Other contenders",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio"
+        ],
+        "supporting_passage": "Several other candidates arrived in Cincinnati with delegates pledged to them. Former Representative Henry B. Payne, an Ohio millionaire, had gathered a number of former Tilden supporters to his cause.",
+        "rationale": "Several other candidates arrived in Cincinnati with delegates pledged to them. Former Representative Henry B. Payne, an Ohio millionaire, had gathered a number of former Tilden supporters to his cause.",
+        "reuse_annotation_note": "This convention is introduced before the selected window.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "who is the above person?",
+        "expected_answer": "American politician",
+        "reference_answers": [
+          "American politician",
+          "American politician from Ohio",
+          "He was an American politician from Ohio.",
+          "An American politician."
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Henry B. Payne",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne"
+        ],
+        "supporting_passage": "Henry B. Payne (November 30, 1810September 9, 1896) was an American politician from Ohio.",
+        "rationale": "Henry B. Payne (November 30, 1810September 9, 1896) was an American politician from Ohio.",
+        "reuse_annotation_note": "The above person is Henry B. Payne.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "can you name a few nominees from this convention?",
+        "expected_answer": "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+        "reference_answers": [
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "Justice Stephen J. Field, Thomas F. Bayard and William R. Morrison",
+          "John Edgar McElrath, Stephen J. Field, George Gray, etc.",
+          "Winfield Scott Hancock, Allen G. Thurman, Thomas A. Hendricks, William R. Morrison, Stephen J. Field, Thomas F. Bayard and others."
+        ],
+        "expected_reuse": [],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Nominations",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician"
+        ],
+        "supporting_passage": "John Edgar McElrath, an Oakland attorney, rose to nominate Justice Stephen J. Field. Extolling Field's virtues and learning, McElrath promised that, if nominated, \"he will sweep California like the winds that blow through her Golden Gate.\" George Gray, Delaware's Attorney General and a future United States Senator, next nominated Thomas F. Bayard. Gray, in a speech that evinced his admiration for the Senator, said of Bayard:\nIllinois was the next state to offer a name, as former Representative Samuel S. Marshall rose to submit that of his erstwhile colleague, William R. Morrison. Marshall immediately antagonized the South by comparing Morrison to Abraham Lincoln, and proclaimed that Morrison's belief in tariff reduction would be a \"tower of strength\" in the election.",
+        "rationale": "John Edgar McElrath, an Oakland attorney, rose to nominate Justice Stephen J. Field. Extolling Field's virtues and learning, McElrath promised that, if nominated, \"he will sweep California like the winds that blow through her Golden Gate.\" George Gray, Delaware's Attorney General and a future United States Senator, next nominated Thomas F. Bayard. Gray, in a speech that evinced his admiration for the Senator, said of Bayard:\nIllinois was the next state to offer a name, as former Representative Samuel S. Marshall rose to submit that of his erstwhile colleague, William R. Morrison. Marshall immediately antagonized the South by comparing Morrison to Abraham Lincoln, and proclaimed that Morrison's belief in tariff reduction would be a \"tower of strength\" in the election.",
+        "reuse_annotation_note": "Convention identity is outside the selected window.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+        "expected_answer": "Number of votes",
+        "reference_answers": [
+          "Number of votes",
+          "On the basis of the number of votes",
+          "UNANSWERABLE"
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Balloting",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few."
+        ],
+        "supporting_passage": "The results showed that the delegates had scattered their ballots to a variety of candidates, with no one close to the 492 necessary to nominate (at that time, Democratic conventions required a two-thirds majority for nomination).",
+        "rationale": "The results showed that the delegates had scattered their ballots to a variety of candidates, with no one close to the 492 necessary to nominate (at that time, Democratic conventions required a two-thirds majority for nomination).",
+        "reuse_annotation_note": "The nominees refers to the preceding nominees.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "who won the largest number of votes in this convention?",
+        "expected_answer": "Winfield S. Hancock",
+        "reference_answers": [
+          "Winfield S. Hancock",
+          "James A. Garfield and Chester A. Arthur",
+          "Winfield Scott Hancock."
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Balloting",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes"
+        ],
+        "supporting_passage": "Nearly all of the remaining states now stampeded for Hancock. When the second vote was finally tallied, Hancock had 705. Only Indiana refrained completely from joining in, casting its 30 votes for Hendricks; two Bayard voters from Maryland and one Tilden man from Iowa were the remaining hold-outs. After the second round was tallied, the nomination was made unanimous. Several delegates then spoke to praise Hancock and promise that he would triumph in the coming election. Even Tammany's John Kelly was permitted to speak. Kelly pledged his faction's loyalty to the party, saying, \"Let us unite as a band of brothers and look upon each other kindly and favorably.\"\n* The candidate was not formally nominated.",
+        "rationale": "Nearly all of the remaining states now stampeded for Hancock. When the second vote was finally tallied, Hancock had 705. Only Indiana refrained completely from joining in, casting its 30 votes for Hendricks; two Bayard voters from Maryland and one Tilden man from Iowa were the remaining hold-outs. After the second round was tallied, the nomination was made unanimous. Several delegates then spoke to praise Hancock and promise that he would triumph in the coming election. Even Tammany's John Kelly was permitted to speak. Kelly pledged his faction's loyalty to the party, saying, \"Let us unite as a band of brothers and look upon each other kindly and favorably.\"\n* The candidate was not formally nominated.",
+        "reuse_annotation_note": "This convention is the convention discussed with its nominees.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "did the above person win the us presidential election of 1880?",
+        "expected_answer": "No",
+        "reference_answers": [
+          "No",
+          "UNANSWERABLE",
+          "Yes."
+        ],
+        "expected_reuse": [
+          "turn-5.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock"
+        ],
+        "supporting_passage": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated.",
+        "rationale": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated.",
+        "reuse_annotation_note": "The above person is Hancock.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "instead who won?",
+        "expected_answer": "James A. Garfield",
+        "reference_answers": [
+          "James A. Garfield",
+          "James A. Garfield and Chester A. Arthur",
+          "James A.Garfield."
+        ],
+        "expected_reuse": [
+          "turn-6.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No"
+        ],
+        "supporting_passage": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated. English, a conservative politician from a swing state, was nominated for Vice President. Hancock and English were narrowly defeated in the race against Republicans James A. Garfield and Chester A. Arthur that autumn.",
+        "rationale": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated. English, a conservative politician from a swing state, was nominated for Vice President. Hancock and English were narrowly defeated in the race against Republicans James A. Garfield and Chester A. Arthur that autumn.",
+        "reuse_annotation_note": "Instead refers to the presidential election in the prior question.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 11,
+        "task_type": "continuous",
+        "question": "what's the above person's date of birth?",
+        "expected_answer": "November 19, 1831",
+        "reference_answers": [
+          "November 19, 1831",
+          "19 November, 1831."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "James A. Garfield",
+        "topic_section": "Childhood and early life",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No",
+          "instead who won?",
+          "James A. Garfield"
+        ],
+        "supporting_passage": "James Garfield was born the youngest of five children on November 19, 1831",
+        "rationale": "James Garfield was born the youngest of five children on November 19, 1831",
+        "reuse_annotation_note": "The above person is Garfield.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 12,
+        "task_type": "continuous",
+        "question": "when did he take office for the president's role?",
+        "expected_answer": "March 4, 1881",
+        "reference_answers": [
+          "March 4, 1881",
+          "4 March ,1881."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "James A. Garfield",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No",
+          "instead who won?",
+          "James A. Garfield",
+          "what's the above person's date of birth?",
+          "November 19, 1831"
+        ],
+        "supporting_passage": "James Abram Garfield (November 19, 1831September 19, 1881) was the 20th president of the United States, serving from March 4, 1881, until his death by assassination six and a half months later.",
+        "rationale": "James Abram Garfield (November 19, 1831September 19, 1881) was the 20th president of the United States, serving from March 4, 1881, until his death by assassination six and a half months later.",
+        "reuse_annotation_note": "He refers to Garfield.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 13,
+        "task_type": "continuous",
+        "question": "whom did he marry?",
+        "expected_answer": "Lucretia Rudolph",
+        "reference_answers": [
+          "Lucretia Rudolph",
+          "Lucretia",
+          "Lucretia Rudolph."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "James A. Garfield",
+        "topic_section": "Education, marriage and early career",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No",
+          "instead who won?",
+          "James A. Garfield",
+          "what's the above person's date of birth?",
+          "November 19, 1831",
+          "when did he take office for the president's role?",
+          "March 4, 1881"
+        ],
+        "supporting_passage": "Garfield was attracted to one of his fellow students, Lucretia Rudolph, whom he later married.",
+        "rationale": "Garfield was attracted to one of his fellow students, Lucretia Rudolph, whom he later married.",
+        "reuse_annotation_note": "He refers to Garfield.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  }
+]

@@ -68,6 +68,17 @@ def limited_tokens(text: str, *, limit: int = 32) -> list[str]:
     return tokenize(text)[:limit]
 
 
+def question_content_tokens(text: str) -> set[str]:
+    """Keep requested-content terms separate from question function words."""
+    function_words = {
+        "what", "which", "who", "whose", "where", "when", "why", "how",
+        "does", "did", "do", "has", "have", "had", "can", "could", "would",
+        "was", "were", "will", "it", "its", "they", "their", "them",
+        "this", "that", "these", "those", "me", "you", "tell", "please",
+    }
+    return set(tokenize(text)) - function_words
+
+
 def node_id(kind: str, value: str) -> str:
     """Build a typed node id so equal values in different namespaces stay apart."""
 

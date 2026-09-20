@@ -1,0 +1,78 @@
+{
+  "version": "qa-history-v1",
+  "description": "Manually reviewed minimal historical QA dependencies; project turn IDs, not official turn numbers. Window-external and ambiguous references are unscored. Evaluation only.",
+  "groups": {
+    "topiocqa-factoid-ranked-001": {
+      "turn-1": {"sources": [], "note": "Band identity is introduced before the selected window."},
+      "turn-2": {"sources": [1], "note": "It refers to the previously discussed band."},
+      "turn-3": {"sources": [1], "note": "Their refers to the band."},
+      "turn-4": {"sources": [1], "note": "Their refers to the band, not its album."},
+      "turn-5": {"sources": [3], "note": "The above album is Boy."},
+      "turn-6": {"sources": [1], "note": "The band is the earlier band."},
+      "turn-7": {"sources": [6], "note": "His refers to the lead singer Bono."},
+      "turn-8": {"sources": [7], "note": "He refers to Paul David Hewson."},
+      "turn-9": {"sources": [1], "note": "This band refers to U2."},
+      "turn-10": {"sources": [9], "note": "The first song refers to the first song in the preceding list."}
+    },
+    "topiocqa-factoid-ranked-002": {
+      "turn-1": {"sources": [], "note": "This convention is introduced before the selected window."},
+      "turn-2": {"sources": [1], "note": "The above person is Henry B. Payne."},
+      "turn-3": {"sources": [], "note": "Convention identity is outside the selected window."},
+      "turn-4": {"sources": [3], "note": "The nominees refers to the preceding nominees."},
+      "turn-5": {"sources": [3], "note": "This convention is the convention discussed with its nominees."},
+      "turn-6": {"sources": [5], "note": "The above person is Hancock."},
+      "turn-7": {"sources": [6], "note": "Instead refers to the presidential election in the prior question."},
+      "turn-8": {"sources": [7], "note": "The above person is Garfield."},
+      "turn-9": {"sources": [7], "note": "He refers to Garfield."},
+      "turn-10": {"sources": [7], "note": "He refers to Garfield."}
+    },
+    "topiocqa-factoid-ranked-003": {
+      "turn-1": {"sources": [], "note": "Explicit musical title; no historical dependency."},
+      "turn-2": {"sources": [1], "note": "Singer refers to the songwriter just identified."},
+      "turn-3": {"sources": [1], "note": "The musical refers to Kinky Boots."},
+      "turn-4": {"sources": [3], "note": "Its release refers to the film identified in the prior answer."},
+      "turn-5": {"sources": [3], "note": "It refers to the film rather than the musical."},
+      "turn-6": {"sources": [1], "note": "The songwriter refers to Cyndi Lauper."},
+      "turn-7": {"sources": [6], "note": "She refers to the songwriter."},
+      "turn-8": {"sources": [6], "note": "Her refers to the songwriter."},
+      "turn-9": {"sources": [8], "note": "The album refers to She's So Unusual."},
+      "turn-10": {"sources": [8], "note": "The album refers to the debut album."}
+    },
+    "qrecc-factoid-ranked-001": {
+      "turn-1": {"sources": [], "note": "Election identity is supplied by original context outside task answers."},
+      "turn-2": {"sources": [1], "note": "The election refers to the preceding election."},
+      "turn-3": {"sources": [], "note": "He is not identified by the first two gold answers; external context is needed."},
+      "turn-4": {"sources": [1], "note": "The election refers to the earlier election."},
+      "turn-5": {"sources": [4], "note": "Vote count concerns the election just discussed."},
+      "turn-6": {"sources": [4], "note": "Opponent concerns the same candidate and election."},
+      "turn-7": {"sources": [4], "note": "Prime-minister tenure refers to the candidate's swearing-in."},
+      "turn-8": {"sources": [4], "note": "Campaigning concerns the same election candidate."},
+      "turn-9": {"sources": [8], "note": "That cost refers to campaigning mentioned in the prior question."},
+      "turn-10": {"sources": [8], "note": "Campaigning refers to the earlier campaign discussion."}
+    },
+    "qrecc-factoid-ranked-002": {
+      "turn-1": {"sources": [], "note": "Player identity requires context outside the selected answers."},
+      "turn-2": {"sources": [1], "note": "Browns refers to the previously identified team."},
+      "turn-3": {"sources": [], "note": "Player identity has not yet been supplied in prior gold answers."},
+      "turn-4": {"sources": [3], "note": "Other games refers to the player's prior game discussion."},
+      "turn-5": {"sources": [4], "note": "The game refers to College All-Star Game."},
+      "turn-6": {"sources": [4], "note": "The score is for College All-Star Game."},
+      "turn-7": {"sources": [], "note": "Open-ended article reference has no unique historical QA source."},
+      "turn-8": {"sources": [7], "note": "Traded refers to the preceding transfer."},
+      "turn-9": {"sources": [7], "note": "The new team refers to Dallas Texans."},
+      "turn-10": {"sources": [8], "note": "Military service follows the discharge mentioned earlier."}
+    },
+    "qrecc-factoid-ranked-003": {
+      "turn-1": {"sources": [], "note": "Explicit band name; no prior task needed."},
+      "turn-2": {"sources": [1], "note": "Roy is the band's founder introduced in the preceding answer."},
+      "turn-3": {"sources": [1], "note": "The band refers to Crazy Tennesseans."},
+      "turn-4": {"sources": [], "note": "Explicit new group name; no prior task needed."},
+      "turn-5": {"sources": [4], "note": "They refers to Smoky Mountain Boys."},
+      "turn-6": {"sources": [4], "note": "They refers to Smoky Mountain Boys."},
+      "turn-7": {"sources": [4], "note": "They refers to Smoky Mountain Boys."},
+      "turn-8": {"sources": [], "note": "Band versus individual award recipient is ambiguous; excluded from QA dependency scoring."},
+      "turn-9": {"sources": [], "note": "Explicit Acuff name; no prior QA needed."},
+      "turn-10": {"sources": [9], "note": "He and other instruments refer to Acuff's preceding instrument."}
+    }
+  }
+}

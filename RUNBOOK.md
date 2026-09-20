@@ -285,16 +285,31 @@ frontend_llmlingua_text_0.75_topiocqa-1_fusion.json
 | 指标 | 含义 |
 | --- | --- |
 | 文本字符数 | Agent 间显式文本通信字符数 |
-| 通信载荷 | 文本通信、协议消息和状态引用的综合开销 |
+| 完整协议包 | `logical_protocol_bytes`，逻辑协议对象的 UTF-8 序列化长度 |
+| 引用通信 | `reference_wire_bytes`，最小状态引用控制包的估算长度，不等同于物理网络流量 |
 | 非文本状态次数 | embedding、hidden state 等非文本状态传递次数 |
-| 非文本状态规模 | 非文本状态传递或存储规模，单位通常为 KB |
+| 非文本状态规模 | `latent_payload_bytes`，向量或 hidden payload 的逻辑数据规模 |
+| 状态池规模 | `state_store_estimated_bytes`，进程内状态池载荷的估算规模 |
 | 单任务耗时 | 每个任务从开始到完成的端到端耗时 |
 | 准确率 | 与数据集标准答案的 exact match 结果 |
-| 记忆复用率 | 有记忆命中的任务比例 |
-| 记忆召回率 | 期望复用记忆被召回的比例 |
-| 记忆精度 | 命中记忆中有效记忆的比例 |
+| 记忆命中任务占比 | 旧口径 `memory_hit_rate`：有任意记忆命中的任务比例，不判断召回是否相关 |
+| QA 记忆召回率 | 有 `expected_reuse` 标注时，应找回的历史 QA 中实际找回的比例 |
+| QA 记忆精度 | 有 `expected_reuse` 标注时，找回的 QA 记忆中真正相关的比例 |
+| 有效 QA 复用率 | 相关 QA 记忆被显式采用且最终答案 EM 正确的任务比例 |
 
-当前系统主要统计字符和载荷规模，不把字符数直接等同于 token 数。报告中如写 token，需要额外说明 tokenizer 和统计方法。
+当前系统主要统计字符和逻辑载荷规模，不把字符数直接等同于 token 数。系统尚未接入跨进程 Socket/IPC 测量，因此不得把引用通信字节数描述为物理网络传输量。`elapsed_ms` 是正式端到端耗时；`elapsed_excluding_state_generation_ms` 只用于状态生成开销消融，不作为端到端主指标。报告中如写 token，需要额外说明 tokenizer 和统计方法。
+
+对已有实验结果，可用离线脚本补算 QA 复用指标，不覆盖原始 JSON：
+
+```bash
+python examples/competition_agents/reassess_reuse.py --annotate-datasets --results run_result
+```
+
+该命令会：
+
+1. 把 `data/qa_reuse_annotations.json` 写回 factoid 数据集的 `expected_reuse`
+2. 为匹配的 `run_result/**/frontend_*.json` 生成同名 `.reuse-evaluation` 侧车
+3. 前端/导入结果时读取侧车，补显示 QA 召回率与精度
 
 ## 9. 命令行运行
 

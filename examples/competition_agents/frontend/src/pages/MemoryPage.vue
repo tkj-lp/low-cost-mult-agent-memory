@@ -170,7 +170,8 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { loadResultTrace } from '../resultTrace'
 import {
   collaborationModes,
   datasetKeyForFile,
@@ -186,9 +187,11 @@ import MetricsFilterBar from '../components/metrics/MetricsFilterBar.vue'
 const RUNNER_EVENTS_URL = 'http://127.0.0.1:8765/api/runner/events'
 const RUNNER_STATUS_URL = 'http://127.0.0.1:8765/api/runner/status'
 const RUNNER_METRICS_URL = 'http://127.0.0.1:8765/api/runner/metrics'
+const RUNNER_TRACE_URL = 'http://127.0.0.1:8765/api/runner/trace'
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
 const FILTER_SYNC_EVENT = 'competition-agent-filter-sync'
 const props = defineProps({
+  importedRecords: { type: Array, default: () => [] },
   importedPayloads: {
     type: Array,
     default: () => []
@@ -203,7 +206,10 @@ const sharedFilters = ref(withFilterDefaults(savedConfig.value))
 const runnerRunning = ref(false)
 const memoryRecords = ref([])
 const memoryLoadError = ref('')
+const selectedTracePayload = shallowRef(null)
+const selectedTraceRecordId = ref('')
 let timer = null
+let snapshotPending = false
 
 const memorySelectionLocked = computed(() => runnerRunning.value)
 const selectedMemoryRecord = computed(() =>
@@ -221,13 +227,18 @@ const memoryBaselineOptions = computed(() =>
   }))
 )
 const importedRunPayload = computed(() => importedPayloadForCurrentConfig(props.importedPayloads, sharedFilters.value))
-const selectedArchivePayload = computed(() => importedRunPayload.value ?? selectedMemoryRecord.value?.payload ?? null)
+const selectedArchivePayload = computed(() => {
+  const trace = selectedTraceRecordId.value === selectedMemoryRecord.value?.recordId
+    ? selectedTracePayload.value
+    : null
+  return trace ?? importedRunPayload.value ?? null
+})
 const displayRuntimeEvents = computed(() =>
   memorySelectionLocked.value
     ? runtimeEvents.value
     : selectedArchivePayload.value
       ? eventsFromImportedPayload(selectedArchivePayload.value)
-      : runtimeEvents.value
+      : []
 )
 const runMeta = computed(() => displayRuntimeEvents.value.find((event) => event.event_type === 'run_start') ?? {})
 const taskQueue = computed(() => {
@@ -473,6 +484,21 @@ watch(retrievalRows, (rows) => {
   }
 }, { immediate: true })
 
+watch(() => props.importedRecords, refreshMemoryRecords)
+
+watch(
+  () => [selectedMemoryRecord.value?.recordId, runnerRunning.value],
+  ([recordId]) => {
+    if (memorySelectionLocked.value || !recordId) {
+      selectedTracePayload.value = null
+      selectedTraceRecordId.value = ''
+      return
+    }
+    loadSelectedTrace()
+  },
+  { immediate: true }
+)
+
 onMounted(() => {
   refreshSavedConfig()
   refreshMemoryRecords()
@@ -514,8 +540,13 @@ function refreshSavedConfig() {
 }
 
 async function refreshRuntimeEvents() {
-  await refreshRunnerStatus()
+  if (snapshotPending) return
+  snapshotPending = true
   try {
+    const wasRunning = runnerRunning.value
+    await refreshRunnerStatus()
+    if (wasRunning && !runnerRunning.value) await refreshMemoryRecords()
+    if (!runnerRunning.value && !wasRunning) return
     const response = await fetch(`${RUNNER_EVENTS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) {
       runtimeEvents.value = []
@@ -525,6 +556,8 @@ async function refreshRuntimeEvents() {
     runtimeEvents.value = Array.isArray(payload.events) ? payload.events : []
   } catch {
     runtimeEvents.value = []
+  } finally {
+    snapshotPending = false
   }
 }
 
@@ -544,6 +577,11 @@ async function refreshRunnerStatus() {
 
 async function refreshMemoryRecords() {
   if (memorySelectionLocked.value) return
+  if (props.importedRecords.length) {
+    memoryRecords.value = normalizeMemoryRecords(props.importedRecords)
+    memoryLoadError.value = ''
+    return
+  }
   try {
     const response = await fetch(`${RUNNER_METRICS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) throw new Error('历史结果服务未返回有效数据')
@@ -553,6 +591,24 @@ async function refreshMemoryRecords() {
   } catch {
     memoryRecords.value = []
     memoryLoadError.value = '暂无历史结果，请先启动本地运行服务或完成一次运行。'
+  }
+}
+
+async function loadSelectedTrace() {
+  const record = selectedMemoryRecord.value
+  if (!record || memorySelectionLocked.value) return
+  const requestedRecordId = record.recordId
+  selectedTracePayload.value = null
+  selectedTraceRecordId.value = ''
+  try {
+    const payload = await loadResultTrace(record)
+    if (selectedMemoryRecord.value?.recordId !== requestedRecordId) return
+    selectedTracePayload.value = payload
+    selectedTraceRecordId.value = requestedRecordId
+  } catch {
+    if (selectedMemoryRecord.value?.recordId === requestedRecordId) {
+      memoryLoadError.value = '该历史记录的记忆明细读取失败，请确认本地运行服务仍在运行。'
+    }
   }
 }
 
@@ -588,7 +644,7 @@ function withFilterDefaults(value) {
 
 function normalizeMemoryRecords(records) {
   return records
-    .filter((record) => record?.payload)
+    .filter((record) => record?.source || record?.payload)
     .map((record, index) => ({
       ...record,
       recordId: String(record.recordId || `${record.source || 'record'}-${index}`),

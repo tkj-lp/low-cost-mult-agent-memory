@@ -29,20 +29,6 @@ from hypergraph_memory_method import (
 from run_hotpot_samples import SAMPLES, answers_match, normalize_answer
 
 
-COUNTRY_ALIASES = {
-    "united kingdom": "United Kingdom",
-    "england": "England",
-    "japan": "Japan",
-    "japanese": "Japan",
-    "france": "France",
-    "chief of protocol": "Chief of Protocol",
-    "animorphs": "Animorphs",
-    "greenwich village, new york city": "Greenwich Village, New York City",
-    "yg entertainment": "YG Entertainment",
-    "eenasul fateh": "Eenasul Fateh",
-}
-
-
 FRONTEND_OMIT_KEYS = {"pooled_vector", "tensor", "vector"}
 DEFAULT_CONTEXT_SOURCE = "inline"
 
@@ -321,7 +307,6 @@ def _rerank_hypergraph_hits(
     focus_tokens = set().union(*(_tokenize(step) for step in planner_focus)) if planner_focus else set()
     topic_tokens = _tokenize(sample.get("topic", ""))
     section_tokens = _tokenize(sample.get("topic_section", ""))
-    supporting_passage = str(sample.get("supporting_passage") or "").strip().lower()
 
     reranked: list[tuple[float, dict[str, Any]]] = []
     for hit in hits:
@@ -332,10 +317,6 @@ def _rerank_hypergraph_hits(
         text = str(hit.get("text") or "")
         text_lower = text.lower()
 
-        if supporting_passage and text_lower == supporting_passage:
-            score += 20.0
-        if kind == "supporting_passage":
-            score += 10.0
         if kind in {"dialogue_question", "dialogue_answer"}:
             score -= 4.0
 
@@ -350,12 +331,9 @@ def _rerank_hypergraph_hits(
         if {"when", "date", "year", "month"} & question_tokens:
             if re.search(r"\b\d{1,2}\s+[a-z]+\s+\d{4}\b", text_lower):
                 score += 4.0
-        if {"who", "cast", "members"} & question_tokens:
+        if {"who", "list", "name", "mention", "members", "types", "kinds"} & question_tokens:
             if "," in text and len(text.split(",")) >= 3:
                 score += 3.0
-        if {"what", "about"} & question_tokens:
-            if any(marker in text_lower for marker in ("depicts", "about", "is a", "was a")):
-                score += 2.0
 
         reranked.append((score, hit))
 
@@ -373,38 +351,26 @@ def _rerank_hypergraph_hits(
 
 
 def _question_answer_rules(question: str) -> str:
-    """根据问题类型补充更强的答案槽位约束。"""
+    """Build portable constraints from answer type and discourse structure."""
 
     question_lower = str(question or "").lower()
     rules = [
-        "Copy the answer span exactly from the evidence when possible.",
-        "Prefer the most specific phrase that directly answers the question.",
-        "Do not answer with the title or topic unless the question explicitly asks for it.",
-        "If the evidence contains multiple candidate spans, choose the one that satisfies every constraint in the question.",
+        "Resolve pronouns, ellipsis, and ordinals before selecting evidence.",
+        "Identify the requested attribute and answer type first.",
+        "Use only evidence that states the requested attribute.",
+        "Return the shortest complete evidence-backed answer.",
+        "Do not repeat an entity definition when another attribute is requested.",
     ]
-    if "when" in question_lower:
-        rules.append("If multiple dates appear, choose the one that matches all constraints in the question.")
-        rules.append("For DVD release questions, do not return a digital release date.")
-    if "what is the film about" in question_lower or "what is the film about?" in question_lower:
-        rules.append("Return the event or subject the film depicts, not just the title.")
-    if "cast" in question_lower or "members of the cast" in question_lower:
-        rules.append("Return only person names from the cast list, separated by commas.")
-        rules.append("Return the first four cast members mentioned in the evidence, in order.")
-        rules.append("Do not return the film title.")
-    if "where was it filmed" in question_lower or "where was it filmed?" in question_lower:
-        rules.append("Return all filming locations mentioned in the evidence, including both places if two are listed.")
-        rules.append("Return locations only, not the film title.")
-    if "what does the economy" in question_lower:
-        rules.append("Return only the economic pillar or resource, not a full sentence.")
-    if "which nearby sea" in question_lower:
-        rules.append("Return only the sea name.")
-    if "what kinds of fish" in question_lower:
-        rules.append("Return only the fish names mentioned in the evidence.")
-    if "what mineral resources" in question_lower:
-        rules.append("Return only the mineral resources, not the full explanatory sentence.")
-        rules.append("Include every mineral resource mentioned in the evidence, including amber if present.")
-    if "what natural hazard" in question_lower:
-        rules.append("Return only the hazard name, not an explanatory sentence.")
+    if re.search(r"\b(when|what year|what date)\b", question_lower):
+        rules.append("Answer type: time or date; satisfy every stated constraint.")
+    if re.search(r"\b(where|which place|which country|which city|location)\b", question_lower):
+        rules.append("Answer type: location with the required geographic qualifier.")
+    if re.search(r"\b(who|whose|which person)\b", question_lower):
+        rules.append("Answer type: person or role.")
+    if re.search(r"\b(list|name|mention|members|what kinds|what types|which)\b", question_lower):
+        rules.append("Answer type: list; include all and only the directly requested items.")
+    if re.search(r"\b(first|second|third|fourth|last|former|latter)\b", question_lower):
+        rules.append("Resolve the relative reference using the ordered prior answer.")
     return "\n".join(f"- {rule}" for rule in rules)
 
 
@@ -436,21 +402,17 @@ def _derive_hidden_query_triggers(question: str, extra_text: str = "") -> list[s
     extra_lower = str(extra_text or "").lower()
     task_type, tags = _extract_hidden_codeact_query_metadata(extra_text)
     triggers: list[str] = []
-    if "when" in question_lower:
+    if re.search(r"\b(when|what year|what date)\b", question_lower):
         triggers.append("temporal_query")
-    if any(token in question_lower for token in ("dvd", "blu ray", "blu-ray", "digital", "format")):
-        triggers.append("format_constraint")
-    if any(token in question_lower for token in ("united kingdom", "uk", "united states", "region")):
-        triggers.append("region_constraint")
-    if "what is" in question_lower or "film about" in question_lower or "main topic" in question_lower:
+    if "what is" in question_lower or "main topic" in question_lower:
         triggers.append("definition_or_topic_query")
-    if any(token in question_lower for token in ("cast", "members")):
+    if re.search(r"\b(list|name|mention|members|what kinds|what types|which)\b", question_lower):
         triggers.append("entity_list_query")
-    if "where" in question_lower and "filmed" in question_lower:
-        triggers.append("multi_location_query")
-    if any(token in question_lower for token in ("economy", "depend on", "mineral", "resource", "hazard", "fish")):
+    if re.search(r"\b(where|which place|which country|which city|location)\b", question_lower):
+        triggers.append("location_query")
+    if re.search(r"\b(what|how|is|are|was|were|does|do|has|have)\b", question_lower):
         triggers.append("attribute_lookup_query")
-    if any(token in question_lower for token in ("latter", "former", "this place", "this sea")):
+    if re.search(r"\b(it|they|this|that|these|those|latter|former|first|second|third|last)\b", question_lower):
         triggers.append("reference_resolution_query")
     if any(tag in {"statistics"} for tag in tags) or any(
         token in task_type for token in ("stats_summary", "population_variance", "sum_average")
@@ -554,189 +516,11 @@ def evidence_from_hypergraph_sample(
     return evidence, hits
 
 
-def infer_answer_from_evidence(question: str, evidence: list[str]) -> str:
-    """小型可复现实验的确定性答案抽取器。
-
-    这个函数不代表完整推理能力，只用于让 hidden-state 传递实验能稳定计算
-    exact_match。真实推理能力仍由 run_hotpot_samples.py 中的 LLM/API 链路验证。
-    """
-
-    evidence_text = " ".join(evidence).lower()
-    if "which person" in question.lower() and "pixar" in evidence_text:
-        for fact in evidence:
-            title, _, sentence = fact.partition(":")
-            if "pixar" in sentence.lower():
-                return title.strip()
-
-    for key, answer in COUNTRY_ALIASES.items():
-        if key in evidence_text:
-            return answer
-    return ""
-
-
-def _extract_topic_description_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, _, sentence = fact.partition(":")
-        match = re.search(r"\bdepicts\s+(.+?)(?:[.;]|$)", sentence, flags=re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
-    return ""
-
-
-def _extract_mineral_resources_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, _, sentence = fact.partition(":")
-        match = re.search(
-            r"\b(sand and gravel|sand,\s*gravel)(?:[^.]*?)\b(rolled pieces of amber|amber)\b",
-            sentence,
-            flags=re.IGNORECASE,
-        )
-        if match:
-            return "sand, gravel, rolled pieces of amber"
-    return ""
-
-
-def _extract_cast_members_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, sep, sentence = fact.partition(":")
-        sentence = sentence if sep else fact
-        if "ensemble cast includes" not in sentence.lower():
-            continue
-        names = re.findall(r"\b(Fionn Whitehead|Tom Glynn-Carney|Jack Lowden|Harry Styles)\b", sentence)
-        if len(names) >= 4:
-            return f"{names[0]}, {names[1]}, {names[2]}, and {names[3]}"
-    return ""
-
-
-def _extract_filming_locations_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, sep, sentence = fact.partition(":")
-        sentence = sentence if sep else fact
-        dunkirk = re.search(r"\b(Dunkirk,\s*France)\b", sentence, flags=re.IGNORECASE)
-        urk = re.search(r"\b(Urk,\s*Netherlands)\b", sentence, flags=re.IGNORECASE)
-        if dunkirk and urk:
-            return f"{dunkirk.group(1)}, and {urk.group(1)}"
-    return ""
-
-
-def _extract_latter_place_history_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, sep, sentence = fact.partition(":")
-        sentence = sentence if sep else fact
-        match = re.search(
-            r"\b(Until\s+1475,\s+the\s+High\s+and\s+Low\s+Lordship\s+of\s+Urk\s+and\s+Emmeloord\s+was\s+in\s+the\s+hands\s+of\s+the\s+Van\s+Kuinre\s+family)\b",
-            sentence,
-            flags=re.IGNORECASE,
-        )
-        if match:
-            return match.group(1)
-    return ""
-
-
-def _extract_fishery_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, sep, sentence = fact.partition(":")
-        sentence = sentence if sep else fact
-        if "important economic pillar" in sentence.lower() and "fishery" in sentence.lower():
-            return "Fishery"
-    return ""
-
-
-def _extract_hazard_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, _, sentence = fact.partition(":")
-        match = re.search(r"\b(storm surges?)\b", sentence, flags=re.IGNORECASE)
-        if match:
-            phrase = match.group(1).strip()
-            return phrase[0].upper() + phrase[1:]
-    return ""
-
-
-def _is_yes_no_question(question: str) -> bool:
-    question_lower = str(question or "").strip().lower()
-    if any(
-        phrase in question_lower
-        for phrase in (
-            "can you tell me",
-            "can you mention",
-            "can you list",
-            "can you name",
-            "can you describe",
-            "can you explain",
-        )
-    ):
-        return False
-    return question_lower.startswith(
-        ("is ", "are ", "was ", "were ", "do ", "does ", "did ", "can ", "could ", "has ", "have ", "had ")
-    )
-
-
-def _extract_glucose_metabolism_effect(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, _, sentence = fact.partition(":")
-        sentence_lower = sentence.lower()
-        if "gluconeogenesis" in sentence_lower and "non-carbohydrate sources" in sentence_lower:
-            return "It stimulates gluconeogenesis from non-carbohydrate sources"
-    return ""
-
-
-def _infer_yes_no_answer_from_evidence(question: str, evidence: list[str]) -> str:
-    question_lower = str(question or "").lower()
-    evidence_lower = " ".join(evidence).lower()
-
-    if "opposed by insulin" in question_lower and "opposing processes such as gluconeogenesis" in evidence_lower:
-        return "Yes"
-    if "could that substance also be extracted" in question_lower and "extracting insulin from the adult cow pancreas" in evidence_lower:
-        return "Yes"
-    if "can the last hormone" in question_lower and "has been found in all plants" in evidence_lower:
-        return "Yes, melatonin can be found in plants"
-
-    if evidence_lower and not any(token in evidence_lower for token in (" not ", " no ", " never ", " without ")):
-        return "Yes"
-    return ""
-
-
 def _postprocess_hidden_answer(question: str, evidence: list[str], answer_candidate: str) -> str:
-    """基于证据对 hidden 本地生成做少量强约束后处理，避免明显答偏。"""
+    """Normalize generated text without inserting dataset-specific answers."""
 
-    question_lower = str(question or "").lower()
-    if "how does the first hormone on that list affect glucose metabolism" in question_lower:
-        refined = _extract_glucose_metabolism_effect(evidence)
-        if refined:
-            return refined
-    if "cast" in question_lower or "members of the cast" in question_lower:
-        refined = _extract_cast_members_from_evidence(evidence)
-        if refined:
-            return refined
-    if "where was it filmed" in question_lower:
-        refined = _extract_filming_locations_from_evidence(evidence)
-        if refined:
-            return refined
-    if "latter place" in question_lower and "past" in question_lower:
-        refined = _extract_latter_place_history_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what does the economy" in question_lower and "depend on" in question_lower:
-        refined = _extract_fishery_from_evidence(evidence)
-        if refined:
-            return refined
-    if _is_yes_no_question(question_lower):
-        refined = _infer_yes_no_answer_from_evidence(question, evidence)
-        if refined:
-            return refined
-    if "what is the film about" in question_lower:
-        refined = _extract_topic_description_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what mineral resources" in question_lower:
-        refined = _extract_mineral_resources_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what natural hazard" in question_lower:
-        refined = _extract_hazard_from_evidence(evidence)
-        if refined:
-            return refined
-    return answer_candidate
+    del question, evidence
+    return " ".join(str(answer_candidate or "").strip().split())
 
 
 def clean_generated_answer(text: str) -> str:
@@ -1034,6 +818,8 @@ def run_sample(
     *,
     answer_mode: str = "generate",
 ) -> dict[str, Any]:
+    if answer_mode != "generate":
+        raise ValueError("Only answer_mode=generate is supported for unbiased QA evaluation")
     started = time.perf_counter()
     latent_states: dict[str, dict[str, Any]] = {}
     messages: list[dict[str, Any]] = []
@@ -1105,37 +891,13 @@ def run_sample(
     )
     messages.append(compact_message("retriever", "reasoner", "reason", [planner_ref, evidence_ref], memory_refs))
 
-    reasoner_prompt = ""
-    if answer_mode == "generate":
-        answer_ref, latent_states, answer_state, answer_candidate, reasoner_prompt = generate_answer_with_hidden_state(
-            latent_states,
-            topic=topic,
-            question=question,
-            evidence=evidence,
-            memory_refs=memory_refs,
-        )
-    else:
-        answer_candidate = infer_answer_from_evidence(question, evidence)
-        if str(sample.get("answer", "")).lower().startswith("evidence chain supports:"):
-            answer_candidate = sample["answer"]
-        if not answer_candidate and sample.get("answer"):
-            answer_candidate = sample["answer"]
-        reasoner_prompt = (
-            "ReasonerAgent hidden-latent answer input.\n"
-            f"Question: {question}\n"
-            f"planner_hidden_ref: {planner_ref}\n"
-            f"evidence_hidden_ref: {evidence_ref}\n"
-            f"memory_refs: {json.dumps(memory_refs, ensure_ascii=False)}\n"
-            f"Controlled evidence: {json.dumps(evidence, ensure_ascii=False)}\n"
-            f"Answer candidate: {answer_candidate}"
-        )
-        answer_ref, latent_states, answer_state = put_hidden_state(
-            latent_states,
-            producer="reasoner",
-            topic=topic,
-            text=reasoner_prompt,
-            consumers=["summarizer"],
-        )
+    answer_ref, latent_states, answer_state, answer_candidate, reasoner_prompt = generate_answer_with_hidden_state(
+        latent_states,
+        topic=topic,
+        question=question,
+        evidence=evidence,
+        memory_refs=memory_refs,
+    )
     messages.append(compact_message("reasoner", "summarizer", "summarize", [answer_ref], memory_refs))
 
     serialized_messages: list[str] = []
@@ -2448,9 +2210,9 @@ def parse_args() -> Namespace:
     )
     parser.add_argument(
         "--answer-mode",
-        choices=["generate", "extract"],
+        choices=["generate"],
         default="generate",
-        help="generate 表示同一个本地模型生成答案并直接提取 hidden；extract 表示保留旧的确定性抽取模式。",
+        help="Use the local model to generate an evidence-grounded answer and hidden state.",
     )
     parser.add_argument(
         "--memory-retrieval-mode",

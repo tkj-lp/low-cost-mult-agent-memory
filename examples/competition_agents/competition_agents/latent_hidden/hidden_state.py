@@ -31,6 +31,8 @@ class GeneratedHiddenResult:
     generated_text: str
     full_text: str
     hidden: HiddenStateResult
+    input_tokens: int = 0
+    output_tokens: int = 0
 
 
 def _prepare_generation_inputs(bundle, prompt: str) -> dict[str, object]:
@@ -326,6 +328,8 @@ def generate_text_with_last_hidden_state(
             generated_text=generated_text,
             full_text=full_text,
             hidden=hidden,
+            input_tokens=prompt_tokens,
+            output_tokens=int(generated_ids.shape[-1]),
         ),
         returned_tensor,
     )

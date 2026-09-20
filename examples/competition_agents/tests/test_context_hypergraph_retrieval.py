@@ -73,3 +73,75 @@ def test_context_labels_cannot_change_online_ranking() -> None:
     ]
 
     assert changed_ids == base_ids
+
+
+def test_topiocqa_indexes_batch_documents_with_section_and_provenance() -> None:
+    task = {
+        "task_id": "sample:turn-2",
+        "dataset_type": "topiocqa",
+        "question": "Which category includes this object?",
+        "topic": "Sample object",
+        "supporting_passage": "The sample object has a smooth surface.",
+        "context": [{"title": "Sample object [SEP] Classification", "source": "source_document",
+                     "sentences": ["The sample object belongs to category Delta."]}],
+    }
+    hits = search_context(task, top_k=4)
+    target = next(hit for hit in hits if "category Delta" in hit["text"])
+    assert target["kind"] == "sentence"
+    assert target["title"] == "Sample object"
+    assert target["section"] == "Classification"
+    assert target["metadata"]["source"] == "source_document"
+    assert target["metadata"]["sentence_range"] == [0, 1]
+
+
+def test_topiocqa_windows_keep_adjacent_context_but_not_entire_document() -> None:
+    task = {
+        "task_id": "sample:turn-3", "dataset_type": "topiocqa", "question": "Where is ZoneBeta protected?",
+        "context": [{"title": "Reserve", "sentences": [
+            "Unrelated opening.", "Protection is provided in the following reserves:",
+            "ZoneBeta reserve;", "ZoneGamma reserve.", "Unrelated ending.",
+        ]}],
+    }
+    hits = search_context(task, top_k=10)
+    target = next(hit for hit in hits if hit["metadata"].get("sentence_index") == 2)
+    assert "Protection is provided" in target["text"]
+    assert "ZoneGamma" in target["text"]
+    assert "Unrelated opening" not in target["text"]
+    assert "Unrelated ending" not in target["text"]
+
+
+def test_topiocqa_reference_labels_cannot_change_knowledge_hits() -> None:
+    task = {"task_id": "sample:turn-4", "dataset_type": "topiocqa", "question": "Which category?",
+            "context": [{"title": "Example", "sentences": ["Category Delta includes the sample."]}]}
+    changed = {**task, "reference_answers": ["secret"], "expected_answer": "secret",
+               "reference_annotations": [{"Answer": "secret", "Rationale": "Do not index this label"}]}
+    base_hits = search_context(task)
+    assert base_hits == search_context(changed)
+    assert all("secret" not in hit["text"] for hit in base_hits)
+
+
+def test_topiocqa_deduplicates_document_and_supporting_passage() -> None:
+    task = {"task_id": "sample:turn-5", "dataset_type": "topiocqa", "question": "Which category?",
+            "topic": "Example", "topic_section": "Classification", "supporting_passage": "Category Delta.",
+            "context": [{"title": "Example [SEP] Classification", "sentences": ["Category Delta."]}]}
+    hits = search_context(task, top_k=10)
+    assert len(hits) == 1
+
+
+def test_excluded_history_cannot_displace_knowledge_before_top_k() -> None:
+    task = {"task_id": "sample:turn-6", "dataset_type": "topiocqa", "question": "Which category?",
+            "conversation_context": ["Which category?", "Which category?"],
+            "context": [{"title": "Example", "sentences": ["Category Delta includes the sample."]}]}
+    hits = search_context(task, top_k=1, exclude_kinds={"dialogue_question", "dialogue_answer"})
+    assert len(hits) == 1
+    assert hits[0]["kind"] == "sentence"
+
+
+def test_question_terms_outweigh_conflicting_section_hint() -> None:
+    task = {"task_id": "sample:turn-7", "dataset_type": "topiocqa", "question": "What material is used?",
+            "topic": "Sample", "context": [
+                {"title": "Sample [SEP] Introduction", "sentences": ["Sample is an example object."]},
+                {"title": "Sample [SEP] Construction", "sentences": ["The material used is titanium."]},
+            ]}
+    hits = search_context(task, query="Sample Introduction", top_k=1)
+    assert "titanium" in hits[0]["text"]

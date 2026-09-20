@@ -9,6 +9,7 @@ from typing import Any, Literal, TypedDict
 
 from competition_agents.capabilities import build_capability_registry
 from competition_agents.embedding import embed_text, hash_embedding
+from competition_agents.handoff import delivered_answer, encode_answer_handoff
 from competition_agents.latent_hidden import (
     extract_last_hidden_state,
     hidden_storage_mode,
@@ -17,7 +18,7 @@ from competition_agents.latent_hidden import (
     stored_hidden_shape,
 )
 from competition_agents.runtime_events import emit_message_event, emit_state_transfer_event
-from competition_agents.state_store import put_state_payload
+from competition_agents.state_store import get_state_payload, put_state_payload
 from baselines.llmlingua2 import compress_message
 
 
@@ -28,8 +29,11 @@ class Metrics(TypedDict):
     text_chars: int
     protocol_bytes: int
     communication_bytes: int
+    logical_protocol_bytes: int
+    reference_wire_bytes: int
     latent_transfer_count: int
     latent_bytes: int
+    latent_payload_bytes: int
     transfer_latency_ms: float
     state_generation_ms: float
     raw_text_chars: int
@@ -45,7 +49,12 @@ class Metrics(TypedDict):
     planner_memory_decision_ms: float
     state_store_write_count: int
     state_store_read_count: int
+    state_store_read_bytes: int
+    state_store_read_ms: float
     state_store_bytes: int
+    state_store_estimated_bytes: int
+    latent_use_count: int
+    latent_rerank_count: int
 
 
 AGENT_CODES = {
@@ -144,8 +153,11 @@ def initial_state(
             "text_chars": 0,
             "protocol_bytes": 0,
             "communication_bytes": 0,
+            "logical_protocol_bytes": 0,
+            "reference_wire_bytes": 0,
             "latent_transfer_count": 0,
             "latent_bytes": 0,
+            "latent_payload_bytes": 0,
             "transfer_latency_ms": 0.0,
             "state_generation_ms": 0.0,
             "raw_text_chars": 0,
@@ -161,7 +173,12 @@ def initial_state(
             "planner_memory_decision_ms": 0.0,
             "state_store_write_count": 0,
             "state_store_read_count": 0,
+            "state_store_read_bytes": 0,
+            "state_store_read_ms": 0.0,
             "state_store_bytes": 0,
+            "state_store_estimated_bytes": 0,
+            "latent_use_count": 0,
+            "latent_rerank_count": 0,
         },
     }
 
@@ -205,6 +222,9 @@ def put_shared_state(
     metrics = dict(state["metrics"])
     metrics["state_store_write_count"] = metrics.get("state_store_write_count", 0) + 1
     metrics["state_store_bytes"] = metrics.get("state_store_bytes", 0) + int(store_info["bytes"])
+    metrics["state_store_estimated_bytes"] = metrics.get("state_store_estimated_bytes", 0) + int(
+        store_info["bytes"]
+    )
     emit_state_transfer_event(
         state,
         state_id=state_id,
@@ -227,6 +247,7 @@ def put_latent_state(
     consumers: list[str] | None = None,
     scope: str = "task",
     ttl: int = 3,
+    semantic_payload: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
     """创建非文本 latent state，并更新状态传递指标。"""
 
@@ -246,6 +267,7 @@ def put_latent_state(
             "embedding_provider": embedding.provider,
             "embedding_model": embedding.model,
             "vector": vector,
+            **({"semantic_payload": semantic_payload} if semantic_payload is not None else {}),
         },
         scope=scope,
     )
@@ -273,8 +295,12 @@ def put_latent_state(
     # 简化估算：把向量按 32 位浮点数统计数据规模。
     metrics["latent_transfer_count"] += 1
     metrics["latent_bytes"] += len(vector) * 4
+    metrics["latent_payload_bytes"] = metrics.get("latent_payload_bytes", 0) + len(vector) * 4
     metrics["state_store_write_count"] = metrics.get("state_store_write_count", 0) + 1
     metrics["state_store_bytes"] = metrics.get("state_store_bytes", 0) + int(
+        store_info["bytes"]
+    )
+    metrics["state_store_estimated_bytes"] = metrics.get("state_store_estimated_bytes", 0) + int(
         store_info["bytes"]
     )
     metrics["state_generation_ms"] = metrics.get("state_generation_ms", 0.0) + generation_elapsed_ms
@@ -302,6 +328,7 @@ def put_hidden_state(
     ttl: int = 3,
     hidden_result: Any | None = None,
     hidden_tensor: Any | None = None,
+    semantic_payload: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, dict[str, Any]], Metrics]:
     """创建本地 LLM hidden state，并复用现有 latent_state 容器输出 state_ref。"""
 
@@ -353,6 +380,7 @@ def put_hidden_state(
             "model": result.model_name,
             "shape": result.shape,
             "stored_shape": stored_hidden_shape(result),
+            **({"semantic_payload": semantic_payload} if semantic_payload is not None else {}),
         },
         scope=scope,
     )
@@ -361,8 +389,12 @@ def put_hidden_state(
     metrics = dict(state["metrics"])
     metrics["latent_transfer_count"] += 1
     metrics["latent_bytes"] += stored_hidden_bytes(result)
+    metrics["latent_payload_bytes"] = metrics.get("latent_payload_bytes", 0) + stored_hidden_bytes(result)
     metrics["state_store_write_count"] = metrics.get("state_store_write_count", 0) + 1
     metrics["state_store_bytes"] = metrics.get("state_store_bytes", 0) + int(
+        store_info["bytes"]
+    )
+    metrics["state_store_estimated_bytes"] = metrics.get("state_store_estimated_bytes", 0) + int(
         store_info["bytes"]
     )
     metrics["state_generation_ms"] = metrics.get("state_generation_ms", 0.0) + generation_elapsed_ms
@@ -377,6 +409,68 @@ def put_hidden_state(
         bytes_size=stored_hidden_bytes(result),
     )
     return state_id, {**state["latent_states"], state_id: latent_state}, metrics
+
+
+def resolve_state_ref(
+    state: CompetitionState,
+    state_ref: str,
+    *,
+    consumer: str,
+    expected_content_types: set[str] | None = None,
+) -> tuple[dict[str, Any], Metrics]:
+    """Resolve a state-pool reference and account for downstream data-plane use."""
+
+    metrics = dict(state["metrics"])
+    if not state_ref:
+        return {}, metrics
+
+    metadata = state.get("latent_states", {}).get(state_ref, {})
+    if not metadata:
+        return {}, metrics
+    consumers = [str(value) for value in metadata.get("consumers", [])]
+    if consumers and consumer not in consumers:
+        return {}, metrics
+
+    store_ref = str(metadata.get("store_ref") or state_ref)
+    started = time.perf_counter()
+    record = get_state_payload(store_ref)
+    elapsed_ms = (time.perf_counter() - started) * 1000
+    if not record:
+        return {}, metrics
+
+    payload = record.get("payload")
+    if not isinstance(payload, dict):
+        return {}, metrics
+    content_type = str(payload.get("content_type") or "")
+    if expected_content_types and content_type not in expected_content_types:
+        return {}, metrics
+
+    metrics["state_store_read_count"] = metrics.get("state_store_read_count", 0) + 1
+    metrics["state_store_read_bytes"] = metrics.get("state_store_read_bytes", 0) + int(
+        record.get("bytes") or 0
+    )
+    metrics["state_store_read_ms"] = metrics.get("state_store_read_ms", 0.0) + elapsed_ms
+    if content_type.startswith("latent."):
+        metrics["latent_use_count"] = metrics.get("latent_use_count", 0) + 1
+    return payload, metrics
+
+
+def received_state_refs(state: CompetitionState, *, sender: str, receiver: str) -> list[str]:
+    """Read all state references from the delivered packet, never global state."""
+    for message in reversed(state.get("messages", [])):
+        if message.get("from") == sender and message.get("to") == receiver:
+            payload = message.get("payload")
+            refs = _payload_list(payload, "s", "state_refs") if isinstance(payload, dict) else []
+            if not refs:
+                raise ValueError(f"Missing state reference: {sender} -> {receiver}")
+            return [str(ref) for ref in refs]
+    raise ValueError(f"Missing handoff: {sender} -> {receiver}")
+
+
+def received_state_ref(state: CompetitionState, *, sender: str, receiver: str) -> str:
+    """Read the primary state reference from the delivered packet."""
+
+    return received_state_refs(state, sender=sender, receiver=receiver)[0]
 
 
 def record_message(
@@ -406,12 +500,24 @@ def record_message(
             action=action,
         )
         payload = compression.payload
+        answer_candidate = None
+        if sender == "reasoner" and receiver == "summarizer" and action == "summarize":
+            answer_candidate = delivered_answer(original_payload)
+        if answer_candidate is not None:
+            payload = encode_answer_handoff(
+                answer_candidate,
+                compression.payload,
+                "llmlingua2",
+            )
+        transmitted_chars = len(payload)
         compression_info = {
             "raw_text_chars": compression.raw_chars,
-            "compressed_text_chars": compression.compressed_chars,
+            "compressed_text_chars": transmitted_chars,
             "compression_latency_ms": compression.latency_ms,
             "compression_provider": compression.provider,
-            "compression_ratio": compression.ratio,
+            "compression_ratio": (
+                transmitted_chars / compression.raw_chars if compression.raw_chars else 1.0
+            ),
         }
     elif state.get("mode") == "text" and isinstance(payload, str) and text_comm_style == "autoform":
         compression_info = {
@@ -424,15 +530,23 @@ def record_message(
     # 结构化 payload 使用紧凑 JSON 统计传输大小。
     serialized = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     protocol_bytes = len(serialized.encode("utf-8"))
-    minimal_payload = minimal_wire_payload(state, sender=sender, receiver=receiver, action=action, payload=payload)
-    minimal_serialized = minimal_payload if isinstance(minimal_payload, str) else json.dumps(minimal_payload, ensure_ascii=False, separators=(",", ":"))
-    communication_bytes = len(minimal_serialized.encode("utf-8"))
+    # Count the packet actually delivered, not a hypothetical smaller encoding.
+    communication_bytes = protocol_bytes
     transfer_elapsed_ms = (time.perf_counter() - started) * 1000
     next_metrics = dict(metrics or state["metrics"])
     next_metrics["message_count"] += 1
-    next_metrics["text_chars"] += len(serialized)
+    # `text_chars` measures natural-language agent communication only. Structured
+    # packets are accounted for by protocol/reference byte metrics below.
+    text_char_cost = (
+        len(serialized)
+        if state.get("mode") == "text" and isinstance(payload, str)
+        else 0
+    )
+    next_metrics["text_chars"] += text_char_cost
     next_metrics["protocol_bytes"] = next_metrics.get("protocol_bytes", 0) + protocol_bytes
     next_metrics["communication_bytes"] = next_metrics.get("communication_bytes", 0) + communication_bytes
+    next_metrics["logical_protocol_bytes"] = next_metrics.get("logical_protocol_bytes", 0) + protocol_bytes
+    next_metrics["reference_wire_bytes"] = next_metrics.get("reference_wire_bytes", 0) + communication_bytes
     next_metrics["transfer_latency_ms"] += transfer_elapsed_ms
     if state.get("mode") == "text" and isinstance(payload, str):
         generated_chars = int(compression_info.get("raw_text_chars", len(serialized)))
@@ -450,7 +564,8 @@ def record_message(
         "to": receiver,
         "action": action,
         "payload": payload,
-        "char_cost": len(serialized),
+        "wire_payload": serialized,
+        "char_cost": text_char_cost,
         "protocol_bytes": protocol_bytes,
         "communication_bytes": communication_bytes,
         "transfer_latency_ms": transfer_elapsed_ms,
@@ -464,7 +579,7 @@ def record_message(
         receiver=receiver,
         action=action,
         payload=payload,
-        char_cost=len(serialized),
+        char_cost=text_char_cost,
         transfer_elapsed_ms=transfer_elapsed_ms,
         extra=compression_info if compression_info else None,
     )

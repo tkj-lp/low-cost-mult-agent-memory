@@ -1403,6 +1403,7 @@ def add_memory(
                 source_task_correct=source_task_correct,
                 use_as_positive=bool(use_as_positive),
             )
+            merged["hypergraph"] = build_hypergraph_view(merged, persist=True)
             updated_memory = list(memory)
             updated_memory[merge_index] = merged
             return updated_memory
@@ -1491,6 +1492,12 @@ def add_memory(
             if value not in (None, "", [], {})
         },
     }
+    if memory_type == "evidence" and task_meta.get("dataset_type") == "continuous":
+        record["history_qa"] = {
+            "group_id": record["group_id"], "turn": record["turn_id"],
+            "question": str(task_meta.get("question") or task_topic),
+            "answer": summary, "confidence": "unknown", "verification_status": "unverified",
+        }
     if trace is not None:
         record["trace"] = trace
         state_refs = trace.get("state_refs", {})
@@ -1498,7 +1505,12 @@ def add_memory(
             record["state_refs"] = [ref for ref in state_refs.values() if ref]
         record["evidence"] = trace.get("evidence", [])
         task_meta = trace.get("task_meta", {})
-    record["hypergraph"] = build_hypergraph_view(record)
+    # Episodic QA memory expires with its batch. Only distilled experience is
+    # eligible for cross-run persistence in the configured SQLite store.
+    record["hypergraph"] = build_hypergraph_view(
+        record,
+        persist=memory_type in {"experience", "failed_experience"},
+    )
     return [*memory, record]
 
 

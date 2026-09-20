@@ -1,0 +1,423 @@
+[
+  {
+    "group_id": "qrecc-factoid-ranked-003",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 917,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 4/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "QReCC conversation 917",
+    "context": [
+      {
+        "title": "QReCC conversation 917 turn 2",
+        "sentences": [
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 3",
+        "sentences": [
+          "Roy formed the Crazy Tennesseans"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 4",
+        "sentences": [
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 5",
+        "sentences": [
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 6",
+        "sentences": [
+          "Appalachian region"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 7",
+        "sentences": [
+          "Songs Of The Smoky Mountains"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 8",
+        "sentences": [
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 9",
+        "sentences": [
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 10",
+        "sentences": [
+          "fiddler"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 11",
+        "sentences": [
+          "singer and fiddler"
+        ],
+        "source": "official_answer_annotation"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/slupart/qrecc/resolve/35dd1d9b6306182f19a763b497e06dba9b3d48c9/qrecc_test.json",
+    "reference_source_sha256": "a410865623737c98e172bbc86515f416ebecca8971c5c0929a7fdda5256fa540",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_answer_annotations_existing_project_adapter",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "Who are the Crazy Tennesseans?",
+        "rewrite": "Who are the Crazy Tennesseans for Roy Acuff?",
+        "expected_answer": "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+        "reference_answers": [
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 2",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry."
+        ],
+        "supporting_passage": "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+        "answer_url": "https://visitclarksvilletn.com/notable-clarksvillians/celebrity/roy-acuff/?back=famousPeople",
+        "reuse_annotation_note": "Explicit band name; no prior task needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "Did Roy perform with the Crazy Tennesseans?",
+        "rewrite": "Did Roy Acuff perform with the Crazy Tennesseans?",
+        "expected_answer": "Roy formed the Crazy Tennesseans",
+        "reference_answers": [
+          "Roy formed the Crazy Tennesseans"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 3",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans."
+        ],
+        "supporting_passage": "Roy formed the Crazy Tennesseans",
+        "answer_url": "https://visitclarksvilletn.com/notable-clarksvillians/celebrity/roy-acuff/?back=famousPeople",
+        "reuse_annotation_note": "Roy is the band's founder introduced in the preceding answer.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "Who are the members of the band?",
+        "rewrite": "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+        "expected_answer": "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+        "reference_answers": [
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 4",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans"
+        ],
+        "supporting_passage": "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff#Early_music_career",
+        "reuse_annotation_note": "The band refers to Crazy Tennesseans.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "Are the Smokey Mountain Boys successful?",
+        "rewrite": "Are the Smokey Mountain Boys with Roy Acuff successful?",
+        "expected_answer": "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+        "reference_answers": [
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 5",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones"
+        ],
+        "supporting_passage": "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "Explicit new group name; no prior task needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "Where did they play at?",
+        "rewrite": "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+        "expected_answer": "Appalachian region",
+        "reference_answers": [
+          "Appalachian region"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 6",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys."
+        ],
+        "supporting_passage": "Appalachian region",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "They refers to Smoky Mountain Boys.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "Did they produce any records?",
+        "rewrite": "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+        "expected_answer": "Songs Of The Smoky Mountains",
+        "reference_answers": [
+          "Songs Of The Smoky Mountains"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 7",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region"
+        ],
+        "supporting_passage": "Songs Of The Smoky Mountains",
+        "answer_url": "https://www.discogs.com/artist/1421882-Roy-Acuff-And-His-Smoky-Mountain-Boys?filter_anv=0&subtype=Albums&type=Releases",
+        "reuse_annotation_note": "They refers to Smoky Mountain Boys.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "What songs did they play?",
+        "rewrite": "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+        "expected_answer": "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+        "reference_answers": [
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 8",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains"
+        ],
+        "supporting_passage": "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+        "answer_url": "https://www.discogs.com/artist/1421882-Roy-Acuff-And-His-Smoky-Mountain-Boys?filter_anv=0&subtype=Singles-EPs&type=Releases",
+        "reuse_annotation_note": "They refers to Smoky Mountain Boys.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "Did they win any awards?",
+        "rewrite": "Did Roy Acuff win any awards?",
+        "expected_answer": "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor.",
+        "reference_answers": [
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 9",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains",
+          "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There"
+        ],
+        "supporting_passage": "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor.",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff#Later_career",
+        "reuse_annotation_note": "Band versus individual award recipient is ambiguous; excluded from QA dependency scoring.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "What instrument did Acuff play?",
+        "rewrite": "What instrument did Acuff play?",
+        "expected_answer": "fiddler",
+        "reference_answers": [
+          "fiddler"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 10",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains",
+          "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+          "Did Roy Acuff win any awards?",
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor."
+        ],
+        "supporting_passage": "fiddler",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "Explicit Acuff name; no prior QA needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 11,
+        "task_type": "continuous",
+        "question": "Did he play any other instruments?",
+        "rewrite": "Did Roy Acuff play any other instruments?",
+        "expected_answer": "singer and fiddler",
+        "reference_answers": [
+          "singer and fiddler"
+        ],
+        "expected_reuse": [
+          "turn-9.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 11",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains",
+          "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+          "Did Roy Acuff win any awards?",
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor.",
+          "What instrument did Acuff play?",
+          "fiddler"
+        ],
+        "supporting_passage": "singer and fiddler",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "He and other instruments refer to Acuff's preceding instrument.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  }
+]

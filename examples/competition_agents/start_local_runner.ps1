@@ -1,6 +1,7 @@
 param(
   [switch]$UseOfficialLLMLingua2,
-  [double]$LLMLingua2Rate = 0.75
+  [double]$LLMLingua2Rate = 0.75,
+  [switch]$DisableLongTermMemory
 )
 
 $ErrorActionPreference = "Stop"
@@ -50,6 +51,20 @@ $env:EMBEDDING_PROVIDER = "local"
 $env:LOCAL_EMBEDDING_MODEL = $EmbeddingModel
 $env:HIDDEN_RETRIEVER_EMBEDDING_PROVIDER = "local"
 $env:LLMLINGUA2_RATE = [string]$LLMLingua2Rate
+$env:LOCAL_LLM_COMPACT_TASK = "1"
+$env:LOCAL_LLM_MAX_INPUT_TOKENS = "4096"
+$env:LOCAL_LLM_MAX_NEW_TOKENS = "96"
+$env:LOCAL_LLM_PLANNER_MAX_NEW_TOKENS = "128"
+$env:LOCAL_LLM_REASONER_MAX_NEW_TOKENS = "128"
+$env:LOCAL_LLM_SUMMARIZER_MAX_NEW_TOKENS = "48"
+
+if ($DisableLongTermMemory) {
+  $env:COMPETITION_LONG_TERM_MEMORY = "0"
+  Remove-Item Env:COMPETITION_MEMORY_ROOT -ErrorAction SilentlyContinue
+} else {
+  $env:COMPETITION_LONG_TERM_MEMORY = "1"
+  $env:COMPETITION_MEMORY_ROOT = Join-Path $RepoRoot "run_result\memory_store"
+}
 
 if ($UseOfficialLLMLingua2) {
   if (-not (Test-Path $LLMLingua2Model)) {
@@ -71,5 +86,10 @@ Write-Host "[runner] task model is selected on the web page"
 Write-Host "[runner] LOCAL_EMBEDDING_MODEL=$env:LOCAL_EMBEDDING_MODEL"
 Write-Host "[runner] official_llmlingua2=$UseOfficialLLMLingua2"
 Write-Host "[runner] LLMLINGUA2_RATE=$env:LLMLINGUA2_RATE"
+Write-Host "[runner] LOCAL_LLM_MAX_INPUT_TOKENS=$env:LOCAL_LLM_MAX_INPUT_TOKENS"
+Write-Host "[runner] long_term_memory=$(-not $DisableLongTermMemory)"
+if (-not $DisableLongTermMemory) {
+  Write-Host "[runner] memory_root=$env:COMPETITION_MEMORY_ROOT"
+}
 
 & $Python examples\competition_agents\runner_server.py

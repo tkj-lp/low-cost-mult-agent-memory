@@ -3,7 +3,7 @@
     "group_id": "topiocqa-official-001",
     "source_dataset": "TopiOCQA",
     "source_file": "topiocqa_valid.jsonl",
-    "original_conversation_no": 48,
+    "original_conversation_no": 119,
     "original_turn_count": 11,
     "selected_turn_count": 10,
     "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
@@ -51,6 +51,258 @@
         "sentences": [
           "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria, It was gazetted from two game reserves in 1991 and is Nigeria’s largest national park. It is located in the eastern provinces of Taraba and Adamawa to the border with Cameroon. The total area covers about 6,402 km, much of the northern GGNP is savannah grassland, while the southern GGNP sector of the park has a rugged terrain characterized by very mountainous, steep slopes as well as deep valleys and gorges, and is home to montane forests. Altitude ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi, Nigeria’s highest mountain in the park's southern sections."
         ]
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "small antelope"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "is a small antelope"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "found in eastern, southern and western Africa."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "eastern, southern and western Africa"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Description",
+        "sentences": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Description",
+        "sentences": [
+          "small, slender"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "The sole member of its genus,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Taxonomy",
+        "sentences": [
+          "The sole member of its genus, the oribi is placed under the family Bovidae."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Taxonomy",
+        "sentences": [
+          "Bovidae."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Taxonomy",
+        "sentences": [
+          "Bovidae"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\","
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "fresh grasses and browses"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi has been classified as Least Concern by the IUCN."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "the total population is estimated at less than 10,000 mature individuals, and is feared to be declining."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia)."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          "Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          "yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          "yellow-backed duiker, African golden cat"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "red sunbird bush"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "red sunbird bush, an ornate species of the acanthus family"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "Nigeria,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "in Nigeria"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "Nigeria"
+        ],
+        "source": "official_annotated_rationale"
       }
     ],
     "supporting_facts": [
@@ -107,9 +359,40 @@
         "topic_section": "Introduction",
         "conversation_context": [],
         "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
-        "rationale": "small antelope",
+        "rationale": " small antelope ",
         "gold_passage_id": "wiki:23843441",
-        "gold_passage_title": "Oribi [SEP] Introduction"
+        "gold_passage_title": "Oribi [SEP] Introduction",
+        "reference_answers": [
+          "It is a small antelope.",
+          "A small antelope",
+          "It is a small antelope"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It is a small antelope.",
+            "Rationale": " small antelope ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "A small antelope",
+            "Rationale": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is a small antelope",
+            "Rationale": "is a small antelope",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is a small antelope.",
+            "Rationale": " is a small antelope ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-2",
@@ -128,9 +411,41 @@
           "It is a small antelope."
         ],
         "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
-        "rationale": "found in eastern, southern and western Africa.",
+        "rationale": " found in eastern, southern and western Africa. ",
         "gold_passage_id": "wiki:23843441",
-        "gold_passage_title": "Oribi [SEP] Introduction"
+        "gold_passage_title": "Oribi [SEP] Introduction",
+        "reference_answers": [
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "Eastern, southern and western Africa.",
+          "Found in eastern, southern and western Africa.",
+          "Eastern, southern and western Africa"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+            "Rationale": " found in eastern, southern and western Africa. ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Eastern, southern and western Africa.",
+            "Rationale": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Found in eastern, southern and western Africa.",
+            "Rationale": "found in eastern, southern and western Africa.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Eastern, southern and western Africa",
+            "Rationale": "eastern, southern and western Africa",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-3",
@@ -152,9 +467,41 @@
           "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands"
         ],
         "supporting_passage": "The oribi is a small, slender antelope; it reaches nearly at the shoulder and weighs . The head-and-body length is typically between . Sexually dimorphic, males are slightly smaller than females (except for \"O. o. ourebi\", in which females are smaller). This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides (except in \"O. o. hastata\", that has a completely black tail). The subspecies show some variation in colouration; \"O.",
-        "rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides",
+        "rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides ",
         "gold_passage_id": "wiki:23843446",
-        "gold_passage_title": "Oribi [SEP] Description"
+        "gold_passage_title": "Oribi [SEP] Description",
+        "reference_answers": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "Slightly raised back, and long neck and limbs and glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+          "Small, slender, slightly raised back and long neck and limbs."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+            "Rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides ",
+            "Topic": "Oribi",
+            "Topic_section": "Description"
+          },
+          {
+            "Answer": "Slightly raised back, and long neck and limbs and glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+            "Rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+            "Rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Small, slender, slightly raised back and long neck and limbs.",
+            "Rationale": "small, slender",
+            "Topic": "Oribi",
+            "Topic_section": "Description"
+          }
+        ]
       },
       {
         "turn_id": "turn-4",
@@ -180,7 +527,37 @@
         "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
         "rationale": "The sole member of its genus,",
         "gold_passage_id": "wiki:23843441",
-        "gold_passage_title": "Oribi [SEP] Introduction"
+        "gold_passage_title": "Oribi [SEP] Introduction",
+        "reference_answers": [
+          "It was the sole member of its genus",
+          "Bovidae"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It was the sole member of its genus",
+            "Rationale": "The sole member of its genus,",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Bovidae",
+            "Rationale": "The sole member of its genus, the oribi is placed under the family Bovidae. ",
+            "Topic": "Oribi",
+            "Topic_section": "Taxonomy"
+          },
+          {
+            "Answer": "Bovidae",
+            "Rationale": "Bovidae.",
+            "Topic": "Oribi",
+            "Topic_section": "Taxonomy"
+          },
+          {
+            "Answer": "Bovidae",
+            "Rationale": "Bovidae",
+            "Topic": "Oribi",
+            "Topic_section": "Taxonomy"
+          }
+        ]
       },
       {
         "turn_id": "turn-5",
@@ -208,14 +585,46 @@
         "supporting_passage": "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species. Mineral licks are also visited regularly. Oribi have been observed feeding on flowers and \"Boletus\" mushrooms. Groups of oribi congregate in the rainy season, when grasses are abundant.",
         "rationale": "oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
         "gold_passage_id": "wiki:23843451",
-        "gold_passage_title": "Oribi [SEP] Diet"
+        "gold_passage_title": "Oribi [SEP] Diet",
+        "reference_answers": [
+          "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+          "Fresh grasses; Andropogon\", \"Eulalia\", \"Hyparrhenia\", etc, and browses occasionally.",
+          "Fresh grasses and browses. Preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\"",
+          "Fresh grasses, browses, flowers and Boletus mushrooms etc"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+            "Rationale": "oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          },
+          {
+            "Answer": "Fresh grasses; Andropogon\", \"Eulalia\", \"Hyparrhenia\", etc, and browses occasionally.",
+            "Rationale": "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species. ",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          },
+          {
+            "Answer": "Fresh grasses and browses. Preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\"",
+            "Rationale": "preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", ",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          },
+          {
+            "Answer": "Fresh grasses, browses, flowers and Boletus mushrooms etc",
+            "Rationale": " fresh grasses and browses",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          }
+        ]
       },
       {
         "turn_id": "turn-6",
         "original_turn_no": 6,
         "task_type": "Threats and conservation",
         "question": "is it under threat of extinction?",
-        "expected_answer": "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+        "expected_answer": "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
         "expected_reuse": [
           "turn-5.answer",
           "turn-4.answer",
@@ -238,7 +647,39 @@
         "supporting_passage": "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock. The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St.",
         "rationale": "The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock.",
         "gold_passage_id": "wiki:23843456",
-        "gold_passage_title": "Oribi [SEP] Threats and conservation"
+        "gold_passage_title": "Oribi [SEP] Threats and conservation",
+        "reference_answers": [
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
+          "Not yet, it is classified as Least Concern by the IUCN.",
+          "The oribi has been classified as Least Concern by the IUCN.",
+          "Yes, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
+            "Rationale": "The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock.",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "Not yet, it is classified as Least Concern by the IUCN.",
+            "Rationale": "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock.",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "The oribi has been classified as Least Concern by the IUCN.",
+            "Rationale": "The oribi has been classified as Least Concern by the IUCN. ",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "Yes, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining.",
+            "Rationale": " the total population is estimated at less than 10,000 mature individuals, and is feared to be declining.",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          }
+        ]
       },
       {
         "turn_id": "turn-7",
@@ -265,12 +706,44 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock."
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock."
         ],
         "supporting_passage": "Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia).",
-        "rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+        "rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); ",
         "gold_passage_id": "wiki:23843457",
-        "gold_passage_title": "Oribi [SEP] Threats and conservation"
+        "gold_passage_title": "Oribi [SEP] Threats and conservation",
+        "reference_answers": [
+          "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+          "Occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park, the Pendjari and W National Parks, etc",
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria",
+          "UNANSWERABLE"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+            "Rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); ",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "Occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park, the Pendjari and W National Parks, etc",
+            "Rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia).",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria",
+            "Rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, ",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "UNANSWERABLE",
+            "Rationale": "",
+            "Topic": "",
+            "Topic_section": ""
+          }
+        ]
       },
       {
         "turn_id": "turn-8",
@@ -297,14 +770,46 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
           "have any steps been taken for their protection?",
           "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);"
         ],
         "supporting_passage": "The fauna of the national park is very diverse. 103 species of mammals have been recorded at censuses. Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park. To protect the animals and the ecosystem, the Gashaka Primate Project was launched. Living in the national park are also the African elephant (\"Loxodonta africana\"), the klipspringer (\"Oreotragus oreotragus\"), the West African wild dog (\"Lycaon pictus manguensis\"), the hartebeest (\"Alcelaphus buselaphus\"), the world's largest antelope, the giant eland (\"Taurotragus Derbianus\"), the roan antelope (\"Hippotragus equinus\"), the kob antelope (\"Kobus kob\"), the oribi (\"Ourebia ourebi\"), and the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\") in larger stocks.",
-        "rationale": ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "rationale": ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") ",
         "gold_passage_id": "wiki:717980",
-        "gold_passage_title": "Gashaka Gumti National Park [SEP] Fauna"
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Fauna",
+        "reference_answers": [
+          "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+          "Yellow-backed duiker, African golden cat, and African buffalo",
+          "Yellow-backed duiker, African golden cat, African buffalo",
+          "Yellow-backed duiker, African golden cat, African buffalo, chimpanzees, African elephants etc"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+            "Rationale": ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          },
+          {
+            "Answer": "Yellow-backed duiker, African golden cat, and African buffalo",
+            "Rationale": "Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park. ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          },
+          {
+            "Answer": "Yellow-backed duiker, African golden cat, African buffalo",
+            "Rationale": "yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo,",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          },
+          {
+            "Answer": "Yellow-backed duiker, African golden cat, African buffalo, chimpanzees, African elephants etc",
+            "Rationale": "yellow-backed duiker, African golden cat ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          }
+        ]
       },
       {
         "turn_id": "turn-9",
@@ -331,16 +836,46 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
           "have any steps been taken for their protection?",
           "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
           "what type of other animals are found in the first park?",
           "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")"
         ],
         "supporting_passage": "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
-        "rationale": "red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
+        "rationale": " red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
         "gold_passage_id": "wiki:717982",
-        "gold_passage_title": "Gashaka Gumti National Park [SEP] Flora"
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Flora",
+        "reference_answers": [
+          "Red sunbird bush, an ornate species of the acanthus family",
+          "Red sunbird bush"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Red sunbird bush, an ornate species of the acanthus family",
+            "Rationale": " red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          },
+          {
+            "Answer": "Red sunbird bush",
+            "Rationale": "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          },
+          {
+            "Answer": "Red sunbird bush",
+            "Rationale": " red sunbird bush",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          },
+          {
+            "Answer": "Red sunbird bush, an ornate species of the acanthus family",
+            "Rationale": "red sunbird bush, an ornate species of the acanthus family",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          }
+        ]
       },
       {
         "turn_id": "turn-10",
@@ -367,7 +902,7 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
           "have any steps been taken for their protection?",
           "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
           "what type of other animals are found in the first park?",
@@ -376,17 +911,51 @@
           "Red sunbird bush, an ornate species of the acanthus family"
         ],
         "supporting_passage": "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria, It was gazetted from two game reserves in 1991 and is Nigeria’s largest national park. It is located in the eastern provinces of Taraba and Adamawa to the border with Cameroon. The total area covers about 6,402 km, much of the northern GGNP is savannah grassland, while the southern GGNP sector of the park has a rugged terrain characterized by very mountainous, steep slopes as well as deep valleys and gorges, and is home to montane forests. Altitude ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi, Nigeria’s highest mountain in the park's southern sections.",
-        "rationale": "Nigeria,",
+        "rationale": " Nigeria, ",
         "gold_passage_id": "wiki:717978",
-        "gold_passage_title": "Gashaka Gumti National Park [SEP] Introduction"
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Introduction",
+        "reference_answers": [
+          "Nigeria",
+          "In Nigeria"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Nigeria",
+            "Rationale": " Nigeria, ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Nigeria",
+            "Rationale": "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria,",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "In Nigeria",
+            "Rationale": "in Nigeria",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Nigeria",
+            "Rationale": "Nigeria",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          }
+        ]
       }
-    ]
+    ],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "max_over_official_references_strict_em_token_f1",
+    "evidence_scope": "existing_passages_plus_official_annotated_rationales_not_full_wikipedia"
   },
   {
     "group_id": "topiocqa-official-002",
     "source_dataset": "TopiOCQA",
     "source_file": "topiocqa_valid.jsonl",
-    "original_conversation_no": 90,
+    "original_conversation_no": 140,
     "original_turn_count": 11,
     "selected_turn_count": 10,
     "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
@@ -433,6 +1002,223 @@
         "sentences": [
           "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North."
         ]
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "1740,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "Silesia, Moravia and Bohemia ("
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "Prussia and Austria"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Context and causes",
+        "sentences": [
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "No particular triggering event started the war. Prussia cited its centuries-old dynastic claims on parts of Silesia as a \"casus belli\", but \"Realpolitik\" and geostrategic factors also played a role in provoking the conflict. Maria Theresa's contested succession to the Habsburg Monarchy provided an opportunity for Prussia to strengthen itself relative to regional rivals such as Saxony and Bavaria."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "No particular triggering event started the war."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "First Silesian War [SEP] Introduction",
+        "sentences": [
+          "Prussia cited its centuries-old dynastic claims on parts of Silesia as a \"casus belli\", but \"Realpolitik\" and geostrategic factors also played a role in provoking the conflict."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "The first ancestors of the Hohenzollerns were mentioned in 1061."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. T"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "House of Hohenzollern [SEP] Introduction",
+        "sentences": [
+          "Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabia [SEP] Introduction",
+        "sentences": [
+          "Swabia is a cultural, historic and linguistic region in southwestern Germany."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Hechingen [SEP] Introduction",
+        "sentences": [
+          "Hechingen is a town in central Baden-Württemberg, Germany. It is situated about south of the state capital of Stuttgart and north of Lake Constance and the Swiss border."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabia [SEP] Introduction",
+        "sentences": [
+          "southwestern Germany."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabia [SEP] Language",
+        "sentences": [
+          "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany.\n\nAs an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss.\n\nSwabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabia [SEP] Introduction",
+        "sentences": [
+          "Swabians (\"Schwaben\", singular \"Schwabe\") are the natives of Swabia and speakers of Swabian German. Their number was estimated at close to 0.8 million by SIL Ethnologue as of 2006, compared to a total population of 7.5 million in the regions of Tübingen, Stuttgart and Bavarian Swabia."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabia [SEP] Language",
+        "sentences": [
+          "Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabia [SEP] Language",
+        "sentences": [
+          "Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabian German [SEP] Classification and variation",
+        "sentences": [
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian)."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabian German [SEP] Introduction",
+        "sentences": [
+          "Swabian () is one of the dialect groups of Alemannic German that belong to the High German dialect continuum."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabian German [SEP] Classification and variation",
+        "sentences": [
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabian German [SEP] Classification and variation",
+        "sentences": [
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabian German [SEP] Characteristics",
+        "sentences": [
+          "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabian German [SEP] Characteristics",
+        "sentences": [
+          "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German.\n\nThe voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Swabian German [SEP] Characteristics",
+        "sentences": [
+          "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German."
+        ],
+        "source": "official_annotated_rationale"
       }
     ],
     "supporting_facts": [
@@ -489,9 +1275,39 @@
         "topic_section": "Introduction",
         "conversation_context": [],
         "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
-        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria.",
+        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. ",
         "gold_passage_id": "wiki:10854643",
-        "gold_passage_title": "First Silesian War [SEP] Introduction"
+        "gold_passage_title": "First Silesian War [SEP] Introduction",
+        "reference_answers": [
+          "1740",
+          "From 1740 to 1742"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "1740",
+            "Rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "From 1740 to 1742",
+            "Rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "1740",
+            "Rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria.",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "1740",
+            "Rationale": "1740,",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-2",
@@ -512,7 +1328,37 @@
         "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
         "rationale": "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia.",
         "gold_passage_id": "wiki:10854643",
-        "gold_passage_title": "First Silesian War [SEP] Introduction"
+        "gold_passage_title": "First Silesian War [SEP] Introduction",
+        "reference_answers": [
+          "Silesia, Moravia and Bohemia",
+          "Silesia, Moravia and Bohemia."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Silesia, Moravia and Bohemia",
+            "Rationale": "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia.",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Silesia, Moravia and Bohemia",
+            "Rationale": "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Silesia, Moravia and Bohemia.",
+            "Rationale": "The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession.",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Silesia, Moravia and Bohemia",
+            "Rationale": " Silesia, Moravia and Bohemia (",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-3",
@@ -534,9 +1380,39 @@
           "Silesia, Moravia and Bohemia"
         ],
         "supporting_passage": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. The war was fought mainly in Silesia, Moravia and Bohemia (the lands of the Bohemian Crown) and formed one theatre of the wider War of the Austrian Succession. It was the first of three Silesian Wars fought between Frederick the Great's Prussia and Maria Theresa's Austria in the mid-18th century, all three of which ended in Prussian control of Silesia. No particular triggering event started the war.",
-        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria.",
+        "rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. ",
         "gold_passage_id": "wiki:10854643",
-        "gold_passage_title": "First Silesian War [SEP] Introduction"
+        "gold_passage_title": "First Silesian War [SEP] Introduction",
+        "reference_answers": [
+          "Prussia and Austria",
+          "Prussia and Austria."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Prussia and Austria",
+            "Rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Prussia and Austria",
+            "Rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 and resulted in Prussia's seizing most of the region of Silesia (now in south-western Poland) from Austria. ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Prussia and Austria.",
+            "Rationale": "The First Silesian War () was a war between Prussia and Austria that lasted from 1740 to 1742 ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Prussia and Austria",
+            "Rationale": "Prussia and Austria ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-4",
@@ -560,9 +1436,41 @@
           "Prussia and Austria"
         ],
         "supporting_passage": "In the early 18th century, Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. Besides its value as a source of tax revenue, industrial output (particularly minerals) and military recruits, Silesia held great geostrategic importance to the belligerents. The valley of the Upper Oder formed a natural military conduit between Brandenburg, the Kingdom of Bohemia and the Margraviate of Moravia, and whichever power held the territory could threaten its neighbours. Silesia also lay along the north-eastern frontier of the Holy Roman Empire, allowing its controller to limit the influence of the Polish–Lithuanian Commonwealth and of the Russian Empire within Germany.",
-        "rationale": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg.",
+        "rationale": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. ",
         "gold_passage_id": "wiki:10854646",
-        "gold_passage_title": "First Silesian War [SEP] Context and causes"
+        "gold_passage_title": "First Silesian War [SEP] Context and causes",
+        "reference_answers": [
+          "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+          "Centuries-old territorial disputes between the two with Realpolitik and geostrategic factors provoking the conflict; and Maria Theresa's controversial succession to the Habsburg monarchy, thereby strengthening Prussia's position vis a vis to its regional rivals.",
+          "No particular triggering event started the war.",
+          "Prussia cited its centuries-old dynastic claims on parts of Silesia as a \"casus belli\", but \"Realpolitik\" and geostrategic factors also played a role in provoking the conflict."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia",
+            "Rationale": "Brandenburg–Prussia's ruling House of Hohenzollern held dynastic claims to various duchies within the Habsburg province of Silesia, a populous and prosperous region contiguous with Prussia's core territory in the Margraviate of Brandenburg. ",
+            "Topic": "First Silesian War",
+            "Topic_section": "Context and causes"
+          },
+          {
+            "Answer": "Centuries-old territorial disputes between the two with Realpolitik and geostrategic factors provoking the conflict; and Maria Theresa's controversial succession to the Habsburg monarchy, thereby strengthening Prussia's position vis a vis to its regional rivals.",
+            "Rationale": "No particular triggering event started the war. Prussia cited its centuries-old dynastic claims on parts of Silesia as a \"casus belli\", but \"Realpolitik\" and geostrategic factors also played a role in provoking the conflict. Maria Theresa's contested succession to the Habsburg Monarchy provided an opportunity for Prussia to strengthen itself relative to regional rivals such as Saxony and Bavaria.",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "No particular triggering event started the war.",
+            "Rationale": "No particular triggering event started the war.",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Prussia cited its centuries-old dynastic claims on parts of Silesia as a \"casus belli\", but \"Realpolitik\" and geostrategic factors also played a role in provoking the conflict.",
+            "Rationale": "Prussia cited its centuries-old dynastic claims on parts of Silesia as a \"casus belli\", but \"Realpolitik\" and geostrategic factors also played a role in provoking the conflict.",
+            "Topic": "First Silesian War",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-5",
@@ -590,7 +1498,39 @@
         "supporting_passage": "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947.",
         "rationale": "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061.",
         "gold_passage_id": "wiki:7718013",
-        "gold_passage_title": "House of Hohenzollern [SEP] Introduction"
+        "gold_passage_title": "House of Hohenzollern [SEP] Introduction",
+        "reference_answers": [
+          "The family arose during the 11th century",
+          "1061",
+          "11th century",
+          "UNANSWERABLE"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "The family arose during the 11th century",
+            "Rationale": "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061.",
+            "Topic": "House of Hohenzollern",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "1061",
+            "Rationale": "The first ancestors of the Hohenzollerns were mentioned in 1061.",
+            "Topic": "House of Hohenzollern",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "11th century",
+            "Rationale": " The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. T",
+            "Topic": "House of Hohenzollern",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "UNANSWERABLE",
+            "Rationale": "",
+            "Topic": "",
+            "Topic_section": ""
+          }
+        ]
       },
       {
         "turn_id": "turn-6",
@@ -618,9 +1558,41 @@
           "The family arose during the 11th century"
         ],
         "supporting_passage": "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061. The Hohenzollern family split into two branches, the Catholic Swabian branch and the Protestant Franconian branch, which ruled the Burgraviate of Nuremberg and later became the Brandenburg-Prussian branch. The Swabian branch ruled the principalities of Hohenzollern-Hechingen and Hohenzollern-Sigmaringen until 1849, and also ruled Romania from 1866 to 1947.",
-        "rationale": "The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle.",
+        "rationale": " The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle.",
         "gold_passage_id": "wiki:7718013",
-        "gold_passage_title": "House of Hohenzollern [SEP] Introduction"
+        "gold_passage_title": "House of Hohenzollern [SEP] Introduction",
+        "reference_answers": [
+          "The family arose in the area around the town of Hechingen in Swabia",
+          "In the area around the town of Hechingen in Swabia in the 11th century",
+          "Hechingen in Swabia.",
+          "Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "The family arose in the area around the town of Hechingen in Swabia",
+            "Rationale": " The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle.",
+            "Topic": "House of Hohenzollern",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "In the area around the town of Hechingen in Swabia in the 11th century",
+            "Rationale": "The House of Hohenzollern (, , ) is a German former royal dynasty whose members were variously princes, electors, kings and emperors of Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania. The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061.",
+            "Topic": "House of Hohenzollern",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Hechingen in Swabia.",
+            "Rationale": " The family arose in the area around the town of Hechingen in Swabia during the 11th century and took their name from Hohenzollern Castle. The first ancestors of the Hohenzollerns were mentioned in 1061.",
+            "Topic": "House of Hohenzollern",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania.",
+            "Rationale": "Hohenzollern, Brandenburg, Prussia, the German Empire, and Romania.",
+            "Topic": "House of Hohenzollern",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-7",
@@ -650,9 +1622,40 @@
           "The family arose in the area around the town of Hechingen in Swabia"
         ],
         "supporting_passage": "Swabia is a cultural, historic and linguistic region in southwestern Germany. The name is ultimately derived from the medieval Duchy of Swabia, one of the German stem duchies, representing the territory of Alemannia, whose inhabitants interchangeably were called \"Alemanni\" or \"Suebi\". This territory would include all of the Alemannic German area, but the modern concept of Swabia is more restricted, due to the collapse of the duchy of Swabia in the thirteenth century. Swabia as understood in modern ethnography roughly coincides with the Swabian Circle of the Holy Roman Empire as it stood during the Early Modern period, now divided between the states of Bavaria and Baden-Württemberg.",
-        "rationale": "Swabia is a cultural, historic and linguistic region in southwestern Germany.",
+        "rationale": "Swabia is a cultural, historic and linguistic region in southwestern Germany. ",
         "gold_passage_id": "wiki:13058420",
-        "gold_passage_title": "Swabia [SEP] Introduction"
+        "gold_passage_title": "Swabia [SEP] Introduction",
+        "reference_answers": [
+          "Southwestern Germany",
+          "In central Baden-Württemberg, Germany, south of Stuttgart and north of Lake Constance and the Swiss border",
+          "Southwestern Germany."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Southwestern Germany",
+            "Rationale": "Swabia is a cultural, historic and linguistic region in southwestern Germany. ",
+            "Topic": "Swabia",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "In central Baden-Württemberg, Germany, south of Stuttgart and north of Lake Constance and the Swiss border",
+            "Rationale": "Hechingen is a town in central Baden-Württemberg, Germany. It is situated about south of the state capital of Stuttgart and north of Lake Constance and the Swiss border.",
+            "Topic": "Hechingen",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Southwestern Germany.",
+            "Rationale": "Swabia is a cultural, historic and linguistic region in southwestern Germany. ",
+            "Topic": "Swabia",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Southwestern Germany",
+            "Rationale": "southwestern Germany. ",
+            "Topic": "Swabia",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-8",
@@ -684,9 +1687,39 @@
           "Southwestern Germany"
         ],
         "supporting_passage": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
-        "rationale": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany. As an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss. Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
+        "rationale": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany.\n\nAs an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss.\n\nSwabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
         "gold_passage_id": "wiki:13058434",
-        "gold_passage_title": "Swabia [SEP] Language"
+        "gold_passage_title": "Swabia [SEP] Language",
+        "reference_answers": [
+          "Swabian, Swabian German",
+          "Swabian German"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Swabian, Swabian German",
+            "Rationale": "SIL Ethnologue cites an estimate of 819,000 Swabian speakers as of 2006. This corresponds to roughly 10% of the total population of the Swabian region, or roughly 1% of the total population of Germany.\n\nAs an ethno-linguistic group, Swabians are closely related to other speakers of Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss.\n\nSwabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
+            "Topic": "Swabia",
+            "Topic_section": "Language"
+          },
+          {
+            "Answer": "Swabian German",
+            "Rationale": "Swabians (\"Schwaben\", singular \"Schwabe\") are the natives of Swabia and speakers of Swabian German. Their number was estimated at close to 0.8 million by SIL Ethnologue as of 2006, compared to a total population of 7.5 million in the regions of Tübingen, Stuttgart and Bavarian Swabia.",
+            "Topic": "Swabia",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Swabian German",
+            "Rationale": "Swabian German is traditionally spoken in the upper Neckar basin (upstream of Heilbronn), along the upper Danube between Tuttlingen and Donauwörth, and on the left bank of the Lech, in an area centered on the Swabian Alps roughly stretching from Stuttgart to Augsburg.",
+            "Topic": "Swabia",
+            "Topic_section": "Language"
+          },
+          {
+            "Answer": "Swabian German",
+            "Rationale": "Alemannic German, i.e. Badeners, Alsatians, and German-speaking Swiss.",
+            "Topic": "Swabia",
+            "Topic_section": "Language"
+          }
+        ]
       },
       {
         "turn_id": "turn-9",
@@ -720,9 +1753,41 @@
           "Swabian, Swabian German"
         ],
         "supporting_passage": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg. The Swabian dialect is composed of numerous sub-dialects, each of which has its own variations. These sub-dialects can be categorized by the difference in the formation of the past participle of 'sein' (to be) into \"gwäa\" and \"gsei.\" The Gsei group is nearer to other Alemannic dialects, such as Swiss German. It can be divided into South-East Swabian, West Swabian and Central Swabian.",
-        "rationale": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian).",
+        "rationale": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). ",
         "gold_passage_id": "wiki:12098276",
-        "gold_passage_title": "Swabian German [SEP] Classification and variation"
+        "gold_passage_title": "Swabian German [SEP] Classification and variation",
+        "reference_answers": [
+          "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects",
+          "As a dialect group of Alemannic German that belongs to the High German dialect continuum.",
+          "Alemannic and Upper German dialects.",
+          "It is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects",
+            "Rationale": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). ",
+            "Topic": "Swabian German",
+            "Topic_section": "Classification and variation"
+          },
+          {
+            "Answer": "As a dialect group of Alemannic German that belongs to the High German dialect continuum.",
+            "Rationale": "Swabian () is one of the dialect groups of Alemannic German that belong to the High German dialect continuum.",
+            "Topic": "Swabian German",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Alemannic and Upper German dialects.",
+            "Rationale": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects (the other being Bavarian). The ISO 639-3 language code for Swabian is swg.",
+            "Topic": "Swabian German",
+            "Topic_section": "Classification and variation"
+          },
+          {
+            "Answer": "It is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects",
+            "Rationale": "Swabian is categorized as an Alemannic dialect, which in turn is one of the two types of Upper German dialects",
+            "Topic": "Swabian German",
+            "Topic_section": "Classification and variation"
+          }
+        ]
       },
       {
         "turn_id": "turn-10",
@@ -760,15 +1825,51 @@
         "supporting_passage": "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German. The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
         "rationale": "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
         "gold_passage_id": "wiki:12098275",
-        "gold_passage_title": "Swabian German [SEP] Characteristics"
+        "gold_passage_title": "Swabian German [SEP] Characteristics",
+        "reference_answers": [
+          "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel",
+          "Spoken with a unique intonation where the voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+          "It is spoken with a unique intonation that is also present when native speakers speak in Standard German.",
+          "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel",
+            "Rationale": "The voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+            "Topic": "Swabian German",
+            "Topic_section": "Characteristics"
+          },
+          {
+            "Answer": "Spoken with a unique intonation where the voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+            "Rationale": "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. Similarly, there is only one alveolar fricative phoneme , which is shared with most other southern dialects. Most Swabian-speakers are unaware of the difference between and and do not attempt to make it when they speak Standard German.\n\nThe voiced plosives, the post-alveolar fricative, and the frequent use of diminutives based on \"l\" suffixes gives the dialect a very \"soft\" or \"mild\" feel, often felt to be in sharp contrast to the harder varieties of German spoken in the North.",
+            "Topic": "Swabian German",
+            "Topic_section": "Characteristics"
+          },
+          {
+            "Answer": "It is spoken with a unique intonation that is also present when native speakers speak in Standard German.",
+            "Rationale": "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. ",
+            "Topic": "Swabian German",
+            "Topic_section": "Characteristics"
+          },
+          {
+            "Answer": "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German.",
+            "Rationale": "In many regions, the Swabian dialect is spoken with a unique intonation that is also present when native speakers speak in Standard German. ",
+            "Topic": "Swabian German",
+            "Topic_section": "Characteristics"
+          }
+        ]
       }
-    ]
+    ],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "max_over_official_references_strict_em_token_f1",
+    "evidence_scope": "existing_passages_plus_official_annotated_rationales_not_full_wikipedia"
   },
   {
     "group_id": "topiocqa-official-003",
     "source_dataset": "TopiOCQA",
     "source_file": "topiocqa_valid.jsonl",
-    "original_conversation_no": 120,
+    "original_conversation_no": 64,
     "original_turn_count": 11,
     "selected_turn_count": 10,
     "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
@@ -810,6 +1911,272 @@
         "sentences": [
           "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, There were earlier English and British precedents, long before the acts enumerated here. As early as the 16th Century, following Francis Drake's circumnavigation, Queen Elizabeth I declared that all written accounts of Drake's voyages were to become the 'Queen's secrets of the Realm'. In addition, Drake and the other participants of his voyages were sworn to their secrecy on the pain of death; the Queen intended to keep Drake's activities away from the eyes of rival Spain."
         ]
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "ritain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British coun"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Manhattan Project [SEP] Collaboration with the United Kingdom",
+        "sentences": [
+          "By March 1943 Conant decided that British help would benefit some areas of the project. James Chadwick and one or two other British scientists were important enough that the bomb design team at Los Alamos needed them, despite the risk of revealing weapon design secrets."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "was a British physicist"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "discovery of the neutron i"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Chadwick followed his discovery of the neutron by measuring its mass. He anticipated that neutrons would become a major weapon in the fight against cancer. Chadwick left the Cavendish Laboratory in 1935 to become a professor of physics at the University of Liverpool, where he overhauled an antiquated laboratory and, by installing a cyclotron, made it an important centre for the study of nuclear physics."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics.\nThe chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number. Neutrons do not affect the electron configuration, but the sum of atomic number and the number of neutrons, or neutron number, is the mass of the nucleu"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Origins",
+        "sentences": [
+          "Refugees from Nazi Germany and other fascist countries were particularly alarmed by the notion of a German nuclear weapon project."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada. From 1942 to 1946, the project was under the direction of Major General Leslie Groves of the U.S. Army Corps of Engineers. Nuclear physicist Robert Oppenheimer was the director of the Los Alamos Laboratory that designed the actual bombs. As engineer districts by convention carried the name of the city where they were located, the Army component of the project was designated the Manhattan District; \"Manhattan\" gradually superseded the official codename, Development of Substitute Materials, for the entire project. Along the way, the project absorbed its earlier British counterpart, Tube Alloys. The Manhattan Project began modestly in 1939, but grew to employ more than 130,000 people and cost nearly US$2 billion (equivalent to about"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British cou"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Early life",
+        "sentences": [
+          "mathematics and physics"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Introduction",
+        "sentences": [
+          "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Introduction",
+        "sentences": [
+          "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II. While at the Los Alamos National Laboratory, Fuchs was responsible for many significant theoretical calculations relating to the first nuclear weapons and, later, early models of the hydrogen bomb. After his conviction in 1950, he served nine years in prison in the United Kingdom and then moved to East Germany where he resumed his career as a physicist and scientific leader."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Introduction",
+        "sentences": [
+          "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.\n\nWhile imprisoned, he was friendly with the Irish Republican Army prisoner Seamus Murphy with whom he played chess and helped to escape. It was suggested by some that Fuchs had turned IRA leader Cathal Goulding into a Marxist but Seamus Murphy denied it by saying \"Fuchs never tried to turn anyone – it was hard to"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\""
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "14 years' imprisonment"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Official Secrets Act [SEP] Introduction",
+        "sentences": [
+          "is legislation that provides for the protection of state secrets and official information, mainly related to national security."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Official Secrets Act [SEP] Introduction",
+        "sentences": [
+          "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Official Secrets Act [SEP] Introduction",
+        "sentences": [
+          "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security."
+        ],
+        "source": "official_annotated_rationale"
       }
     ],
     "supporting_facts": [
@@ -866,9 +2233,39 @@
         "topic_section": "Introduction",
         "conversation_context": [],
         "supporting_passage": "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
-        "rationale": "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor,",
+        "rationale": "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, ",
         "gold_passage_id": "wiki:7566712",
-        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "reference_answers": [
+          "James Chadwick",
+          "Prime Minister Winston Churchill, scientists Rudolf Peierls and Otto Frisch, Frisch–Peierls memorandum."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "James Chadwick",
+            "Rationale": "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "James Chadwick",
+            "Rationale": "Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Prime Minister Winston Churchill, scientists Rudolf Peierls and Otto Frisch, Frisch–Peierls memorandum.",
+            "Rationale": "ritain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British coun",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "James Chadwick",
+            "Rationale": "By March 1943 Conant decided that British help would benefit some areas of the project. James Chadwick and one or two other British scientists were important enough that the bomb design team at Los Alamos needed them, despite the risk of revealing weapon design secrets.",
+            "Topic": "Manhattan Project",
+            "Topic_section": "Collaboration with the United Kingdom"
+          }
+        ]
       },
       {
         "turn_id": "turn-2",
@@ -887,9 +2284,41 @@
           "James Chadwick"
         ],
         "supporting_passage": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\").",
-        "rationale": "was a British physicist",
+        "rationale": "was a British physicist ",
         "gold_passage_id": "wiki:5293636",
-        "gold_passage_title": "James Chadwick [SEP] Introduction"
+        "gold_passage_title": "James Chadwick [SEP] Introduction",
+        "reference_answers": [
+          "He was a British physicist.",
+          "A British physicist",
+          "He was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron.",
+          "A British physicist."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "He was a British physicist.",
+            "Rationale": "was a British physicist ",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "A British physicist",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "He was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron.",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "A British physicist.",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-3",
@@ -913,7 +2342,38 @@
         "supporting_passage": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\").",
         "rationale": "discovery of the neutron i",
         "gold_passage_id": "wiki:5293636",
-        "gold_passage_title": "James Chadwick [SEP] Introduction"
+        "gold_passage_title": "James Chadwick [SEP] Introduction",
+        "reference_answers": [
+          "His discovery of the neutron.",
+          "Discovery of the neutron",
+          "discovery of the neutron, nuclear physics."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "His discovery of the neutron.",
+            "Rationale": "discovery of the neutron i",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Discovery of the neutron",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "discovery of the neutron, nuclear physics.",
+            "Rationale": "Chadwick followed his discovery of the neutron by measuring its mass. He anticipated that neutrons would become a major weapon in the fight against cancer. Chadwick left the Cavendish Laboratory in 1935 to become a professor of physics at the University of Liverpool, where he overhauled an antiquated laboratory and, by installing a cyclotron, made it an important centre for the study of nuclear physics.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "His discovery of the neutron.",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-4",
@@ -939,7 +2399,39 @@
         "supporting_passage": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics. The chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number.",
         "rationale": "is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
         "gold_passage_id": "wiki:25682377",
-        "gold_passage_title": "Neutron [SEP] Introduction"
+        "gold_passage_title": "Neutron [SEP] Introduction",
+        "reference_answers": [
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "The neutron is a subatomic particle, which has a neutral charge and a mass slightly greater than that of a proton.",
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "It is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Rationale": "is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "The neutron is a subatomic particle, which has a neutral charge and a mass slightly greater than that of a proton.",
+            "Rationale": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms.",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Rationale": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics.\nThe chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number. Neutrons do not affect the electron configuration, but the sum of atomic number and the number of neutrons, or neutron number, is the mass of the nucleu",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge.",
+            "Rationale": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-5",
@@ -965,9 +2457,41 @@
           "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton."
         ],
         "supporting_passage": "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys.",
-        "rationale": "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+        "rationale": "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. ",
         "gold_passage_id": "wiki:7566710",
-        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "reference_answers": [
+          "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+          "Particularly alarmed by the notion of a German nuclear weapon project.",
+          "Project was a research and development undertaking during World War II that produced the first nuclear weapons.",
+          "It was a research and development undertaking during World War II that produced the first nuclear weapons."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+            "Rationale": "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Particularly alarmed by the notion of a German nuclear weapon project.",
+            "Rationale": "Refugees from Nazi Germany and other fascist countries were particularly alarmed by the notion of a German nuclear weapon project. ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Origins"
+          },
+          {
+            "Answer": "Project was a research and development undertaking during World War II that produced the first nuclear weapons.",
+            "Rationale": "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada. From 1942 to 1946, the project was under the direction of Major General Leslie Groves of the U.S. Army Corps of Engineers. Nuclear physicist Robert Oppenheimer was the director of the Los Alamos Laboratory that designed the actual bombs. As engineer districts by convention carried the name of the city where they were located, the Army component of the project was designated the Manhattan District; \"Manhattan\" gradually superseded the official codename, Development of Substitute Materials, for the entire project. Along the way, the project absorbed its earlier British counterpart, Tube Alloys. The Manhattan Project began modestly in 1939, but grew to employ more than 130,000 people and cost nearly US$2 billion (equivalent to about ",
+            "Topic": "Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It was a research and development undertaking during World War II that produced the first nuclear weapons.",
+            "Rationale": "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada.",
+            "Topic": "Manhattan Project",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-6",
@@ -995,9 +2519,40 @@
           "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise."
         ],
         "supporting_passage": "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
-        "rationale": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+        "rationale": " Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
         "gold_passage_id": "wiki:7566712",
-        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "reference_answers": [
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+          "scientists Rudolf Peierls and Otto Frisch,  Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs.",
+          "Yes, Rudolf Peierls and Otto Frisch."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+            "Rationale": " Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+            "Rationale": "Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "scientists Rudolf Peierls and Otto Frisch,  Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs.",
+            "Rationale": "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British cou",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Yes, Rudolf Peierls and Otto Frisch.",
+            "Rationale": " Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-7",
@@ -1027,9 +2582,41 @@
           "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs"
         ],
         "supporting_passage": "He became involved in student politics, joining the student branch of the Social Democratic Party of Germany (SPD), a party that his father had joined in 1912, and the \"Reichsbanner Schwarz-Rot-Gold\", the party's paramilitary organisation. His father took up a new position as professor of religion at the Pedagogical Academy in Kiel, and in the autumn Fuchs transferred to the University of Kiel, which his brother Gerhard and sister Elisabeth also attended. Fuchs continued his studies in mathematics and physics at the university. In October 1931, his mother committed suicide by drinking hydrochloric acid. The family later discovered that his maternal grandmother had also taken her own life.",
-        "rationale": "mathematics and physics",
+        "rationale": "mathematics and physics ",
         "gold_passage_id": "wiki:7675253",
-        "gold_passage_title": "Klaus Fuchs [SEP] Early life"
+        "gold_passage_title": "Klaus Fuchs [SEP] Early life",
+        "reference_answers": [
+          "Mathematics and physics",
+          "Theoretical physicist",
+          "Theoretical physics.",
+          "He supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Mathematics and physics",
+            "Rationale": "mathematics and physics ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Early life"
+          },
+          {
+            "Answer": "Theoretical physicist",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Theoretical physics.",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II. While at the Los Alamos National Laboratory, Fuchs was responsible for many significant theoretical calculations relating to the first nuclear weapons and, later, early models of the hydrogen bomb. After his conviction in 1950, he served nine years in prison in the United Kingdom and then moved to East Germany where he resumed his career as a physicist and scientific leader.\n",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "He supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II. ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-8",
@@ -1061,9 +2648,41 @@
           "Mathematics and physics"
         ],
         "supporting_passage": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.",
-        "rationale": "was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+        "rationale": " was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
         "gold_passage_id": "wiki:7675274",
-        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment"
+        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "reference_answers": [
+          "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+          "Espionage",
+          "He was imprisoned for breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+          "For breaking the Official Secrets Act by \"communicating information to a potential enemy.\""
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+            "Rationale": " was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "Espionage",
+            "Rationale": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "He was imprisoned for breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+            "Rationale": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.\n\nWhile imprisoned, he was friendly with the Irish Republican Army prisoner Seamus Murphy with whom he played chess and helped to escape. It was suggested by some that Fuchs had turned IRA leader Cathal Goulding into a Marxist but Seamus Murphy denied it by saying \"Fuchs never tried to turn anyone – it was hard to",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "For breaking the Official Secrets Act by \"communicating information to a potential enemy.\"",
+            "Rationale": "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          }
+        ]
       },
       {
         "turn_id": "turn-9",
@@ -1097,9 +2716,40 @@
           "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy."
         ],
         "supporting_passage": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.",
-        "rationale": "14 years' imprisonment",
+        "rationale": " 14 years' imprisonment",
         "gold_passage_id": "wiki:7675274",
-        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment"
+        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "reference_answers": [
+          "14 years imprisonment",
+          "He was sentenced to 14 years' imprisonment",
+          "Lord Goddard sentenced him to 14 years' imprisonment."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "14 years imprisonment",
+            "Rationale": " 14 years' imprisonment",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "He was sentenced to 14 years' imprisonment",
+            "Rationale": "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "Lord Goddard sentenced him to 14 years' imprisonment.",
+            "Rationale": " Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.\n",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "Lord Goddard sentenced him to 14 years' imprisonment.",
+            "Rationale": "After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          }
+        ]
       },
       {
         "turn_id": "turn-10",
@@ -1135,11 +2785,47 @@
           "14 years imprisonment"
         ],
         "supporting_passage": "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, There were earlier English and British precedents, long before the acts enumerated here. As early as the 16th Century, following Francis Drake's circumnavigation, Queen Elizabeth I declared that all written accounts of Drake's voyages were to become the 'Queen's secrets of the Realm'. In addition, Drake and the other participants of his voyages were sworn to their secrecy on the pain of death; the Queen intended to keep Drake's activities away from the eyes of rival Spain.",
-        "rationale": "is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+        "rationale": " is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
         "gold_passage_id": "wiki:4732088",
-        "gold_passage_title": "Official Secrets Act [SEP] Introduction"
+        "gold_passage_title": "Official Secrets Act [SEP] Introduction",
+        "reference_answers": [
+          "It is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+          "He was an atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+          "It  is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+          "It is legislation that provides for the protection of state secrets and official information."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+            "Rationale": " is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+            "Topic": "Official Secrets Act",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "He was an atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It  is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+            "Rationale": "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, ",
+            "Topic": "Official Secrets Act",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is legislation that provides for the protection of state secrets and official information.",
+            "Rationale": "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. ",
+            "Topic": "Official Secrets Act",
+            "Topic_section": "Introduction"
+          }
+        ]
       }
-    ]
+    ],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "max_over_official_references_strict_em_token_f1",
+    "evidence_scope": "existing_passages_plus_official_annotated_rationales_not_full_wikipedia"
   },
   {
     "group_id": "qrecc-official-001",

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import json
 import os
 import re
+import string
 import sys
 import time
 from pathlib import Path
@@ -23,6 +25,7 @@ from competition_agents.state_store import clear_state_store
 from competition_agents.state import initial_state
 from hypergraph_memory_method import (
     RETRIEVAL_MODE_VALUES,
+    load_persistent_memory,
     memory_layer_for_record,
     memory_organization_for_mode,
 )
@@ -32,7 +35,7 @@ from hypergraph_memory_method.reuse_metrics import evaluate_run_reuse
 DEFAULT_MULTIHOP_DATASET = "examples/competition_agents/data/hotpot_multihop_sample.json"
 DEFAULT_CONTINUOUS_DATASET = "examples/competition_agents/data/hotpot_continuous_tasks.json"
 DEFAULT_CODEACT_DATASET = "examples/competition_agents/data/codeact_tasks.json"
-DEFAULT_CONTEXT_SOURCE = "inline"
+DEFAULT_CONTEXT_SOURCE = "hypergraph"
 
 
 def configure_stdout() -> None:
@@ -74,6 +77,34 @@ def normalize_answer(text: str) -> str:
     return " ".join(text.split())
 
 
+def task_reference_answers(task_item: dict[str, Any]) -> list[str]:
+    references = task_item.get("reference_answers") or []
+    if not references:
+        references = [task_item.get("expected_answer")]
+    return list(dict.fromkeys(str(value).strip() for value in references if value))
+
+
+def evaluate_task_answer(prediction: str, task_item: dict[str, Any]) -> tuple[bool | None, float | None]:
+    references = task_reference_answers(task_item)
+    if not references:
+        return None, None
+    if task_item.get("reference_answers"):
+        def normalized(text: str) -> str:
+            text = text.lower().translate(str.maketrans("", "", string.punctuation))
+            return " ".join(re.sub(r"\b(a|an|the)\b", " ", text).split())
+
+        predicted = normalized(prediction).split()
+        scores = []
+        for reference in references:
+            gold = normalized(reference).split()
+            overlap = sum((Counter(predicted) & Counter(gold)).values())
+            scores.append(2 * overlap / (len(predicted) + len(gold)) if predicted or gold else 1.0)
+        return any(normalized(prediction) == normalized(reference) for reference in references), max(scores)
+    return any(answers_match(prediction, reference) for reference in references), max(
+        answer_token_f1(prediction, reference) for reference in references
+    )
+
+
 MONTH_ALIASES = {
     "january": "01",
     "february": "02",
@@ -105,6 +136,16 @@ def canonicalize_answer(text: str) -> str:
 
     normalized = normalize_answer(text)
     return ANSWER_ALIASES.get(normalized, normalized)
+
+
+def strip_referential_answer_prefix(text: str) -> str:
+    """Remove discourse-only prefixes from short conversational gold answers."""
+
+    return re.sub(
+        r"^(?:it|this|that|they|these|those)\s+(?:is|are|was|were)\s+",
+        "",
+        text,
+    ).strip()
 
 
 def normalize_date_answer(text: str) -> str | None:
@@ -143,6 +184,49 @@ def split_answer_list(text: str) -> list[str]:
     return [part for part in parts if part]
 
 
+def _normalized_list_entities(text: str) -> list[str]:
+    """Normalize explicit list items without relying on benchmark entities."""
+
+    cleaned = re.sub(r"\([^)]*\)", " ", str(text or ""))
+    cleaned = re.sub(
+        r"^.*?\b(?:include|includes|including|such as)\b",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    parts = re.split(r"\s*[,;]\s*|\s+and\s+", cleaned, flags=re.IGNORECASE)
+    filler = {
+        "some", "species", "items", "examples", "the", "a", "an", "and",
+        "largest", "population", "populations", "number", "numbers",
+    }
+    entities: list[str] = []
+    for part in parts:
+        normalized_part = canonicalize_answer(part)
+        raw_tokens = normalized_part.split()
+        tokens = [token for token in raw_tokens if token not in filler]
+        if "of" in tokens and any(word in raw_tokens for word in ("population", "number")):
+            tokens = tokens[tokens.index("of") + 1 :]
+        entity = " ".join(tokens).strip()
+        if entity:
+            entities.append(entity)
+    return entities
+
+
+def _explicit_list_coverage(prediction: str, gold: str) -> float | None:
+    if not re.search(r"\b(?:include|includes|including|such as)\b", gold, re.IGNORECASE):
+        return None
+    expected_entities = _normalized_list_entities(gold)
+    if len(expected_entities) < 2:
+        return None
+    pred_tokens = set(canonicalize_answer(re.sub(r"\([^)]*\)", " ", prediction)).split())
+    matched = 0
+    for entity in expected_entities:
+        entity_tokens = set(entity.split())
+        if entity_tokens and entity_tokens <= pred_tokens:
+            matched += 1
+    return matched / len(expected_entities)
+
+
 def answers_match(prediction: str, gold: str) -> bool:
     """用更宽松的语义近似规则判断答案是否等价。"""
 
@@ -153,6 +237,16 @@ def answers_match(prediction: str, gold: str) -> bool:
     if pred == expected:
         return True
     if expected in pred:
+        return True
+
+    referential_expected = strip_referential_answer_prefix(expected)
+    if referential_expected and referential_expected in pred:
+        return True
+
+    # Accept a concise entity when the remaining gold text is only an
+    # appositive description, for example "entity, a type of ...".
+    appositive = re.match(r"^(.+?),\s+(?:a|an|the)\s+.+$", str(gold).strip(), re.IGNORECASE)
+    if appositive and canonicalize_answer(appositive.group(1)) == pred:
         return True
 
     pred_date = normalize_date_answer(prediction)
@@ -166,6 +260,10 @@ def answers_match(prediction: str, gold: str) -> bool:
         pred_joined = " ".join(pred_items)
         if all(item in pred_joined for item in expected_items):
             return True
+
+    list_coverage = _explicit_list_coverage(prediction, gold)
+    if list_coverage is not None and list_coverage >= 0.8:
+        return True
 
     pred_tokens = [token for token in pred.split() if token]
     expected_tokens = [token for token in expected.split() if token]
@@ -186,6 +284,23 @@ def answers_match(prediction: str, gold: str) -> bool:
 
     coverage = len(overlap) / len(expected_set)
     return coverage >= 0.8
+
+
+def answer_token_f1(prediction: str, gold: str) -> float:
+    """Return normalized bag-of-token F1 for partially correct open-domain answers."""
+
+    pred = strip_referential_answer_prefix(canonicalize_answer(prediction))
+    expected = strip_referential_answer_prefix(canonicalize_answer(gold))
+    pred_tokens = pred.split()
+    expected_tokens = expected.split()
+    if not pred_tokens or not expected_tokens:
+        return 0.0
+    overlap = sum((Counter(pred_tokens) & Counter(expected_tokens)).values())
+    if overlap == 0:
+        return 0.0
+    precision = overlap / len(pred_tokens)
+    recall = overlap / len(expected_tokens)
+    return 2 * precision * recall / (precision + recall)
 
 
 def build_multihop_task(sample: dict[str, Any], *, context_source: str = DEFAULT_CONTEXT_SOURCE) -> str:
@@ -238,7 +353,7 @@ def _build_continuous_task_text(
     *,
     context_source: str = DEFAULT_CONTEXT_SOURCE,
 ) -> str:
-    """构建连续任务文本，默认保留旧逻辑，可切换到只给问题的实验模式。"""
+    """构建连续任务文本，正式实验仅向 Planner 暴露问题。"""
 
     if context_source == "hypergraph":
         return (
@@ -277,6 +392,8 @@ def load_continuous_tasks(
                     "task": task_text,
                     "question": turn.get("question", ""),
                     "expected_answer": turn.get("expected_answer"),
+                    "reference_answers": turn.get("reference_answers", []),
+                    "evidence_scope": group.get("evidence_scope"),
                     "context": group.get("context", []),
                     "supporting_facts": group.get("supporting_facts", []),
                     "dataset_type": "continuous",
@@ -415,8 +532,8 @@ def configure_experiment_mode(args: argparse.Namespace) -> list[str]:
             os.environ.setdefault("HIDDEN_RETRIEVER_STATE_ENCODER", "embedding")
             os.environ.setdefault("HIDDEN_RETRIEVER_EMBEDDING_PROVIDER", "hash")
             os.environ.setdefault("LOCAL_HIDDEN_POOLED_DIM", "128")
-            os.environ.setdefault("LOCAL_LLM_PLANNER_MAX_NEW_TOKENS", "48")
-            os.environ.setdefault("LOCAL_LLM_REASONER_MAX_NEW_TOKENS", "72")
+            os.environ.setdefault("LOCAL_LLM_PLANNER_MAX_NEW_TOKENS", "128")
+            os.environ.setdefault("LOCAL_LLM_REASONER_MAX_NEW_TOKENS", "128")
         return ["hidden"]
     raise ValueError(f"Unsupported experiment mode: {args.experiment_mode}")
 
@@ -433,18 +550,7 @@ def prediction_from_result(result: dict[str, Any]) -> str:
     execution_result = result.get("execution_result", {})
     if execution_result.get("result") is not None:
         return json.dumps(execution_result.get("result"), ensure_ascii=False, sort_keys=True)
-    candidate = str(execution_result.get("answer_candidate") or "").strip()
-    if candidate:
-        return candidate
-    final_answer = str(result.get("final_answer", "") or "")
-    match = re.search(
-        r"Answer:\s*(.+?)(?:\n\s*Implementation notes:|\n\s*Run diagnostics:|$)",
-        final_answer,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    if match:
-        return " ".join(match.group(1).strip().split())
-    return final_answer
+    return str(result.get("final_answer", "") or "")
 
 
 def codeact_result_text(execution_result: dict[str, Any]) -> str:
@@ -825,6 +931,10 @@ def build_task_result(
         "experience_memory_count": experience_memory_count,
         "elapsed_ms": elapsed_ms,
         "adjusted_elapsed_ms": max(0.0, elapsed_ms - float(metrics.get("state_generation_ms", 0.0) or 0.0)),
+        "elapsed_excluding_state_generation_ms": max(
+            0.0,
+            elapsed_ms - float(metrics.get("state_generation_ms", 0.0) or 0.0),
+        ),
         "exact_match": exact_match,
     }
     task_result = {
@@ -839,11 +949,16 @@ def build_task_result(
         "task": task_item.get("task"),
         "question": task_item.get("question", ""),
         "expected_answer": task_item.get("expected_answer"),
+        "reference_answers": task_reference_answers(task_item),
+        "answer_evaluation": "multi_reference_strict_em_f1" if task_item.get("reference_answers") else "legacy_match",
+        "evidence_scope": task_item.get("evidence_scope"),
         "gold": codeact_display if is_codeact else task_item.get("expected_answer"),
         "expected": task_item.get("expected"),
         "expected_reuse": task_item.get("expected_reuse", []),
         "prediction": prediction,
         "final_answer": codeact_display if is_codeact else result.get("final_answer", ""),
+        "reasoner_answer": result.get("execution_result", {}).get("answer_candidate", ""),
+        "score_answer": prediction,
         "exact_match": exact_match,
         "messages": _frontend_safe(result.get("messages", [])),
         "metrics": _frontend_safe(task_metrics),
@@ -1186,13 +1301,16 @@ def _finalize_continuous_batch(
         prediction = case["prediction"]
         expected_answer = task_item.get("expected_answer")
         exact_match = None
-        if expected_answer:
+        if task_reference_answers(task_item):
             comparable += 1
-            exact_match = answers_match(prediction, str(expected_answer))
+            exact_match, evaluated_f1 = evaluate_task_answer(prediction, task_item)
             correct += int(exact_match)
 
         task_result = case["task_result"]
         task_result["exact_match"] = exact_match
+        if task_reference_answers(task_item):
+            task_result["answer_token_f1"] = evaluated_f1
+            task_result.setdefault("metrics", {})["answer_token_f1"] = evaluated_f1
         task_result.setdefault("metrics", {})["exact_match"] = exact_match
         case["exact_match"] = exact_match
 
@@ -1348,7 +1466,15 @@ def run_mode(
     os.environ["LOCAL_CAPTURE_HIDDEN"] = "0"
     graph = build_graph()
     global_memory: list[dict[str, Any]] = []
-    persistent_experience_memory: list[dict[str, Any]] = []
+    persistent_experience_memory = [
+        record
+        for record in load_persistent_memory()
+        if memory_layer_for_record(record) == "experience"
+        and str(record.get("memory_type") or "") == "experience"
+        and bool(record.get("use_as_positive", True))
+        and str(record.get("quality_status") or "suspect") not in {"failed", "rejected"}
+    ]
+    persistent_experience_loaded_count = len(persistent_experience_memory)
     group_memory: dict[str, list[dict[str, Any]]] = {}
     pending_batches: dict[str, list[dict[str, Any]]] = {}
     batch_summaries: list[dict[str, Any]] = []
@@ -1362,8 +1488,11 @@ def run_mode(
         "text_chars": 0,
         "protocol_bytes": 0,
         "communication_bytes": 0,
+        "logical_protocol_bytes": 0,
+        "reference_wire_bytes": 0,
         "latent_transfer_count": 0,
         "latent_bytes": 0,
+        "latent_payload_bytes": 0,
         "transfer_latency_ms": 0.0,
         "state_generation_ms": 0.0,
         "raw_text_chars": 0,
@@ -1391,7 +1520,12 @@ def run_mode(
         "planner_memory_decision_ms": 0.0,
         "state_store_write_count": 0,
         "state_store_read_count": 0,
+        "state_store_read_bytes": 0,
+        "state_store_read_ms": 0.0,
         "state_store_bytes": 0,
+        "state_store_estimated_bytes": 0,
+        "latent_use_count": 0,
+        "latent_rerank_count": 0,
     }
 
     print(f"\n=== {mode} mode ===")
@@ -1556,6 +1690,9 @@ def run_mode(
         expected_answer = task_item.get("expected_answer")
         prediction = prediction_from_result(result)
         exact_match = None
+        task_answer_f1 = None
+        if task_reference_answers(task_item) and dataset_type != "codeact":
+            _, task_answer_f1 = evaluate_task_answer(prediction, task_item)
         if dataset_type == "codeact":
             comparable += 1
             expected_result = task_item.get("expected")
@@ -1564,7 +1701,7 @@ def run_mode(
             correct += int(exact_match)
         elif expected_answer and dataset_type != "continuous":
             comparable += 1
-            exact_match = answers_match(prediction, str(expected_answer))
+            exact_match, task_answer_f1 = evaluate_task_answer(prediction, task_item)
             correct += int(exact_match)
         if exact_match and int(result.get("execution_result", {}).get("experience_used_count", 0)) > 0:
             total_metrics["reuse_success_count"] += 1
@@ -1633,6 +1770,8 @@ def run_mode(
             exact_match=exact_match,
             prediction=prediction,
         )
+        task_result["answer_token_f1"] = task_answer_f1
+        task_result.setdefault("metrics", {})["answer_token_f1"] = task_answer_f1
         task_results.append(task_result)
 
         if dataset_type == "continuous":
@@ -1652,6 +1791,7 @@ def run_mode(
                 else None
             )
             if next_group_id != group_id:
+                batch_cases = pending_batches.pop(group_id)
                 working_memory = [
                     *persistent_experience_memory,
                     *group_memory.get(group_id, []),
@@ -1665,7 +1805,7 @@ def run_mode(
                 ) = _finalize_continuous_batch(
                     mode=mode,
                     group_id=group_id,
-                    cases=pending_batches.pop(group_id),
+                    cases=batch_cases,
                     working_memory=working_memory,
                 )
                 group_memory.pop(group_id, None)
@@ -1681,6 +1821,15 @@ def run_mode(
                     "correct": batch_correct,
                     "exact_match": (
                         batch_correct / batch_comparable
+                        if batch_comparable
+                        else None
+                    ),
+                    "answer_token_f1": (
+                        sum(
+                            float(case["task_result"].get("answer_token_f1") or 0.0)
+                            for case in batch_cases
+                        )
+                        / batch_comparable
                         if batch_comparable
                         else None
                     ),
@@ -1700,6 +1849,14 @@ def run_mode(
     hit_task_count = sum(1 for task_result in task_results if task_result.get("memory_hit_count", 0) > 0)
     memory_hit_rate = hit_task_count / len(tasks) if tasks else 0.0
     exact_match_rate = correct / comparable if comparable else None
+    answer_f1_values = [
+        float(task_result["answer_token_f1"])
+        for task_result in task_results
+        if isinstance(task_result.get("answer_token_f1"), (int, float))
+    ]
+    answer_token_f1_rate = (
+        sum(answer_f1_values) / len(answer_f1_values) if answer_f1_values else None
+    )
     summary = (
         "summary: "
         f"dataset={dataset_type}, "
@@ -1723,6 +1880,8 @@ def run_mode(
     )
     if exact_match_rate is not None:
         summary += f", exact_match={exact_match_rate:.2%}"
+    if answer_token_f1_rate is not None:
+        summary += f", answer_token_f1={answer_token_f1_rate:.2%}"
     print(summary)
 
     elapsed_ms = total_elapsed * 1000
@@ -1733,7 +1892,9 @@ def run_mode(
         "memory_hit_rate": memory_hit_rate,
         "elapsed_ms": elapsed_ms,
         "adjusted_elapsed_ms": adjusted_elapsed_ms,
+        "elapsed_excluding_state_generation_ms": adjusted_elapsed_ms,
         "exact_match": exact_match_rate,
+        "answer_token_f1": answer_token_f1_rate,
         "task_count": len(tasks),
     }
     reuse_report = evaluate_run_reuse({"task_results": task_results})
@@ -1748,12 +1909,16 @@ def run_mode(
         "limit": limit,
         "tasks": len(tasks),
         "task_count": len(tasks),
+        "persistent_memory_enabled": bool(os.environ.get("HYPERGRAPH_MEMORY_DB", "").strip()),
+        "persistent_experience_loaded_count": persistent_experience_loaded_count,
+        "persistent_experience_final_count": len(persistent_experience_memory),
         "metrics": aggregate_metrics,
         "reuse_report": reuse_report,
         "memory_hits": total_memory_hits,
         "memory_hit_rate": memory_hit_rate,
         "elapsed_ms": elapsed_ms,
         "exact_match": exact_match_rate,
+        "answer_token_f1": answer_token_f1_rate,
         "task_results": task_results,
         "batch_summaries": batch_summaries,
     }
@@ -1819,8 +1984,14 @@ def print_readable_run_summaries(results: list[dict[str, Any]]) -> None:
 def print_run_result_json(args: argparse.Namespace, tasks: list[dict[str, Any]], results: list[dict[str, Any]]) -> None:
     """输出前端可直接解析的汇总 JSON，避免页面从终端文本里猜字段。"""
 
+    extractive_fallback_enabled = os.environ.get(
+        "COMPETITION_EXTRACTIVE_FALLBACK", "1"
+    ).strip().lower() not in {"0", "false", "no", "off"}
     payload = {
         "schema_version": 1,
+        "communication_accounting": "delivered_payload_utf8_v2",
+        "handoff_contract": "structured_history_v3",
+        "answer_scoring_contract": "final_answer_only_v1",
         "experiment_mode": args.experiment_mode or "<developer-modes>",
         "memory_retrieval_mode": args.memory_retrieval_mode,
         "memory_organization": memory_organization_for_mode(args.memory_retrieval_mode),
@@ -1829,6 +2000,7 @@ def print_run_result_json(args: argparse.Namespace, tasks: list[dict[str, Any]],
         "context_source": args.context_source,
         "limit": args.limit,
         "task_count": len(tasks),
+        "extractive_fallback_enabled": extractive_fallback_enabled,
         "runs": results,
     }
     print("\n=== run_result_json ===")

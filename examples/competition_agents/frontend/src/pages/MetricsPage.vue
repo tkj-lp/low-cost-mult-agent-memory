@@ -19,9 +19,9 @@
 
       <div class="metrics-chart-grid">
         <LineChartCard
-          title="文本通信开销趋势"
-          unit="字符数"
-          :series="charSeries"
+          title="真实消息载荷趋势"
+          unit="字节"
+          :series="messageSeries"
           :labels="chartLabels"
         />
         <LineChartCard
@@ -212,20 +212,32 @@ const chartRecords = computed(() => {
 })
 
 const selectedChartRecords = computed(() => {
-  const selected = records.value.filter((record) =>
-    selectedRecordIds.value.includes(record.recordId) &&
-    matchesCurrentDataset(record)
-  )
+  const selectedIds = new Set(selectedRecordIds.value)
+  const selected = records.value.filter((record) => selectedIds.has(record.recordId))
   if (selected.length) return selected
   return selectedRecord.value ? [selectedRecord.value] : []
 })
 
+const comparisonBaselineRecord = computed(() => {
+  if (baselineSelected.value) return baselineRecord.value
+  const selected = selectedChartRecords.value
+  return selected.find((candidate) =>
+    candidate.collaborationMode === 'plain' &&
+    selected.some((record) =>
+      record.recordId !== candidate.recordId &&
+      record.dataset === candidate.dataset &&
+      record.memoryMode === candidate.memoryMode &&
+      record.retrievalMode === candidate.retrievalMode
+    )
+  ) ?? null
+})
+
 const chartLabels = computed(() => {
-  const maxLength = Math.max(...chartRecords.value.map((record) => record.series.textChars.length), 0)
+  const maxLength = Math.max(...chartRecords.value.map((record) => record.series.actualMessageBytes?.length || 0), 0)
   return Array.from({ length: maxLength }, (_, index) => `任务${index + 1}`)
 })
 
-const charSeries = computed(() => buildSeries('textChars'))
+const messageSeries = computed(() => buildSeries('actualMessageBytes'))
 const timeSeries = computed(() => buildSeries('elapsedSeconds'))
 
 const kpis = computed(() => {
@@ -234,9 +246,9 @@ const kpis = computed(() => {
     const baseline = baselineRecord.value
     return [
       {
-        title: '字符节省率',
-        value: improvementText(baseline?.textChars, record?.textChars),
-        desc: baseline && record ? `当前 ${integerText(record.textChars)} 字 / 基线 ${integerText(baseline.textChars)} 字` : '缺少匹配基线',
+        title: '消息载荷节省率',
+        value: improvementText(baseline?.actualMessageBytes ?? baseline?.protocolBytes, record?.actualMessageBytes ?? record?.protocolBytes),
+        desc: baseline && record ? `当前 ${byteText(record.actualMessageBytes ?? record.protocolBytes)} / 基线 ${byteText(baseline.actualMessageBytes ?? baseline.protocolBytes)}` : '缺少匹配基线',
         tone: 'blue',
         icon: '▣'
       },
@@ -254,51 +266,77 @@ const kpis = computed(() => {
         tone: 'purple',
         icon: '↔'
       },
-      qualityKpi('记忆复用', record?.memoryHitRate, '旧口径 memory_hit_rate：有记忆命中的任务占比', 'orange', '▰'),
+      qualityKpi('记忆命中任务占比', record?.memoryHitRate, '旧口径 memory_hit_rate：有任意记忆命中的任务占比，不判断是否相关', 'orange', '▰'),
       qualityKpi('回答准确率', record?.answerAccuracy, '旧口径 exact_match：由 run_demo 的 answers_match 汇总', 'blue', '◎')
     ]
   }
 
   return [
-    absoluteKpi('文本字符数', integerText(record?.textChars), record ? '累计文本通信字符' : '当前筛选组合暂无真实结果', 'blue', '▣'),
+    absoluteKpi('真实消息载荷', byteText(record?.actualMessageBytes ?? record?.protocolBytes), record ? '累计序列化协议消息，不含状态池数据' : '当前筛选组合暂无真实结果', 'blue', '▣'),
     absoluteKpi('单任务耗时', secondsText(avgTaskMs(record)), record ? '平均每个任务端到端耗时' : '当前筛选组合暂无真实结果', 'green', '◷'),
     communicationKpi(record),
-    qualityKpi('记忆复用', record?.memoryHitRate, '旧口径 memory_hit_rate：有记忆命中的任务占比', 'orange', '▰'),
+    qualityKpi('记忆命中任务占比', record?.memoryHitRate, '旧口径 memory_hit_rate：有任意记忆命中的任务占比，不判断是否相关', 'orange', '▰'),
     qualityKpi('回答准确率', record?.answerAccuracy, '旧口径 exact_match：由 run_demo 的 answers_match 汇总', 'blue', '◎')
   ]
 })
 
 const methodRows = computed(() => {
-  const baseline = baselineSelected.value ? baselineRecord.value : null
+  const baseline = comparisonBaselineRecord.value
   return chartRecords.value.map((record) => ({
     id: record.recordId || `${record.dataset}|${record.collaborationMode}|${record.memoryMode}|${record.retrievalMode}|${record.source}`,
     method: fullMethodLabel(record),
     messages: integerText(record.messageCount),
     chars: integerText(record.textChars),
+    actualBytes: byteText(record.actualMessageBytes ?? record.protocolBytes),
+    referenceBytes: byteText(record.referenceControlBytes ?? record.communicationCost),
     stateCount: integerText(record.stateTransferCount),
     stateSize: byteText(record.stateBytes),
-    duration: secondsText(record.elapsedMs),
     avgDuration: secondsText(avgTaskMs(record)),
+    stateGeneration: secondsText(record.stateGenerationMs),
     memoryHit: percentText(record.memoryHitRate),
     expectedReuse: percentText(record.expectedReuseHitRate),
+    // 表头第一列：命中任务占比（不是有效复用率）
     memoryReuse: percentText(record.memoryHitRate),
+    effectiveReuse: percentText(record.memoryReuseRate),
     precision: percentText(record.memoryPrecisionRate),
-    communication: communicationCostText(record),
     accuracy: percentText(record.answerAccuracy),
+    tokenF1: percentText(record.answerTokenF1),
+    evidenceCoverage: percentText(record.referenceEvidenceCoverage),
+    planExecution: percentText(record.plannerExecutionRate),
+    stateStoreOps: `${integerText(record.stateStoreReadCount)} / ${integerText(record.stateStoreWriteCount)}`,
+    stateStoreReadBytes: byteText(record.stateStoreReadBytes),
     recall: percentText(record.memoryRecallRate),
-    improvement: baseline && record !== baseline ? overallImprovementText(baseline, record) : '--',
+    improvement: baseline && record.recordId !== baseline.recordId
+      ? overallImprovementText(baseline, record)
+      : '--',
     tone: record.tone
   }))
 })
 
 onMounted(() => {
+  refreshSharedFilters()
   fetchMetrics()
   timer = window.setInterval(fetchMetrics, 3000)
+  window.addEventListener('storage', refreshSharedFilters)
+  window.addEventListener(FILTER_SYNC_EVENT, refreshSharedFilters)
 })
 
 onBeforeUnmount(() => {
   if (timer) window.clearInterval(timer)
+  window.removeEventListener('storage', refreshSharedFilters)
+  window.removeEventListener(FILTER_SYNC_EVENT, refreshSharedFilters)
 })
+
+function refreshSharedFilters() {
+  const saved = readSavedConfig()
+  const normalized = normalizeExperimentConfig({ ...defaultExperimentConfig(), ...saved })
+  filters.dataset = normalized.dataset
+  filters.collaborationMode = normalized.collaborationMode
+  filters.memoryMode = normalized.memoryMode
+  filters.retrievalMode = normalized.retrievalMode
+  filters.baselineMode = saved.baselineMode ?? 'none'
+  filters.baselineRecordId = saved.baselineRecordId ?? ''
+}
 
 function updateFilters(nextFilters) {
   const previousDataset = filters.dataset
@@ -647,7 +685,7 @@ function communicationKpiDescText(record) {
     parts.push(`状态 ${integerText(stateCount)} 次 / ${byteText(stateBytes)}`)
   }
   if (communicationCost) {
-    parts.push(`载荷 ${byteText(communicationCost)}`)
+    parts.push(`引用包 ${byteText(communicationCost)}`)
   }
   return parts.join(' · ')
 }
@@ -655,7 +693,7 @@ function communicationKpiDescText(record) {
 function communicationBaselineDesc(record, baseline) {
   const saving = improvementText(baseline?.communicationCost, record?.communicationCost)
   const current = communicationKpiDescText(record)
-  return saving === '--' ? current : `通信载荷较基线下降 ${saving} · ${current}`
+  return saving === '--' ? current : `引用通信较基线下降 ${saving} · ${current}`
 }
 
 function communicationCostText(record) {
@@ -675,7 +713,7 @@ function communicationCostText(record) {
     parts.push(`状态 ${integerText(stateCount)} 次 / ${byteText(stateBytes)}`)
   }
   if (communicationCost) {
-    parts.push(`载荷 ${byteText(communicationCost)}`)
+    parts.push(`引用包 ${byteText(communicationCost)}`)
   }
   return parts.join(' / ')
 }
@@ -795,7 +833,7 @@ function improvementText(base, current) {
 
 function overallImprovementText(base, current) {
   const gains = [
-    base.textChars ? (base.textChars - current.textChars) / base.textChars : null,
+    (base.actualMessageBytes ?? base.protocolBytes) ? ((base.actualMessageBytes ?? base.protocolBytes) - (current.actualMessageBytes ?? current.protocolBytes)) / (base.actualMessageBytes ?? base.protocolBytes) : null,
     base.elapsedMs ? (base.elapsedMs - current.elapsedMs) / base.elapsedMs : null
   ].filter((item) => typeof item === 'number' && Number.isFinite(item))
   if (!gains.length) return '--'
@@ -841,7 +879,6 @@ function fallbackRecordFromRun(payload, run, index = 0) {
   const expectedReuseTaskCount = Number(reuseSummary.expected_reuse_task_count || 0)
   const elapsedMs = Number(run.elapsed_ms || metrics.elapsed_ms || 0)
   const stateGenerationMs = collaborationMode === 'plain' ? 0 : Number(metrics.state_generation_ms || 0)
-  const comparableElapsedMs = Number(metrics.adjusted_elapsed_ms ?? Math.max(0, elapsedMs - stateGenerationMs))
   const dataset = datasetKey(payload.dataset_file || run.dataset_file)
   const retrievalMode = run.memory_retrieval_mode || payload.memory_retrieval_mode
   const memoryHitRate = numberOrNull(run.memory_hit_rate ?? metrics.memory_hit_rate)
@@ -849,6 +886,9 @@ function fallbackRecordFromRun(payload, run, index = 0) {
     ? numberOrNull(reuseSummary.memory_retrieval_accuracy)
     : null
   const answerAccuracy = exactMatchRate(run, metrics, taskResults)
+  const answerTokenF1 = answerTokenF1FromRun(run, taskResults)
+  const referenceEvidenceCoverage = referenceEvidenceCoverageFromTasks(taskResults)
+  const plannerExecutionRate = plannerExecutionRateFromTasks(taskResults)
   return {
     recordId: [
       payload.archive_id || 'latest',
@@ -867,13 +907,22 @@ function fallbackRecordFromRun(payload, run, index = 0) {
     taskCount: Number(run.task_count || run.tasks || metrics.task_count || payload.task_count || 0),
     messageCount: Number(metrics.message_count || 0),
     textChars: Number(metrics.text_chars || 0),
-    protocolBytes: Number(metrics.protocol_bytes || metrics.text_chars || 0),
+    protocolBytes: Number(metrics.logical_protocol_bytes || metrics.protocol_bytes || metrics.text_chars || 0),
+    actualMessageBytes: Number(metrics.logical_protocol_bytes || metrics.protocol_bytes || metrics.text_chars || 0),
     stateTransferCount: collaborationMode === 'plain' ? 0 : Number(metrics.latent_transfer_count || 0),
-    stateBytes: collaborationMode === 'plain' ? 0 : Number(metrics.latent_bytes || 0),
-    communicationCost: Number(metrics.communication_bytes || Number(metrics.protocol_bytes || metrics.text_chars || 0)),
+    stateBytes: collaborationMode === 'plain' ? 0 : Number(metrics.latent_payload_bytes || metrics.latent_bytes || 0),
+    communicationCost: Number(metrics.reference_wire_bytes || metrics.communication_bytes || Number(metrics.logical_protocol_bytes || metrics.protocol_bytes || metrics.text_chars || 0)),
+    referenceControlBytes: Number(metrics.reference_wire_bytes || metrics.communication_bytes || Number(metrics.logical_protocol_bytes || metrics.protocol_bytes || metrics.text_chars || 0)),
     stateGenerationMs,
     elapsedMs,
-    comparableElapsedMs: collaborationMode === 'plain' ? elapsedMs : comparableElapsedMs,
+    comparableElapsedMs: elapsedMs,
+    fullElapsedMs: elapsedMs,
+    stateStoreWriteCount: Number(metrics.state_store_write_count || 0),
+    stateStoreReadCount: Number(metrics.state_store_read_count || 0),
+    stateStoreReadBytes: Number(metrics.state_store_read_bytes || 0),
+    stateStoreBytes: Number(metrics.state_store_bytes || 0),
+    plannerExecutionRate,
+    referenceEvidenceCoverage,
     memoryHitRate,
     expectedReuseHitRate,
     memoryReuseRate: expectedReuseTaskCount ? numberOrNull(reuseSummary.correct_reuse_rate) : null,
@@ -881,12 +930,14 @@ function fallbackRecordFromRun(payload, run, index = 0) {
       ? Math.min(1, Number(metrics.reuse_success_count || 0) / Number(run.task_count || run.tasks || 1))
       : null,
     answerAccuracy,
+    answerTokenF1,
     memoryRecallRate: expectedReuseTaskCount ? numberOrNull(reuseSummary.expected_artifact_recall) : null,
     memoryPrecisionRate: expectedReuseTaskCount ? numberOrNull(reuseSummary.memory_precision) : null,
     memoryCompleteRetrievalRate: expectedReuseTaskCount ? numberOrNull(reuseSummary.memory_complete_retrieval_rate) : null,
     expectedReuseTaskCount,
     series: {
       textChars: taskResults.map((task) => Number(task.metrics?.text_chars || 0)),
+      actualMessageBytes: taskResults.map((task) => Number(task.metrics?.logical_protocol_bytes || task.metrics?.protocol_bytes || task.metrics?.text_chars || 0)),
       elapsedSeconds: taskResults.map((task) => Number(task.metrics?.elapsed_ms || 0) / 1000),
       memoryReuse: taskResults.map((task) => Number(task.metrics?.memory_hit_rate || (task.memory_hit_count ? 1 : 0)) * 100)
     }
@@ -901,6 +952,46 @@ function exactMatchRate(run, metrics, taskResults) {
     .filter((value) => typeof value === 'boolean')
   if (!comparable.length) return null
   return comparable.filter(Boolean).length / comparable.length
+}
+
+function answerTokenF1FromRun(run, taskResults) {
+  const direct = numberOrNull(run.answer_token_f1 ?? run.metrics?.answer_token_f1)
+  if (direct != null) return direct
+  const values = taskResults
+    .map((task) => numberOrNull(task.answer_token_f1 ?? task.metrics?.answer_token_f1))
+    .filter((value) => value != null)
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null
+}
+
+function metricTokens(value) {
+  return new Set(String(value || '').toLowerCase().match(/[a-z0-9]+/g) || [])
+}
+
+function referenceEvidenceCoverageFromTasks(taskResults) {
+  const values = taskResults.map((task) => {
+    const evidence = metricTokens((task.evidence || []).join(' '))
+    const references = task.reference_answers?.length ? task.reference_answers : [task.expected_answer]
+    const scores = references.map((reference) => {
+      const tokens = metricTokens(reference)
+      if (!tokens.size) return null
+      return [...tokens].filter((token) => evidence.has(token)).length / tokens.size
+    }).filter((value) => value != null)
+    return scores.length ? Math.max(...scores) : null
+  }).filter((value) => value != null)
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null
+}
+
+function plannerExecutionRateFromTasks(taskResults) {
+  const values = taskResults.map((task) => {
+    const debug = task.retrieval_debug || {}
+    let planned = debug.retrieval_policy?.knowledge_steps?.length || 0
+    if (!planned) planned = (debug.planner_focus?.length || debug.retrieval_query) ? 1 : 0
+    if (!planned) return null
+    let executed = Number(task.metrics?.knowledge_query_count || 0)
+    if (!executed && debug.context_source) executed = 1
+    return Math.min(1, executed / planned)
+  }).filter((value) => value != null)
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null
 }
 
 function numberOrNull(value) {

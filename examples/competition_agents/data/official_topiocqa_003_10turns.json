@@ -3,7 +3,7 @@
     "group_id": "topiocqa-official-003",
     "source_dataset": "TopiOCQA",
     "source_file": "topiocqa_valid.jsonl",
-    "original_conversation_no": 120,
+    "original_conversation_no": 64,
     "original_turn_count": 11,
     "selected_turn_count": 10,
     "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
@@ -45,6 +45,272 @@
         "sentences": [
           "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, There were earlier English and British precedents, long before the acts enumerated here. As early as the 16th Century, following Francis Drake's circumnavigation, Queen Elizabeth I declared that all written accounts of Drake's voyages were to become the 'Queen's secrets of the Realm'. In addition, Drake and the other participants of his voyages were sworn to their secrecy on the pain of death; the Queen intended to keep Drake's activities away from the eyes of rival Spain."
         ]
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "ritain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British coun"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Manhattan Project [SEP] Collaboration with the United Kingdom",
+        "sentences": [
+          "By March 1943 Conant decided that British help would benefit some areas of the project. James Chadwick and one or two other British scientists were important enough that the bomb design team at Los Alamos needed them, despite the risk of revealing weapon design secrets."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "was a British physicist"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "discovery of the neutron i"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James Chadwick [SEP] Introduction",
+        "sentences": [
+          "Chadwick followed his discovery of the neutron by measuring its mass. He anticipated that neutrons would become a major weapon in the fight against cancer. Chadwick left the Cavendish Laboratory in 1935 to become a professor of physics at the University of Liverpool, where he overhauled an antiquated laboratory and, by installing a cyclotron, made it an important centre for the study of nuclear physics."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics.\nThe chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number. Neutrons do not affect the electron configuration, but the sum of atomic number and the number of neutrons, or neutron number, is the mass of the nucleu"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Neutron [SEP] Introduction",
+        "sentences": [
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Origins",
+        "sentences": [
+          "Refugees from Nazi Germany and other fascist countries were particularly alarmed by the notion of a German nuclear weapon project."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada. From 1942 to 1946, the project was under the direction of Major General Leslie Groves of the U.S. Army Corps of Engineers. Nuclear physicist Robert Oppenheimer was the director of the Los Alamos Laboratory that designed the actual bombs. As engineer districts by convention carried the name of the city where they were located, the Army component of the project was designated the Manhattan District; \"Manhattan\" gradually superseded the official codename, Development of Substitute Materials, for the entire project. Along the way, the project absorbed its earlier British counterpart, Tube Alloys. The Manhattan Project began modestly in 1939, but grew to employ more than 130,000 people and cost nearly US$2 billion (equivalent to about"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British cou"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "sentences": [
+          "Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Early life",
+        "sentences": [
+          "mathematics and physics"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Introduction",
+        "sentences": [
+          "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Introduction",
+        "sentences": [
+          "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II. While at the Los Alamos National Laboratory, Fuchs was responsible for many significant theoretical calculations relating to the first nuclear weapons and, later, early models of the hydrogen bomb. After his conviction in 1950, he served nine years in prison in the United Kingdom and then moved to East Germany where he resumed his career as a physicist and scientific leader."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Introduction",
+        "sentences": [
+          "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.\n\nWhile imprisoned, he was friendly with the Irish Republican Army prisoner Seamus Murphy with whom he played chess and helped to escape. It was suggested by some that Fuchs had turned IRA leader Cathal Goulding into a Marxist but Seamus Murphy denied it by saying \"Fuchs never tried to turn anyone – it was hard to"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\""
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "14 years' imprisonment"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "sentences": [
+          "After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Official Secrets Act [SEP] Introduction",
+        "sentences": [
+          "is legislation that provides for the protection of state secrets and official information, mainly related to national security."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Official Secrets Act [SEP] Introduction",
+        "sentences": [
+          "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Official Secrets Act [SEP] Introduction",
+        "sentences": [
+          "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security."
+        ],
+        "source": "official_annotated_rationale"
       }
     ],
     "supporting_facts": [
@@ -101,9 +367,39 @@
         "topic_section": "Introduction",
         "conversation_context": [],
         "supporting_passage": "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
-        "rationale": "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor,",
+        "rationale": "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, ",
         "gold_passage_id": "wiki:7566712",
-        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "reference_answers": [
+          "James Chadwick",
+          "Prime Minister Winston Churchill, scientists Rudolf Peierls and Otto Frisch, Frisch–Peierls memorandum."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "James Chadwick",
+            "Rationale": "sh Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "James Chadwick",
+            "Rationale": "Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Prime Minister Winston Churchill, scientists Rudolf Peierls and Otto Frisch, Frisch–Peierls memorandum.",
+            "Rationale": "ritain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British coun",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "James Chadwick",
+            "Rationale": "By March 1943 Conant decided that British help would benefit some areas of the project. James Chadwick and one or two other British scientists were important enough that the bomb design team at Los Alamos needed them, despite the risk of revealing weapon design secrets.",
+            "Topic": "Manhattan Project",
+            "Topic_section": "Collaboration with the United Kingdom"
+          }
+        ]
       },
       {
         "turn_id": "turn-2",
@@ -122,9 +418,41 @@
           "James Chadwick"
         ],
         "supporting_passage": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\").",
-        "rationale": "was a British physicist",
+        "rationale": "was a British physicist ",
         "gold_passage_id": "wiki:5293636",
-        "gold_passage_title": "James Chadwick [SEP] Introduction"
+        "gold_passage_title": "James Chadwick [SEP] Introduction",
+        "reference_answers": [
+          "He was a British physicist.",
+          "A British physicist",
+          "He was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron.",
+          "A British physicist."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "He was a British physicist.",
+            "Rationale": "was a British physicist ",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "A British physicist",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "He was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron.",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "A British physicist.",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-3",
@@ -148,7 +476,38 @@
         "supporting_passage": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941, he wrote the final draft of the MAUD Report, which inspired the U.S. government to begin serious atomic bomb research efforts. He was the head of the British team that worked on the Manhattan Project during World War II. He was knighted in Britain in 1945 for his achievements in physics. Chadwick graduated from the Victoria University of Manchester in 1911, where he studied under Ernest Rutherford (known as the \"father of nuclear physics\").",
         "rationale": "discovery of the neutron i",
         "gold_passage_id": "wiki:5293636",
-        "gold_passage_title": "James Chadwick [SEP] Introduction"
+        "gold_passage_title": "James Chadwick [SEP] Introduction",
+        "reference_answers": [
+          "His discovery of the neutron.",
+          "Discovery of the neutron",
+          "discovery of the neutron, nuclear physics."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "His discovery of the neutron.",
+            "Rationale": "discovery of the neutron i",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Discovery of the neutron",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932. In 1941",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "discovery of the neutron, nuclear physics.",
+            "Rationale": "Chadwick followed his discovery of the neutron by measuring its mass. He anticipated that neutrons would become a major weapon in the fight against cancer. Chadwick left the Cavendish Laboratory in 1935 to become a professor of physics at the University of Liverpool, where he overhauled an antiquated laboratory and, by installing a cyclotron, made it an important centre for the study of nuclear physics.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "His discovery of the neutron.",
+            "Rationale": "Sir James Chadwick, (20 October 1891 – 24 July 1974) was a British physicist who was awarded the 1935 Nobel Prize in Physics for his discovery of the neutron in 1932.",
+            "Topic": "James Chadwick",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-4",
@@ -174,7 +533,39 @@
         "supporting_passage": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics. The chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number.",
         "rationale": "is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
         "gold_passage_id": "wiki:25682377",
-        "gold_passage_title": "Neutron [SEP] Introduction"
+        "gold_passage_title": "Neutron [SEP] Introduction",
+        "reference_answers": [
+          "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "The neutron is a subatomic particle, which has a neutral charge and a mass slightly greater than that of a proton.",
+          "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+          "It is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Rationale": "is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "The neutron is a subatomic particle, which has a neutral charge and a mass slightly greater than that of a proton.",
+            "Rationale": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms.",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Rationale": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton. Protons and neutrons constitute the nuclei of atoms. Since protons and neutrons behave similarly within the nucleus, and each has a mass of approximately one atomic mass unit, they are both referred to as nucleons. Their properties and interactions are described by nuclear physics.\nThe chemical properties of an atom are mostly determined by the configuration of electrons that orbit the atom's heavy nucleus. The electron configuration is determined by the charge of the nucleus, set by the number of protons, or atomic number. Neutrons do not affect the electron configuration, but the sum of atomic number and the number of neutrons, or neutron number, is the mass of the nucleu",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge.",
+            "Rationale": "The neutron is a subatomic particle, symbol or , which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton.",
+            "Topic": "Neutron",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-5",
@@ -200,9 +591,41 @@
           "It is a subatomic particle, symbol or which has a neutral (not positive or negative) charge and a mass slightly greater than that of a proton."
         ],
         "supporting_passage": "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys.",
-        "rationale": "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+        "rationale": "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. ",
         "gold_passage_id": "wiki:7566710",
-        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "reference_answers": [
+          "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+          "Particularly alarmed by the notion of a German nuclear weapon project.",
+          "Project was a research and development undertaking during World War II that produced the first nuclear weapons.",
+          "It was a research and development undertaking during World War II that produced the first nuclear weapons."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise.",
+            "Rationale": "helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Particularly alarmed by the notion of a German nuclear weapon project.",
+            "Rationale": "Refugees from Nazi Germany and other fascist countries were particularly alarmed by the notion of a German nuclear weapon project. ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Origins"
+          },
+          {
+            "Answer": "Project was a research and development undertaking during World War II that produced the first nuclear weapons.",
+            "Rationale": "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada. From 1942 to 1946, the project was under the direction of Major General Leslie Groves of the U.S. Army Corps of Engineers. Nuclear physicist Robert Oppenheimer was the director of the Los Alamos Laboratory that designed the actual bombs. As engineer districts by convention carried the name of the city where they were located, the Army component of the project was designated the Manhattan District; \"Manhattan\" gradually superseded the official codename, Development of Substitute Materials, for the entire project. Along the way, the project absorbed its earlier British counterpart, Tube Alloys. The Manhattan Project began modestly in 1939, but grew to employ more than 130,000 people and cost nearly US$2 billion (equivalent to about ",
+            "Topic": "Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It was a research and development undertaking during World War II that produced the first nuclear weapons.",
+            "Rationale": "The Manhattan Project was a research and development undertaking during World War II that produced the first nuclear weapons. It was led by the United States with the support of the United Kingdom (which initiated the original Tube Alloys project) and Canada.",
+            "Topic": "Manhattan Project",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-6",
@@ -230,9 +653,40 @@
           "It helped initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise."
         ],
         "supporting_passage": "The Quebec Agreement established the Combined Policy Committee and the Combined Development Trust to coordinate the efforts of the United States, the United Kingdom and Canada. The subsequent Hyde Park Agreement in September 1944 extended this cooperation to the postwar period. A British Mission led by Wallace Akers assisted in the development of gaseous diffusion technology in New York. Britain also produced the powdered nickel required by the gaseous diffusion process. Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
-        "rationale": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+        "rationale": " Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
         "gold_passage_id": "wiki:7566712",
-        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction"
+        "gold_passage_title": "British contribution to the Manhattan Project [SEP] Introduction",
+        "reference_answers": [
+          "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+          "scientists Rudolf Peierls and Otto Frisch,  Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs.",
+          "Yes, Rudolf Peierls and Otto Frisch."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+            "Rationale": " Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs",
+            "Rationale": "Another mission, led by Oliphant who acted as deputy director at the Berkeley Radiation Laboratory, assisted with the electromagnetic separation process. As head of the British Mission to the Los Alamos Laboratory, James Chadwick led a multinational team of distinguished scientists that included Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs, who was later revealed to be a Soviet atomic spy.",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "scientists Rudolf Peierls and Otto Frisch,  Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs.",
+            "Rationale": "Britain contributed to the Manhattan Project by helping initiate the effort to build the first atomic bombs in the United States during World War II, and helped carry it through to completion in August 1945 by supplying crucial expertise. Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. The Frisch–Peierls memorandum prompted Britain to create an atomic bomb project, known as Tube Alloys. Mark Oliphant, an Australian physicist working in Britain, was instrumental in making the results of the British MAUD Report known in the United States in 1941 by a visit in person. Initially the British project was larger and more advanced, but after the United States entered the war, the American project soon outstripped and dwarfed its British cou",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Yes, Rudolf Peierls and Otto Frisch.",
+            "Rationale": " Following the discovery of nuclear fission in uranium, scientists Rudolf Peierls and Otto Frisch at the University of Birmingham calculated, in March 1940, that the critical mass of a metallic sphere of pure uranium-235 was as little as , and would explode with the power of thousands of tons of dynamite. ",
+            "Topic": "British contribution to the Manhattan Project",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-7",
@@ -262,9 +716,41 @@
           "Sir Geoffrey Taylor, James Tuck, Niels Bohr, Peierls, Frisch, and Klaus Fuchs"
         ],
         "supporting_passage": "He became involved in student politics, joining the student branch of the Social Democratic Party of Germany (SPD), a party that his father had joined in 1912, and the \"Reichsbanner Schwarz-Rot-Gold\", the party's paramilitary organisation. His father took up a new position as professor of religion at the Pedagogical Academy in Kiel, and in the autumn Fuchs transferred to the University of Kiel, which his brother Gerhard and sister Elisabeth also attended. Fuchs continued his studies in mathematics and physics at the university. In October 1931, his mother committed suicide by drinking hydrochloric acid. The family later discovered that his maternal grandmother had also taken her own life.",
-        "rationale": "mathematics and physics",
+        "rationale": "mathematics and physics ",
         "gold_passage_id": "wiki:7675253",
-        "gold_passage_title": "Klaus Fuchs [SEP] Early life"
+        "gold_passage_title": "Klaus Fuchs [SEP] Early life",
+        "reference_answers": [
+          "Mathematics and physics",
+          "Theoretical physicist",
+          "Theoretical physics.",
+          "He supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Mathematics and physics",
+            "Rationale": "mathematics and physics ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Early life"
+          },
+          {
+            "Answer": "Theoretical physicist",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Theoretical physics.",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II. While at the Los Alamos National Laboratory, Fuchs was responsible for many significant theoretical calculations relating to the first nuclear weapons and, later, early models of the hydrogen bomb. After his conviction in 1950, he served nine years in prison in the United Kingdom and then moved to East Germany where he resumed his career as a physicist and scientific leader.\n",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "He supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II. ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-8",
@@ -296,9 +782,41 @@
           "Mathematics and physics"
         ],
         "supporting_passage": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.",
-        "rationale": "was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+        "rationale": " was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
         "gold_passage_id": "wiki:7675274",
-        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment"
+        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "reference_answers": [
+          "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+          "Espionage",
+          "He was imprisoned for breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+          "For breaking the Official Secrets Act by \"communicating information to a potential enemy.\""
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+            "Rationale": " was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "Espionage",
+            "Rationale": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "He was imprisoned for breaking the Official Secrets Act by \"communicating information to a potential enemy.",
+            "Rationale": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.\n\nWhile imprisoned, he was friendly with the Irish Republican Army prisoner Seamus Murphy with whom he played chess and helped to escape. It was suggested by some that Fuchs had turned IRA leader Cathal Goulding into a Marxist but Seamus Murphy denied it by saying \"Fuchs never tried to turn anyone – it was hard to",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "For breaking the Official Secrets Act by \"communicating information to a potential enemy.\"",
+            "Rationale": "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" ",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          }
+        ]
       },
       {
         "turn_id": "turn-9",
@@ -332,9 +850,40 @@
           "He was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy."
         ],
         "supporting_passage": "It is likely that Fuchs's espionage led the U.S. to cancel a 1950 Anglo-American plan to give Britain American-made atomic bombs. He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.",
-        "rationale": "14 years' imprisonment",
+        "rationale": " 14 years' imprisonment",
         "gold_passage_id": "wiki:7675274",
-        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment"
+        "gold_passage_title": "Klaus Fuchs [SEP] Trial and imprisonment",
+        "reference_answers": [
+          "14 years imprisonment",
+          "He was sentenced to 14 years' imprisonment",
+          "Lord Goddard sentenced him to 14 years' imprisonment."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "14 years imprisonment",
+            "Rationale": " 14 years' imprisonment",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "He was sentenced to 14 years' imprisonment",
+            "Rationale": "He was prosecuted by Sir Hartley Shawcross and was convicted on 1 March 1950 of four counts of breaking the Official Secrets Act by \"communicating information to a potential enemy.\" After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "Lord Goddard sentenced him to 14 years' imprisonment.",
+            "Rationale": " Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time. In December 1950, he was stripped of his British citizenship. The head of the British H-bomb project, Sir William Penney, visited Fuchs in prison in 1952.\n",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          },
+          {
+            "Answer": "Lord Goddard sentenced him to 14 years' imprisonment.",
+            "Rationale": "After a trial lasting less than 90 minutes that was based on his confession, Lord Goddard sentenced him to 14 years' imprisonment, the maximum for espionage, because the Soviet Union was classed as an ally at the time.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Trial and imprisonment"
+          }
+        ]
       },
       {
         "turn_id": "turn-10",
@@ -370,10 +919,46 @@
           "14 years imprisonment"
         ],
         "supporting_passage": "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, There were earlier English and British precedents, long before the acts enumerated here. As early as the 16th Century, following Francis Drake's circumnavigation, Queen Elizabeth I declared that all written accounts of Drake's voyages were to become the 'Queen's secrets of the Realm'. In addition, Drake and the other participants of his voyages were sworn to their secrecy on the pain of death; the Queen intended to keep Drake's activities away from the eyes of rival Spain.",
-        "rationale": "is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+        "rationale": " is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
         "gold_passage_id": "wiki:4732088",
-        "gold_passage_title": "Official Secrets Act [SEP] Introduction"
+        "gold_passage_title": "Official Secrets Act [SEP] Introduction",
+        "reference_answers": [
+          "It is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+          "He was an atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+          "It  is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+          "It is legislation that provides for the protection of state secrets and official information."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+            "Rationale": " is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+            "Topic": "Official Secrets Act",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "He was an atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+            "Rationale": "Klaus Emil Julius Fuchs (29 December 1911 – 28 January 1988) was a German theoretical physicist and atomic spy who supplied information from the American, British, and Canadian Manhattan Project to the Soviet Union during and shortly after World War II.",
+            "Topic": "Klaus Fuchs",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It  is legislation that provides for the protection of state secrets and official information, mainly related to national security.",
+            "Rationale": "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. OSAs are currently in-force in Hong Kong, India, Ireland, Myanmar, Malaysia, Singapore and the United Kingdom, and have previously existed in Canada and New Zealand, ",
+            "Topic": "Official Secrets Act",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is legislation that provides for the protection of state secrets and official information.",
+            "Rationale": "An Official Secrets Act (OSA) is legislation that provides for the protection of state secrets and official information, mainly related to national security. ",
+            "Topic": "Official Secrets Act",
+            "Topic_section": "Introduction"
+          }
+        ]
       }
-    ]
+    ],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "max_over_official_references_strict_em_token_f1",
+    "evidence_scope": "existing_passages_plus_official_annotated_rationales_not_full_wikipedia"
   }
 ]

@@ -14,6 +14,8 @@
 - 对比方法适配：支持纯文本、LLMLingua-2、AutoForm、结构化协议、协议 + 向量、隐状态传递等实验模式。
 - 前端展示：支持实验运行、协作链路查看、记忆复用查看、指标评估、结果文件导入和多模型结果对比。
 
+非文本模式采用控制面与数据面分离：Agent 消息仅携带 `state_ref`，计划、检索结果和答案载荷写入进程内状态池；下游 Agent 通过受控解析接口读取载荷，hidden 向量用于知识候选重排和计划—证据一致性约束。当前统计的是逻辑协议与引用包规模，不代表 Socket/IPC 物理流量。
+
 ## 目录结构
 
 ```text
@@ -44,7 +46,7 @@
 | LLMLingua-2 | `llmlingua_text` | 生成后压缩 Agent 间文本消息 |
 | 结构化协议 | `protocol_api` | 使用结构化协议包传递 Agent 中间结果 |
 | 协议 + 向量 | `protocol_api_embedding` | 结构化协议结合 embedding 状态引用 |
-| 隐状态传递 | `hidden_api` | 基于本地模型 hidden state 的状态引用传递 |
+| 隐状态传递 | `hidden_api` | 本地模型 hidden state 写入状态池，下游按引用读取并用于证据重排与推理约束 |
 
 ## 数据集
 

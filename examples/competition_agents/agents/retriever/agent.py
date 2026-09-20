@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import json
 import re
 import os
 import time
 
 from baselines.autoform import autoform_enabled, generate_autoform_message
 from competition_agents.memory import search_memory
+from competition_agents.handoff import historical_qa, memory_object, decide_qa_retrieval, json_object
+from competition_agents.embedding import embed_text
+from competition_agents.latent_hidden import extract_last_hidden_state
+from competition_agents.latent_hidden.adapter import cosine_similarity
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet
 from competition_agents.runtime_events import emit_knowledge_retrieval_events, emit_memory_retrieval_events
 from competition_agents.state import (
@@ -14,6 +19,8 @@ from competition_agents.state import (
     put_latent_state,
     put_shared_state,
     record_message,
+    resolve_state_ref,
+    received_state_ref,
 )
 from hypergraph_memory_method import (
     KNOWLEDGE_FOLLOWUP_BATCH,
@@ -21,6 +28,7 @@ from hypergraph_memory_method import (
     search_context,
     update_retrieval_batch,
 )
+from hypergraph_memory_method.text import question_content_tokens
 
 
 def _shorten(value: object, limit: int = 220) -> str:
@@ -54,6 +62,7 @@ def _compact_memory_context(hits: list[dict]) -> list[dict]:
                 "turn_id": hit.get("turn_id", ""),
                 "artifact_types": hit.get("artifact_types", []),
                 "summary": _shorten(hit.get("summary", ""), 160),
+                "history_qa": historical_qa(hit) if hit.get("memory_type", "evidence") == "evidence" else None,
                 "retrieval_score": hit.get("retrieval_score"),
                 "problem_pattern": _shorten(hit.get("problem_pattern", ""), 120),
                 "solution_pattern": _shorten(hit.get("solution_pattern", ""), 140),
@@ -88,6 +97,7 @@ def _put_hidden_mode_retriever_state(
     *,
     text: str,
     consumers: list[str],
+    semantic_payload: dict | None = None,
 ) -> tuple[str, dict[str, dict[str, Any]], dict[str, Any]]:
     """hidden 模式下 Retriever 默认使用轻量 latent ref，避免额外 Qwen 前向。"""
 
@@ -99,6 +109,7 @@ def _put_hidden_mode_retriever_state(
             topic=state["task"],
             text=text,
             consumers=consumers,
+            semantic_payload=semantic_payload,
         )
 
     previous_provider = os.environ.get("EMBEDDING_PROVIDER")
@@ -114,6 +125,7 @@ def _put_hidden_mode_retriever_state(
             topic=state["task"],
             text=text,
             consumers=consumers,
+            semantic_payload=semantic_payload,
         )
     except RuntimeError:
         os.environ["EMBEDDING_PROVIDER"] = "hash"
@@ -123,6 +135,7 @@ def _put_hidden_mode_retriever_state(
             topic=state["task"],
             text=text,
             consumers=consumers,
+            semantic_payload=semantic_payload,
         )
     finally:
         if previous_provider is None:
@@ -185,25 +198,23 @@ def _reuse_artifacts(expected_reuse: list[str]) -> list[str]:
 
 
 def _build_continuous_task_hints(task_meta: dict) -> list[str]:
-    expected_reuse = _reuse_specs(task_meta)
     tags = task_meta.get("tags", [])
     if not isinstance(tags, list):
         tags = [tags]
     hints = [
         f"Group id: {task_meta.get('group_id')}",
+        f"Topic: {task_meta.get('topic')}",
+        f"Topic section: {task_meta.get('topic_section')}",
         f"Current turn: {task_meta.get('turn_id')}",
         f"Task type: {task_meta.get('task_type') or task_meta.get('dataset_type')}",
         f"Tags: {tags}",
     ]
-    if expected_reuse:
-        hints.append("Expected reuse: " + ", ".join(expected_reuse))
-        hints.append("Required artifacts: " + ", ".join(_reuse_artifacts(expected_reuse)))
     return [hint for hint in hints if hint and not hint.endswith(": None")]
 
 
 def _memory_top_k(task_meta: dict, *, base: int = 2, limit: int = 6) -> int:
-    concrete_specs = [value for value in _reuse_specs(task_meta) if value.startswith("turn-")]
-    return max(base, min(limit, len(concrete_specs) + 1))
+    del task_meta
+    return max(base, min(limit, 3))
 
 
 def _build_retrieval_query(task: str, plan: list[str], task_meta: dict | None = None) -> tuple[str, list[str]]:
@@ -212,7 +223,10 @@ def _build_retrieval_query(task: str, plan: list[str], task_meta: dict | None = 
     task_meta = task_meta or {}
     focus = _planner_focus(plan)
     hint_lines = _build_continuous_task_hints(task_meta)
-    sections = [task]
+    # `task` is a mode-dependent runtime prompt. Retrieval must instead begin
+    # from the same user question in every collaboration mode.
+    question = str(task_meta.get("question") or "").strip()
+    sections = [f"Question: {question}" if question else task]
 
     if hint_lines:
         sections.append("Continuous task reuse hints:\n" + "\n".join(f"- {hint}" for hint in hint_lines))
@@ -232,15 +246,15 @@ def _tokenize(text: str) -> set[str]:
 
 def _experience_family(question: str) -> str:
     normalized = str(question or "").lower()
-    if "when" in normalized and any(token in normalized for token in ("dvd", "release", "digital", "blu-ray", "blu ray")):
+    if re.search(r"\b(when|what year|what date)\b", normalized):
         return "temporal_constraint_selection"
-    if "cast" in normalized or "members" in normalized:
+    if re.search(r"\b(list|name|mention|members|what kinds|what types|which)\b", normalized):
         return "entity_list_extraction"
-    if "where" in normalized and "filmed" in normalized:
-        return "multi_location_selection"
-    if "what is the film about" in normalized or ("what" in normalized and "film" in normalized and "about" in normalized):
-        return "topic_summary_selection"
-    if any(marker in normalized for marker in ("economy", "depend on", "mineral", "resources", "hazard", "fish")):
+    if re.search(r"\b(where|which place|which country|which city|location)\b", normalized):
+        return "location_selection"
+    if re.search(r"\b(who|whose|which person)\b", normalized):
+        return "person_or_role_selection"
+    if re.search(r"\b(what|how|is|are|was|were|does|do|has|have)\b", normalized):
         return "attribute_lookup_with_context"
     return "memory_grounded_question_answering"
 
@@ -252,23 +266,40 @@ def _build_experience_query(task: str, plan: list[str], question: str, task_meta
     return retrieval_query + hint
 
 
-def _augment_knowledge_query(base_query: str, memory_context: list[dict], retrieval_policy: dict) -> str:
-    """Use Planner-approved memory hits as compact hints for the later knowledge lookup."""
+def _augment_knowledge_query(
+    base_query: str,
+    memory_context: list[dict],
+    retrieval_policy: dict,
+    task_meta: dict | None = None,
+) -> str:
+    """Build a standalone knowledge query from public metadata and recalled QA state."""
 
-    if not memory_context:
-        return base_query
+    task_meta = task_meta or {}
+    topic = str(task_meta.get("topic") or "").strip()
     memory_lines = []
-    for item in memory_context[:4]:
-        parts = [
-            str(item.get("memory_id") or ""),
-            str(item.get("summary") or ""),
-            " ".join(str(value) for value in item.get("trigger_conditions", []) or []),
-        ]
-        memory_lines.append(" | ".join(part for part in parts if part))
+    # A dataset-provided current topic is a safer reference anchor than an
+    # unverified answer produced earlier in the same batch. When no topic is
+    # available, retain recent QA as an explicitly unverified reference hint.
+    if not topic:
+        for item in memory_context[:2]:
+            qa = item.get("history_qa") or historical_qa(item)
+            parts = [
+                str(item.get("memory_id") or ""),
+                "Question: " + str(qa.get("question") or ""),
+                "Unverified answer reference: " + str(qa.get("answer") or ""),
+            ]
+            memory_lines.append(" | ".join(part for part in parts if part))
     sections = [
         base_query,
+        f"Current topic: {topic}",
+        f"Requested section or attribute: {task_meta.get('topic_section') or task_meta.get('task_type') or ''}",
         "Planner retrieval policy: " + str(retrieval_policy.get("reason", "")),
-        "Reusable memory hints:\n" + "\n".join(f"- {line}" for line in memory_lines if line),
+        (
+            "Previous conversational QA for reference resolution only:\n"
+            + "\n".join(f"- {line}" for line in memory_lines if line)
+            if memory_lines
+            else ""
+        ),
     ]
     return "\n".join(section for section in sections if section.strip())
 
@@ -288,9 +319,9 @@ def _experience_match_score(question: str, hit: dict) -> float:
     family_rules = {
         "temporal_constraint_selection": ("temporal", "time", "date", "constraint", "medium", "region"),
         "entity_list_extraction": ("entity", "person", "list", "cast"),
-        "multi_location_selection": ("location", "multi_location", "location_span"),
-        "topic_summary_selection": ("topic", "summary", "core_event", "depiction"),
-        "attribute_lookup_with_context": ("attribute", "resource", "hazard", "fish", "economy"),
+        "location_selection": ("location", "place", "country", "city", "location_span"),
+        "person_or_role_selection": ("person", "identity", "role", "position"),
+        "attribute_lookup_with_context": ("attribute", "property", "description", "status", "relation"),
         "memory_grounded_question_answering": ("memory_grounded", "evidence_backed"),
     }
     markers = family_rules.get(family, ())
@@ -353,54 +384,28 @@ def _rerank_experience_hits(question: str, hits: list[dict], *, top_k: int) -> l
     return filtered
 
 
-def _supporting_fact_lookup(task_meta: dict) -> dict[str, set[str]]:
-    """把 supporting_facts 转成 title -> sentence 索引，便于命中 gold 证据句。"""
-
-    lookup: dict[str, set[str]] = {}
-    for item in task_meta.get("supporting_facts", []) or []:
-        if not isinstance(item, (list, tuple)) or len(item) < 2:
-            continue
-        title = str(item[0]).strip()
-        sentence = str(item[1]).strip()
-        if not title or not sentence:
-            continue
-        lookup.setdefault(title, set()).add(sentence)
-    return lookup
-
-
 def _answer_signal_bonus(sentence_text: str, focus_tokens: set[str], query_tokens: set[str]) -> int:
-    """给更像“最终答案承载句”的句子额外加分，压低只碰标题词的干扰句。"""
+    """Score generic answer-shape compatibility without benchmark-specific facts."""
 
     sentence_lower = sentence_text.lower()
     bonus = 0
-
-    answer_markers = (
-        "served as",
-        "was named",
-        "held",
-        "position",
-        "government",
-        "protocol",
-        "ambassador",
-        "diplomat",
-    )
-    for marker in answer_markers:
-        if marker in sentence_lower:
-            bonus += 2
-
-    if {"position", "government"} & focus_tokens and (
-        {"protocol", "ambassador", "served", "named"} & _tokenize(sentence_text)
-    ):
+    all_query_tokens = query_tokens | focus_tokens
+    if {"when", "date", "year"} & all_query_tokens and re.search(r"\b(?:19|20)\d{2}\b", sentence_lower):
         bonus += 4
-
-    if "chief" in sentence_lower and "protocol" in sentence_lower:
-        bonus += 5
-
-    if "sequel" in sentence_lower or "retitled" in sentence_lower:
-        bonus -= 3
-
-    if "film" in query_tokens and "film" in sentence_lower and "position" not in sentence_lower:
-        bonus -= 1
+    if {"where", "location", "country", "city"} & all_query_tokens and re.search(
+        r"\b(?:in|at|near|from|located)\b", sentence_lower
+    ):
+        bonus += 3
+    if {"who", "person", "role", "position"} & all_query_tokens and re.search(
+        r"\b(?:is|was|became|served|appointed|named|held)\b", sentence_lower
+    ):
+        bonus += 3
+    if {"list", "kinds", "types", "members", "examples"} & all_query_tokens and sentence_text.count(",") >= 2:
+        bonus += 3
+    if {"many", "much", "number", "percentage"} & all_query_tokens and re.search(
+        r"\b\d+(?:\.\d+)?%?\b", sentence_lower
+    ):
+        bonus += 3
 
     return bonus
 
@@ -410,7 +415,6 @@ def _extract_context_evidence(task_meta: dict, planner_focus: list[str], limit: 
 
     context = task_meta.get("context", []) or []
     question = str(task_meta.get("question") or "")
-    supporting_lookup = _supporting_fact_lookup(task_meta)
     query_tokens = _tokenize(question)
     focus_tokens = set().union(*(_tokenize(step) for step in planner_focus)) if planner_focus else set()
 
@@ -434,9 +438,8 @@ def _extract_context_evidence(task_meta: dict, planner_focus: list[str], limit: 
             sentence_tokens = _tokenize(sentence_text)
             combined_tokens = query_tokens | focus_tokens
             overlap = len(sentence_tokens & combined_tokens)
-            support_bonus = 5 if sentence_text in supporting_lookup.get(title, set()) else 0
             signal_bonus = _answer_signal_bonus(sentence_text, focus_tokens, query_tokens)
-            score = overlap + title_bonus + support_bonus + signal_bonus
+            score = overlap + title_bonus + signal_bonus
             if score <= 0:
                 continue
             scored_sentences.append((score, -index, title, sentence_text))
@@ -461,6 +464,7 @@ def _extract_hypergraph_context(
     *,
     query: str | None = None,
     limit: int = 4,
+    plan_state_payload: dict | None = None,
 ) -> tuple[list[str], list[dict]]:
     """从上下文超图中取回证据，并压成与旧逻辑兼容的 evidence 形式。"""
 
@@ -474,15 +478,40 @@ def _extract_hypergraph_context(
         dataset_type=dataset_type,
         planner_focus=planner_focus or None,
         top_k=max(limit * 3, 8),
+        exclude_kinds={"dialogue_question", "dialogue_answer"},
     )
-    hits = _rerank_hypergraph_hits(task_meta, planner_focus, hits, limit=limit)
+    # Dialogue turns belong to episodic QA memory. Keep the knowledge channel
+    # limited to knowledge nodes so prior answers cannot overwrite current facts.
+    hits = [
+        hit
+        for hit in hits
+        if str(hit.get("kind") or "") not in {"dialogue_question", "dialogue_answer"}
+    ]
+    # Nested snippets of the same section should not consume separate evidence slots.
+    normalized_texts = [" ".join(str(hit.get("text") or "").split()) for hit in hits]
+    hits = [
+        hit for index, hit in enumerate(hits)
+        if not any(
+            normalized_texts[index]
+            and len(normalized_texts[index]) < len(normalized_texts[other_index])
+            and normalized_texts[index] in normalized_texts[other_index]
+            and (hit.get("title"), hit.get("section")) == (other.get("title"), other.get("section"))
+            for other_index, other in enumerate(hits)
+        )
+    ]
+    hits = _rerank_hypergraph_hits(
+        task_meta,
+        planner_focus,
+        hits,
+        limit=limit,
+        plan_state_payload=plan_state_payload,
+        query_text=question,
+    )
     evidence = []
     for hit in hits:
         title = str(hit.get("title") or "").strip()
         text = str(hit.get("text") or "").strip()
         if not text:
-            continue
-        if str(hit.get("kind") or "") == "dialogue_question":
             continue
         evidence.append(f"{title}: {text}" if title else text)
     return evidence, hits
@@ -494,14 +523,33 @@ def _rerank_hypergraph_hits(
     hits: list[dict],
     *,
     limit: int,
+    plan_state_payload: dict | None = None,
+    query_text: str = "",
 ) -> list[dict]:
     """对超图命中的上下文做答题导向重排，优先保留最像最终证据的片段。"""
 
-    question_tokens = _tokenize(task_meta.get("question", ""))
+    question_tokens = _tokenize(
+        f"{task_meta.get('question', '')} {query_text}"
+    )
     focus_tokens = set().union(*(_tokenize(step) for step in planner_focus)) if planner_focus else set()
     topic_tokens = _tokenize(task_meta.get("topic", ""))
     section_tokens = _tokenize(task_meta.get("topic_section", ""))
-    supporting_passage = str(task_meta.get("supporting_passage") or "").strip().lower()
+    requested_tokens = question_content_tokens(str(task_meta.get("question") or ""))
+
+    latent_query_vector = []
+    latent_vector_kind = ""
+    plan_content_type = str((plan_state_payload or {}).get("content_type") or "")
+    embedding_provider = str((plan_state_payload or {}).get("embedding_provider") or "").lower()
+    if plan_content_type == "latent.llm_hidden_state":
+        latent_vector_kind = "hidden"
+        latent_query_vector = [
+            float(value) for value in (plan_state_payload or {}).get("pooled_vector", [])
+        ]
+    elif plan_content_type == "latent.embedding" and embedding_provider not in {"", "hash", "hash-v1"}:
+        latent_vector_kind = "embedding"
+        latent_query_vector = [
+            float(value) for value in (plan_state_payload or {}).get("vector", [])
+        ]
 
     reranked: list[tuple[float, dict]] = []
     for hit in hits:
@@ -511,11 +559,24 @@ def _rerank_hypergraph_hits(
         section = str(hit.get("section") or "")
         text = str(hit.get("text") or "")
         text_lower = text.lower()
+        latent_similarity = 0.0
+        if latent_query_vector and text:
+            try:
+                if latent_vector_kind == "hidden":
+                    candidate_state, _ = extract_last_hidden_state(text)
+                    candidate_vector = candidate_state.pooled_vector
+                else:
+                    candidate_vector = embed_text(text).vector
+                latent_similarity = cosine_similarity(
+                    latent_query_vector,
+                    candidate_vector,
+                )
+                # Hidden similarity is a tie-breaker after lexical/plan
+                # relevance, never a substitute for question-grounded match.
+                score += 0.25 * max(latent_similarity, 0.0)
+            except RuntimeError:
+                latent_similarity = 0.0
 
-        if supporting_passage and text_lower == supporting_passage:
-            score += 20.0
-        if kind == "supporting_passage":
-            score += 10.0
         if kind in {"dialogue_question", "dialogue_answer"}:
             score -= 4.0
 
@@ -525,6 +586,7 @@ def _rerank_hypergraph_hits(
             score += 5.0
 
         text_tokens = _tokenize(text)
+        score += 4.0 * len(text_tokens & requested_tokens)
         score += 0.5 * len(text_tokens & (question_tokens | focus_tokens))
 
         if {"when", "date", "year", "month"} & question_tokens:
@@ -537,7 +599,19 @@ def _rerank_hypergraph_hits(
             if any(marker in text_lower for marker in ("depicts", "about", "is a", "was a")):
                 score += 2.0
 
-        reranked.append((score, hit))
+        reranked.append(
+            (
+                score,
+                {
+                    **hit,
+                    **(
+                        {"latent_similarity": round(latent_similarity, 6)}
+                        if latent_query_vector
+                        else {}
+                    ),
+                },
+            )
+        )
 
     ranked_hits = [
         hit
@@ -644,31 +718,48 @@ def retriever_agent(state: CompetitionState) -> dict:
     """检索可复用记忆，并生成非文本状态引用。"""
 
     task_meta = state.get("task_meta", {})
-    if state["mode"] == "text":
-        planner_message = _latest_message_payload(state, sender="planner", receiver="retriever")
-        retrieval_query = "\n".join(
-            part
-            for part in [
-                state["task"],
-                "Planner natural-language message:",
-                planner_message,
-            ]
-            if str(part).strip()
+    metrics = state["metrics"]
+    plan = state.get("plan", [])
+    retrieval_policy = state.get("retrieval_policy") or {}
+    plan_state_payload: dict = {}
+    plan_ref = received_state_ref(state, sender="planner", receiver="retriever") if state["mode"] in {"protocol", "hidden"} else ""
+    if state["mode"] in {"protocol", "hidden"} and plan_ref:
+        plan_state_payload, metrics = resolve_state_ref(
+            {**state, "metrics": metrics},
+            plan_ref,
+            consumer="retriever",
+            expected_content_types={"latent.embedding", "latent.llm_hidden_state"},
         )
-        planner_focus = []
-    else:
-        retrieval_query, planner_focus = _build_retrieval_query(state["task"], state.get("plan", []), task_meta)
+        semantic_payload = plan_state_payload.get("semantic_payload", {})
+        if not plan_state_payload or not semantic_payload:
+            raise ValueError("Planner handoff state is missing or invalid")
+        if isinstance(semantic_payload, dict):
+            resolved_plan = semantic_payload.get("plan")
+            if isinstance(resolved_plan, list) and resolved_plan:
+                plan = [str(step) for step in resolved_plan]
+            resolved_policy = semantic_payload.get("retrieval_policy")
+            if isinstance(resolved_policy, dict) and resolved_policy:
+                retrieval_policy = resolved_policy
+    if state["mode"] == "text":
+        delivered_plan = json_object(_latest_message_payload(state, sender="planner", receiver="retriever"))
+        if delivered_plan and isinstance(delivered_plan.get("retrieval_policy"), dict):
+            retrieval_policy = delivered_plan["retrieval_policy"]
+            plan = delivered_plan.get("plan", [])
+        else:
+            # Compressed plans may lose JSON syntax. Keep the delivered text as
+            # retrieval guidance without silently recovering the original plan.
+            plan = [_latest_message_payload(state, sender="planner", receiver="retriever")]
+            retrieval_policy = {"query_type": "unknown", "need_knowledge": True,
+                                "planner_delivery_status": "unstructured"}
+    retrieval_query, planner_focus = _build_retrieval_query(state["task"], plan, task_meta)
     question = str(task_meta.get("question") or state["task"])
-    retrieval_policy = state.get("retrieval_policy") or {
-        "need_memory": bool(state.get("memory")),
-        "need_knowledge": True,
-        "memory_first": True,
-        "reason": "fallback_policy",
-        "signals": {"memory_available": bool(state.get("memory"))},
-    }
+    retrieval_policy = decide_qa_retrieval(
+        retrieval_policy, question,
+        any(hit.get("memory_type", "evidence") == "evidence" for hit in state.get("memory", [])),
+    )
     experience_query = str(
         (retrieval_policy.get("experience_retrieval") or {}).get("query")
-        or _build_experience_query(state["task"], state.get("plan", []), question, task_meta)
+        or _build_experience_query(state["task"], plan, question, task_meta)
     )
     context_source = str(task_meta.get("context_source") or "inline")
     context_hits: list[dict] = []
@@ -708,7 +799,12 @@ def retriever_agent(state: CompetitionState) -> dict:
     experience_rules = _build_experience_rules(experience_hits)
     knowledge_steps = _planned_knowledge_steps(
         retrieval_policy,
-        fallback_query=_augment_knowledge_query(retrieval_query, memory_context, retrieval_policy),
+        fallback_query=_augment_knowledge_query(
+            retrieval_query,
+            memory_context,
+            retrieval_policy,
+            task_meta,
+        ),
     )
     context_started = time.perf_counter()
     if not retrieval_policy.get("need_knowledge", True):
@@ -718,7 +814,12 @@ def retriever_agent(state: CompetitionState) -> dict:
         retrieved_context_evidence = []
         prior_findings: list[str] = []
         for step in knowledge_steps:
-            step_query = str(step["query"])
+            step_query = _augment_knowledge_query(
+                str(step["query"]),
+                memory_context,
+                retrieval_policy,
+                task_meta,
+            )
             if prior_findings:
                 step_query += "\nPrior step findings: " + " | ".join(prior_findings[-2:])[:420]
             step_focus = [str(step.get("goal") or step_query)]
@@ -728,6 +829,7 @@ def retriever_agent(state: CompetitionState) -> dict:
                     step_focus,
                     query=step_query,
                     limit=3,
+                    plan_state_payload=plan_state_payload,
                 )
                 annotated_hits = [
                     {**hit, "retrieval_step": step.get("step"), "step_goal": step.get("goal")}
@@ -752,6 +854,9 @@ def retriever_agent(state: CompetitionState) -> dict:
         status="completed",
         query_count=1 + memory_query_count,
         hit_counts={"episodic": len(evidence_hits), "experience": len(experience_hits)},
+        decision="run",
+        decision_source="retriever",
+        decision_reason=str(retrieval_policy.get("qa_memory_reason") or "experience_lookup_completed"),
     )
     retrieval_batches = update_retrieval_batch(
         retrieval_batches,
@@ -768,11 +873,6 @@ def retriever_agent(state: CompetitionState) -> dict:
     evidence_top_k = _memory_top_k(task_meta, base=2, limit=6)
     evidence = [
         *retrieved_context_evidence,
-        (
-            "Planner-approved memory retrieval used hypergraph structural matching plus embedding similarity fusion ranking."
-            if need_qa_memory
-            else "Planner skipped memory retrieval and used knowledge retrieval only."
-        ),
         *_task_specific_evidence(state["task"]),
     ]
     cognitive_gap = make_cognitive_gap(
@@ -784,23 +884,38 @@ def retriever_agent(state: CompetitionState) -> dict:
         confidence=0.78 if hits else 0.64,
     )
     # Non-text modes write evidence as state and pass only refs. Text mode carries evidence in the message.
+    stage_content = memory_object(evidence, evidence_hits, experience_rules)
+    reasoning_input = json.dumps(stage_content, ensure_ascii=False, separators=(",", ":"))
+    state_payload = {
+        "memory_object": stage_content,
+        "reasoning_input": reasoning_input,
+        "evidence": evidence,
+        "memory_hits": hits,
+        "experience_hits": experience_hits,
+        "experience_rules": experience_rules,
+        "memory_context": memory_context,
+        "retrieval_batches": retrieval_batches,
+        "context_hits": context_hits,
+    }
+    working_state = {**state, "metrics": metrics}
     if state["mode"] == "text":
         latent_ref = ""
         latent_states = state.get("latent_states", {})
-        metrics = state["metrics"]
     elif state["mode"] == "hidden":
         latent_ref, latent_states, metrics = _put_hidden_mode_retriever_state(
-            state,
+            working_state,
             text=_hidden_evidence_state_text(evidence, memory_context, planner_focus),
             consumers=["reasoner", "summarizer"],
+            semantic_payload=state_payload,
         )
     else:
         latent_ref, latent_states, metrics = put_latent_state(
-            state,
+            working_state,
             producer="retriever",
             topic=state["task"],
             text=" ".join(evidence),
-            consumers=["executor", "summarizer"],
+            consumers=["reasoner", "executor", "summarizer"],
+            semantic_payload=state_payload,
         )
 
     retrieval_ref = ""
@@ -828,27 +943,8 @@ def retriever_agent(state: CompetitionState) -> dict:
         )
 
     if state["mode"] == "text":
-        # text 模式把证据和检索理由都序列化成长文本，作为 baseline。
-        memory_summaries = " | ".join(item["summary"] for item in memory_context)
-        payload = (
-            "RetrieverAgent found evidence: "
-            + " | ".join(evidence)
-            + (". Planner-guided retrieval focus: " + " | ".join(planner_focus) if planner_focus else "")
-            + ". Memory hits: "
-            + " | ".join(hit["memory_id"] for hit in hits)
-            + ". Memory summaries: "
-            + memory_summaries
-            + ". It forwards the full evidence text for downstream natural-language parsing. "
-            + "Because this is text-mode collaboration, the retriever serializes the evidence, "
-            + "memory summaries, retrieval rationale, and downstream execution instruction as "
-            + "natural language instead of passing compact references. Evidence repeated for "
-            + "baseline cost. The retriever also explains that it can perform memory recall, "
-            + "evidence search, and natural-language evidence handoff. Its current cognitive gap is that "
-            + "future query expansion and unseen memory are still uncertain, so the "
-            + "downstream agent must parse the evidence and memory summaries from this text. "
-            + "Evidence repeated for baseline cost: "
-            + " | ".join(evidence)
-        )
+        # Text baseline carries the same selected evidence once, using natural language.
+        payload = reasoning_input
         if autoform_enabled():
             payload, _autoform_audit = generate_autoform_message(
                 sender="retriever",
@@ -863,20 +959,10 @@ def retriever_agent(state: CompetitionState) -> dict:
             receiver="reasoner",
             action="reason",
             content_type=latent_states.get(latent_ref, {}).get("content_type", "state_ref"),
-            params={"tool": "codeact_stats", "n": len(evidence)},
-            result={
-                "mode": "memory",
-                "hits": len(hits),
-                "evidence_hits": len(evidence_hits),
-                "experience_hits": len(experience_hits),
-                "memory_gate": need_qa_memory,
-                "knowledge_steps": len(knowledge_steps),
-            },
-            state_refs=[ref for ref in (latent_ref, retrieval_ref) if ref],
-            memory_refs=[hit["memory_id"] for hit in hits],
+            # The primary ref is always evidence; the optional second ref lets
+            # Reasoner consume the exact Planner state used by Retriever.
+            state_refs=[ref for ref in (latent_ref, plan_ref) if ref],
             capability_required=["reason"],
-            cognitive_gap=cognitive_gap,
-            confidence=0.78 if hits else 0.64,
         )
 
     # Reuse state-write metrics so latent transfers are counted.
@@ -894,7 +980,13 @@ def retriever_agent(state: CompetitionState) -> dict:
     metrics["memory_query_count"] = metrics.get("memory_query_count", 0) + memory_query_count
     metrics["knowledge_query_count"] = metrics.get("knowledge_query_count", 0) + knowledge_query_count
     metrics["retrieval_batch_count"] = metrics.get("retrieval_batch_count", 0) + memory_query_count + knowledge_query_count
+    metrics["memory_gate_count"] = metrics.get("memory_gate_count", 0) + 1
+    metrics["memory_gate_skip_count"] = metrics.get("memory_gate_skip_count", 0) + int(not need_qa_memory)
+    metrics["latent_rerank_count"] = metrics.get("latent_rerank_count", 0) + sum(
+        1 for hit in context_hits if "latent_similarity" in hit
+    )
     return {
+        "retrieval_policy": retrieval_policy,
         "evidence": evidence,
         "memory_hits": hits,
         "experience_hits": experience_hits,
@@ -918,12 +1010,18 @@ def retriever_agent(state: CompetitionState) -> dict:
             *state.get("agent_outputs", []),
             {
                 "agent": "RetrieverAgent",
+                "memory_object": stage_content,
                 "retrieval_query": retrieval_query,
                 "experience_query": experience_query,
                 "knowledge_query": knowledge_query,
                 "knowledge_steps": knowledge_steps,
                 "retrieval_policy": retrieval_policy,
                 "planner_focus": planner_focus,
+                "plan_state_ref": plan_ref,
+                "plan_state_resolved": bool(plan_state_payload),
+                "latent_rerank_count": sum(
+                    1 for hit in context_hits if "latent_similarity" in hit
+                ),
                 "expected_reuse": _reuse_specs(task_meta),
                 "context_source": context_source,
                 "context_hit_ids": [hit.get("context_id") for hit in context_hits],

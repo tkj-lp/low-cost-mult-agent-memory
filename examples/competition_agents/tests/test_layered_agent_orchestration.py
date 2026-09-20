@@ -4,6 +4,7 @@ from agents.planner.agent import _build_retrieval_policy, planner_agent
 from agents.retriever.agent import retriever_agent
 from competition_agents.memory import add_memory
 from competition_agents.state import initial_state
+from competition_agents.handoff import decide_qa_retrieval
 from hypergraph_memory_method import memory_layer_for_record
 
 
@@ -58,8 +59,9 @@ def test_planner_retrieves_experience_before_planning(monkeypatch) -> None:
 
     assert captured["kwargs"]["memory_layers"] == ["experience"]
     assert result["experience_hits"] == [experience]
-    assert "cross_turn_coreference" in client.task
-    assert result["retrieval_policy"]["need_qa_memory"] is True
+    assert "retrieve_prior_answer" in client.task
+    assert result["retrieval_policy"]["decision_source"] == "retriever_pending"
+    assert "need_qa_memory" not in result["retrieval_policy"]
     assert result["retrieval_policy"]["knowledge_steps"]
 
 
@@ -88,14 +90,16 @@ def test_planner_qa_gate_uses_question_content_not_dataset_annotations() -> None
     )
 
     self_contained_policy, _ = _build_retrieval_policy(
-        self_contained, ["Retrieve the release date."], []
+        self_contained, ["Retrieve the release date."], [],
+        {"query_type": "standalone", "reference_target": ""},
     )
     anaphoric_policy, _ = _build_retrieval_policy(
-        anaphoric, ["Identify the referenced film."], []
+        anaphoric, ["Identify the referenced film."], [],
+        {"query_type": "conversational_reference", "reference_target": "the film"},
     )
 
-    assert self_contained_policy["need_qa_memory"] is False
-    assert anaphoric_policy["need_qa_memory"] is True
+    assert decide_qa_retrieval(self_contained_policy, self_contained["task"], True)["need_qa_memory"] is False
+    assert decide_qa_retrieval(anaphoric_policy, anaphoric["task"], True)["need_qa_memory"] is True
 
 
 def test_retriever_obeys_qa_gate_and_runs_planned_knowledge_steps(monkeypatch) -> None:
@@ -106,7 +110,8 @@ def test_retriever_obeys_qa_gate_and_runs_planned_knowledge_steps(monkeypatch) -
         memory_calls.append(kwargs)
         return []
 
-    def fake_context_search(task_meta, *, query, dataset_type, planner_focus, top_k):
+    def fake_context_search(task_meta, *, query, dataset_type, planner_focus, top_k, exclude_kinds=None):
+        assert exclude_kinds == {"dialogue_question", "dialogue_answer"}
         context_queries.append(query)
         return [
             {

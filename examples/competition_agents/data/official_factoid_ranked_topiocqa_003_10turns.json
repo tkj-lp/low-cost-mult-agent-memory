@@ -1,0 +1,422 @@
+[
+  {
+    "group_id": "topiocqa-factoid-ranked-003",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 153,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 7/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "Kinky Boots (musical) -> Kinky Boots (film) -> Cyndi Lauper -> She's So Unusual",
+    "context": [
+      {
+        "title": "Kinky Boots (musical) [SEP] Introduction",
+        "sentences": [
+          "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (musical) [SEP] Introduction",
+        "sentences": [
+          "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (musical) [SEP] Introduction",
+        "sentences": [
+          "Based on the 2005 British film \"Kinky Boots\", written by Geoff Deane and Tim Firth and mostly inspired by true events, the musical tells the story of Charlie Price."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (film) [SEP] Introduction",
+        "sentences": [
+          "Kinky Boots is a 2005 British-American comedy-drama film directed by Julian Jarrold and written by Geoff Deane and Tim Firth."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (film) [SEP] Critical response",
+        "sentences": [
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Cyndi Lauper [SEP] Introduction",
+        "sentences": [
+          "Cynthia Ann Stephanie Lauper (born June 22, 1953) is an American singer, songwriter, actress and activist. Her career has spanned over 40 years."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Cyndi Lauper [SEP] 1980–1982: Blue Angel",
+        "sentences": [
+          "In 1978, Lauper met saxophone player John Turi through her manager Ted Rosenblatt. Turi and Lauper formed a band named Blue Angel and recorded a demo tape of original music"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Cyndi Lauper [SEP] Introduction",
+        "sentences": [
+          "Her album \"She's So Unusual\" (1983) was the first debut album by a female artist to achieve four top-five hits on the \"Billboard\" Hot 100—\"Girls Just Want to Have Fun\", \"Time After Time\", \"She Bop\", and \"All Through the Night\"—and earned Lauper the Best New Artist award at the 27th Grammy Awards in 1985."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "She's So Unusual [SEP] Introduction",
+        "sentences": [
+          "She's So Unusual is the debut studio album by American singer and songwriter Cyndi Lauper, released on October 14, 1983, by Portrait Records."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "She's So Unusual [SEP] Singles",
+        "sentences": [
+          "The lead single from the album was \"Girls Just Want to Have Fun\", released on September 6, 1983. T"
+        ],
+        "source": "official_annotated_rationale"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_annotated_rationales",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "continuous",
+        "question": "who wrote the music and lyrics to the song kinky boots",
+        "expected_answer": "Cyndi Lauper",
+        "reference_answers": [
+          "Cyndi Lauper",
+          "Cyndi Lauper."
+        ],
+        "expected_reuse": [],
+        "topic": "Kinky Boots (musical)",
+        "topic_section": "Introduction",
+        "conversation_context": [],
+        "supporting_passage": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "rationale": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "reuse_annotation_note": "Explicit musical title; no historical dependency.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "who is the singer?",
+        "expected_answer": "Cyndi Lauper",
+        "reference_answers": [
+          "Cyndi Lauper",
+          "Cynthia Ann Stephanie Lauper is an American singer, songwriter, actress and activist",
+          "UNANSWERABLE",
+          "Charlie and Lola"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Kinky Boots (musical)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper"
+        ],
+        "supporting_passage": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "rationale": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "reuse_annotation_note": "Singer refers to the songwriter just identified.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "whose story does the musical convey?",
+        "expected_answer": "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+        "reference_answers": [
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "It tells the story of Charlie Price",
+          "Charlie Price.",
+          "Charlie Price and Lola."
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Kinky Boots (musical)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper"
+        ],
+        "supporting_passage": "Based on the 2005 British film \"Kinky Boots\", written by Geoff Deane and Tim Firth and mostly inspired by true events, the musical tells the story of Charlie Price.",
+        "rationale": "Based on the 2005 British film \"Kinky Boots\", written by Geoff Deane and Tim Firth and mostly inspired by true events, the musical tells the story of Charlie Price.",
+        "reuse_annotation_note": "The musical refers to Kinky Boots.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "when was its release?",
+        "expected_answer": "2005",
+        "reference_answers": [
+          "2005",
+          "UNANSWERABLE",
+          "October 2012.",
+          "In 2005."
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "Kinky Boots (film)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price."
+        ],
+        "supporting_passage": "Kinky Boots is a 2005 British-American comedy-drama film directed by Julian Jarrold and written by Geoff Deane and Tim Firth.",
+        "rationale": "Kinky Boots is a 2005 British-American comedy-drama film directed by Julian Jarrold and written by Geoff Deane and Tim Firth.",
+        "reuse_annotation_note": "Its release refers to the film identified in the prior answer.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "what was the response it received?",
+        "expected_answer": "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+        "reference_answers": [
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "Mixed reviews.",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"."
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "Kinky Boots (film)",
+        "topic_section": "Critical response",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005"
+        ],
+        "supporting_passage": "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\".",
+        "rationale": "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\".",
+        "reuse_annotation_note": "It refers to the film rather than the musical.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "what can you tell me about the songwriter?",
+        "expected_answer": "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+        "reference_answers": [
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "Cynthia Ann Stephanie Lauper  is an American singer, songwriter, actress and activist",
+          "Cynthia Ann Stephanie Lauper is an American singer, songwriter, actress and activist.",
+          "She is an American singer, songwriter, actress and activist."
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Cyndi Lauper",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\""
+        ],
+        "supporting_passage": "Cynthia Ann Stephanie Lauper (born June 22, 1953) is an American singer, songwriter, actress and activist. Her career has spanned over 40 years.",
+        "rationale": "Cynthia Ann Stephanie Lauper (born June 22, 1953) is an American singer, songwriter, actress and activist. Her career has spanned over 40 years.",
+        "reuse_annotation_note": "The songwriter refers to Cyndi Lauper.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "when did she begin her career?",
+        "expected_answer": "1978",
+        "reference_answers": [
+          "1978",
+          "At age 12, she began writing songs and playing an acoustic guitar given to her by her sister",
+          "1978.",
+          "1983."
+        ],
+        "expected_reuse": [
+          "turn-6.answer"
+        ],
+        "topic": "Cyndi Lauper",
+        "topic_section": "1980–1982: Blue Angel",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years."
+        ],
+        "supporting_passage": "In 1978, Lauper met saxophone player John Turi through her manager Ted Rosenblatt. Turi and Lauper formed a band named Blue Angel and recorded a demo tape of original music",
+        "rationale": "In 1978, Lauper met saxophone player John Turi through her manager Ted Rosenblatt. Turi and Lauper formed a band named Blue Angel and recorded a demo tape of original music",
+        "reuse_annotation_note": "She refers to the songwriter.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "which is her debut work?",
+        "expected_answer": "\"She's So Unusual\"",
+        "reference_answers": [
+          "\"She's So Unusual\"",
+          "She's So Unusual."
+        ],
+        "expected_reuse": [
+          "turn-6.answer"
+        ],
+        "topic": "Cyndi Lauper",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "when did she begin her career?",
+          "1978"
+        ],
+        "supporting_passage": "Her album \"She's So Unusual\" (1983) was the first debut album by a female artist to achieve four top-five hits on the \"Billboard\" Hot 100—\"Girls Just Want to Have Fun\", \"Time After Time\", \"She Bop\", and \"All Through the Night\"—and earned Lauper the Best New Artist award at the 27th Grammy Awards in 1985.",
+        "rationale": "Her album \"She's So Unusual\" (1983) was the first debut album by a female artist to achieve four top-five hits on the \"Billboard\" Hot 100—\"Girls Just Want to Have Fun\", \"Time After Time\", \"She Bop\", and \"All Through the Night\"—and earned Lauper the Best New Artist award at the 27th Grammy Awards in 1985.",
+        "reuse_annotation_note": "Her refers to the songwriter.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "who released the album?",
+        "expected_answer": "Portrait Records",
+        "reference_answers": [
+          "Portrait Records",
+          "UNANSWERABLE",
+          "Portrait Records."
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "She's So Unusual",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "when did she begin her career?",
+          "1978",
+          "which is her debut work?",
+          "\"She's So Unusual\""
+        ],
+        "supporting_passage": "She's So Unusual is the debut studio album by American singer and songwriter Cyndi Lauper, released on October 14, 1983, by Portrait Records.",
+        "rationale": "She's So Unusual is the debut studio album by American singer and songwriter Cyndi Lauper, released on October 14, 1983, by Portrait Records.",
+        "reuse_annotation_note": "The album refers to She's So Unusual.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "how many singles were released from the album?",
+        "expected_answer": "3",
+        "reference_answers": [
+          "3",
+          "Six",
+          "\"Girls Just Want to Have Fun\", \"Time After Time\" and \"She Bop\".",
+          "Six singles."
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "She's So Unusual",
+        "topic_section": "Singles",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "when did she begin her career?",
+          "1978",
+          "which is her debut work?",
+          "\"She's So Unusual\"",
+          "who released the album?",
+          "Portrait Records"
+        ],
+        "supporting_passage": "The lead single from the album was \"Girls Just Want to Have Fun\", released on September 6, 1983. T",
+        "rationale": "The lead single from the album was \"Girls Just Want to Have Fun\", released on September 6, 1983. T",
+        "reuse_annotation_note": "The album refers to the debut album.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  }
+]

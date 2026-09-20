@@ -1,0 +1,404 @@
+[
+  {
+    "group_id": "qrecc-factoid-ranked-002",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 1093,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 4/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "QReCC conversation 1093",
+    "context": [
+      {
+        "title": "QReCC conversation 1093 turn 1",
+        "sentences": [
+          "Cleveland Browns"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 2",
+        "sentences": [
+          "Paul Brown"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 3",
+        "sentences": [
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 4",
+        "sentences": [
+          "College All-Star Game"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 5",
+        "sentences": [
+          "College All-Star won the game against the Chicago Bears."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 6",
+        "sentences": [
+          "16-0"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 7",
+        "sentences": [
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 8",
+        "sentences": [
+          "After his discharge from the military in 1952."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 9",
+        "sentences": [
+          "Dallas Texans went 1-11 for its season in 1952."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 10",
+        "sentences": [
+          "Weldon Humble served 3 years in the U.S. Marines."
+        ],
+        "source": "official_answer_annotation"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/slupart/qrecc/resolve/35dd1d9b6306182f19a763b497e06dba9b3d48c9/qrecc_test.json",
+    "reference_source_sha256": "a410865623737c98e172bbc86515f416ebecca8971c5c0929a7fdda5256fa540",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_answer_annotations_existing_project_adapter",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "continuous",
+        "question": "Who did he play for?",
+        "rewrite": "Who did Weldon Humble play for ?",
+        "expected_answer": "Cleveland Browns",
+        "reference_answers": [
+          "Cleveland Browns"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 1093 turn 1",
+        "topic_section": "",
+        "conversation_context": [],
+        "supporting_passage": "Cleveland Browns",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Player identity requires context outside the selected answers.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "Who was his coach at the Browns?",
+        "rewrite": "Who was Weldon Humble's coach at the Browns?",
+        "expected_answer": "Paul Brown",
+        "reference_answers": [
+          "Paul Brown"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 2",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns"
+        ],
+        "supporting_passage": "Paul Brown",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble#Professional_football_career",
+        "reuse_annotation_note": "Browns refers to the previously identified team.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "Did he play in any bowl games?",
+        "rewrite": "Did Weldon Humble play in any bowl games?",
+        "expected_answer": "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+        "reference_answers": [
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 1093 turn 3",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown"
+        ],
+        "supporting_passage": "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Player identity has not yet been supplied in prior gold answers.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "Did he play in any other notable games?",
+        "rewrite": "Did Weldon Humble play in any other notable games?",
+        "expected_answer": "College All-Star Game",
+        "reference_answers": [
+          "College All-Star Game"
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 4",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game."
+        ],
+        "supporting_passage": "College All-Star Game",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Other games refers to the player's prior game discussion.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "Did he win the game?",
+        "rewrite": "Did Weldon Humble win the game?",
+        "expected_answer": "College All-Star won the game against the Chicago Bears.",
+        "reference_answers": [
+          "College All-Star won the game against the Chicago Bears."
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 5",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game"
+        ],
+        "supporting_passage": "College All-Star won the game against the Chicago Bears.",
+        "answer_url": "",
+        "reuse_annotation_note": "The game refers to College All-Star Game.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "What was the score?",
+        "rewrite": "What was the score of the college all-stars versus the Chicago Bears?",
+        "expected_answer": "16-0",
+        "reference_answers": [
+          "16-0"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 6",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears."
+        ],
+        "supporting_passage": "16-0",
+        "answer_url": "https://en.wikipedia.org/wiki/Chicago_College_All-Star_Game#Game_results",
+        "reuse_annotation_note": "The score is for College All-Star Game.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "Are there any other interesting aspects about this article ?",
+        "rewrite": "Are there any other interestic aspects about Weldon Humble's article ?",
+        "expected_answer": "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+        "reference_answers": [
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 1093 turn 7",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0"
+        ],
+        "supporting_passage": "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Open-ended article reference has no unique historical QA source.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "When did he get traded?",
+        "rewrite": "When did Weldon Humble get traded?",
+        "expected_answer": "After his discharge from the military in 1952.",
+        "reference_answers": [
+          "After his discharge from the military in 1952."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 8",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0",
+          "Are there any other interestic aspects about Weldon Humble's article ?",
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard."
+        ],
+        "supporting_passage": "After his discharge from the military in 1952.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Traded refers to the preceding transfer.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "How did he play on the new team?",
+        "rewrite": "How did Weldon Humble play on the new team?",
+        "expected_answer": "Dallas Texans went 1-11 for its season in 1952.",
+        "reference_answers": [
+          "Dallas Texans went 1-11 for its season in 1952."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 9",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0",
+          "Are there any other interestic aspects about Weldon Humble's article ?",
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+          "When did Weldon Humble get traded?",
+          "After his discharge from the military in 1952."
+        ],
+        "supporting_passage": "Dallas Texans went 1-11 for its season in 1952.",
+        "answer_url": "https://en.wikipedia.org/wiki/Dallas_Texans_(NFL)",
+        "reuse_annotation_note": "The new team refers to Dallas Texans.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "Was he in the military?",
+        "rewrite": "Was Weldon Humble in the military?",
+        "expected_answer": "Weldon Humble served 3 years in the U.S. Marines.",
+        "reference_answers": [
+          "Weldon Humble served 3 years in the U.S. Marines."
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 10",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0",
+          "Are there any other interestic aspects about Weldon Humble's article ?",
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+          "When did Weldon Humble get traded?",
+          "After his discharge from the military in 1952.",
+          "How did Weldon Humble play on the new team?",
+          "Dallas Texans went 1-11 for its season in 1952."
+        ],
+        "supporting_passage": "Weldon Humble served 3 years in the U.S. Marines.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Military service follows the discharge mentioned earlier.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  }
+]

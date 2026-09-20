@@ -3,7 +3,7 @@
     "group_id": "topiocqa-official-001",
     "source_dataset": "TopiOCQA",
     "source_file": "topiocqa_valid.jsonl",
-    "original_conversation_no": 48,
+    "original_conversation_no": 119,
     "original_turn_count": 11,
     "selected_turn_count": 10,
     "selection_note": "官方验证集 conversation，原始轮数大于 10 且接近 10，统一截取前 10 轮。",
@@ -51,6 +51,258 @@
         "sentences": [
           "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria, It was gazetted from two game reserves in 1991 and is Nigeria’s largest national park. It is located in the eastern provinces of Taraba and Adamawa to the border with Cameroon. The total area covers about 6,402 km, much of the northern GGNP is savannah grassland, while the southern GGNP sector of the park has a rugged terrain characterized by very mountainous, steep slopes as well as deep valleys and gorges, and is home to montane forests. Altitude ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi, Nigeria’s highest mountain in the park's southern sections."
         ]
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "small antelope"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "is a small antelope"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "found in eastern, southern and western Africa."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "eastern, southern and western Africa"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Description",
+        "sentences": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Description",
+        "sentences": [
+          "small, slender"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Introduction",
+        "sentences": [
+          "The sole member of its genus,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Taxonomy",
+        "sentences": [
+          "The sole member of its genus, the oribi is placed under the family Bovidae."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Taxonomy",
+        "sentences": [
+          "Bovidae."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Taxonomy",
+        "sentences": [
+          "Bovidae"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\","
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Diet",
+        "sentences": [
+          "fresh grasses and browses"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi has been classified as Least Concern by the IUCN."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "the total population is estimated at less than 10,000 mature individuals, and is feared to be declining."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia)."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Oribi [SEP] Threats and conservation",
+        "sentences": [
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          "Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          "yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Fauna",
+        "sentences": [
+          "yellow-backed duiker, African golden cat"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "red sunbird bush"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Flora",
+        "sentences": [
+          "red sunbird bush, an ornate species of the acanthus family"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "Nigeria,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria,"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "in Nigeria"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Gashaka Gumti National Park [SEP] Introduction",
+        "sentences": [
+          "Nigeria"
+        ],
+        "source": "official_annotated_rationale"
       }
     ],
     "supporting_facts": [
@@ -107,9 +359,40 @@
         "topic_section": "Introduction",
         "conversation_context": [],
         "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
-        "rationale": "small antelope",
+        "rationale": " small antelope ",
         "gold_passage_id": "wiki:23843441",
-        "gold_passage_title": "Oribi [SEP] Introduction"
+        "gold_passage_title": "Oribi [SEP] Introduction",
+        "reference_answers": [
+          "It is a small antelope.",
+          "A small antelope",
+          "It is a small antelope"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It is a small antelope.",
+            "Rationale": " small antelope ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "A small antelope",
+            "Rationale": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is a small antelope",
+            "Rationale": "is a small antelope",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "It is a small antelope.",
+            "Rationale": " is a small antelope ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-2",
@@ -128,9 +411,41 @@
           "It is a small antelope."
         ],
         "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
-        "rationale": "found in eastern, southern and western Africa.",
+        "rationale": " found in eastern, southern and western Africa. ",
         "gold_passage_id": "wiki:23843441",
-        "gold_passage_title": "Oribi [SEP] Introduction"
+        "gold_passage_title": "Oribi [SEP] Introduction",
+        "reference_answers": [
+          "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+          "Eastern, southern and western Africa.",
+          "Found in eastern, southern and western Africa.",
+          "Eastern, southern and western Africa"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+            "Rationale": " found in eastern, southern and western Africa. ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Eastern, southern and western Africa.",
+            "Rationale": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Found in eastern, southern and western Africa.",
+            "Rationale": "found in eastern, southern and western Africa.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Eastern, southern and western Africa",
+            "Rationale": "eastern, southern and western Africa",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          }
+        ]
       },
       {
         "turn_id": "turn-3",
@@ -152,9 +467,41 @@
           "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands"
         ],
         "supporting_passage": "The oribi is a small, slender antelope; it reaches nearly at the shoulder and weighs . The head-and-body length is typically between . Sexually dimorphic, males are slightly smaller than females (except for \"O. o. ourebi\", in which females are smaller). This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides (except in \"O. o. hastata\", that has a completely black tail). The subspecies show some variation in colouration; \"O.",
-        "rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides",
+        "rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides ",
         "gold_passage_id": "wiki:23843446",
-        "gold_passage_title": "Oribi [SEP] Description"
+        "gold_passage_title": "Oribi [SEP] Description",
+        "reference_answers": [
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+          "Slightly raised back, and long neck and limbs and glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+          "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+          "Small, slender, slightly raised back and long neck and limbs."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+            "Rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides ",
+            "Topic": "Oribi",
+            "Topic_section": "Description"
+          },
+          {
+            "Answer": "Slightly raised back, and long neck and limbs and glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+            "Rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base.",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+            "Rationale": "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. ",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Small, slender, slightly raised back and long neck and limbs.",
+            "Rationale": "small, slender",
+            "Topic": "Oribi",
+            "Topic_section": "Description"
+          }
+        ]
       },
       {
         "turn_id": "turn-4",
@@ -180,7 +527,37 @@
         "supporting_passage": "The oribi (; \"Ourebia ourebi\") is a small antelope found in eastern, southern and western Africa. The sole member of its genus, the oribi was first described by the German zoologist Eberhard August Wilhelm von Zimmermann in 1782. Eight subspecies are identified. The oribi reaches nearly at the shoulder and weighs . This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. Only males possess horns; the thin, straight horns, long, are smooth at the tips and ringed at the base. Typically diurnal, the oribi is active mainly during the day.",
         "rationale": "The sole member of its genus,",
         "gold_passage_id": "wiki:23843441",
-        "gold_passage_title": "Oribi [SEP] Introduction"
+        "gold_passage_title": "Oribi [SEP] Introduction",
+        "reference_answers": [
+          "It was the sole member of its genus",
+          "Bovidae"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "It was the sole member of its genus",
+            "Rationale": "The sole member of its genus,",
+            "Topic": "Oribi",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Bovidae",
+            "Rationale": "The sole member of its genus, the oribi is placed under the family Bovidae. ",
+            "Topic": "Oribi",
+            "Topic_section": "Taxonomy"
+          },
+          {
+            "Answer": "Bovidae",
+            "Rationale": "Bovidae.",
+            "Topic": "Oribi",
+            "Topic_section": "Taxonomy"
+          },
+          {
+            "Answer": "Bovidae",
+            "Rationale": "Bovidae",
+            "Topic": "Oribi",
+            "Topic_section": "Taxonomy"
+          }
+        ]
       },
       {
         "turn_id": "turn-5",
@@ -208,14 +585,46 @@
         "supporting_passage": "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species. Mineral licks are also visited regularly. Oribi have been observed feeding on flowers and \"Boletus\" mushrooms. Groups of oribi congregate in the rainy season, when grasses are abundant.",
         "rationale": "oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
         "gold_passage_id": "wiki:23843451",
-        "gold_passage_title": "Oribi [SEP] Diet"
+        "gold_passage_title": "Oribi [SEP] Diet",
+        "reference_answers": [
+          "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+          "Fresh grasses; Andropogon\", \"Eulalia\", \"Hyparrhenia\", etc, and browses occasionally.",
+          "Fresh grasses and browses. Preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\"",
+          "Fresh grasses, browses, flowers and Boletus mushrooms etc"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+            "Rationale": "oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          },
+          {
+            "Answer": "Fresh grasses; Andropogon\", \"Eulalia\", \"Hyparrhenia\", etc, and browses occasionally.",
+            "Rationale": "Primarily a grazer, the oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", \"Pennisetum\" and \"Themeda\" species. ",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          },
+          {
+            "Answer": "Fresh grasses and browses. Preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\"",
+            "Rationale": "preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia\", \"Loudetia\", ",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          },
+          {
+            "Answer": "Fresh grasses, browses, flowers and Boletus mushrooms etc",
+            "Rationale": " fresh grasses and browses",
+            "Topic": "Oribi",
+            "Topic_section": "Diet"
+          }
+        ]
       },
       {
         "turn_id": "turn-6",
         "original_turn_no": 6,
         "task_type": "Threats and conservation",
         "question": "is it under threat of extinction?",
-        "expected_answer": "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+        "expected_answer": "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
         "expected_reuse": [
           "turn-5.answer",
           "turn-4.answer",
@@ -238,7 +647,39 @@
         "supporting_passage": "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock. The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St.",
         "rationale": "The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock.",
         "gold_passage_id": "wiki:23843456",
-        "gold_passage_title": "Oribi [SEP] Threats and conservation"
+        "gold_passage_title": "Oribi [SEP] Threats and conservation",
+        "reference_answers": [
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
+          "Not yet, it is classified as Least Concern by the IUCN.",
+          "The oribi has been classified as Least Concern by the IUCN.",
+          "Yes, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining."
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
+            "Rationale": "The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock.",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "Not yet, it is classified as Least Concern by the IUCN.",
+            "Rationale": "The oribi has been classified as Least Concern by the IUCN. The total population (as of 2008) is estimated at 750,000. However, the subspecies \"O. o. haggardi\" is listed as Vulnerable because, as of 2008, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining. Hunting is a relatively minor threat, since the oribi shows some tolerance to hunting. Nevertheless, the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire) has been attributed to poaching. Numbers have also declined due to agricultural expansion and competition from livestock.",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "The oribi has been classified as Least Concern by the IUCN.",
+            "Rationale": "The oribi has been classified as Least Concern by the IUCN. ",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "Yes, the total population is estimated at less than 10,000 mature individuals, and is feared to be declining.",
+            "Rationale": " the total population is estimated at less than 10,000 mature individuals, and is feared to be declining.",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          }
+        ]
       },
       {
         "turn_id": "turn-7",
@@ -265,12 +706,44 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock."
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock."
         ],
         "supporting_passage": "Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia).",
-        "rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+        "rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); ",
         "gold_passage_id": "wiki:23843457",
-        "gold_passage_title": "Oribi [SEP] Threats and conservation"
+        "gold_passage_title": "Oribi [SEP] Threats and conservation",
+        "reference_answers": [
+          "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+          "Occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park, the Pendjari and W National Parks, etc",
+          "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria",
+          "UNANSWERABLE"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
+            "Rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); ",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "Occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park, the Pendjari and W National Parks, etc",
+            "Rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic); Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa); Omo National Park (Ethiopia); Masai Mara Game Reserve and Ruma National Park (Kenya); Golden Gate Highlands National Park (South Africa); Serengeti National Park (Tanzania); Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda); Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia).",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria",
+            "Rationale": "The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, ",
+            "Topic": "Oribi",
+            "Topic_section": "Threats and conservation"
+          },
+          {
+            "Answer": "UNANSWERABLE",
+            "Rationale": "",
+            "Topic": "",
+            "Topic_section": ""
+          }
+        ]
       },
       {
         "turn_id": "turn-8",
@@ -297,14 +770,46 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
           "have any steps been taken for their protection?",
           "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);"
         ],
         "supporting_passage": "The fauna of the national park is very diverse. 103 species of mammals have been recorded at censuses. Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park. To protect the animals and the ecosystem, the Gashaka Primate Project was launched. Living in the national park are also the African elephant (\"Loxodonta africana\"), the klipspringer (\"Oreotragus oreotragus\"), the West African wild dog (\"Lycaon pictus manguensis\"), the hartebeest (\"Alcelaphus buselaphus\"), the world's largest antelope, the giant eland (\"Taurotragus Derbianus\"), the roan antelope (\"Hippotragus equinus\"), the kob antelope (\"Kobus kob\"), the oribi (\"Ourebia ourebi\"), and the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\") in larger stocks.",
-        "rationale": ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "rationale": ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") ",
         "gold_passage_id": "wiki:717980",
-        "gold_passage_title": "Gashaka Gumti National Park [SEP] Fauna"
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Fauna",
+        "reference_answers": [
+          "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+          "Yellow-backed duiker, African golden cat, and African buffalo",
+          "Yellow-backed duiker, African golden cat, African buffalo",
+          "Yellow-backed duiker, African golden cat, African buffalo, chimpanzees, African elephants etc"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+            "Rationale": ". Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          },
+          {
+            "Answer": "Yellow-backed duiker, African golden cat, and African buffalo",
+            "Rationale": "Species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\") is found within the boundaries of the national park. ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          },
+          {
+            "Answer": "Yellow-backed duiker, African golden cat, African buffalo",
+            "Rationale": "yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo,",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          },
+          {
+            "Answer": "Yellow-backed duiker, African golden cat, African buffalo, chimpanzees, African elephants etc",
+            "Rationale": "yellow-backed duiker, African golden cat ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Fauna"
+          }
+        ]
       },
       {
         "turn_id": "turn-9",
@@ -331,16 +836,46 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
           "have any steps been taken for their protection?",
           "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
           "what type of other animals are found in the first park?",
           "Some species include yellow-backed duiker, African golden cat (\"Profelis aurata\"), The African buffalo, the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")"
         ],
         "supporting_passage": "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
-        "rationale": "red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
+        "rationale": " red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
         "gold_passage_id": "wiki:717982",
-        "gold_passage_title": "Gashaka Gumti National Park [SEP] Flora"
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Flora",
+        "reference_answers": [
+          "Red sunbird bush, an ornate species of the acanthus family",
+          "Red sunbird bush"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Red sunbird bush, an ornate species of the acanthus family",
+            "Rationale": " red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. The species occurs here at 1,600 to 1,670 m.a.s.l., and some 1,200 km from the nearest populations in the Afromontane archipelago. It has been suggested that the park boundary should be extended to protect the forest.",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          },
+          {
+            "Answer": "Red sunbird bush",
+            "Rationale": "In November 2002 an isolated population of the red sunbird bush, an ornate species of the acanthus family, was discovered in the 8 km Leinde Fadale forest in the uplands adjacent to the park. ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          },
+          {
+            "Answer": "Red sunbird bush",
+            "Rationale": " red sunbird bush",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          },
+          {
+            "Answer": "Red sunbird bush, an ornate species of the acanthus family",
+            "Rationale": "red sunbird bush, an ornate species of the acanthus family",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Flora"
+          }
+        ]
       },
       {
         "turn_id": "turn-10",
@@ -367,7 +902,7 @@
           "can you tell me about its diet?",
           "Oribi prefers fresh grasses and browses occasionally. Grasses can constitute up to 90% of the diet; preferred varieties include \"Andropogon\", \"Eulalia\", \"Hyparrhenia",
           "is it under threat of extinction?",
-          "They are estimated as Vulnerable. Hunting is a relatively minor threat, numbers have also declined due to agricultural expansion and competition from livestock.",
+          "They are estimated as Vulnerable. Hunting is a relatively minor threat,  numbers have also declined due to agricultural expansion and competition from livestock.",
           "have any steps been taken for their protection?",
           "Yes, The oribi occurs in a number of protected areas throughout its range, such as: Gashaka Gumti National Park in Nigeria, the Pendjari and W National Parks (Benin); Aouk Hunting Zone (Chad); Benoue, Bouba Njida and Faro National Parks (Cameroon); Manovo-Gounda St. Floris National Park (Central African Republic);",
           "what type of other animals are found in the first park?",
@@ -376,10 +911,44 @@
           "Red sunbird bush, an ornate species of the acanthus family"
         ],
         "supporting_passage": "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria, It was gazetted from two game reserves in 1991 and is Nigeria’s largest national park. It is located in the eastern provinces of Taraba and Adamawa to the border with Cameroon. The total area covers about 6,402 km, much of the northern GGNP is savannah grassland, while the southern GGNP sector of the park has a rugged terrain characterized by very mountainous, steep slopes as well as deep valleys and gorges, and is home to montane forests. Altitude ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi, Nigeria’s highest mountain in the park's southern sections.",
-        "rationale": "Nigeria,",
+        "rationale": " Nigeria, ",
         "gold_passage_id": "wiki:717978",
-        "gold_passage_title": "Gashaka Gumti National Park [SEP] Introduction"
+        "gold_passage_title": "Gashaka Gumti National Park [SEP] Introduction",
+        "reference_answers": [
+          "Nigeria",
+          "In Nigeria"
+        ],
+        "reference_annotations": [
+          {
+            "Answer": "Nigeria",
+            "Rationale": " Nigeria, ",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Nigeria",
+            "Rationale": "Gashaka-Gumti National Park (GGNP) is a national park in Nigeria,",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "In Nigeria",
+            "Rationale": "in Nigeria",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          },
+          {
+            "Answer": "Nigeria",
+            "Rationale": "Nigeria",
+            "Topic": "Gashaka Gumti National Park",
+            "Topic_section": "Introduction"
+          }
+        ]
       }
-    ]
+    ],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "max_over_official_references_strict_em_token_f1",
+    "evidence_scope": "existing_passages_plus_official_annotated_rationales_not_full_wikipedia"
   }
 ]

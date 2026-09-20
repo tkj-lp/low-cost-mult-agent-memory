@@ -9,32 +9,24 @@
       <thead>
         <tr>
           <th>完整方法</th>
-          <th>文本字符</th>
-          <th>单任务耗时</th>
-          <th>通信开销</th>
-          <th>记忆复用</th>
-          <th>回答准确率</th>
+          <th>真实消息载荷<br><small>实际 / 引用</small></th>
+          <th>单任务耗时<br><small>完整 / 状态生成</small></th>
+          <th>非文本状态<br><small>次数 / 规模</small></th>
+          <th>记忆复用<br><small>命中任务占比 / QA召回 / QA精度</small></th>
+          <th>回答正确率<br><small>严格 EM / Token F1</small></th>
           <th>消息次数</th>
-          <th>非文本状态次数</th>
-          <th>非文本数据规模</th>
-          <th>记忆召回率</th>
-          <th>记忆精度</th>
-          <th>整体提升</th>
+          <th>效率提升</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="row in rows" :key="row.id">
           <td><span :class="['method-dot', row.tone]"></span>{{ row.method }}</td>
-          <td>{{ row.chars }}</td>
-          <td>{{ row.avgDuration }}</td>
-          <td>{{ row.communication }}</td>
-          <td>{{ row.memoryReuse }}</td>
-          <td>{{ row.accuracy }}</td>
+          <td>{{ row.actualBytes }} / {{ row.referenceBytes }}</td>
+          <td>{{ row.avgDuration }} / {{ row.stateGeneration }}</td>
+          <td>{{ row.stateCount }} / {{ row.stateSize }}</td>
+          <td :title="`命中任务占比只表示“召回过记忆”，不判断对错。QA召回/精度需 expected_reuse 标注或 .reuse-evaluation 侧车。有效QA复用（相关记忆被采用且 EM 正确）：${row.effectiveReuse}`">{{ row.memoryReuse }} / {{ row.recall }} / {{ row.precision }}</td>
+          <td>{{ row.accuracy }} / {{ row.tokenF1 }}</td>
           <td>{{ row.messages }}</td>
-          <td>{{ row.stateCount }}</td>
-          <td>{{ row.stateSize }}</td>
-          <td>{{ row.recall }}</td>
-          <td>{{ row.precision }}</td>
           <td class="green-text">{{ row.improvement }}</td>
         </tr>
       </tbody>

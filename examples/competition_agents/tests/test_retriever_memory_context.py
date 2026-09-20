@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from agents.retriever.agent import retriever_agent
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from agents.retriever.agent import (
+    _augment_knowledge_query,
+    _build_continuous_task_hints,
+    _extract_hypergraph_context,
+    _rerank_hypergraph_hits,
+    retriever_agent,
+)
 from competition_agents.memory import _rerank_memory_hits, add_memory
 from competition_agents.state import initial_state
 
@@ -60,17 +69,43 @@ def test_retriever_uses_planner_focus_in_memory_query(monkeypatch) -> None:
 
     assert "Planner retrieval focus:" in str(captured["query"])
     assert "Retrieve biographical details about Shirley Temple" in str(captured["query"])
-    assert captured["top_k"] == 2
+    assert captured["top_k"] == 3
     assert result["agent_outputs"][-1]["planner_focus"] == [
         "Identify the actress who portrayed Corliss Archer",
         "Retrieve biographical details about Shirley Temple",
         "Extract the government position she later held",
     ]
-    assert any(
-        "hypergraph structural matching plus embedding similarity fusion ranking" in item
-        for item in result["evidence"]
-    )
+    assert not any("Planner-approved" in item for item in result["evidence"])
+    assert result["retrieval_batches"]
     assert not any("Planner-guided retrieval focus:" in item for item in result["evidence"])
+
+
+def test_hypergraph_knowledge_channel_excludes_dialogue_nodes() -> None:
+    hits = [
+        {
+            "context_id": "dialogue-1",
+            "kind": "dialogue_answer",
+            "title": "Prior answer",
+            "text": "A previous answer that must stay in episodic memory.",
+            "context_score": 99.0,
+        },
+        {
+            "context_id": "knowledge-1",
+            "kind": "knowledge",
+            "title": "Current source",
+            "text": "Current evidence for the requested attribute.",
+            "context_score": 1.0,
+        },
+    ]
+    with patch("agents.retriever.agent.search_context", return_value=hits):
+        evidence, selected = _extract_hypergraph_context(
+            {"question": "What is the requested attribute?"},
+            [],
+            limit=3,
+        )
+
+    assert evidence == ["Current source: Current evidence for the requested attribute."]
+    assert [hit["context_id"] for hit in selected] == ["knowledge-1"]
 
 
 def test_expected_reuse_metadata_does_not_override_retrieval_score() -> None:
@@ -105,6 +140,49 @@ def test_expected_reuse_metadata_does_not_override_retrieval_score() -> None:
 
     assert reranked[0]["memory_id"] == "mem-0006"
     assert reranked[0]["retrieval_score"] > reranked[1]["retrieval_score"]
+
+
+def test_online_retrieval_hints_do_not_use_evaluation_annotations() -> None:
+    hints = _build_continuous_task_hints(
+        {
+            "group_id": "group-1",
+            "turn_id": "turn-3",
+            "topic": "Portable topic",
+            "topic_section": "Location",
+            "expected_reuse": ["turn-2.answer", "group.supporting_facts"],
+        }
+    )
+
+    joined = "\n".join(hints)
+    assert "Portable topic" in joined
+    assert "Location" in joined
+    assert "expected_reuse" not in joined.lower()
+    assert "turn-2.answer" not in joined
+
+
+def test_knowledge_query_prefers_public_topic_over_unverified_qa_answer() -> None:
+    query = _augment_knowledge_query(
+        "Question: where is it found?",
+        [{"memory_id": "mem-1", "summary": "The referenced animal is an oribi."}],
+        {"reason": "cross-turn reference"},
+        {"topic": "Oribi", "topic_section": "Distribution"},
+    )
+
+    assert "Current topic: Oribi" in query
+    assert "Requested section or attribute: Distribution" in query
+    assert "The referenced animal is an oribi" not in query
+
+
+def test_knowledge_query_uses_unverified_qa_only_without_public_topic() -> None:
+    query = _augment_knowledge_query(
+        "Question: where is it found?",
+        [{"memory_id": "mem-1", "summary": "The referenced animal is an oribi."}],
+        {"reason": "cross-turn reference"},
+        {},
+    )
+
+    assert "reference resolution only" in query
+    assert "Unverified answer reference: The referenced animal is an oribi" in query
 
 
 def test_retriever_separately_surfaces_experience_hits(monkeypatch) -> None:
@@ -263,3 +341,97 @@ def test_retriever_prioritizes_answer_bearing_sentence_over_title_overlap(monkey
     assert target in context_evidence
     assert distractor in context_evidence
     assert context_evidence.index(target) < context_evidence.index(distractor)
+
+
+def test_hidden_plan_vector_reranks_knowledge_candidates(monkeypatch) -> None:
+    def fake_hidden_state(text: str):
+        vector = [1.0, 0.0] if text == "target fact" else [0.0, 1.0]
+        return SimpleNamespace(pooled_vector=vector), None
+
+    monkeypatch.setattr(
+        "agents.retriever.agent.extract_last_hidden_state",
+        fake_hidden_state,
+    )
+    hits = [
+        {"context_id": "noise", "text": "noise", "context_score": 0.0},
+        {"context_id": "target", "text": "target fact", "context_score": 0.0},
+    ]
+
+    ranked = _rerank_hypergraph_hits(
+        {"question": "x"},
+        [],
+        hits,
+        limit=2,
+        plan_state_payload={
+            "content_type": "latent.llm_hidden_state",
+            "pooled_vector": [1.0, 0.0],
+        },
+    )
+
+    assert ranked[0]["context_id"] == "target"
+    assert ranked[0]["latent_similarity"] == 1.0
+
+
+def test_local_embedding_plan_vector_reranks_in_the_same_vector_space(monkeypatch) -> None:
+    def fake_embedding(text: str):
+        vector = [1.0, 0.0] if text == "target fact" else [0.0, 1.0]
+        return SimpleNamespace(vector=vector, provider="local", model="test")
+
+    monkeypatch.setattr("agents.retriever.agent.embed_text", fake_embedding)
+    hits = [
+        {"context_id": "noise", "text": "noise", "context_score": 0.0},
+        {"context_id": "target", "text": "target fact", "context_score": 0.0},
+    ]
+
+    ranked = _rerank_hypergraph_hits(
+        {"question": "x"},
+        [],
+        hits,
+        limit=2,
+        plan_state_payload={
+            "content_type": "latent.embedding",
+            "embedding_provider": "local",
+            "vector": [1.0, 0.0],
+        },
+    )
+
+    assert ranked[0]["context_id"] == "target"
+    assert ranked[0]["latent_similarity"] == 1.0
+
+
+def test_hash_placeholder_does_not_rerank_knowledge_candidates(monkeypatch) -> None:
+    def unexpected_embedding(_text: str):
+        raise AssertionError("hash placeholder must not trigger semantic reranking")
+
+    monkeypatch.setattr("agents.retriever.agent.embed_text", unexpected_embedding)
+    hits = [{"context_id": "first", "text": "first", "context_score": 1.0}]
+
+    ranked = _rerank_hypergraph_hits(
+        {"question": "x"},
+        [],
+        hits,
+        limit=1,
+        plan_state_payload={
+            "content_type": "latent.embedding",
+            "embedding_provider": "hash",
+            "vector": [1.0, 0.0],
+        },
+    )
+
+    assert ranked[0]["context_id"] == "first"
+    assert "latent_similarity" not in ranked[0]
+
+
+def test_nested_knowledge_snippets_leave_slots_for_distinct_evidence() -> None:
+    hits = [
+        {"context_id": "short", "kind": "sentence", "title": "Example", "section": "Introduction",
+         "text": "The example is a sample.", "context_score": 10.0},
+        {"context_id": "long", "kind": "sentence", "title": "Example", "section": "Introduction",
+         "text": "The example is a sample. Its construction uses titanium.", "context_score": 9.0},
+        {"context_id": "other", "kind": "sentence", "title": "Example", "section": "Use",
+         "text": "The example is used in research.", "context_score": 8.0},
+    ]
+    with patch("agents.retriever.agent.search_context", return_value=hits):
+        evidence, selected = _extract_hypergraph_context({"question": "What is the example?"}, [], limit=2)
+    assert {hit["context_id"] for hit in selected} == {"long", "other"}
+    assert len(evidence) == 2

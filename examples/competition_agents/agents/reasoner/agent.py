@@ -2,12 +2,22 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 
 from baselines.autoform import autoform_enabled, generate_autoform_message
+from competition_agents.latent_hidden.adapter import cosine_similarity
 from competition_agents.llm import get_llm_client
+from competition_agents.handoff import decode_memory_object, encode_answer_handoff
 from competition_agents.protocol import make_cognitive_gap, make_compact_packet, make_packet
-from competition_agents.state import CompetitionState, put_hidden_state, put_latent_state, record_message
+from competition_agents.state import (
+    CompetitionState,
+    put_hidden_state,
+    put_latent_state,
+    record_message,
+    resolve_state_ref,
+    received_state_refs,
+)
 
 
 def _reasoner_task_text(state: CompetitionState) -> str:
@@ -17,7 +27,11 @@ def _reasoner_task_text(state: CompetitionState) -> str:
     if str(task_meta.get("context_source") or "") == "hypergraph":
         question = str(task_meta.get("question") or "").strip()
         if question:
-            return f"Question: {question}"
+            parts = [f"Question: {question}"]
+            topic = str(task_meta.get("topic") or "").strip()
+            if topic:
+                parts.append(f"Resolved topic: {topic}")
+            return "\n".join(parts)
     return state["task"]
 
 
@@ -52,21 +66,6 @@ def _unique_memory_ids(items: list[dict]) -> list[str]:
     return ids
 
 
-def _compact_hidden_memory_context(items: list[dict], limit: int = 2) -> list[dict]:
-    compact: list[dict] = []
-    for item in items[:limit]:
-        compact.append(
-            {
-                "memory_id": item.get("memory_id"),
-                "turn_id": item.get("turn_id", ""),
-                "artifact_types": item.get("artifact_types", []),
-                "summary": str(item.get("summary") or "")[:120],
-                "retrieval_score": item.get("retrieval_score"),
-            }
-        )
-    return compact
-
-
 def _latest_message_payload(state: CompetitionState, *, sender: str, receiver: str) -> str:
     """Return the newest text payload sent between two agents."""
 
@@ -79,77 +78,132 @@ def _latest_message_payload(state: CompetitionState, *, sender: str, receiver: s
 
 
 def _question_answer_rules(question: str) -> list[str]:
-    """根据问题类型补充稳定答案槽位约束，降低模型自由发挥。"""
+    """Build dataset-independent answer constraints from the question form."""
 
     question_lower = str(question or "").lower()
     rules = [
-        "Copy the answer span exactly from evidence when possible.",
-        "Prefer the most specific phrase that directly answers the question.",
-        "Do not answer with the title or topic unless the question explicitly asks for it.",
+        "First resolve every pronoun, ordinal, and ellipsis from QA memory or the supplied topic.",
+        "Identify the requested attribute before reading evidence.",
+        "Use only facts supported by retrieved evidence; experience rules are not factual evidence.",
+        "Return the shortest complete answer that satisfies the requested attribute.",
+        "Do not repeat the topic definition when the question asks for another attribute.",
     ]
-    if "when" in question_lower:
-        rules.append("If multiple dates appear, choose the date matching every constraint in the question.")
-        rules.append("For DVD release questions, never return a digital release date.")
-    if "what is the film about" in question_lower:
-        rules.append("Return the event or subject the film depicts, not release or production metadata.")
-    if "which hormones are related to catabolism" in question_lower:
-        rules.append("Return the complete hormone list from evidence, including both classic and additional hormones.")
-        rules.append("Do not stop after the first sentence if the evidence continues the same list.")
-    if "third hormone on that list" in question_lower:
-        rules.append("Resolve the ordinal reference against the previously established list before selecting the answer.")
-        rules.append("Return only the emotional response associated with that ordinal item.")
-    if "first hormone on that list" in question_lower:
-        rules.append("Resolve the ordinal reference against the previously established list before selecting the answer.")
-        rules.append("Return the glucose-metabolism effect phrase, not the hormone name itself.")
-    if "from which organ was it extracted in that experiment" in question_lower:
-        rules.append("Resolve 'it' and 'that experiment' to the immediately relevant prior entity and event.")
-        rules.append("Return only the organ phrase.")
-    if "that list" in question_lower or "that process" in question_lower or "that substance" in question_lower:
-        rules.append("Resolve cross-turn references before selecting the final answer span.")
-    if question_lower.startswith(("is ", "are ", "was ", "were ", "do ", "does ", "did ", "can ", "could ", "has ", "have ", "had ")):
-        rules.append("If this is a yes/no question, answer with Yes or No unless evidence clearly requires a short qualified yes/no phrase.")
-    if "cast" in question_lower or "members of the cast" in question_lower:
-        rules.append("Return only person names from the cast list, separated by commas.")
-        rules.append("Return the first four cast members mentioned in the evidence, in order.")
-        rules.append("Do not select only prominent actors for brevity.")
-    if "where was it filmed" in question_lower:
-        rules.append("Return all filming locations mentioned in the evidence, including both places if two are listed.")
-    if "what kinds of fish" in question_lower:
-        rules.append("Return only the fish names mentioned in evidence.")
-        rules.append("Include every fish listed in the evidence.")
-    if "what mineral resources" in question_lower:
-        rules.append("Return only the mineral resources, not the explanatory sentence.")
-        rules.append("Include every mineral resource mentioned in the evidence, including amber if present.")
-    if "what natural hazard" in question_lower:
-        rules.append("Return only the hazard name.")
+    if re.search(r"\b(when|what year|what date)\b", question_lower):
+        rules.append("Answer type: time or date. Match all temporal, medium, and location constraints.")
+    elif re.search(r"\b(where|which place|which country|which city|location)\b", question_lower):
+        rules.append(
+            "Answer type: location. If granularity is unspecified, include both the country and the more specific place stated in evidence."
+        )
+    elif re.search(r"\b(who|whose|which person)\b", question_lower):
+        rules.append("Answer type: person or role. Return only the requested identity or role.")
+    elif re.search(r"\b(how many|how much|what number|what percentage)\b", question_lower):
+        rules.append("Answer type: number or quantity. Preserve the unit from evidence.")
+
+    list_question = bool(
+        re.search(
+            r"\b(list|name|mention|which|what kinds|what types?|examples|members|species)\b",
+            question_lower,
+        )
+    )
+    if list_question:
+        rules.append("Answer type: list. Return all directly requested items from the best evidence span, without unrelated examples.")
+
+    if question_lower.startswith(
+        ("is ", "are ", "was ", "were ", "do ", "does ", "did ", "has ", "have ", "had ")
+    ):
+        rules.append("Answer type: yes/no. Answer Yes or No and add only the minimum evidence-backed qualification.")
+
+    if re.search(
+        r"\b(describe|explain|tell me about|what .* like|how .* look|why)\b",
+        question_lower,
+    ):
+        rules.append(
+            "Answer type: descriptive. Include all directly relevant evidence clauses, while omitting unrelated background."
+        )
+
+    if re.match(r"^what (?:is|are)\b", question_lower):
+        rules.append("Answer type: definition. Return the category or description, never only the entity named in the question.")
+
+    if re.search(r"\b(first|second|third|fourth|last|former|latter)\b", question_lower):
+        rules.append("Resolve the ordinal or relative reference against the ordered prior answer before extracting the new attribute.")
     return rules
 
 
 def reasoner_agent(state: CompetitionState) -> dict:
     """基于任务、计划、检索证据和记忆命中生成候选答案。"""
 
-    # RetrieverAgent 会在前一节点写入 evidence、memory_hits 和裁剪后的 memory_context。
+    # 保留图状态字段用于前端和旧模式；非文本模式优先消费状态池中的数据面载荷。
+    metrics = state["metrics"]
     memory_hits = state.get("memory_hits", [])
     memory_context = state.get("memory_context", [])
     experience_hits = state.get("experience_hits", [])
     experience_rules = state.get("experience_rules", [])
     evidence = state.get("evidence", [])
     plan = state.get("plan", [])
+    plan_ref = ""
+    evidence_ref = ""
+    plan_state_payload: dict = {}
+    evidence_state_payload: dict = {}
+    if state["mode"] in {"protocol", "hidden"}:
+        delivered_refs = received_state_refs(
+            state,
+            sender="retriever",
+            receiver="reasoner",
+        )
+        evidence_ref = delivered_refs[0]
+        plan_ref = delivered_refs[1] if len(delivered_refs) > 1 else ""
+        evidence_state_payload, metrics = resolve_state_ref(
+            {**state, "metrics": metrics},
+            evidence_ref,
+            consumer="reasoner",
+            expected_content_types={"latent.embedding", "latent.llm_hidden_state"},
+        )
+        if plan_ref:
+            plan_state_payload, metrics = resolve_state_ref(
+                {**state, "metrics": metrics},
+                plan_ref,
+                consumer="reasoner",
+                expected_content_types={"latent.embedding", "latent.llm_hidden_state"},
+            )
+        plan_semantic = plan_state_payload.get("semantic_payload", {})
+        if isinstance(plan_semantic, dict):
+            resolved_plan = plan_semantic.get("plan")
+            if isinstance(resolved_plan, list) and resolved_plan:
+                plan = [str(step) for step in resolved_plan]
+        evidence_semantic = evidence_state_payload.get("semantic_payload", {})
+        if not evidence_state_payload or not evidence_semantic.get("reasoning_input"):
+            raise ValueError("Retriever handoff state is missing or invalid")
+        if isinstance(evidence_semantic, dict):
+            resolved_evidence = evidence_semantic.get("evidence")
+            if isinstance(resolved_evidence, list):
+                evidence = [str(item) for item in resolved_evidence]
+            resolved_hits = evidence_semantic.get("memory_hits")
+            if isinstance(resolved_hits, list):
+                memory_hits = resolved_hits
+            resolved_experience_hits = evidence_semantic.get("experience_hits")
+            if isinstance(resolved_experience_hits, list):
+                experience_hits = resolved_experience_hits
+            resolved_rules = evidence_semantic.get("experience_rules")
+            if isinstance(resolved_rules, list):
+                experience_rules = resolved_rules
+            resolved_context = evidence_semantic.get("memory_context")
+            if isinstance(resolved_context, list):
+                memory_context = resolved_context
     task_text = _reasoner_task_text(state)
     question = str(state.get("task_meta", {}).get("question") or "")
     answer_rules = _question_answer_rules(question)
-    if state["mode"] == "text":
-        planner_message = _latest_message_payload(state, sender="planner", receiver="retriever")
-        retriever_message = _latest_message_payload(state, sender="retriever", receiver="reasoner")
-        if planner_message:
-            plan = [planner_message]
-        if retriever_message:
-            evidence = [retriever_message]
-        memory_context = []
-        experience_rules = []
-    elif state["mode"] == "hidden":
-        memory_context = _compact_hidden_memory_context(memory_context)
-        experience_rules = experience_rules[:1]
+    # Every mode exposes the same stage content to the model. Compression may
+    # change the delivered text, but no mode appends full graph state to it.
+    reasoning_input = (
+        _latest_message_payload(state, sender="retriever", receiver="reasoner")
+        if state["mode"] == "text" else evidence_semantic["reasoning_input"]
+    )
+    if not reasoning_input:
+        raise ValueError("Missing Retriever -> Reasoner content")
+    delivered_object = decode_memory_object(reasoning_input)
+    model_evidence = [item["text"] for item in delivered_object["evidence"]] if delivered_object else []
+    history_qa = delivered_object["history_qa"] if delivered_object else []
+    delivered_rules = delivered_object["experience"] if delivered_object else []
     print(
         "[reasoner] "
         f"task chars={len(task_text)} evidence_count={len(evidence)} "
@@ -157,14 +211,24 @@ def reasoner_agent(state: CompetitionState) -> dict:
         f"memory_context chars={len(json.dumps(memory_context, ensure_ascii=False))}",
         flush=True,
     )
-    plan_ref = state.get("state_refs", {}).get("plan", "")
-    evidence_ref = state.get("state_refs", {}).get("evidence", "")
-    if state["mode"] in {"protocol", "hidden"} and plan_ref:
-        plan_state = state.get("latent_states", {}).get(plan_ref, {})
-        plan_text = str(plan_state.get("source_text") or plan_state.get("summary") or "")
-        latent_plan = [line.strip() for line in plan_text.splitlines() if line.strip()]
-        if latent_plan:
-            plan = latent_plan
+    latent_alignment_score = None
+    def usable_vector(payload: dict) -> list[float]:
+        content_type = str(payload.get("content_type") or "")
+        if content_type == "latent.llm_hidden_state":
+            return [float(value) for value in payload.get("pooled_vector", [])]
+        provider = str(payload.get("embedding_provider") or "").lower()
+        if content_type == "latent.embedding" and provider not in {"", "hash", "hash-v1"}:
+            return [float(value) for value in payload.get("vector", [])]
+        return []
+
+    plan_vector = usable_vector(plan_state_payload)
+    evidence_vector = usable_vector(evidence_state_payload)
+    if plan_vector and evidence_vector and len(plan_vector) == len(evidence_vector):
+        latent_alignment_score = cosine_similarity(plan_vector, evidence_vector)
+        answer_rules.append(
+            "Latent plan-evidence alignment is "
+            f"{latent_alignment_score:.3f}; keep the answer grounded in the retrieved evidence."
+        )
 
     client = get_llm_client("reasoner")
     llm_started = time.perf_counter()
@@ -174,13 +238,15 @@ def reasoner_agent(state: CompetitionState) -> dict:
     try:
         result = client.reason(
             task=task_text,
-            plan=plan,
-            evidence=evidence,
-            memory_hits=len(memory_hits),
-            memory_hit_details=memory_context,
-            experience_rules=experience_rules,
+            plan=[],
+            evidence=model_evidence,
+            memory_hits=0,
+            memory_hit_details=[],
+            experience_rules=delivered_rules,
+            history_qa=history_qa,
+            delivered_context="" if delivered_object else reasoning_input,
             answer_rules=answer_rules,
-            mode=state["mode"],
+            mode="stage_handoff",
         )
     finally:
         if state["mode"] == "hidden":
@@ -204,8 +270,10 @@ def reasoner_agent(state: CompetitionState) -> dict:
         confidence=0.82 if memory_hits else 0.7,
     )
     answer_ref = ""
+    answer_content = {key: result.get(key) for key in (
+        "answer_candidate", "reasoning_summary", "limitations"
+    )}
     latent_states = state.get("latent_states", {})
-    metrics = state["metrics"]
     if state["mode"] in {"protocol", "hidden"}:
         answer_text = (
             f"answer_candidate: {result.get('answer_candidate', '')}\n"
@@ -217,21 +285,23 @@ def reasoner_agent(state: CompetitionState) -> dict:
         )
         if state["mode"] == "hidden":
             answer_ref, latent_states, metrics = put_hidden_state(
-                state,
+                {**state, "metrics": metrics},
                 producer="reasoner",
                 topic=task_text,
                 text=answer_text,
                 consumers=["summarizer"],
                 hidden_result=hidden_result,
                 hidden_tensor=hidden_tensor,
+                semantic_payload=answer_content,
             )
         else:
             answer_ref, latent_states, metrics = put_latent_state(
-                state,
+                {**state, "metrics": metrics},
                 producer="reasoner",
                 topic=task_text,
                 text=answer_text,
                 consumers=["summarizer"],
+                semantic_payload=answer_content,
             )
 
     execution_request = _build_codeact_execution_request(state)
@@ -253,11 +323,9 @@ def reasoner_agent(state: CompetitionState) -> dict:
                 )
         else:
             payload = (
-                f"ReasonerAgent received {len(evidence)} evidence items and "
-                f"{len(memory_hits)} memory hits from RetrieverAgent. "
-                f"It also received {len(experience_rules)} experience rules for answer selection. "
-                f"It generated an answer_candidate from the task, plan, evidence, and memory. "
-                f"Answer candidate: {result.get('answer_candidate', '')}"
+                f"Answer candidate: {result.get('answer_candidate', '')}\n"
+                f"Reasoning summary: {result.get('reasoning_summary', '')}\n"
+                f"Limitations: {json.dumps(result.get('limitations', []), ensure_ascii=False)}"
             )
             if autoform_enabled():
                 payload, _autoform_audit = generate_autoform_message(
@@ -265,6 +333,11 @@ def reasoner_agent(state: CompetitionState) -> dict:
                     receiver="summarizer",
                     action="summarize",
                     source_message=payload,
+                )
+                payload = encode_answer_handoff(
+                    result.get("answer_candidate", ""),
+                    payload,
+                    "autoform",
                 )
     else:
         if execution_request:
@@ -292,13 +365,8 @@ def reasoner_agent(state: CompetitionState) -> dict:
                 receiver="summarizer",
                 action="summarize",
                 content_type="hidden_answer_ref" if state["mode"] == "hidden" else "answer_ref",
-                params={"hits": len(memory_hits)},
-                result={"answer": answer_ref},
-                state_refs=[ref for ref in [plan_ref, evidence_ref, answer_ref] if ref],
-                memory_refs=[hit.get("memory_id") for hit in memory_hits],
+                state_refs=[answer_ref],
                 capability_required=["summarize", "memory_write"],
-                cognitive_gap=cognitive_gap,
-                confidence=0.82 if memory_hits else 0.7,
             )
 
     receiver = "executor" if execution_request else "summarizer"
@@ -341,6 +409,7 @@ def reasoner_agent(state: CompetitionState) -> dict:
             "plan_ref": plan_ref,
             "evidence_ref": evidence_ref,
             "answer_ref": answer_ref,
+            "latent_alignment_score": latent_alignment_score,
             **({"execution_request": execution_request} if execution_request else {}),
         },
         "messages": messages,
@@ -349,7 +418,12 @@ def reasoner_agent(state: CompetitionState) -> dict:
             *state.get("agent_outputs", []),
             {
                 "agent": "ReasonerAgent",
+                "handoff_parse_status": "structured" if delivered_object else "compressed_or_legacy_text",
+                "llm_call": dict(getattr(client, "last_generation_metrics", {})),
                 "raw_output": result.get("raw_model_output") or result.get("answer_candidate", ""),
+                "plan_state_resolved": bool(plan_state_payload),
+                "evidence_state_resolved": bool(evidence_state_payload),
+                "latent_alignment_score": latent_alignment_score,
             },
         ],
         "cognitive_gaps": [*state["cognitive_gaps"], cognitive_gap],

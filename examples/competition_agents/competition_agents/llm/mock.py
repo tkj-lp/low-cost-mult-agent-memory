@@ -23,6 +23,10 @@ class MockLLMClient:
         plan = self.plan(task)
         return plan, "\n".join(plan)
 
+    def plan_query(self, task: str) -> str:
+        return ('{"query_type":"follow_up_fact","reference_target":"",'
+                '"steps":["Retrieve evidence for the current question"]}')
+
     def reason(
         self,
         *,
@@ -34,6 +38,8 @@ class MockLLMClient:
         memory_hit_details: list[dict[str, Any]] | None = None,
         experience_rules: list[dict[str, Any]] | None = None,
         answer_rules: list[str] | None = None,
+        history_qa: list[dict[str, Any]] | None = None,
+        delivered_context: str = "",
     ) -> dict[str, Any]:
         return {
             "answer_candidate": (

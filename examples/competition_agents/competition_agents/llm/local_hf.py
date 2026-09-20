@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import os
 import re
+import time
+import hashlib
+import json
 from typing import Any
 
 from competition_agents.latent_hidden import generate_text_with_last_hidden_state
@@ -45,6 +48,7 @@ class LocalHFClient(OpenAICompatibleClient):
         }
         self._last_hidden_result: HiddenStateResult | None = None
         self._last_hidden_tensor: object | None = None
+        self.last_generation_metrics: dict[str, Any] = {}
 
     def consume_last_hidden_state(self) -> tuple[HiddenStateResult | None, object | None]:
         """Return and clear the hidden state produced by the last local generation."""
@@ -144,9 +148,11 @@ class LocalHFClient(OpenAICompatibleClient):
             )
         prompt_tokens = int(inputs["input_ids"].shape[-1])
         generated_ids = output_ids[0][prompt_tokens:]
+        self._token_counts = (prompt_tokens, int(generated_ids.shape[-1]))
         return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
 
     def generate(self, prompt: str) -> str:
+        started = time.perf_counter()
         print(
             f"[local_hf] role={self.role} model={self.model} "
             f"device={self.bundle.device} max_new_tokens={self.max_new_tokens} "
@@ -157,7 +163,9 @@ class LocalHFClient(OpenAICompatibleClient):
         if not capture_hidden:
             self._last_hidden_result = None
             self._last_hidden_tensor = None
-            return self._generate_text_only(prompt)
+            text = self._generate_text_only(prompt)
+            self._record_generation(prompt, started, *self._token_counts)
+            return text
         generated, tensor = generate_text_with_last_hidden_state(
             prompt,
             max_new_tokens=self.max_new_tokens,
@@ -165,4 +173,17 @@ class LocalHFClient(OpenAICompatibleClient):
         )
         self._last_hidden_result = generated.hidden
         self._last_hidden_tensor = tensor
+        self._record_generation(prompt, started, generated.input_tokens, generated.output_tokens)
         return generated.generated_text.strip()
+
+    def _record_generation(self, prompt: str, started: float, input_tokens: int, output_tokens: int) -> None:
+        self.last_generation_metrics = {
+            "role": self.role, "model": self.model,
+            "device": str(self.bundle.device),
+            "device_map": {str(k): str(v) for k, v in (getattr(self.bundle.model, "hf_device_map", {}) or {}).items()},
+            "input_tokens": input_tokens, "output_tokens": output_tokens,
+            "max_new_tokens": self.max_new_tokens,
+            "elapsed_ms": (time.perf_counter() - started) * 1000,
+            "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        }
+        print("[llm_call] " + json.dumps(self.last_generation_metrics, ensure_ascii=False), flush=True)

@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import os
+import re
+from competition_agents.handoff import delivered_answer
 import time
 
 from competition_agents.llm import get_llm_client
 from competition_agents.memory import add_memory, increment_reuse_counts, refine_memory
 from competition_agents.protocol import make_cognitive_gap
-from competition_agents.state import CompetitionState
+from competition_agents.state import CompetitionState, resolve_state_ref, received_state_ref
 
 
 def _summarizer_task_text(state: CompetitionState) -> str:
@@ -145,6 +147,8 @@ def summarizer_agent(state: CompetitionState) -> dict:
     hit_count = len(state.get("memory_hits", []))
     latent_count = len(state.get("latent_states", {}))
     execution_result = state.get("execution_result", {})
+    metrics = state["metrics"]
+    answer_state_resolved = False
     task_text = _summarizer_task_text(state)
     print(
         "[summarizer] "
@@ -152,8 +156,37 @@ def summarizer_agent(state: CompetitionState) -> dict:
         f"memory_context chars={len(json.dumps(state.get('memory_context', []), ensure_ascii=False))}",
         flush=True,
     )
-    if state["mode"] in {"protocol", "hidden"}:
-        answer_ref = state.get("state_refs", {}).get("answer", "")
+    is_codeact = state.get("task_meta", {}).get("dataset_type") == "codeact"
+    answer_parsed = False
+    if not is_codeact and state["mode"] == "text":
+        delivered = next((message.get("payload") for message in reversed(state.get("messages", []))
+                          if message.get("from") == "reasoner" and message.get("to") == "summarizer"), None)
+        if not isinstance(delivered, str) or not delivered.strip():
+            raise ValueError("Missing Reasoner -> Summarizer content")
+        candidate = delivered_answer(delivered)
+        answer_parsed = candidate is not None
+        execution_result = {
+            "answer_candidate": candidate if candidate is not None else "",
+            "reasoning_summary": delivered,
+        }
+    if state["mode"] in {"protocol", "hidden"} and not is_codeact:
+        answer_ref = received_state_ref(state, sender="reasoner", receiver="summarizer")
+        answer_payload, metrics = resolve_state_ref(
+            {**state, "metrics": metrics},
+            answer_ref,
+            consumer="summarizer",
+            expected_content_types={"latent.embedding", "latent.llm_hidden_state"},
+        )
+        resolved_answer = answer_payload.get("semantic_payload", {})
+        if not answer_payload or not isinstance(resolved_answer, dict):
+            raise ValueError("Reasoner handoff state is missing or invalid")
+        answer_state_resolved = bool(answer_payload)
+        if (
+            isinstance(resolved_answer, dict)
+            and state.get("task_meta", {}).get("dataset_type") != "codeact"
+        ):
+            execution_result = dict(resolved_answer)
+            answer_parsed = isinstance(execution_result.get("answer_candidate"), str)
         answer_state = state.get("latent_states", {}).get(answer_ref, {})
         if answer_state:
             execution_result = {
@@ -167,23 +200,38 @@ def summarizer_agent(state: CompetitionState) -> dict:
                 "latent_shape": answer_state.get("shape", []),
             }
     # Summarizer 可单独接真实 API，其他 Agent 保持 mock 以便快速验证。
-    direct_summary = _direct_qa_summary(state, execution_result)
-    if direct_summary:
+    direct_summary = (str(execution_result.get("answer_candidate") or "").strip()
+                      if not is_codeact else _direct_qa_summary(state, execution_result))
+    summarizer_call = {}
+    if direct_summary or (not is_codeact and answer_parsed):
         summary = direct_summary
         summarizer_llm_ms = 0.0
     else:
         summarize_started = time.perf_counter()
-        summary = get_llm_client("summarizer").summarize(
-            task=task_text,
-            memory_hits=hit_count,
-            latent_states=latent_count,
-            plan=state.get("plan", []),
-            evidence=state.get("evidence", []),
-            execution_result=execution_result,
-            cognitive_gaps=state.get("cognitive_gaps", []),
-            mode=state["mode"],
-        )
+        client = get_llm_client("summarizer")
+        if not is_codeact:
+            raw_final = client.generate(
+                "Extract the final answer to the current question from the received message. "
+                "Preserve the received answer; do not solve the question again. "
+                "Return only JSON with one string field final_answer. "
+                "If no answer can be recovered, use an empty string.\n"
+                f"Question: {task_text}\nReceived message:\n{execution_result.get('reasoning_summary', '')}"
+            )
+            parsed_final = delivered_answer(raw_final)
+            summary = parsed_final if parsed_final is not None else ""
+        else:
+            summary = client.summarize(
+                task=task_text,
+                memory_hits=0,
+                latent_states=0,
+                plan=[],
+                evidence=[],
+                execution_result=execution_result,
+                cognitive_gaps=[],
+                mode="stage_handoff",
+            )
         summarizer_llm_ms = (time.perf_counter() - summarize_started) * 1000
+        summarizer_call = dict(getattr(client, "last_generation_metrics", {}))
     # 这里是共享记忆写入路径，也是后续接超图存储的钩子。
     trace = {
         "task_meta": state.get("task_meta", {}),
@@ -196,10 +244,10 @@ def summarizer_agent(state: CompetitionState) -> dict:
         "memory_layer_hits": state.get("memory_layer_hits", {}),
         "latent_states": state.get("latent_states", {}),
         "state_refs": state.get("state_refs", {}),
-        "execution_result": state.get("execution_result", {}),
+        "execution_result": {**state.get("execution_result", {}), "final_answer": summary},
         "cognitive_gaps": state.get("cognitive_gaps", []),
         "agent_outputs": state.get("agent_outputs", []),
-        "metrics": state.get("metrics", {}),
+        "metrics": metrics,
     }
     is_continuous = state.get("task_meta", {}).get("dataset_type") == "continuous"
     updated_memory = increment_reuse_counts(
@@ -332,7 +380,7 @@ def summarizer_agent(state: CompetitionState) -> dict:
             "positive_memory_allowed": positive_memory_allowed,
         }
     memory_write_ms = (time.perf_counter() - write_started) * 1000
-    metrics = dict(state["metrics"])
+    metrics = dict(metrics)
     metrics["summarizer_llm_ms"] = metrics.get("summarizer_llm_ms", 0.0) + summarizer_llm_ms
     metrics["memory_refine_ms"] = metrics.get("memory_refine_ms", 0.0) + memory_refine_ms
     metrics["memory_write_ms"] = metrics.get("memory_write_ms", 0.0) + memory_write_ms
@@ -346,6 +394,8 @@ def summarizer_agent(state: CompetitionState) -> dict:
     )
     return {
         "final_answer": summary,
+        "execution_result": {**state.get("execution_result", {}), "final_answer": summary,
+                             "final_answer_status": "delivered" if summary else "unrecoverable_handoff"},
         "memory": memory,
         "memory_refine_case": refined.get("distillation_case", {}),
         "memory_refine_debug": memory_refine_debug,
@@ -356,7 +406,12 @@ def summarizer_agent(state: CompetitionState) -> dict:
         "metrics": metrics,
         "agent_outputs": [
             *state.get("agent_outputs", []),
-            {"agent": "SummarizerAgent", "raw_output": summary},
+            {
+                "agent": "SummarizerAgent",
+                "llm_call": summarizer_call,
+                "raw_output": summary,
+                "answer_state_resolved": answer_state_resolved,
+            },
         ],
         "cognitive_gaps": [*state["cognitive_gaps"], cognitive_gap],
     }

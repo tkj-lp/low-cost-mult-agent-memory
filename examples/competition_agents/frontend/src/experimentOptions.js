@@ -1,4 +1,4 @@
-export const datasets = [
+const allDatasets = [
   {
     label: 'TopiOCQA 第 1 组（10轮）',
     value: 'topiocqa-1',
@@ -71,6 +71,22 @@ export const datasets = [
     latentDatasetType: 'continuous',
     file: 'examples/competition_agents/data/official_topiocqa_qrecc_6chains_10turns.json'
   },
+  ...[1, 2, 3].map((index) => ({
+    label: `TopiOCQA \u5b98\u65b9\u4e8b\u5b9e\u578b\u7b5b\u9009\u7b2c ${index} \u7ec4\uff0810\u8f6e\uff09`,
+    value: `topiocqa-factoid-ranked-${index}`,
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: `examples/competition_agents/data/official_factoid_ranked_topiocqa_${String(index).padStart(3, '0')}_10turns.json`
+  })),
+  ...[1, 2, 3].map((index) => ({
+    label: `QReCC \u5b98\u65b9\u4e8b\u5b9e\u578b\u7b5b\u9009\u7b2c ${index} \u7ec4\uff0810\u8f6e\uff09`,
+    value: `qrecc-factoid-ranked-${index}`,
+    taskCount: 10,
+    datasetType: 'continuous',
+    latentDatasetType: 'continuous',
+    file: `examples/competition_agents/data/official_factoid_ranked_qrecc_${String(index).padStart(3, '0')}_10turns.json`
+  })),
   {
     label: 'CodeAct 第 1 组（10题）',
     value: 'codeact-1',
@@ -88,6 +104,10 @@ export const datasets = [
     file: 'examples/competition_agents/data/codeact_2_10tasks.json'
   }
 ]
+
+export const datasets = allDatasets.filter((item) =>
+  /^(topiocqa-[12]|topiocqa-factoid-ranked-[123]|qrecc-factoid-ranked-[123]|codeact-[12])$/.test(item.value)
+)
 
 export const backends = [
   { label: '本地模型', value: 'local' },
@@ -132,7 +152,7 @@ export const agentSequence = ['规划智能体', '检索智能体', '推理智�
 
 export function defaultExperimentConfig() {
   return {
-    dataset: 'topiocqa-1',
+    dataset: 'topiocqa-factoid-ranked-1',
     taskCount: 10,
     backend: 'local',
     localModel: 'Qwen/Qwen2.5-0.5B-Instruct',
@@ -155,8 +175,8 @@ export function selectedDataset(config) {
 
 export function datasetKeyForFile(file) {
   const text = String(file || '')
-  if (datasets.some((item) => item.value === text)) return text
-  const matched = datasets.find((item) => text.includes(item.file.split('/').pop()))
+  if (allDatasets.some((item) => item.value === text)) return text
+  const matched = allDatasets.find((item) => text.includes(item.file.split('/').pop()))
   return matched?.value ?? text
 }
 
@@ -181,6 +201,7 @@ export function normalizeExperimentConfig(config) {
 
   return {
     ...config,
+    dataset: dataset.value,
     taskCount: Math.max(1, Number(config.taskCount) || dataset.taskCount),
     retrievalMode
   }
@@ -221,31 +242,20 @@ export function buildExperimentCommand(config) {
   const normalized = normalizeExperimentConfig(config)
   const dataset = selectedDataset(normalized)
   const collaboration = selectedCollaboration(normalized)
-  const isLatent = normalized.collaborationMode === 'latent'
-  const script = isLatent
-    ? 'examples/competition_agents/run_hidden_latent_samples.py'
-    : 'examples/competition_agents/run_demo.py'
-  const contextSource = normalized.memoryMode === 'hypergraph' ? 'hypergraph' : 'inline'
-  const args = isLatent
-    ? [
-        `--dataset-type ${dataset.latentDatasetType}`,
-        `--dataset-file ${dataset.file}`,
-        `--limit 0`,
-        `--context-source ${contextSource}`,
-        `--memory-retrieval-mode ${normalized.retrievalMode}`
-      ]
-    : [
-        `--experiment-mode ${collaboration.experimentMode}`,
-        `--llm-backend ${normalized.backend === 'local' ? 'local' : 'api'}`,
-        `--dataset-type ${dataset.datasetType}`,
-        `--dataset-file ${dataset.file}`,
-        `--limit 0`,
-        `--context-source ${contextSource}`,
-        `--memory-retrieval-mode ${normalized.retrievalMode}`,
-        '--show-memory',
-        '--show-latent',
-        '--show-state'
-      ]
+  const script = 'examples/competition_agents/run_demo.py'
+  const contextSource = dataset.datasetType === 'codeact' ? 'inline' : 'hypergraph'
+  const args = [
+    `--experiment-mode ${collaboration.experimentMode}`,
+    `--llm-backend ${normalized.backend === 'local' ? 'local' : 'api'}`,
+    `--dataset-type ${dataset.datasetType}`,
+    `--dataset-file ${dataset.file}`,
+    `--limit 0`,
+    `--context-source ${contextSource}`,
+    `--memory-retrieval-mode ${normalized.retrievalMode}`,
+    '--show-memory',
+    '--show-latent',
+    '--show-state'
+  ]
 
   const envLines =
     normalized.backend === 'local'

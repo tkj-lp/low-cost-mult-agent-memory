@@ -170,11 +170,15 @@ def evaluate_task_reuse(
     for hit in hits:
         memory_id = str(hit.get("memory_id") or "")
         source_turn = _source_turn(hit, question_to_turn)
+        trace_meta = (hit.get("trace") or {}).get("task_meta", {}) if isinstance(hit.get("trace"), dict) else {}
+        source_case = hit.get("source_case") if isinstance(hit.get("source_case"), dict) else {}
+        source_group = hit.get("group_id") or trace_meta.get("group_id") or source_case.get("group_id")
+        same_group = not source_group or source_group == task_result.get("group_id")
         artifacts = _hit_artifacts(hit)
         matches = {
             (turn, artifact)
             for turn, artifact in expected_specs
-            if turn == source_turn and artifact in artifacts
+            if same_group and turn == source_turn and artifact in artifacts
         }
         normalized_hit = normalize_memory_record(hit)
         chain = normalized_hit.get("evidence_chain", {})
@@ -268,13 +272,14 @@ def evaluate_run_reuse(run_result: dict[str, Any]) -> dict[str, Any]:
     task_results = [
         task for task in run_result.get("task_results", []) if isinstance(task, dict)
     ]
-    question_to_turn = {
-        str(task.get("question") or "").strip().lower(): str(task.get("turn_id") or "")
-        for task in task_results
-        if task.get("question") and task.get("turn_id")
-    }
+    questions_by_group: dict[str, dict[str, str]] = {}
+    for task in task_results:
+        if task.get("question") and task.get("turn_id"):
+            questions_by_group.setdefault(str(task.get("group_id") or ""), {})[
+                str(task["question"]).strip().lower()
+            ] = str(task["turn_id"])
     rows = [
-        evaluate_task_reuse(task, question_to_turn=question_to_turn)
+        evaluate_task_reuse(task, question_to_turn=questions_by_group.get(str(task.get("group_id") or ""), {}))
         for task in task_results
     ]
     expected_rows = [row for row in rows if row["requires_memory_reuse"]]

@@ -33,96 +33,9 @@ def _loads_json_object(text: str) -> dict[str, Any] | None:
 
 
 def _normalize_answer_span(text: str) -> str:
-    """把较长职位短语收成更适合精确匹配的答案片段。"""
+    """Normalize whitespace without injecting dataset-specific answer content."""
 
-    cleaned = " ".join(str(text or "").strip().split())
-    if not cleaned:
-        return cleaned
-    if cleaned.lower().startswith("chief of protocol"):
-        return "Chief of Protocol"
-    return cleaned
-
-
-def _extract_preferred_answer_from_evidence(evidence: list[str]) -> str | None:
-    """优先从证据中提取更像最终答案的单一职位短语。"""
-
-    for item in evidence:
-        text = str(item or "")
-        match = re.search(r'\bserved as ([^.]+?)(?:[\.",\n]|$)', text, re.IGNORECASE)
-        if match:
-            candidate = _normalize_answer_span(match.group(1))
-            if candidate:
-                return candidate
-    return None
-
-
-def _extract_mineral_resource_span_from_evidence(evidence: list[str]) -> str | None:
-    """矿产资源题优先保留 evidence 中带修饰语的完整短语。"""
-
-    for item in evidence:
-        text = str(item or "")
-        match = re.search(
-            r"\b(sand and gravel|sand, gravel)(?:[^.]*?)\b(rolled pieces of amber|amber)\b",
-            text,
-            re.IGNORECASE,
-        )
-        if not match:
-            continue
-        left = match.group(1).lower().replace(" and ", ", ")
-        amber = match.group(2)
-        if amber.lower() == "amber":
-            amber = "rolled pieces of amber"
-        return f"{left}, {amber}"
-    return None
-
-
-def _extract_filming_locations_from_evidence(evidence: list[str]) -> str | None:
-    """地点题保留城市/地点 + 国家，不要压成国家名。"""
-
-    for item in evidence:
-        text = str(item or "")
-        if "principal photography" not in text.lower() and "production then continued" not in text.lower():
-            continue
-        dunkirk = re.search(r"\b(Dunkirk,\s*France)\b", text, re.IGNORECASE)
-        urk = re.search(r"\b(Urk,\s*Netherlands)\b", text, re.IGNORECASE)
-        if dunkirk and urk:
-            return f"{dunkirk.group(1)}, and {urk.group(1)}"
-    return None
-
-
-def _extract_latter_place_history_from_evidence(evidence: list[str]) -> str | None:
-    """跨轮 `latter place` 历史题直接抽取证据中的历史句。"""
-
-    for item in evidence:
-        text = str(item or "")
-        match = re.search(
-            r"\b(Until\s+1475,\s+the\s+High\s+and\s+Low\s+Lordship\s+of\s+Urk\s+and\s+Emmeloord\s+was\s+in\s+the\s+hands\s+of\s+the\s+Van\s+Kuinre\s+family)\b",
-            text,
-            re.IGNORECASE,
-        )
-        if match:
-            return match.group(1)
-    return None
-
-
-def _extract_fishery_from_evidence(evidence: list[str]) -> str | None:
-    for item in evidence:
-        text = str(item or "")
-        if re.search(r"\bimportant economic pillar\b", text, re.IGNORECASE) and re.search(
-            r"\bfishery\b", text, re.IGNORECASE
-        ):
-            return "Fishery"
-    return None
-
-
-def _extract_natural_hazard_from_evidence(evidence: list[str]) -> str | None:
-    for item in evidence:
-        text = str(item or "")
-        if "natural hazard" not in text.lower() and "coast" not in text.lower():
-            continue
-        if re.search(r"\bstorm surges?\b", text, re.IGNORECASE):
-            return "Storm surges"
-    return None
+    return " ".join(str(text or "").strip().split())
 
 
 def _extract_question_from_task(task: str) -> str:
@@ -138,217 +51,204 @@ def _extract_question_from_task(task: str) -> str:
     return text
 
 
-def _is_yes_no_question(question: str) -> bool:
-    question_lower = str(question or "").strip().lower()
-    if not question_lower:
-        return False
-    if question_lower.startswith(("can you ", "could you ", "would you ", "will you ", "do you ", "did you ")):
-        return False
-    if any(
-        phrase in question_lower
-        for phrase in (
-            "can you tell me",
-            "can you mention",
-            "can you list",
-            "can you name",
-            "can you describe",
-            "can you explain",
-            "could you tell me",
-            "could you mention",
-            "could you list",
-            "could you name",
-            "could you describe",
-            "could you explain",
-        )
-    ):
-        return False
-    return question_lower.startswith(
-        ("is ", "are ", "was ", "were ", "do ", "does ", "did ", "can ", "could ", "has ", "have ", "had ")
-    )
-
-
-def _extract_hormone_list_from_evidence(evidence: list[str]) -> str | None:
-    """从证据中恢复完整激素列表，避免只返回前半句。"""
-
-    evidence_lower = " ".join(str(item or "") for item in evidence).lower()
-    required = ("cortisol", "glucagon", "adrenaline", "cytokines", "orexin", "melatonin")
-    if not all(token in evidence_lower for token in required):
-        return None
-    return "Cortisol, glucagon, adrenaline, cytokines, orexin, and melatonin"
-
-
-def _extract_glucose_metabolism_effect(evidence: list[str]) -> str:
-    for fact in evidence:
-        _, _, sentence = str(fact or "").partition(":")
-        sentence_lower = sentence.lower()
-        if "gluconeogenesis" in sentence_lower and "non-carbohydrate sources" in sentence_lower:
-            return "It stimulates gluconeogenesis from non-carbohydrate sources"
-    return ""
-
-
-def _extract_organ_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        text = str(fact or "")
-        match = re.search(r"\b(?:from|extract(?:ed|ing)?[^.]*?from)\s+the\s+([^.]+?pancreas)\b", text, re.IGNORECASE)
-        if not match:
-            continue
-        organ = " ".join(match.group(1).split())
-        return organ[:1].upper() + organ[1:]
-    return ""
-
-
-def _extract_cast_members_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        text = str(fact or "")
-        if "ensemble cast includes" not in text.lower():
-            continue
-        _, _, sentence = text.partition(":")
-        match = re.search(r"ensemble cast includes\s+(.+?)(?:\.|$)", sentence, re.IGNORECASE)
-        if not match:
-            continue
-        names = [
-            " ".join(name.strip().split())
-            for name in re.split(r",\s*|\s+and\s+", match.group(1))
-            if name.strip()
-        ]
-        if len(names) >= 4:
-            return ", ".join(names[:4])
-    return ""
-
-
-def _extract_fish_list_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        text = str(fact or "")
-        if "are all very common" not in text.lower() or "fish" not in text.lower():
-            continue
-        _, _, sentence = text.partition(":")
-        match = re.search(r"(.+?)\s+are all very common", sentence, re.IGNORECASE)
-        if not match:
-            continue
-        fish = " ".join(match.group(1).strip().split())
-        if fish:
-            return fish
-    return ""
-
-
-def _extract_dvd_uk_date_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        text = str(fact or "")
-        if "dvd" not in text.lower() or "united kingdom" not in text.lower():
-            continue
-        year_match = re.search(r"\b(20\d{2}|19\d{2})\b", text)
-        year = year_match.group(1) if year_match else ""
-        match = re.search(
-            r"DVD\s+on\s+(\d{1,2}\s+[A-Za-z]+)(?:\s+\d{4})?\s+in\s+the\s+United Kingdom",
-            text,
-            re.IGNORECASE,
-        )
-        if match:
-            return " ".join(part for part in [match.group(1), year] if part)
-    return ""
-
-
-def _extract_film_subject_from_evidence(evidence: list[str]) -> str:
-    for fact in evidence:
-        text = str(fact or "")
-        _, _, sentence = text.partition(":")
-        match = re.search(r"\bdepicts\s+(.+?)(?:\.|$)", sentence, re.IGNORECASE)
-        if match:
-            subject = " ".join(match.group(1).strip().split())
-            if subject:
-                return subject[:1].upper() + subject[1:]
-    return ""
-
-
-def _infer_yes_no_answer_from_evidence(question: str, evidence: list[str]) -> str:
-    question_lower = str(question or "").lower()
-    evidence_lower = " ".join(str(item or "") for item in evidence).lower()
-
-    if "opposed by insulin" in question_lower and "opposing processes such as gluconeogenesis" in evidence_lower:
-        return "Yes"
-    if "could that substance also be extracted" in question_lower and "extracting insulin from the adult cow pancreas" in evidence_lower:
-        return "Yes"
-    if "can the last hormone" in question_lower and "has been found in all plants" in evidence_lower:
-        return "Yes, melatonin can be found in plants"
-    if evidence_lower and not any(token in evidence_lower for token in (" not ", " no ", " never ", " without ")):
-        return "Yes"
-    return ""
-
-
 def _postprocess_answer_candidate(question: str, evidence: list[str], answer_candidate: str) -> str:
-    """基于问题类型和证据做少量强约束后处理，避免明显答偏。"""
+    """Apply format-only cleanup without encoding benchmark answers."""
 
-    question_lower = str(question or "").lower()
-    if "when" in question_lower and "dvd" in question_lower and "united kingdom" in question_lower:
-        refined = _extract_dvd_uk_date_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what is the film about" in question_lower:
-        refined = _extract_film_subject_from_evidence(evidence)
-        if refined:
-            return refined
-    if "which hormones are related to catabolism" in question_lower:
-        refined = _extract_hormone_list_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what emotional response is strongly associated with the third hormone on that list" in question_lower:
-        evidence_lower = " ".join(str(item or "") for item in evidence).lower()
-        if "fear" in evidence_lower:
-            return "Fear"
-    if "how does the first hormone on that list affect glucose metabolism" in question_lower:
-        refined = _extract_glucose_metabolism_effect(evidence)
-        if refined:
-            return refined
-    if "from which organ was it extracted in that experiment" in question_lower:
-        refined = _extract_organ_from_evidence(evidence)
-        if refined:
-            return refined
-    if "where was it filmed" in question_lower:
-        refined = _extract_filming_locations_from_evidence(evidence)
-        if refined:
-            return refined
-    if "cast" in question_lower or "members of the cast" in question_lower:
-        refined = _extract_cast_members_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what kinds of fish" in question_lower:
-        refined = _extract_fish_list_from_evidence(evidence)
-        if refined:
-            return refined
-    if "latter place" in question_lower and "past" in question_lower:
-        refined = _extract_latter_place_history_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what does the economy" in question_lower and "depend on" in question_lower:
-        refined = _extract_fishery_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what natural hazard" in question_lower:
-        refined = _extract_natural_hazard_from_evidence(evidence)
-        if refined:
-            return refined
-    if "what mineral resources" in question_lower:
-        refined = _extract_mineral_resource_span_from_evidence(evidence)
-        if refined:
-            return refined
-    if (
-        "government position" in question_lower
-        or "what position" in question_lower
-        or "position was held" in question_lower
-        or "position did" in question_lower
+    del question, evidence
+    cleaned = _normalize_answer_span(answer_candidate)
+    cleaned = re.sub(
+        r"^(?:answer|final answer|answer_candidate)\s*:\s*",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    return cleaned.strip()
+
+
+def _extract_answer_line(text: str) -> str:
+    """Extract one answer line from small-model output without adding facts."""
+
+    cleaned = str(text or "").strip().strip("`").strip()
+    if not cleaned:
+        return ""
+    parsed = _loads_json_object(cleaned)
+    if parsed is not None and parsed.get("answer_candidate"):
+        return str(parsed["answer_candidate"]).strip()
+    for line in cleaned.splitlines():
+        candidate = line.strip().strip("- ")
+        if not candidate:
+            continue
+        match = re.match(
+            r"^(?:answer|final answer|answer_candidate)\s*:\s*(.+)$",
+            candidate,
+            flags=re.IGNORECASE,
+        )
+        if match:
+            return match.group(1).strip()
+    return next((line.strip() for line in cleaned.splitlines() if line.strip()), cleaned)
+
+
+def _content_tokens(text: str) -> set[str]:
+    stopwords = {
+        "a", "an", "and", "are", "as", "at", "be", "by", "for", "from",
+        "in", "is", "it", "of", "on", "or", "that", "the", "this", "to",
+        "was", "were", "with",
+    }
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", str(text or "").lower())
+        if token not in stopwords
+    }
+
+
+def _resolved_topic(task: str) -> str:
+    for line in str(task or "").splitlines():
+        if line.lower().startswith("resolved topic:"):
+            return line.split(":", 1)[1].strip()
+    return ""
+
+
+def _location_relation_values(evidence: list[str]) -> list[str]:
+    values: list[str] = []
+    for item in evidence:
+        for sentence in re.split(r"(?<=[.!?])\s+(?=[A-Z0-9\"'])", str(item or "")):
+            for pattern in (
+                r"\b(?:from|born(?:\s+and\s+raised)?\s+in|raised\s+in|originated\s+in|headquartered\s+in)\s+([^,.;]+)",
+                r"\b(?:located|situated|found|based|occurs?)\s+(?:in|at|on|near|within)\s+([^,.;]+)",
+                r"\b(?:is|are|was|were)\s+(?:in|at|on|near|within)\s+([^,.;]+)",
+                r"\b(?:is|are|was|were)\s+(?:an?\s+)?[^,.;]{0,90}?\s+in\s+([^,.;]+)",
+            ):
+                match = re.search(pattern, sentence, flags=re.IGNORECASE)
+                if match:
+                    values.append(match.group(1).strip(" ,;."))
+    return values
+
+
+def _answer_repair_reason(
+    *,
+    task: str,
+    evidence: list[str],
+    answer: str,
+) -> str:
+    """Return a portable validation failure, or an empty string when valid."""
+
+    cleaned = _normalize_answer_span(answer)
+    if not cleaned:
+        return "the answer is empty"
+    topic = _normalize_answer_span(_resolved_topic(task)).lower().strip('"')
+    candidate = cleaned.lower().strip('"')
+    if topic and _content_tokens(candidate) == _content_tokens(topic):
+        return "the answer merely repeats the resolved topic"
+    if len(cleaned.split()) > 48:
+        return "the answer is an explanation instead of a concise answer"
+
+    evidence_text = " ".join(str(item or "") for item in evidence).lower()
+    candidate_tokens = _content_tokens(cleaned)
+    evidence_tokens = _content_tokens(evidence_text)
+    if candidate_tokens and candidate not in {"yes", "yes.", "no", "no."}:
+        grounding = len(candidate_tokens & evidence_tokens) / len(candidate_tokens)
+        if grounding < 0.6:
+            return "most answer terms are not grounded in evidence"
+
+    question = _extract_question_from_task(task).lower()
+    question_tokens = _content_tokens(question)
+    topic_tokens = _content_tokens(_resolved_topic(task))
+    requested_tokens = question_tokens - topic_tokens
+    if candidate_tokens and len(candidate_tokens) <= 2 and candidate_tokens <= requested_tokens:
+        return "the answer only repeats the requested attribute"
+
+    list_question = bool(
+        re.search(
+            r"\b(list|name|mention|members|what kinds|what types?|species|examples)\b",
+            question,
+        )
+    )
+    evidence_has_explicit_list = any(
+        re.search(r"\b(?:include|includes|including|such as)\b", str(item), re.IGNORECASE)
+        for item in evidence
+    )
+    answer_has_list = cleaned.count(",") >= 1 or bool(re.search(r"\s+and\s+", cleaned.lower()))
+    if list_question and evidence_has_explicit_list and not answer_has_list:
+        return "the question requests explicit items but the answer is only a count or category"
+
+    descriptive_question = bool(
+        re.search(r"\b(describe|explain|tell me about|what .* like|how .* look|why)\b", question)
+    )
+    if descriptive_question and len(candidate_tokens) < 5:
+        return "the descriptive answer omits the requested evidence details"
+
+    yes_no_question = question.startswith(
+        ("is ", "are ", "was ", "were ", "do ", "does ", "did ", "has ", "have ", "had ")
+    )
+    if yes_no_question and candidate.rstrip(".") in {"yes", "no"}:
+        return "the yes/no answer lacks an evidence-backed qualification"
+    if candidate.startswith("no") and not re.search(
+        r"\b(no|not|never|none|without|lack|lacks|absent)\b",
+        evidence_text,
     ):
-        refined = _extract_preferred_answer_from_evidence(evidence)
-        if refined:
-            return refined
-    if _is_yes_no_question(question):
-        refined = _infer_yes_no_answer_from_evidence(question, evidence)
-        if refined:
-            return refined
-    return answer_candidate
+        return "the negative answer has no negative evidence"
+    if re.search(r"\b(where|which place|which country|which city)\b", question):
+        relation_values = _location_relation_values(evidence)
+        relation_tokens = set().union(*(_content_tokens(value) for value in relation_values)) if relation_values else set()
+        if relation_tokens and not (candidate_tokens & relation_tokens):
+            return "the answer is mentioned in evidence but is not a location-relation value"
+    return ""
+
+
+def _evidence_sentences(evidence: list[str]) -> list[str]:
+    sentences: list[str] = []
+    for item in evidence:
+        sentences.extend(
+            sentence.strip()
+            for sentence in re.split(r"(?<=[.!?])\s+(?=[A-Z0-9\"'])", str(item or ""))
+            if sentence.strip()
+        )
+    return sentences
+
+
+def _extractive_fallback(*, task: str, evidence: list[str]) -> str:
+    """Extract common relation values when a small model fails validation.
+
+    This fallback is benchmark-independent: it uses only the current question,
+    resolved topic, and retrieved evidence. It never reads labels or gold answers.
+    """
+
+    question = _extract_question_from_task(task).lower()
+    sentences = _evidence_sentences(evidence)
+    if not sentences:
+        return ""
+
+    if re.search(r"\b(list|name|mention|members|what kinds|what types?|species|examples)\b", question):
+        for sentence in sentences:
+            match = re.search(
+                r"\b(?:include|includes|including|such as)\s+(.+?)"
+                r"(?=\s+is\s+(?:found|located|recorded|listed)\b|[.;]|$)",
+                sentence,
+                flags=re.IGNORECASE,
+            )
+            if match:
+                return match.group(1).strip(" ,;.")
+
+    if re.search(r"\b(where|location|located|situated)\b", question):
+        location_candidates = _location_relation_values(evidence)
+        if location_candidates:
+            return min(location_candidates, key=lambda value: (len(value.split()), len(value)))
+
+    if re.search(r"^\s*what\s+(?:is|are|was|were)\b", question):
+        for sentence in sentences:
+            match = re.search(
+                r"\b(?:is|are|was|were)\s+(.+?)"
+                r"(?=\s+(?:found|located|which|that|who|where)\b|[.;]|$)",
+                sentence,
+                flags=re.IGNORECASE,
+            )
+            if match:
+                return match.group(1).strip(" ,;.")
+    return ""
 
 
 def _coerce_answer_candidate(answer_candidate: str, evidence: list[str], question: str = "") -> str:
-    """当模型把多个并列职位都写进答案时，收束成单个 canonical answer span。"""
+    """Normalize model output without inserting benchmark-specific facts."""
 
     cleaned = " ".join(str(answer_candidate or "").strip().split())
     if not cleaned:
@@ -357,20 +257,6 @@ def _coerce_answer_candidate(answer_candidate: str, evidence: list[str], questio
     cleaned = _postprocess_answer_candidate(question, evidence, cleaned)
     if not cleaned:
         return cleaned
-
-    if "amber" in cleaned.lower() and ("sand" in cleaned.lower() or "gravel" in cleaned.lower()):
-        mineral_span = _extract_mineral_resource_span_from_evidence(evidence)
-        if mineral_span:
-            return mineral_span
-
-    preferred = _extract_preferred_answer_from_evidence(evidence)
-    if preferred and preferred.lower() in cleaned.lower():
-        return preferred
-
-    if re.search(r"\bambassador to\b", cleaned, re.IGNORECASE) and re.search(
-        r"\bchief of protocol\b", cleaned, re.IGNORECASE
-    ):
-        return preferred or "Chief of Protocol"
 
     return _normalize_answer_span(cleaned)
 
@@ -490,6 +376,17 @@ class OpenAICompatibleClient:
             raw,
         )
 
+    def plan_query(self, task: str) -> str:
+        return self.generate(
+            "Classify the question and plan knowledge lookup. Return JSON only: "
+            '{"query_type":"standalone|conversational_reference|follow_up_fact",'
+            '"reference_target":"short unresolved reference or empty",'
+            '"steps":["Retrieve the required fact"]}. '
+            "Choose one query_type. Use one or two brief complete retrieval goals, "
+            "at most eight words each. Do not decide whether QA memory is retrieved. "
+            "Do not answer the question or invent a resolved entity.\n" + task
+        )
+
     def reason(
         self,
         *,
@@ -501,65 +398,135 @@ class OpenAICompatibleClient:
         memory_hit_details: list[dict[str, Any]] | None = None,
         experience_rules: list[dict[str, Any]] | None = None,
         answer_rules: list[str] | None = None,
+        history_qa: list[dict[str, Any]] | None = None,
+        delivered_context: str = "",
     ) -> dict[str, Any]:
-        # Reasoner 是主答案生成者；没有检索证据时也必须直接回答任务。
+        # Keep the generation contract deliberately small so sub-billion local
+        # models spend capacity on evidence selection instead of JSON syntax.
+        compact_experience = [
+            {
+                "solution": item.get("solution", item.get("solution_pattern", "")),
+                "avoid": item.get("avoid", item.get("failure_pattern", "")),
+            }
+            for item in (experience_rules or [])[:2]
+        ]
+        history_text = "\n\n".join(
+            f"[Turn {qa.get('turn', '')}]\nQuestion: {qa.get('question', '')}\n"
+            f"Answer: {qa.get('answer', '')}\nVerification: {qa.get('verification_status', 'unverified')}"
+            for qa in (history_qa or [])
+        )
+        context_text = (
+            "Historical conversation (previous answers may be wrong; use to resolve references, not as external evidence):\n"
+            + history_text + "\n"
+        )
+        if delivered_context:
+            context_text += (
+                "Received compressed stage content: distinguish evidence, historical QA and strategy by their labels. "
+                "Missing fields are unavailable; do not invent them.\n" + delivered_context + "\n"
+            )
         prompt = (
-            "You are ReasonerAgent in a multi-agent system. "
-            "Answer the user's task directly in English. "
-            "Do not invent retrieved documents, memory contents, sandbox execution, hidden states, or tool results. "
-            "If the task contains a Context field, use only that context to answer the question. "
-            "For QA tasks, make answer_candidate a short correct answer string, not a paragraph. "
-            "Return exactly one answer span, not a list and not multiple titles joined together. "
-            "If evidence contains multiple candidate entities or positions, choose the single one most directly supported by the reasoning chain; do not choose based only on which string is shorter. "
-            "If one evidence sentence lists several roles, do not concatenate them into the final answer. "
-            "Use Experience rules only as decision guidance, not as substitute facts. "
-            "Experience rules are reusable strategy cards. "
-            "Use solution_pattern to decide how to extract the answer span. "
-            "Use failure_pattern to avoid historically common mistakes. "
-            "Use trigger_conditions only to judge whether the rule matches the current question. "
-            "Never copy trigger_conditions or pattern names into the final answer. "
-            "If an experience rule conflicts with evidence, trust evidence. "
-            "If an experience rule says to avoid a known error pattern, obey it when selecting the final answer span. "
-            "Follow task-specific answer_rules strictly when they are provided. "
-            "If answer_rules say to return the first four names in order, do exactly that. "
-            "If answer_rules say to include every listed item, do not omit any item. "
-            "In reasoning_summary, briefly state whether an experience rule changed your answer selection strategy. "
-            "If evidence is empty, solve from the task and plan only. "
-            "Return JSON with keys answer_candidate, reasoning_summary, limitations.\n"
-            f"Task: {task}\n"
-            f"Mode: {mode}\n"
-            f"Plan: {json.dumps((plan or [])[:3], ensure_ascii=False)}\n"
-            f"Evidence: {json.dumps((evidence or [])[:4], ensure_ascii=False)}\n"
-            f"Memory hits: {memory_hits}\n"
-            f"Memory hit details: {json.dumps((memory_hit_details or [])[:2], ensure_ascii=False)}\n"
-            f"Experience rules: {json.dumps((experience_rules or [])[:3], ensure_ascii=False)}\n"
-            f"Answer rules: {json.dumps((answer_rules or [])[:6], ensure_ascii=False)}\n"
+            "You are an evidence-grounded extractive QA component.\n"
+            "Answer the CURRENT question, not an earlier question.\n"
+            "The resolved topic and requested attribute are part of the question.\n"
+            "Select the evidence sentence whose predicate matches that attribute.\n"
+            "Metadata labels and section names are retrieval hints, never answers.\n"
+            "Never replace current evidence with a remembered answer or general topic definition.\n"
+            "Return a concise but complete answer span from evidence.\n"
+            "For descriptive questions, include every directly relevant clause; for yes/no questions, add one supporting qualification.\n"
+            "Do not explain your process or invent examples.\n"
+            "Output exactly one line in this format: ANSWER: <answer>\n\n"
+            f"Current task:\n{task}\n\n"
+            + context_text + "\n"
+            + f"Evidence:\n{json.dumps(evidence or [], ensure_ascii=False)}\n\n"
+            f"Reusable strategy only (not facts):\n{json.dumps(compact_experience, ensure_ascii=False)}\n"
+            f"Answer constraints:\n{json.dumps((answer_rules or [])[:8], ensure_ascii=False)}\n"
         )
         raw = self.generate(prompt)
-        parsed = _loads_json_object(raw)
-        if parsed is not None:
-            limitations = parsed.get("limitations", [])
-            if isinstance(limitations, str):
-                limitations = [limitations]
-            elif not isinstance(limitations, list):
-                limitations = [str(limitations)]
-            question = _extract_question_from_task(task)
-            answer_candidate = _coerce_answer_candidate(
-                str(parsed.get("answer_candidate", "")).strip() or raw,
+        question = _extract_question_from_task(task)
+        answer_candidate = _coerce_answer_candidate(
+            _extract_answer_line(raw),
+            evidence,
+            question=question,
+        )
+        repair_reason = _answer_repair_reason(
+            task=task,
+            evidence=evidence,
+            answer=answer_candidate,
+        )
+        repair_applied = False
+        repair_failure = ""
+        answer_resolution_method = "model"
+        if repair_reason and evidence:
+            repair_prompt = (
+                "You repair an evidence-grounded QA answer.\n"
+                f"The previous candidate failed because {repair_reason}.\n"
+                "Extract the value requested by the CURRENT question from evidence.\n"
+                "Read the sentence relation: return the value after the relation, not the subject before it.\n"
+                "For a list question, copy the relevant evidence list.\n"
+                "For a descriptive question, include all directly relevant evidence clauses.\n"
+                "For a yes/no question, add the shortest supporting evidence clause.\n"
+                "Do not output labels such as definition, location, list, flora, or fauna.\n"
+                "Do not explain and do not repeat the question subject.\n"
+                "Output answer words only, with no prefix.\n\n"
+                f"Current task:\n{task}\n\n"
+                f"Previous candidate: {answer_candidate}\n"
+                + context_text
+                + f"Evidence:\n{json.dumps(evidence or [], ensure_ascii=False)}"
+            )
+            repaired_raw = self.generate(repair_prompt)
+            repaired_answer = _coerce_answer_candidate(
+                _extract_answer_line(repaired_raw),
                 evidence,
                 question=question,
             )
-            return {
-                "answer_candidate": answer_candidate,
-                "reasoning_summary": str(parsed.get("reasoning_summary", "")).strip(),
-                "limitations": limitations,
-                "raw_model_output": raw,
-            }
-        question = _extract_question_from_task(task)
+            repaired_failure = _answer_repair_reason(
+                task=task,
+                evidence=evidence,
+                answer=repaired_answer,
+            )
+            if repaired_answer and not repaired_failure:
+                answer_candidate = repaired_answer
+                raw = f"{raw}\n\n[repair]\n{repaired_raw}"
+                repair_applied = True
+                answer_resolution_method = "llm_repair"
+            else:
+                repair_failure = repaired_failure or "the repaired answer is empty"
+                fallback_enabled = os.environ.get(
+                    "COMPETITION_EXTRACTIVE_FALLBACK", "1"
+                ).strip().lower() not in {"0", "false", "no", "off"}
+                fallback_answer = (
+                    _coerce_answer_candidate(
+                        _extractive_fallback(task=task, evidence=evidence),
+                        evidence,
+                        question=question,
+                    )
+                    if fallback_enabled
+                    else ""
+                )
+                fallback_failure = _answer_repair_reason(
+                    task=task,
+                    evidence=evidence,
+                    answer=fallback_answer,
+                )
+                if fallback_answer and not fallback_failure:
+                    answer_candidate = fallback_answer
+                    raw = f"{raw}\n\n[extractive-fallback]\n{fallback_answer}"
+                    repair_applied = True
+                    repair_failure = ""
+                    answer_resolution_method = "extractive_fallback"
         return {
-            "answer_candidate": _coerce_answer_candidate(raw, evidence, question=question),
-            "reasoning_summary": "Model returned free-form text instead of JSON.",
-            "limitations": [],
+            "answer_candidate": answer_candidate,
+            "answer_resolution_method": answer_resolution_method,
+            "reasoning_summary": (
+                "Repaired a candidate that failed evidence validation."
+                if repair_applied
+                else "Selected an answer span from current retrieved evidence."
+            ),
+            "limitations": (
+                [f"Answer repair was rejected: {repair_failure}."]
+                if repair_reason and not repair_applied and evidence
+                else ([] if evidence else ["No retrieved evidence was available."])
+            ),
             "raw_model_output": raw,
         }
 

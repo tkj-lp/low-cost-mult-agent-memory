@@ -1,0 +1,2558 @@
+[
+  {
+    "group_id": "topiocqa-factoid-ranked-001",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 3,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 7/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "U2 -> Boy (album) -> Bono -> Sunday Bloody Sunday",
+    "context": [
+      {
+        "title": "U2 [SEP] Introduction",
+        "sentences": [
+          "U2 are an Irish rock band from Dublin, formed in 1976."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "U2 [SEP] Introduction",
+        "sentences": [
+          "U2 are an Irish rock band from Dublin, formed in 1976."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "U2 [SEP] Introduction",
+        "sentences": [
+          "Within four years, they signed with Island Records and released their debut album, \"Boy\" (1980)."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "U2 [SEP] Introduction",
+        "sentences": [
+          "U2 are an Irish rock band from Dublin, formed in 1976."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Boy (album) [SEP] Introduction",
+        "sentences": [
+          "Boy is the debut studio album by Irish rock band U2. It was released on 20 October 1980 by Island Records and was produced by Steve Lillywhite. \"Boy\" contains songs from the band's 40-song reperto"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "U2 [SEP] Introduction",
+        "sentences": [
+          "The group consists of Bono (lead vocals and rhythm guitar), the Edge (lead guitar, keyboards, and backing vocals), Adam Clayton (bass guitar), and Larry Mullen Jr. (drums and percussion)."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Bono [SEP] Introduction",
+        "sentences": [
+          "Paul David Hewson (born 10 May 1960), known by his stage name Bono (), is an Irish singer, songwriter, philanthropist, activist, venture capitalist, businessman, and actor."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Bono [SEP] Introduction",
+        "sentences": [
+          "Born and raised in Dublin, Ireland, he attended Mount Temple Comprehensive School where he met his future wife, Alison Stewart, as well as schoolmates with whom he formed U2 in 197"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "U2 [SEP] Introduction",
+        "sentences": [
+          "and the singles \"Sunday Bloody Sunday\" and \"Pride (In the Name of Love)\" helped establish U2's reputation as a politically and socially conscious group. By the mid-1980s, they had become renowned globally for their live act, highlighted by their performance at Live Aid in 1985. The group's fifth album, \"The Joshua Tree\" (1987), made them international superstars and was their greatest critical and commercial success. Topping music charts around the world, it produced their only number-one singles in the US to date: \"With or Without You\" and \"I Still Haven't Found What I'm Looking For\"."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Sunday Bloody Sunday [SEP] Introduction",
+        "sentences": [
+          "\"Sunday Bloody Sunday\" is a song by Irish rock band U2. It is the opening track from their 1983 album \"War\" and was released as the album's third single on 21 March 1983 in the Netherlands and West Germany."
+        ],
+        "source": "official_annotated_rationale"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_annotated_rationales",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "where is this band from ?",
+        "expected_answer": "Dublin.",
+        "reference_answers": [
+          "Dublin.",
+          "Dublin"
+        ],
+        "expected_reuse": [],
+        "topic": "U2",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr."
+        ],
+        "supporting_passage": "U2 are an Irish rock band from Dublin, formed in 1976.",
+        "rationale": "U2 are an Irish rock band from Dublin, formed in 1976.",
+        "reuse_annotation_note": "Band identity is introduced before the selected window.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "when was it created",
+        "expected_answer": "1976.",
+        "reference_answers": [
+          "1976.",
+          "1976"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "U2",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin."
+        ],
+        "supporting_passage": "U2 are an Irish rock band from Dublin, formed in 1976.",
+        "rationale": "U2 are an Irish rock band from Dublin, formed in 1976.",
+        "reuse_annotation_note": "It refers to the previously discussed band.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "name their first album ?",
+        "expected_answer": "\"Boy\".",
+        "reference_answers": [
+          "\"Boy\".",
+          "Boy",
+          "\"Boy\""
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "U2",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976."
+        ],
+        "supporting_passage": "Within four years, they signed with Island Records and released their debut album, \"Boy\" (1980).",
+        "rationale": "Within four years, they signed with Island Records and released their debut album, \"Boy\" (1980).",
+        "reuse_annotation_note": "Their refers to the band.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "what was their musical style ?",
+        "expected_answer": "Rock.",
+        "reference_answers": [
+          "Rock.",
+          "Rock, post-punk, funk, hip-hop",
+          "It developed a melodic sound under the early influence of record producer Steve Lillywhite.",
+          "Synthesisers, distortion, and electronic beats derived from noise music, dance, and hip-hop"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "U2",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976.",
+          "name their first album ?",
+          "\"Boy\"."
+        ],
+        "supporting_passage": "U2 are an Irish rock band from Dublin, formed in 1976.",
+        "rationale": "U2 are an Irish rock band from Dublin, formed in 1976.",
+        "reuse_annotation_note": "Their refers to the band, not its album.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "when was the above album released ?",
+        "expected_answer": "20 October 1980.",
+        "reference_answers": [
+          "20 October 1980.",
+          "1980",
+          "\"Boy\" was released on 20 October 1980 in the UK, and 3 March 1981 in the US."
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "Boy (album)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976.",
+          "name their first album ?",
+          "\"Boy\".",
+          "what was their musical style ?",
+          "Rock."
+        ],
+        "supporting_passage": "Boy is the debut studio album by Irish rock band U2. It was released on 20 October 1980 by Island Records and was produced by Steve Lillywhite. \"Boy\" contains songs from the band's 40-song reperto",
+        "rationale": "Boy is the debut studio album by Irish rock band U2. It was released on 20 October 1980 by Island Records and was produced by Steve Lillywhite. \"Boy\" contains songs from the band's 40-song reperto",
+        "reuse_annotation_note": "The above album is Boy.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "who is the lead singer of the band ?",
+        "expected_answer": "Bono.",
+        "reference_answers": [
+          "Bono.",
+          "Bono"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "U2",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976.",
+          "name their first album ?",
+          "\"Boy\".",
+          "what was their musical style ?",
+          "Rock.",
+          "when was the above album released ?",
+          "20 October 1980."
+        ],
+        "supporting_passage": "The group consists of Bono (lead vocals and rhythm guitar), the Edge (lead guitar, keyboards, and backing vocals), Adam Clayton (bass guitar), and Larry Mullen Jr. (drums and percussion).",
+        "rationale": "The group consists of Bono (lead vocals and rhythm guitar), the Edge (lead guitar, keyboards, and backing vocals), Adam Clayton (bass guitar), and Larry Mullen Jr. (drums and percussion).",
+        "reuse_annotation_note": "The band is the earlier band.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "what is he's full name ?",
+        "expected_answer": "Paul David Hewson.",
+        "reference_answers": [
+          "Paul David Hewson.",
+          "Paul David Hewson"
+        ],
+        "expected_reuse": [
+          "turn-6.answer"
+        ],
+        "topic": "Bono",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976.",
+          "name their first album ?",
+          "\"Boy\".",
+          "what was their musical style ?",
+          "Rock.",
+          "when was the above album released ?",
+          "20 October 1980.",
+          "who is the lead singer of the band ?",
+          "Bono."
+        ],
+        "supporting_passage": "Paul David Hewson (born 10 May 1960), known by his stage name Bono (), is an Irish singer, songwriter, philanthropist, activist, venture capitalist, businessman, and actor.",
+        "rationale": "Paul David Hewson (born 10 May 1960), known by his stage name Bono (), is an Irish singer, songwriter, philanthropist, activist, venture capitalist, businessman, and actor.",
+        "reuse_annotation_note": "His refers to the lead singer Bono.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "where was he born ?",
+        "expected_answer": "Dublin, Ireland.",
+        "reference_answers": [
+          "Dublin, Ireland.",
+          "Rotunda Hospital in Dublin, Ireland"
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "Bono",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976.",
+          "name their first album ?",
+          "\"Boy\".",
+          "what was their musical style ?",
+          "Rock.",
+          "when was the above album released ?",
+          "20 October 1980.",
+          "who is the lead singer of the band ?",
+          "Bono.",
+          "what is he's full name ?",
+          "Paul David Hewson."
+        ],
+        "supporting_passage": "Born and raised in Dublin, Ireland, he attended Mount Temple Comprehensive School where he met his future wife, Alison Stewart, as well as schoolmates with whom he formed U2 in 197",
+        "rationale": "Born and raised in Dublin, Ireland, he attended Mount Temple Comprehensive School where he met his future wife, Alison Stewart, as well as schoolmates with whom he formed U2 in 197",
+        "reuse_annotation_note": "He refers to Paul David Hewson.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "name some songs from this band ?",
+        "expected_answer": "\"Sunday Bloody Sunday\", \"Pride (In the Name of Love)\", \"With or Without You\", \"I Still Haven't Found What I'm Looking For\".",
+        "reference_answers": [
+          "\"Sunday Bloody Sunday\", \"Pride (In the Name of Love)\", \"With or Without You\", \"I Still Haven't Found What I'm Looking For\".",
+          "Sunday Bloody Sunday, Pride (In the Name of Love), With or Without You etc",
+          "\"Sunday Bloody Sunday\" and \"Pride (In the Name of Love)\".",
+          "\"Sunday Bloody Sunday\" and \"Pride (In the Name of Love)\""
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "U2",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976.",
+          "name their first album ?",
+          "\"Boy\".",
+          "what was their musical style ?",
+          "Rock.",
+          "when was the above album released ?",
+          "20 October 1980.",
+          "who is the lead singer of the band ?",
+          "Bono.",
+          "what is he's full name ?",
+          "Paul David Hewson.",
+          "where was he born ?",
+          "Dublin, Ireland."
+        ],
+        "supporting_passage": "and the singles \"Sunday Bloody Sunday\" and \"Pride (In the Name of Love)\" helped establish U2's reputation as a politically and socially conscious group. By the mid-1980s, they had become renowned globally for their live act, highlighted by their performance at Live Aid in 1985. The group's fifth album, \"The Joshua Tree\" (1987), made them international superstars and was their greatest critical and commercial success. Topping music charts around the world, it produced their only number-one singles in the US to date: \"With or Without You\" and \"I Still Haven't Found What I'm Looking For\".",
+        "rationale": "and the singles \"Sunday Bloody Sunday\" and \"Pride (In the Name of Love)\" helped establish U2's reputation as a politically and socially conscious group. By the mid-1980s, they had become renowned globally for their live act, highlighted by their performance at Live Aid in 1985. The group's fifth album, \"The Joshua Tree\" (1987), made them international superstars and was their greatest critical and commercial success. Topping music charts around the world, it produced their only number-one singles in the US to date: \"With or Without You\" and \"I Still Haven't Found What I'm Looking For\".",
+        "reuse_annotation_note": "This band refers to U2.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 11,
+        "task_type": "continuous",
+        "question": "the first song when was it released ?",
+        "expected_answer": "Released as a single on 21 March 1983.",
+        "reference_answers": [
+          "Released as a single on 21 March 1983.",
+          "21 March 1983"
+        ],
+        "expected_reuse": [
+          "turn-9.answer"
+        ],
+        "topic": "Sunday Bloody Sunday",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who are the members of the band u2",
+          "Bono, the Edge, Adam Clayton, and Larry Mullen Jr.",
+          "where is this band from ?",
+          "Dublin.",
+          "when was it created",
+          "1976.",
+          "name their first album ?",
+          "\"Boy\".",
+          "what was their musical style ?",
+          "Rock.",
+          "when was the above album released ?",
+          "20 October 1980.",
+          "who is the lead singer of the band ?",
+          "Bono.",
+          "what is he's full name ?",
+          "Paul David Hewson.",
+          "where was he born ?",
+          "Dublin, Ireland.",
+          "name some songs from this band ?",
+          "\"Sunday Bloody Sunday\", \"Pride (In the Name of Love)\", \"With or Without You\", \"I Still Haven't Found What I'm Looking For\"."
+        ],
+        "supporting_passage": "\"Sunday Bloody Sunday\" is a song by Irish rock band U2. It is the opening track from their 1983 album \"War\" and was released as the album's third single on 21 March 1983 in the Netherlands and West Germany.",
+        "rationale": "\"Sunday Bloody Sunday\" is a song by Irish rock band U2. It is the opening track from their 1983 album \"War\" and was released as the album's third single on 21 March 1983 in the Netherlands and West Germany.",
+        "reuse_annotation_note": "The first song refers to the first song in the preceding list.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  },
+  {
+    "group_id": "topiocqa-factoid-ranked-002",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 19,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 7/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "1880 Democratic National Convention -> Henry B. Payne -> James A. Garfield",
+    "context": [
+      {
+        "title": "1880 Democratic National Convention [SEP] Other contenders",
+        "sentences": [
+          "Several other candidates arrived in Cincinnati with delegates pledged to them. Former Representative Henry B. Payne, an Ohio millionaire, had gathered a number of former Tilden supporters to his cause."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Henry B. Payne [SEP] Introduction",
+        "sentences": [
+          "Henry B. Payne (November 30, 1810September 9, 1896) was an American politician from Ohio."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Nominations",
+        "sentences": [
+          "John Edgar McElrath, an Oakland attorney, rose to nominate Justice Stephen J. Field. Extolling Field's virtues and learning, McElrath promised that, if nominated, \"he will sweep California like the winds that blow through her Golden Gate.\" George Gray, Delaware's Attorney General and a future United States Senator, next nominated Thomas F. Bayard. Gray, in a speech that evinced his admiration for the Senator, said of Bayard:\nIllinois was the next state to offer a name, as former Representative Samuel S. Marshall rose to submit that of his erstwhile colleague, William R. Morrison. Marshall immediately antagonized the South by comparing Morrison to Abraham Lincoln, and proclaimed that Morrison's belief in tariff reduction would be a \"tower of strength\" in the election."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Balloting",
+        "sentences": [
+          "The results showed that the delegates had scattered their ballots to a variety of candidates, with no one close to the 492 necessary to nominate (at that time, Democratic conventions required a two-thirds majority for nomination)."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Balloting",
+        "sentences": [
+          "Nearly all of the remaining states now stampeded for Hancock. When the second vote was finally tallied, Hancock had 705. Only Indiana refrained completely from joining in, casting its 30 votes for Hendricks; two Bayard voters from Maryland and one Tilden man from Iowa were the remaining hold-outs. After the second round was tallied, the nomination was made unanimous. Several delegates then spoke to praise Hancock and promise that he would triumph in the coming election. Even Tammany's John Kelly was permitted to speak. Kelly pledged his faction's loyalty to the party, saying, \"Let us unite as a band of brothers and look upon each other kindly and favorably.\"\n* The candidate was not formally nominated."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Introduction",
+        "sentences": [
+          "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "1880 Democratic National Convention [SEP] Introduction",
+        "sentences": [
+          "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated. English, a conservative politician from a swing state, was nominated for Vice President. Hancock and English were narrowly defeated in the race against Republicans James A. Garfield and Chester A. Arthur that autumn."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James A. Garfield [SEP] Childhood and early life",
+        "sentences": [
+          "James Garfield was born the youngest of five children on November 19, 1831"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James A. Garfield [SEP] Introduction",
+        "sentences": [
+          "James Abram Garfield (November 19, 1831September 19, 1881) was the 20th president of the United States, serving from March 4, 1881, until his death by assassination six and a half months later."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "James A. Garfield [SEP] Education, marriage and early career",
+        "sentences": [
+          "Garfield was attracted to one of his fellow students, Lucretia Rudolph, whom he later married."
+        ],
+        "source": "official_annotated_rationale"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_annotated_rationales",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "can you name some people who attended this?",
+        "expected_answer": "Henry B. Payne",
+        "reference_answers": [
+          "Henry B. Payne",
+          "Susan B. Anthony, Henry Watterson, Henry Watterson",
+          "Hancock, Thomas F. Bayard,  Henry B. Payne, etc.",
+          "William Henry Barnum , George Hoadly and others."
+        ],
+        "expected_reuse": [],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Other contenders",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio"
+        ],
+        "supporting_passage": "Several other candidates arrived in Cincinnati with delegates pledged to them. Former Representative Henry B. Payne, an Ohio millionaire, had gathered a number of former Tilden supporters to his cause.",
+        "rationale": "Several other candidates arrived in Cincinnati with delegates pledged to them. Former Representative Henry B. Payne, an Ohio millionaire, had gathered a number of former Tilden supporters to his cause.",
+        "reuse_annotation_note": "This convention is introduced before the selected window.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "who is the above person?",
+        "expected_answer": "American politician",
+        "reference_answers": [
+          "American politician",
+          "American politician from Ohio",
+          "He was an American politician from Ohio.",
+          "An American politician."
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Henry B. Payne",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne"
+        ],
+        "supporting_passage": "Henry B. Payne (November 30, 1810September 9, 1896) was an American politician from Ohio.",
+        "rationale": "Henry B. Payne (November 30, 1810September 9, 1896) was an American politician from Ohio.",
+        "reuse_annotation_note": "The above person is Henry B. Payne.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "can you name a few nominees from this convention?",
+        "expected_answer": "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+        "reference_answers": [
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "Justice Stephen J. Field, Thomas F. Bayard and William R. Morrison",
+          "John Edgar McElrath, Stephen J. Field, George Gray, etc.",
+          "Winfield Scott Hancock, Allen G. Thurman, Thomas A. Hendricks, William R. Morrison, Stephen J. Field, Thomas F. Bayard and others."
+        ],
+        "expected_reuse": [],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Nominations",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician"
+        ],
+        "supporting_passage": "John Edgar McElrath, an Oakland attorney, rose to nominate Justice Stephen J. Field. Extolling Field's virtues and learning, McElrath promised that, if nominated, \"he will sweep California like the winds that blow through her Golden Gate.\" George Gray, Delaware's Attorney General and a future United States Senator, next nominated Thomas F. Bayard. Gray, in a speech that evinced his admiration for the Senator, said of Bayard:\nIllinois was the next state to offer a name, as former Representative Samuel S. Marshall rose to submit that of his erstwhile colleague, William R. Morrison. Marshall immediately antagonized the South by comparing Morrison to Abraham Lincoln, and proclaimed that Morrison's belief in tariff reduction would be a \"tower of strength\" in the election.",
+        "rationale": "John Edgar McElrath, an Oakland attorney, rose to nominate Justice Stephen J. Field. Extolling Field's virtues and learning, McElrath promised that, if nominated, \"he will sweep California like the winds that blow through her Golden Gate.\" George Gray, Delaware's Attorney General and a future United States Senator, next nominated Thomas F. Bayard. Gray, in a speech that evinced his admiration for the Senator, said of Bayard:\nIllinois was the next state to offer a name, as former Representative Samuel S. Marshall rose to submit that of his erstwhile colleague, William R. Morrison. Marshall immediately antagonized the South by comparing Morrison to Abraham Lincoln, and proclaimed that Morrison's belief in tariff reduction would be a \"tower of strength\" in the election.",
+        "reuse_annotation_note": "Convention identity is outside the selected window.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+        "expected_answer": "Number of votes",
+        "reference_answers": [
+          "Number of votes",
+          "On the basis of the number of votes",
+          "UNANSWERABLE"
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Balloting",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few."
+        ],
+        "supporting_passage": "The results showed that the delegates had scattered their ballots to a variety of candidates, with no one close to the 492 necessary to nominate (at that time, Democratic conventions required a two-thirds majority for nomination).",
+        "rationale": "The results showed that the delegates had scattered their ballots to a variety of candidates, with no one close to the 492 necessary to nominate (at that time, Democratic conventions required a two-thirds majority for nomination).",
+        "reuse_annotation_note": "The nominees refers to the preceding nominees.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "who won the largest number of votes in this convention?",
+        "expected_answer": "Winfield S. Hancock",
+        "reference_answers": [
+          "Winfield S. Hancock",
+          "James A. Garfield and Chester A. Arthur",
+          "Winfield Scott Hancock."
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Balloting",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes"
+        ],
+        "supporting_passage": "Nearly all of the remaining states now stampeded for Hancock. When the second vote was finally tallied, Hancock had 705. Only Indiana refrained completely from joining in, casting its 30 votes for Hendricks; two Bayard voters from Maryland and one Tilden man from Iowa were the remaining hold-outs. After the second round was tallied, the nomination was made unanimous. Several delegates then spoke to praise Hancock and promise that he would triumph in the coming election. Even Tammany's John Kelly was permitted to speak. Kelly pledged his faction's loyalty to the party, saying, \"Let us unite as a band of brothers and look upon each other kindly and favorably.\"\n* The candidate was not formally nominated.",
+        "rationale": "Nearly all of the remaining states now stampeded for Hancock. When the second vote was finally tallied, Hancock had 705. Only Indiana refrained completely from joining in, casting its 30 votes for Hendricks; two Bayard voters from Maryland and one Tilden man from Iowa were the remaining hold-outs. After the second round was tallied, the nomination was made unanimous. Several delegates then spoke to praise Hancock and promise that he would triumph in the coming election. Even Tammany's John Kelly was permitted to speak. Kelly pledged his faction's loyalty to the party, saying, \"Let us unite as a band of brothers and look upon each other kindly and favorably.\"\n* The candidate was not formally nominated.",
+        "reuse_annotation_note": "This convention is the convention discussed with its nominees.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "did the above person win the us presidential election of 1880?",
+        "expected_answer": "No",
+        "reference_answers": [
+          "No",
+          "UNANSWERABLE",
+          "Yes."
+        ],
+        "expected_reuse": [
+          "turn-5.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock"
+        ],
+        "supporting_passage": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated.",
+        "rationale": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated.",
+        "reuse_annotation_note": "The above person is Hancock.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "instead who won?",
+        "expected_answer": "James A. Garfield",
+        "reference_answers": [
+          "James A. Garfield",
+          "James A. Garfield and Chester A. Arthur",
+          "James A.Garfield."
+        ],
+        "expected_reuse": [
+          "turn-6.answer"
+        ],
+        "topic": "1880 Democratic National Convention",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No"
+        ],
+        "supporting_passage": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated. English, a conservative politician from a swing state, was nominated for Vice President. Hancock and English were narrowly defeated in the race against Republicans James A. Garfield and Chester A. Arthur that autumn.",
+        "rationale": "Before the second round, Tilden's withdrawal from the campaign became known for certain and delegates flocked to Hancock, who was nominated. English, a conservative politician from a swing state, was nominated for Vice President. Hancock and English were narrowly defeated in the race against Republicans James A. Garfield and Chester A. Arthur that autumn.",
+        "reuse_annotation_note": "Instead refers to the presidential election in the prior question.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 11,
+        "task_type": "continuous",
+        "question": "what's the above person's date of birth?",
+        "expected_answer": "November 19, 1831",
+        "reference_answers": [
+          "November 19, 1831",
+          "19 November, 1831."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "James A. Garfield",
+        "topic_section": "Childhood and early life",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No",
+          "instead who won?",
+          "James A. Garfield"
+        ],
+        "supporting_passage": "James Garfield was born the youngest of five children on November 19, 1831",
+        "rationale": "James Garfield was born the youngest of five children on November 19, 1831",
+        "reuse_annotation_note": "The above person is Garfield.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 12,
+        "task_type": "continuous",
+        "question": "when did he take office for the president's role?",
+        "expected_answer": "March 4, 1881",
+        "reference_answers": [
+          "March 4, 1881",
+          "4 March ,1881."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "James A. Garfield",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No",
+          "instead who won?",
+          "James A. Garfield",
+          "what's the above person's date of birth?",
+          "November 19, 1831"
+        ],
+        "supporting_passage": "James Abram Garfield (November 19, 1831September 19, 1881) was the 20th president of the United States, serving from March 4, 1881, until his death by assassination six and a half months later.",
+        "rationale": "James Abram Garfield (November 19, 1831September 19, 1881) was the 20th president of the United States, serving from March 4, 1881, until his death by assassination six and a half months later.",
+        "reuse_annotation_note": "He refers to Garfield.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 13,
+        "task_type": "continuous",
+        "question": "whom did he marry?",
+        "expected_answer": "Lucretia Rudolph",
+        "reference_answers": [
+          "Lucretia Rudolph",
+          "Lucretia",
+          "Lucretia Rudolph."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "James A. Garfield",
+        "topic_section": "Education, marriage and early career",
+        "conversation_context": [
+          "on what date did the 1880 democratic national convention occur?",
+          "June 22 to 24, 1880",
+          "what was the purpose for this meeting?",
+          "To nominate Winfield S. Hancock for president and William H. English for vice president in the US presidential election of 1880.",
+          "in which venue was this held?",
+          "Music Hall in Cincinnati, Ohio",
+          "can you name some people who attended this?",
+          "Henry B. Payne",
+          "who is the above person?",
+          "American politician",
+          "can you name a few nominees from this convention?",
+          "Justice Stephen J. Field, Thomas F. Bayard. Gray, to name a few.",
+          "were the nominees selected on the basis of the number of votes or were they selected as per their ambition?",
+          "Number of votes",
+          "who won the largest number of votes in this convention?",
+          "Winfield S. Hancock",
+          "did the above person win the us presidential election of 1880?",
+          "No",
+          "instead who won?",
+          "James A. Garfield",
+          "what's the above person's date of birth?",
+          "November 19, 1831",
+          "when did he take office for the president's role?",
+          "March 4, 1881"
+        ],
+        "supporting_passage": "Garfield was attracted to one of his fellow students, Lucretia Rudolph, whom he later married.",
+        "rationale": "Garfield was attracted to one of his fellow students, Lucretia Rudolph, whom he later married.",
+        "reuse_annotation_note": "He refers to Garfield.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  },
+  {
+    "group_id": "topiocqa-factoid-ranked-003",
+    "source_dataset": "TopiOCQA",
+    "source_file": "topiocqa_valid.jsonl",
+    "original_conversation_no": 153,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 7/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "Kinky Boots (musical) -> Kinky Boots (film) -> Cyndi Lauper -> She's So Unusual",
+    "context": [
+      {
+        "title": "Kinky Boots (musical) [SEP] Introduction",
+        "sentences": [
+          "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (musical) [SEP] Introduction",
+        "sentences": [
+          "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (musical) [SEP] Introduction",
+        "sentences": [
+          "Based on the 2005 British film \"Kinky Boots\", written by Geoff Deane and Tim Firth and mostly inspired by true events, the musical tells the story of Charlie Price."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (film) [SEP] Introduction",
+        "sentences": [
+          "Kinky Boots is a 2005 British-American comedy-drama film directed by Julian Jarrold and written by Geoff Deane and Tim Firth."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Kinky Boots (film) [SEP] Critical response",
+        "sentences": [
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Cyndi Lauper [SEP] Introduction",
+        "sentences": [
+          "Cynthia Ann Stephanie Lauper (born June 22, 1953) is an American singer, songwriter, actress and activist. Her career has spanned over 40 years."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Cyndi Lauper [SEP] 1980–1982: Blue Angel",
+        "sentences": [
+          "In 1978, Lauper met saxophone player John Turi through her manager Ted Rosenblatt. Turi and Lauper formed a band named Blue Angel and recorded a demo tape of original music"
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "Cyndi Lauper [SEP] Introduction",
+        "sentences": [
+          "Her album \"She's So Unusual\" (1983) was the first debut album by a female artist to achieve four top-five hits on the \"Billboard\" Hot 100—\"Girls Just Want to Have Fun\", \"Time After Time\", \"She Bop\", and \"All Through the Night\"—and earned Lauper the Best New Artist award at the 27th Grammy Awards in 1985."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "She's So Unusual [SEP] Introduction",
+        "sentences": [
+          "She's So Unusual is the debut studio album by American singer and songwriter Cyndi Lauper, released on October 14, 1983, by Portrait Records."
+        ],
+        "source": "official_annotated_rationale"
+      },
+      {
+        "title": "She's So Unusual [SEP] Singles",
+        "sentences": [
+          "The lead single from the album was \"Girls Just Want to Have Fun\", released on September 6, 1983. T"
+        ],
+        "source": "official_annotated_rationale"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/resolve/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+    "reference_source_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_annotated_rationales",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "continuous",
+        "question": "who wrote the music and lyrics to the song kinky boots",
+        "expected_answer": "Cyndi Lauper",
+        "reference_answers": [
+          "Cyndi Lauper",
+          "Cyndi Lauper."
+        ],
+        "expected_reuse": [],
+        "topic": "Kinky Boots (musical)",
+        "topic_section": "Introduction",
+        "conversation_context": [],
+        "supporting_passage": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "rationale": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "reuse_annotation_note": "Explicit musical title; no historical dependency.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "who is the singer?",
+        "expected_answer": "Cyndi Lauper",
+        "reference_answers": [
+          "Cyndi Lauper",
+          "Cynthia Ann Stephanie Lauper is an American singer, songwriter, actress and activist",
+          "UNANSWERABLE",
+          "Charlie and Lola"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Kinky Boots (musical)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper"
+        ],
+        "supporting_passage": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "rationale": "Kinky Boots is a musical with music and lyrics by Cyndi Lauper and book by Harvey Fierstein.",
+        "reuse_annotation_note": "Singer refers to the songwriter just identified.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "whose story does the musical convey?",
+        "expected_answer": "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+        "reference_answers": [
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "It tells the story of Charlie Price",
+          "Charlie Price.",
+          "Charlie Price and Lola."
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Kinky Boots (musical)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper"
+        ],
+        "supporting_passage": "Based on the 2005 British film \"Kinky Boots\", written by Geoff Deane and Tim Firth and mostly inspired by true events, the musical tells the story of Charlie Price.",
+        "rationale": "Based on the 2005 British film \"Kinky Boots\", written by Geoff Deane and Tim Firth and mostly inspired by true events, the musical tells the story of Charlie Price.",
+        "reuse_annotation_note": "The musical refers to Kinky Boots.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "when was its release?",
+        "expected_answer": "2005",
+        "reference_answers": [
+          "2005",
+          "UNANSWERABLE",
+          "October 2012.",
+          "In 2005."
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "Kinky Boots (film)",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price."
+        ],
+        "supporting_passage": "Kinky Boots is a 2005 British-American comedy-drama film directed by Julian Jarrold and written by Geoff Deane and Tim Firth.",
+        "rationale": "Kinky Boots is a 2005 British-American comedy-drama film directed by Julian Jarrold and written by Geoff Deane and Tim Firth.",
+        "reuse_annotation_note": "Its release refers to the film identified in the prior answer.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "what was the response it received?",
+        "expected_answer": "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+        "reference_answers": [
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "Mixed reviews.",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"."
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "Kinky Boots (film)",
+        "topic_section": "Critical response",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005"
+        ],
+        "supporting_passage": "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\".",
+        "rationale": "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\".",
+        "reuse_annotation_note": "It refers to the film rather than the musical.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "what can you tell me about the songwriter?",
+        "expected_answer": "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+        "reference_answers": [
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "Cynthia Ann Stephanie Lauper  is an American singer, songwriter, actress and activist",
+          "Cynthia Ann Stephanie Lauper is an American singer, songwriter, actress and activist.",
+          "She is an American singer, songwriter, actress and activist."
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "Cyndi Lauper",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\""
+        ],
+        "supporting_passage": "Cynthia Ann Stephanie Lauper (born June 22, 1953) is an American singer, songwriter, actress and activist. Her career has spanned over 40 years.",
+        "rationale": "Cynthia Ann Stephanie Lauper (born June 22, 1953) is an American singer, songwriter, actress and activist. Her career has spanned over 40 years.",
+        "reuse_annotation_note": "The songwriter refers to Cyndi Lauper.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "when did she begin her career?",
+        "expected_answer": "1978",
+        "reference_answers": [
+          "1978",
+          "At age 12, she began writing songs and playing an acoustic guitar given to her by her sister",
+          "1978.",
+          "1983."
+        ],
+        "expected_reuse": [
+          "turn-6.answer"
+        ],
+        "topic": "Cyndi Lauper",
+        "topic_section": "1980–1982: Blue Angel",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years."
+        ],
+        "supporting_passage": "In 1978, Lauper met saxophone player John Turi through her manager Ted Rosenblatt. Turi and Lauper formed a band named Blue Angel and recorded a demo tape of original music",
+        "rationale": "In 1978, Lauper met saxophone player John Turi through her manager Ted Rosenblatt. Turi and Lauper formed a band named Blue Angel and recorded a demo tape of original music",
+        "reuse_annotation_note": "She refers to the songwriter.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "which is her debut work?",
+        "expected_answer": "\"She's So Unusual\"",
+        "reference_answers": [
+          "\"She's So Unusual\"",
+          "She's So Unusual."
+        ],
+        "expected_reuse": [
+          "turn-6.answer"
+        ],
+        "topic": "Cyndi Lauper",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "when did she begin her career?",
+          "1978"
+        ],
+        "supporting_passage": "Her album \"She's So Unusual\" (1983) was the first debut album by a female artist to achieve four top-five hits on the \"Billboard\" Hot 100—\"Girls Just Want to Have Fun\", \"Time After Time\", \"She Bop\", and \"All Through the Night\"—and earned Lauper the Best New Artist award at the 27th Grammy Awards in 1985.",
+        "rationale": "Her album \"She's So Unusual\" (1983) was the first debut album by a female artist to achieve four top-five hits on the \"Billboard\" Hot 100—\"Girls Just Want to Have Fun\", \"Time After Time\", \"She Bop\", and \"All Through the Night\"—and earned Lauper the Best New Artist award at the 27th Grammy Awards in 1985.",
+        "reuse_annotation_note": "Her refers to the songwriter.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "who released the album?",
+        "expected_answer": "Portrait Records",
+        "reference_answers": [
+          "Portrait Records",
+          "UNANSWERABLE",
+          "Portrait Records."
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "She's So Unusual",
+        "topic_section": "Introduction",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "when did she begin her career?",
+          "1978",
+          "which is her debut work?",
+          "\"She's So Unusual\""
+        ],
+        "supporting_passage": "She's So Unusual is the debut studio album by American singer and songwriter Cyndi Lauper, released on October 14, 1983, by Portrait Records.",
+        "rationale": "She's So Unusual is the debut studio album by American singer and songwriter Cyndi Lauper, released on October 14, 1983, by Portrait Records.",
+        "reuse_annotation_note": "The album refers to She's So Unusual.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "how many singles were released from the album?",
+        "expected_answer": "3",
+        "reference_answers": [
+          "3",
+          "Six",
+          "\"Girls Just Want to Have Fun\", \"Time After Time\" and \"She Bop\".",
+          "Six singles."
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "She's So Unusual",
+        "topic_section": "Singles",
+        "conversation_context": [
+          "who wrote the music and lyrics to the song kinky boots",
+          "Cyndi Lauper",
+          "who is the singer?",
+          "Cyndi Lauper",
+          "whose story does the musical convey?",
+          "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+          "when was its release?",
+          "2005",
+          "what was the response it received?",
+          "The film received mixed reviews on release, with critics decrying the \"formulaic Britcom plot\"",
+          "what can you tell me about the songwriter?",
+          "She is an American singer, songwriter, actress and activist; her career has spanned over 40 years.",
+          "when did she begin her career?",
+          "1978",
+          "which is her debut work?",
+          "\"She's So Unusual\"",
+          "who released the album?",
+          "Portrait Records"
+        ],
+        "supporting_passage": "The lead single from the album was \"Girls Just Want to Have Fun\", released on September 6, 1983. T",
+        "rationale": "The lead single from the album was \"Girls Just Want to Have Fun\", released on September 6, 1983. T",
+        "reuse_annotation_note": "The album refers to the debut album.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  },
+  {
+    "group_id": "qrecc-factoid-ranked-001",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 113,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 4/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "QReCC conversation 113",
+    "context": [
+      {
+        "title": "QReCC conversation 113 turn 1",
+        "sentences": [
+          "In may"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 2",
+        "sentences": [
+          "Prime Minister"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 3",
+        "sentences": [
+          "the BJP"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 4",
+        "sentences": [
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 5",
+        "sentences": [
+          "6,74,664 votes"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 6",
+        "sentences": [
+          "Aam Aadmi Party leader Arvind Kejriwal"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 7",
+        "sentences": [
+          "As of 2019 Narendra Modi is still Prime minister of India"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 8",
+        "sentences": [
+          "The BJP's campaign was assisted by its wide influence in the media"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 9",
+        "sentences": [
+          "from corporate donors"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 113 turn 10",
+        "sentences": [
+          "Narendra Modi made extensive use of social media"
+        ],
+        "source": "official_answer_annotation"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/slupart/qrecc/resolve/35dd1d9b6306182f19a763b497e06dba9b3d48c9/qrecc_test.json",
+    "reference_source_sha256": "a410865623737c98e172bbc86515f416ebecca8971c5c0929a7fdda5256fa540",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_answer_annotations_existing_project_adapter",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "continuous",
+        "question": "in what month was the election?",
+        "rewrite": "in what month was the election?",
+        "expected_answer": "In may",
+        "reference_answers": [
+          "In may"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 113 turn 1",
+        "topic_section": "",
+        "conversation_context": [],
+        "supporting_passage": "In may",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Election identity is supplied by original context outside task answers.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "what position did he run for in the election?",
+        "rewrite": "what position did Narendra Modi run for in the election?",
+        "expected_answer": "Prime Minister",
+        "reference_answers": [
+          "Prime Minister"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 2",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may"
+        ],
+        "supporting_passage": "Prime Minister",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "The election refers to the preceding election.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "what political party was he in?",
+        "rewrite": "what political party was Narendra Modi in?",
+        "expected_answer": "the BJP",
+        "reference_answers": [
+          "the BJP"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 113 turn 3",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister"
+        ],
+        "supporting_passage": "the BJP",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "He is not identified by the first two gold answers; external context is needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "did he win the election?",
+        "rewrite": "did Narendra Modi win the election?",
+        "expected_answer": "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+        "reference_answers": [
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 4",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP"
+        ],
+        "supporting_passage": "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "The election refers to the earlier election.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "how many votes did he get?",
+        "rewrite": "how many votes did Narenda Modi get?",
+        "expected_answer": "6,74,664 votes",
+        "reference_answers": [
+          "6,74,664 votes"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 5",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019"
+        ],
+        "supporting_passage": "6,74,664 votes",
+        "answer_url": "https://www.indiatoday.in/elections/lok-sabha-2019/story/lok-sabha-elections-2019-prime-minister-narendra-modi-varanasi-1532443-2019-05-23",
+        "reuse_annotation_note": "Vote count concerns the election just discussed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "who was his opponent?",
+        "rewrite": "who was Narendra Modi opponent?",
+        "expected_answer": "Aam Aadmi Party leader Arvind Kejriwal",
+        "reference_answers": [
+          "Aam Aadmi Party leader Arvind Kejriwal"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 6",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes"
+        ],
+        "supporting_passage": "Aam Aadmi Party leader Arvind Kejriwal",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Opponent concerns the same candidate and election.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "for how long was he prime minister?",
+        "rewrite": "for how long was Narendra Modi prime minister?",
+        "expected_answer": "As of 2019 Narendra Modi is still Prime minister of India",
+        "reference_answers": [
+          "As of 2019 Narendra Modi is still Prime minister of India"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 7",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal"
+        ],
+        "supporting_passage": "As of 2019 Narendra Modi is still Prime minister of India",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Prime-minister tenure refers to the candidate's swearing-in.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "where did he do his campaigning?",
+        "rewrite": "where did Narendra modi do his campaigning?",
+        "expected_answer": "The BJP's campaign was assisted by its wide influence in the media",
+        "reference_answers": [
+          "The BJP's campaign was assisted by its wide influence in the media"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 8",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal",
+          "for how long was Narendra Modi prime minister?",
+          "As of 2019 Narendra Modi is still Prime minister of India"
+        ],
+        "supporting_passage": "The BJP's campaign was assisted by its wide influence in the media",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Campaigning concerns the same election candidate.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "where did he get the money from to pay for that cost?",
+        "rewrite": "where did Narendra Modi get the money from to pay for that cost?",
+        "expected_answer": "from corporate donors",
+        "reference_answers": [
+          "from corporate donors"
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 9",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal",
+          "for how long was Narendra Modi prime minister?",
+          "As of 2019 Narendra Modi is still Prime minister of India",
+          "where did Narendra modi do his campaigning?",
+          "The BJP's campaign was assisted by its wide influence in the media"
+        ],
+        "supporting_passage": "from corporate donors",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "That cost refers to campaigning mentioned in the prior question.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "what did he do when he campaigned?",
+        "rewrite": "what did Narendra Modi do when he campaigned?",
+        "expected_answer": "Narendra Modi made extensive use of social media",
+        "reference_answers": [
+          "Narendra Modi made extensive use of social media"
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "QReCC conversation 113 turn 10",
+        "topic_section": "",
+        "conversation_context": [
+          "in what month was the election?",
+          "In may",
+          "what position did Narendra Modi run for in the election?",
+          "Prime Minister",
+          "what political party was Narendra Modi in?",
+          "the BJP",
+          "did Narendra Modi win the election?",
+          "He was again sworn in as Prime minister on 30 May 2019. On 30 July 2019",
+          "how many votes did Narenda Modi get?",
+          "6,74,664 votes",
+          "who was Narendra Modi opponent?",
+          "Aam Aadmi Party leader Arvind Kejriwal",
+          "for how long was Narendra Modi prime minister?",
+          "As of 2019 Narendra Modi is still Prime minister of India",
+          "where did Narendra modi do his campaigning?",
+          "The BJP's campaign was assisted by its wide influence in the media",
+          "where did Narendra Modi get the money from to pay for that cost?",
+          "from corporate donors"
+        ],
+        "supporting_passage": "Narendra Modi made extensive use of social media",
+        "answer_url": "https://en.wikipedia.org/wiki/Narendra_Modi#Prime_Minister",
+        "reuse_annotation_note": "Campaigning refers to the earlier campaign discussion.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  },
+  {
+    "group_id": "qrecc-factoid-ranked-002",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 1093,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 4/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "QReCC conversation 1093",
+    "context": [
+      {
+        "title": "QReCC conversation 1093 turn 1",
+        "sentences": [
+          "Cleveland Browns"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 2",
+        "sentences": [
+          "Paul Brown"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 3",
+        "sentences": [
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 4",
+        "sentences": [
+          "College All-Star Game"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 5",
+        "sentences": [
+          "College All-Star won the game against the Chicago Bears."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 6",
+        "sentences": [
+          "16-0"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 7",
+        "sentences": [
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 8",
+        "sentences": [
+          "After his discharge from the military in 1952."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 9",
+        "sentences": [
+          "Dallas Texans went 1-11 for its season in 1952."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 1093 turn 10",
+        "sentences": [
+          "Weldon Humble served 3 years in the U.S. Marines."
+        ],
+        "source": "official_answer_annotation"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/slupart/qrecc/resolve/35dd1d9b6306182f19a763b497e06dba9b3d48c9/qrecc_test.json",
+    "reference_source_sha256": "a410865623737c98e172bbc86515f416ebecca8971c5c0929a7fdda5256fa540",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_answer_annotations_existing_project_adapter",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 1,
+        "task_type": "continuous",
+        "question": "Who did he play for?",
+        "rewrite": "Who did Weldon Humble play for ?",
+        "expected_answer": "Cleveland Browns",
+        "reference_answers": [
+          "Cleveland Browns"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 1093 turn 1",
+        "topic_section": "",
+        "conversation_context": [],
+        "supporting_passage": "Cleveland Browns",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Player identity requires context outside the selected answers.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "Who was his coach at the Browns?",
+        "rewrite": "Who was Weldon Humble's coach at the Browns?",
+        "expected_answer": "Paul Brown",
+        "reference_answers": [
+          "Paul Brown"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 2",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns"
+        ],
+        "supporting_passage": "Paul Brown",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble#Professional_football_career",
+        "reuse_annotation_note": "Browns refers to the previously identified team.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "Did he play in any bowl games?",
+        "rewrite": "Did Weldon Humble play in any bowl games?",
+        "expected_answer": "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+        "reference_answers": [
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 1093 turn 3",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown"
+        ],
+        "supporting_passage": "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Player identity has not yet been supplied in prior gold answers.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "Did he play in any other notable games?",
+        "rewrite": "Did Weldon Humble play in any other notable games?",
+        "expected_answer": "College All-Star Game",
+        "reference_answers": [
+          "College All-Star Game"
+        ],
+        "expected_reuse": [
+          "turn-3.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 4",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game."
+        ],
+        "supporting_passage": "College All-Star Game",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Other games refers to the player's prior game discussion.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "Did he win the game?",
+        "rewrite": "Did Weldon Humble win the game?",
+        "expected_answer": "College All-Star won the game against the Chicago Bears.",
+        "reference_answers": [
+          "College All-Star won the game against the Chicago Bears."
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 5",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game"
+        ],
+        "supporting_passage": "College All-Star won the game against the Chicago Bears.",
+        "answer_url": "",
+        "reuse_annotation_note": "The game refers to College All-Star Game.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "What was the score?",
+        "rewrite": "What was the score of the college all-stars versus the Chicago Bears?",
+        "expected_answer": "16-0",
+        "reference_answers": [
+          "16-0"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 6",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears."
+        ],
+        "supporting_passage": "16-0",
+        "answer_url": "https://en.wikipedia.org/wiki/Chicago_College_All-Star_Game#Game_results",
+        "reuse_annotation_note": "The score is for College All-Star Game.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "Are there any other interesting aspects about this article ?",
+        "rewrite": "Are there any other interestic aspects about Weldon Humble's article ?",
+        "expected_answer": "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+        "reference_answers": [
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 1093 turn 7",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0"
+        ],
+        "supporting_passage": "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Open-ended article reference has no unique historical QA source.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "When did he get traded?",
+        "rewrite": "When did Weldon Humble get traded?",
+        "expected_answer": "After his discharge from the military in 1952.",
+        "reference_answers": [
+          "After his discharge from the military in 1952."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 8",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0",
+          "Are there any other interestic aspects about Weldon Humble's article ?",
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard."
+        ],
+        "supporting_passage": "After his discharge from the military in 1952.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Traded refers to the preceding transfer.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "How did he play on the new team?",
+        "rewrite": "How did Weldon Humble play on the new team?",
+        "expected_answer": "Dallas Texans went 1-11 for its season in 1952.",
+        "reference_answers": [
+          "Dallas Texans went 1-11 for its season in 1952."
+        ],
+        "expected_reuse": [
+          "turn-7.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 9",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0",
+          "Are there any other interestic aspects about Weldon Humble's article ?",
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+          "When did Weldon Humble get traded?",
+          "After his discharge from the military in 1952."
+        ],
+        "supporting_passage": "Dallas Texans went 1-11 for its season in 1952.",
+        "answer_url": "https://en.wikipedia.org/wiki/Dallas_Texans_(NFL)",
+        "reuse_annotation_note": "The new team refers to Dallas Texans.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "Was he in the military?",
+        "rewrite": "Was Weldon Humble in the military?",
+        "expected_answer": "Weldon Humble served 3 years in the U.S. Marines.",
+        "reference_answers": [
+          "Weldon Humble served 3 years in the U.S. Marines."
+        ],
+        "expected_reuse": [
+          "turn-8.answer"
+        ],
+        "topic": "QReCC conversation 1093 turn 10",
+        "topic_section": "",
+        "conversation_context": [
+          "Who did Weldon Humble play for ?",
+          "Cleveland Browns",
+          "Who was Weldon Humble's coach at the Browns?",
+          "Paul Brown",
+          "Did Weldon Humble play in any bowl games?",
+          "Weldon Humble played in the first Pro-Bowl, the NFL's all-star game.",
+          "Did Weldon Humble play in any other notable games?",
+          "College All-Star Game",
+          "Did Weldon Humble win the game?",
+          "College All-Star won the game against the Chicago Bears.",
+          "What was the score of the college all-stars versus the Chicago Bears?",
+          "16-0",
+          "Are there any other interestic aspects about Weldon Humble's article ?",
+          "Weldon Humbke was traded to the Dallas Texans for Sherman Howard.",
+          "When did Weldon Humble get traded?",
+          "After his discharge from the military in 1952.",
+          "How did Weldon Humble play on the new team?",
+          "Dallas Texans went 1-11 for its season in 1952."
+        ],
+        "supporting_passage": "Weldon Humble served 3 years in the U.S. Marines.",
+        "answer_url": "https://en.wikipedia.org/wiki/Weldon_Humble",
+        "reuse_annotation_note": "Military service follows the discharge mentioned earlier.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  },
+  {
+    "group_id": "qrecc-factoid-ranked-003",
+    "source_dataset": "QReCC",
+    "source_file": "qrecc_test.json",
+    "original_conversation_no": 917,
+    "original_turn_count": 10,
+    "selected_turn_count": 10,
+    "selection_note": "ranked by short single-answer turns: 4/10; complete 10-turn continuous window retained",
+    "selection_protocol": {
+      "turn_count": 10,
+      "answer_token_range": [
+        1,
+        5
+      ],
+      "exclude_multi_answer_markers": "comma, semicolon, colon, slash, and, or",
+      "exclude_open_ended_question_markers": "describe, explain, tell me, why, how does, how do, list, mention, kinds, types",
+      "ranking": "qualifying_turn_count_desc, continuity_signal_desc, topic_diversity_desc, conversation_no_asc"
+    },
+    "topic": "QReCC conversation 917",
+    "context": [
+      {
+        "title": "QReCC conversation 917 turn 2",
+        "sentences": [
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 3",
+        "sentences": [
+          "Roy formed the Crazy Tennesseans"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 4",
+        "sentences": [
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 5",
+        "sentences": [
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 6",
+        "sentences": [
+          "Appalachian region"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 7",
+        "sentences": [
+          "Songs Of The Smoky Mountains"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 8",
+        "sentences": [
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 9",
+        "sentences": [
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor."
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 10",
+        "sentences": [
+          "fiddler"
+        ],
+        "source": "official_answer_annotation"
+      },
+      {
+        "title": "QReCC conversation 917 turn 11",
+        "sentences": [
+          "singer and fiddler"
+        ],
+        "source": "official_answer_annotation"
+      }
+    ],
+    "supporting_facts": [],
+    "reference_source_url": "https://huggingface.co/datasets/slupart/qrecc/resolve/35dd1d9b6306182f19a763b497e06dba9b3d48c9/qrecc_test.json",
+    "reference_source_sha256": "a410865623737c98e172bbc86515f416ebecca8971c5c0929a7fdda5256fa540",
+    "evaluation_protocol": "normalized_strict_em_and_token_f1",
+    "evidence_scope": "official_answer_annotations_existing_project_adapter",
+    "tasks": [
+      {
+        "turn_id": "turn-1",
+        "original_turn_no": 2,
+        "task_type": "continuous",
+        "question": "Who are the Crazy Tennesseans?",
+        "rewrite": "Who are the Crazy Tennesseans for Roy Acuff?",
+        "expected_answer": "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+        "reference_answers": [
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 2",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry."
+        ],
+        "supporting_passage": "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+        "answer_url": "https://visitclarksvilletn.com/notable-clarksvillians/celebrity/roy-acuff/?back=famousPeople",
+        "reuse_annotation_note": "Explicit band name; no prior task needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-2",
+        "original_turn_no": 3,
+        "task_type": "continuous",
+        "question": "Did Roy perform with the Crazy Tennesseans?",
+        "rewrite": "Did Roy Acuff perform with the Crazy Tennesseans?",
+        "expected_answer": "Roy formed the Crazy Tennesseans",
+        "reference_answers": [
+          "Roy formed the Crazy Tennesseans"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 3",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans."
+        ],
+        "supporting_passage": "Roy formed the Crazy Tennesseans",
+        "answer_url": "https://visitclarksvilletn.com/notable-clarksvillians/celebrity/roy-acuff/?back=famousPeople",
+        "reuse_annotation_note": "Roy is the band's founder introduced in the preceding answer.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-3",
+        "original_turn_no": 4,
+        "task_type": "continuous",
+        "question": "Who are the members of the band?",
+        "rewrite": "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+        "expected_answer": "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+        "reference_answers": [
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones"
+        ],
+        "expected_reuse": [
+          "turn-1.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 4",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans"
+        ],
+        "supporting_passage": "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff#Early_music_career",
+        "reuse_annotation_note": "The band refers to Crazy Tennesseans.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-4",
+        "original_turn_no": 5,
+        "task_type": "continuous",
+        "question": "Are the Smokey Mountain Boys successful?",
+        "rewrite": "Are the Smokey Mountain Boys with Roy Acuff successful?",
+        "expected_answer": "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+        "reference_answers": [
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 5",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones"
+        ],
+        "supporting_passage": "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "Explicit new group name; no prior task needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-5",
+        "original_turn_no": 6,
+        "task_type": "continuous",
+        "question": "Where did they play at?",
+        "rewrite": "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+        "expected_answer": "Appalachian region",
+        "reference_answers": [
+          "Appalachian region"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 6",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys."
+        ],
+        "supporting_passage": "Appalachian region",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "They refers to Smoky Mountain Boys.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-6",
+        "original_turn_no": 7,
+        "task_type": "continuous",
+        "question": "Did they produce any records?",
+        "rewrite": "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+        "expected_answer": "Songs Of The Smoky Mountains",
+        "reference_answers": [
+          "Songs Of The Smoky Mountains"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 7",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region"
+        ],
+        "supporting_passage": "Songs Of The Smoky Mountains",
+        "answer_url": "https://www.discogs.com/artist/1421882-Roy-Acuff-And-His-Smoky-Mountain-Boys?filter_anv=0&subtype=Albums&type=Releases",
+        "reuse_annotation_note": "They refers to Smoky Mountain Boys.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-7",
+        "original_turn_no": 8,
+        "task_type": "continuous",
+        "question": "What songs did they play?",
+        "rewrite": "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+        "expected_answer": "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+        "reference_answers": [
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There"
+        ],
+        "expected_reuse": [
+          "turn-4.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 8",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains"
+        ],
+        "supporting_passage": "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+        "answer_url": "https://www.discogs.com/artist/1421882-Roy-Acuff-And-His-Smoky-Mountain-Boys?filter_anv=0&subtype=Singles-EPs&type=Releases",
+        "reuse_annotation_note": "They refers to Smoky Mountain Boys.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-8",
+        "original_turn_no": 9,
+        "task_type": "continuous",
+        "question": "Did they win any awards?",
+        "rewrite": "Did Roy Acuff win any awards?",
+        "expected_answer": "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor.",
+        "reference_answers": [
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor."
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 9",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains",
+          "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There"
+        ],
+        "supporting_passage": "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor.",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff#Later_career",
+        "reuse_annotation_note": "Band versus individual award recipient is ambiguous; excluded from QA dependency scoring.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-9",
+        "original_turn_no": 10,
+        "task_type": "continuous",
+        "question": "What instrument did Acuff play?",
+        "rewrite": "What instrument did Acuff play?",
+        "expected_answer": "fiddler",
+        "reference_answers": [
+          "fiddler"
+        ],
+        "expected_reuse": [],
+        "topic": "QReCC conversation 917 turn 10",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains",
+          "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+          "Did Roy Acuff win any awards?",
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor."
+        ],
+        "supporting_passage": "fiddler",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "Explicit Acuff name; no prior QA needed.",
+        "reuse_annotation_version": "qa-history-v1"
+      },
+      {
+        "turn_id": "turn-10",
+        "original_turn_no": 11,
+        "task_type": "continuous",
+        "question": "Did he play any other instruments?",
+        "rewrite": "Did Roy Acuff play any other instruments?",
+        "expected_answer": "singer and fiddler",
+        "reference_answers": [
+          "singer and fiddler"
+        ],
+        "expected_reuse": [
+          "turn-9.answer"
+        ],
+        "topic": "QReCC conversation 917 turn 11",
+        "topic_section": "",
+        "conversation_context": [
+          "Did Roy Acuff perform at the Grand Ole Opry?",
+          "In 1938, the Crazy Tennesseans moved to Nashville to audition for the Grand Ole Opry.",
+          "Who are the Crazy Tennesseans for Roy Acuff?",
+          "Around 1936, Roy formed a band called the Tennessee Crackerjacks. The band’s name was later changed to the Crazy Tennesseans.",
+          "Did Roy Acuff perform with the Crazy Tennesseans?",
+          "Roy formed the Crazy Tennesseans",
+          "Who are the members of the band the Crazy Tennesseans with Roy Acuff?",
+          "Roy Acuff, Jess Easterday, Clell Summey, Red Jones",
+          "Are the Smokey Mountain Boys with Roy Acuff successful?",
+          "Acuff began his music career in the 1930s and gained regional fame as the singer and fiddler for his group, the Smoky Mountain Boys.",
+          "Where did the Smoky Mountain Boys with Roy Acuff play at?",
+          "Appalachian region",
+          "Did the Smoky Mountain Boys with Roy Acuff produce any records?",
+          "Songs Of The Smoky Mountains",
+          "What songs did the Smoky Mountain Boys with Roy Acuff play?",
+          "Great Speckled Bird No. 2 / Tell Mother I'll Be There",
+          "Did Roy Acuff win any awards?",
+          "1991, the National Medal of Arts, and a lifetime achievement award by the John F. Kennedy Center for the Performing Arts, the first Country music act to receive the honor.",
+          "What instrument did Acuff play?",
+          "fiddler"
+        ],
+        "supporting_passage": "singer and fiddler",
+        "answer_url": "https://en.wikipedia.org/wiki/Roy_Acuff",
+        "reuse_annotation_note": "He and other instruments refer to Acuff's preceding instrument.",
+        "reuse_annotation_version": "qa-history-v1"
+      }
+    ]
+  }
+]
