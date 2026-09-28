@@ -2,11 +2,12 @@
   <section class="page collab-page">
     <section class="monitor-result-bar" :class="{ locked: monitorSelectionLocked }">
       <div class="monitor-result-title">
-        <strong>{{ monitorSelectionLocked ? '实时运行中' : '结果展示' }}</strong>
+        <strong>{{ displaySource === 'current' ? '当前运行' : '历史回放' }}</strong>
+        <div class="run-view-switch"><button :class="{ active: displaySource === 'current' }" @click="displaySource = 'current'">当前运行</button><button :class="{ active: displaySource === 'history' }" :disabled="runnerRunning" @click="displaySource = 'history'">历史回放</button></div>
         <span>{{ monitorSelectionStatus }}</span>
       </div>
       <MetricsFilterBar
-        class="monitor-shared-filter"
+        v-if="displaySource === 'history'" class="monitor-shared-filter"
         :class="{ locked: monitorSelectionLocked }"
         :model-value="monitorFilters"
         :baseline-options="monitorBaselineOptions"
@@ -64,8 +65,8 @@
       <section class="collab-card sequence-card">
         <header>
           <span></span>
-          <h2>运行时协作链路</h2>
-          <em>{{ selectedTask.title }}</em>
+          <h2>交接与记忆记录</h2>
+          <em title="记忆及文字交接的部分记录在任务结束后汇总，记录时间见下方日志。">{{ selectedTask.title }}</em>
         </header>
         <div v-if="selectedTask.messages.length" class="sequence-board flow-sequence-board">
           <div class="flow-agent-row" :style="flowGridStyle">
@@ -263,6 +264,7 @@
 </template>
 
 <script setup>
+import { taskExecutionState, eventsForRun } from '../runtimeState.mjs'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { loadResultTrace } from '../resultTrace'
 import {
@@ -303,6 +305,10 @@ const savedConfig = ref(readSavedConfig())
 const runtimeEvents = ref([])
 const latestRunResult = ref(null)
 const runnerRunning = ref(false)
+const activeRunId = ref('')
+const runnerStatus = ref('idle')
+const runnerError = ref('')
+const displaySource = ref('current')
 const monitorRecords = ref([])
 const selectedMonitorRecordId = ref('')
 const monitorLoadError = ref('')
@@ -342,18 +348,12 @@ const matchingLatestRunPayload = computed(() =>
     ? latestRunResult.value
     : null
 )
-const effectiveRunResult = computed(() =>
-  monitorSelectionLocked.value ? latestRunResult.value : selectedArchivePayload.value ?? matchingLatestRunPayload.value
-)
-const effectiveRuntimeEvents = computed(() =>
-  monitorSelectionLocked.value
-    ? runtimeEvents.value
-    : selectedArchivePayload.value
-      ? eventsFromImportedPayload(selectedArchivePayload.value)
-      : matchingLatestRunPayload.value
-        ? runtimeEvents.value
-        : []
-)
+const effectiveRunResult = computed(() => displaySource.value === 'current'
+  ? (latestRunResult.value?.run_id === activeRunId.value ? latestRunResult.value : null)
+  : selectedArchivePayload.value)
+const effectiveRuntimeEvents = computed(() => displaySource.value === 'current'
+  ? eventsForRun(runtimeEvents.value, activeRunId.value)
+  : (selectedArchivePayload.value ? eventsFromImportedPayload(selectedArchivePayload.value) : []))
 const hasRuntimeEvents = computed(() => effectiveRuntimeEvents.value.length > 0 || Boolean(latestPrimaryRun(effectiveRunResult.value)))
 const monitorRecordOptions = computed(() =>
   monitorRecords.value
@@ -372,7 +372,7 @@ const monitorBaselineOptions = computed(() =>
   }))
 )
 const monitorSelectionStatus = computed(() => {
-  if (monitorSelectionLocked.value) return '运行时锁定为实时协作链路，暂停手动切换展示结果。'
+  if (displaySource.value === 'current') return activeRunId.value ? `本次运行 ${activeRunId.value.slice(0, 8)} · ${({idle:'未开始',running:'运行中',failed:'运行失败',stopped:'已停止',completed:'已完成'})[runnerStatus.value]}${runnerError.value ? ' · ' + runnerError.value.slice(-160) : ''}` : '尚未开始运行，历史记录请切换到历史回放。'
   if (monitorLoadError.value) return monitorLoadError.value
   if (selectedMonitorRecord.value) return `当前展示：${monitorRecordLabel(selectedMonitorRecord.value)}`
   if (selectedArchivePayload.value) return '当前展示导入或最近的历史结果。'
@@ -385,7 +385,7 @@ const taskQueue = computed(() => {
 })
 const runModeLabel = computed(() => {
   if (hasRuntimeEvents.value && runMeta.value.experiment_mode) {
-    return `${modeText(runMeta.value.experiment_mode)} / ${runMeta.value.memory_organization || '--'} / ${runMeta.value.memory_retrieval_mode || '--'}`
+    return `${modeText(runMeta.value.experiment_mode)} / ${labelOf(memoryModes, runMeta.value.memory_organization)} / ${labelOf(retrievalOptionsFor(runMeta.value.memory_organization), runMeta.value.memory_retrieval_mode)}`
   }
   return `${collaboration.value.label} / ${memoryLabel.value} / ${retrievalLabel.value}`
 })
@@ -537,7 +537,7 @@ async function refreshRuntimeSnapshot() {
   const wasRunning = runnerRunning.value
   try {
     await refreshRunnerStatus()
-    if (runnerRunning.value || wasRunning) {
+    if (activeRunId.value) {
       await Promise.all([refreshRuntimeEvents(), refreshRunResult()])
     }
     if (wasRunning && !runnerRunning.value) await refreshMonitorRecords()
@@ -554,6 +554,14 @@ async function refreshRunnerStatus() {
       return
     }
     const payload = await response.json()
+    if (payload.runId !== activeRunId.value) {
+      runtimeEvents.value = []
+      latestRunResult.value = null
+      activeRunId.value = payload.runId || ''
+      if (payload.running) displaySource.value = 'current'
+    }
+    runnerStatus.value = payload.status || 'idle'
+    runnerError.value = payload.lastError || ''
     runnerRunning.value = Boolean(payload.running || payload.status === 'running')
   } catch {
     runnerRunning.value = false
@@ -590,7 +598,7 @@ async function loadSelectedTrace() {
   selectedTraceRecordId.value = ''
   try {
     const payload = await loadResultTrace(record)
-    if (selectedMonitorRecord.value?.recordId !== requestedRecordId) return
+    if (runnerRunning.value || selectedMonitorRecord.value?.recordId !== requestedRecordId) return
     selectedTracePayload.value = payload
     selectedTraceRecordId.value = requestedRecordId
   } catch {
@@ -652,7 +660,7 @@ async function refreshRuntimeEvents() {
       return
     }
     const payload = await response.json()
-    runtimeEvents.value = Array.isArray(payload.events) ? payload.events : []
+    runtimeEvents.value = eventsForRun(Array.isArray(payload.events) ? payload.events : [], activeRunId.value)
   } catch {
     runtimeEvents.value = []
   }
@@ -666,7 +674,7 @@ async function refreshRunResult() {
       return
     }
     const payload = await response.json()
-    latestRunResult.value = payload?.payload || null
+    latestRunResult.value = payload?.payload?.run_id === activeRunId.value ? payload.payload : null
   } catch {
     latestRunResult.value = null
   }
@@ -749,6 +757,7 @@ function formatArchiveTime(value) {
 
 function eventsFromImportedPayload(payload) {
   const primaryRun = latestPrimaryRun(payload) || {}
+  if (Array.isArray(primaryRun.events)) return primaryRun.events
   const taskResults = Array.isArray(primaryRun.task_results) ? primaryRun.task_results : []
   const batchSummaries = importedBatchSummaries(primaryRun, taskResults)
   const timestamp = payload?.archived_at || new Date().toISOString()
@@ -1317,7 +1326,7 @@ function buildTasksFromRuntimeEvents(events, runPayload) {
     const titleEvent = taskEvents.find((event) => event.task_title)
     const batchSummary = taskEvents.some((event) => isBatchSummaryEvent(event))
     const doneEvent = [...taskEvents].reverse().find((event) => ['task_done', 'batch_experience_complete'].includes(event.event_type))
-    const state = taskResult || doneEvent ? 'done' : taskEvents.length && !runDone ? 'running' : 'waiting'
+    const state = taskExecutionState(taskEvents, taskResult, displaySource.value === 'current' ? runnerStatus.value : (runPayload?.status || (runDone ? 'completed' : 'stopped')))
     const metrics = metricsFromRuntimeEvents(taskEvents, doneEvent, taskResult)
     const agents = agentsFromRuntimeEvents(taskEvents)
     return {
@@ -1415,14 +1424,22 @@ function agentsFromRuntimeEvents(taskEvents) {
 }
 
 function flowEventsFromRuntimeEvents(taskEvents) {
-  return taskEvents.flatMap((event) => {
-    // State references are retained in protocol details, rather than becoming
-    // extra arrows that obscure the business-level agent collaboration flow.
-    if (!['agent_message', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit', 'batch_experience_start', 'batch_experience_complete'].includes(event.event_type)) {
-      return []
+  const output = [], groups = new Map()
+  for (const event of taskEvents) {
+    if (!['agent_message', 'state_transfer', 'memory_query', 'memory_hit', 'memory_write', 'knowledge_query', 'knowledge_hit', 'execution_result'].includes(event.event_type)) continue
+    if (!['memory_hit', 'memory_write'].includes(event.event_type)) { output.push(event); continue }
+    const key = `${event.event_type}:${event.from_agent}:${event.to_agent}:${memoryLayerForEvent(event)}`
+    if (!groups.has(key)) {
+      const group = { ...event, memory_refs: [], return_result: { ...event.return_result, records: [], count: 0 } }
+      groups.set(key, group)
+      output.push(group)
     }
-    return [event]
-  })
+    const group = groups.get(key)
+    group.memory_refs.push(...(event.memory_refs || []))
+    group.return_result.records.push(event.return_result)
+    group.return_result.count += 1
+  }
+  return output.filter(e => e.event_type !== 'memory_write').concat(output.filter(e => e.event_type === 'memory_write'))
 }
 
 function visualRouteForEvent(event) {
@@ -1470,6 +1487,7 @@ function memoryLayerForEvent(event) {
   const result = event?.return_result || {}
   const layer = String(input.memory_layer || result.memory_layer || '').toLowerCase()
   if (layer === 'experience') return 'experience'
+  if (layer === 'evidence' || layer === 'episodic') return 'episodic'
   // Runs recorded before `memory_layer` existed used Planner's query for the
   // same experience lookup. Preserve that semantics when replaying them.
   const from = String(event?.from_agent || '').toLowerCase()
@@ -1577,6 +1595,8 @@ function formatExactMatch(value) {
 }
 
 function transferStatusText(status) {
+  if (status === 'failed') return '执行失败'
+  if (status === 'stopped') return '已停止'
   if (status === 'done') return '\u5df2\u5b8c\u6210'
   if (status === 'running') return '\u8fd0\u884c\u4e2d'
   return '\u5f85\u8fd0\u884c'
@@ -1719,7 +1739,7 @@ function transferAgentDetailForSelectedMessage(task, message) {
     agentKey,
     taskLabel: `task ${task.round}`,
     agentLabel: normalizeAgentName(agentKey),
-    status: taskResult ? 'done' : task.state || 'waiting',
+    status: task.state || 'waiting',
     hasOutput: Boolean(agentView),
     question: taskResult.question ?? task.title ?? '',
     exactMatch: taskResult.exact_match ?? null,
@@ -1743,6 +1763,13 @@ function eventPayloadText(event) {
 }
 
 function protocolReadableDesc(event, route) {
+  if (event.run_id) {
+    if (event.event_type === 'state_transfer') return '下一个角色接续同进程计算状态。完整快照大小与缓存峰值分别计量，不以引用长度代替载荷。'
+    if (event.event_type === 'agent_message') return event.memory_organization === 'text' ? '下一个角色实际收到完整文本交接内容；正文可在下方查看。' : '下一个角色实际收到所需任务与关系字段；正文可在下方查看。'
+    if (event.event_type === 'memory_query') return event.memory_organization === 'text' ? '对整轮原文记忆进行相似度检索。该记录在任务结束后汇总，耗时取实际检索计时。' : '检索超图中的已存事实与关联证据。该记录在任务结束后汇总，不代表额外发生了一次检索。'
+    if (event.event_type === 'memory_hit') return '返回本次实际召回的记忆。召回不等于采用，也不代表相关性已通过评测。'
+    if (event.event_type === 'memory_write') return '保存本轮实际取得的事实或角色结果；相同方向的写入合并展示，明细保留在返回结果中。'
+  }
   if (isPlannerHandoff(event)) return 'Planner \u5c06\u57fa\u4e8e\u7ecf\u9a8c\u68c0\u7d22\u548c\u9898\u76ee\u5206\u6790\u5f97\u5230\u7684\u68c0\u7d22\u89c4\u5212\u4f20\u9012\u7ed9 Retriever\u3002'
   if (isRetrieverHandoff(event)) return 'Retriever \u5c06\u95ee\u7b54\u8bb0\u5fc6\u548c\u77e5\u8bc6\u8d85\u56fe\u7684\u5b9e\u9645\u68c0\u7d22\u7ed3\u679c\u4f20\u9012\u7ed9 Reasoner\u3002'
   if (isReasonerHandoff(event)) return 'Reasoner \u5c06\u57fa\u4e8e\u68c0\u7d22\u8bc1\u636e\u751f\u6210\u7684\u63a8\u7406\u7ed3\u679c\u4f20\u9012\u7ed9 Summarizer\u3002'
@@ -1755,11 +1782,12 @@ function protocolReadableDesc(event, route) {
   if (event.event_type === 'memory_query') return 'Retriever \u5411\u95ee\u7b54\u8bb0\u5fc6\u8d85\u56fe\u53d1\u8d77\u68c0\u7d22\u8bf7\u6c42\u3002'
   if (event.event_type === 'memory_hit') return '\u95ee\u7b54\u8bb0\u5fc6\u8d85\u56fe\u8fd4\u56de\u4e0e\u5f53\u524d\u9898\u76ee\u76f8\u5173\u7684\u5386\u53f2\u95ee\u7b54\u547d\u4e2d\u3002'
   if (event.event_type === 'memory_write') return 'Summarizer \u5c06\u672c\u8f6e\u8bc1\u636e\u3001\u7ed3\u8bba\u6216\u7ecf\u9a8c\u5199\u56de\u5171\u4eab\u8bb0\u5fc6\u3002'
-  if (event.event_type === 'state_transfer') return 'Agent \u4e4b\u95f4\u4f20\u9012\u975e\u6587\u672c\u72b6\u6001\u5f15\u7528\uff0c\u907f\u514d\u91cd\u590d\u4f20\u8f93\u957f\u6587\u672c\u3002'
+  if (event.event_type === 'state_transfer') return '下一个角色接续同进程中已计算的缓存与隐藏表示；快照大小单独计量。'
   return `${normalizeAgentName(route.from)} \u5c06\u7ed3\u6784\u5316\u6d88\u606f\u53d1\u9001\u7ed9 ${normalizeAgentName(route.to)}\u3002`
 }
 
 function protocolTransferContent(event) {
+  if (event.run_id && event.event_type === 'agent_message') return eventPayloadText(event)
   if (isPlannerHandoff(event)) return plannerPlanContent(event)
   if (isRetrieverHandoff(event)) return retrieverResultContent(event)
   if (isReasonerHandoff(event)) return reasonerResultContent(event)
@@ -1926,14 +1954,17 @@ function protocolContentSummary(event) {
 
 function protocolCostText(event) {
   const parts = []
+  if (event.actual_message_bytes != null) parts.push(`实际消息 ${formatBytes(event.actual_message_bytes)}`)
   if (event.text_chars) parts.push(`${event.text_chars} \u5b57\u7b26`)
   if (event.protocol_bytes) parts.push(`\u534f\u8bae ${formatBytes(event.protocol_bytes)}`)
   if (event.communication_bytes) parts.push(`\u5b9e\u9645\u8f7d\u8377 ${formatBytes(event.communication_bytes)}`)
-  if (event.bytes_size) parts.push(`\u72b6\u6001 ${formatBytes(event.bytes_size)}`)
+  if (event.handoff_payload_bytes != null) parts.push(`接续快照 ${formatBytes(event.handoff_payload_bytes)}`)
+  else if (event.bytes_size) parts.push(`状态 ${formatBytes(event.bytes_size)}`)
   return parts.length ? parts.join(' / ') : '-'
 }
 
 function protocolMappingText(event, route) {
+  if (event.run_id) return event.recorded_after_task ? '任务结束后汇总的实际记录，未模拟额外调用。' : '来自本次运行的实际执行事件。'
   const action = event.action_type || event.event_type
   if (isPlannerHandoff(event)) return '\u89c4\u5212\u5185\u5bb9 \u2192 retrieval_policy(qa_memory_gate, knowledge_steps, experience_context)'
   if (isRetrieverHandoff(event)) return '\u68c0\u7d22\u7ed3\u679c \u2192 retrieved_evidence(memory_hits, knowledge_hits, evidence_refs)'
@@ -1947,7 +1978,7 @@ function protocolMappingText(event, route) {
   if (event.event_type === 'memory_query') return '\u95ee\u7b54\u68c0\u7d22 \u2192 qa_memory.search(query, top_k)'
   if (event.event_type === 'memory_hit') return '\u95ee\u7b54\u547d\u4e2d \u2192 return_result(memory_refs, summaries, scores)'
   if (event.event_type === 'memory_write') return '\u603b\u7ed3\u5199\u56de \u2192 memory.write(memory_type, summary, source_agent, task_topic)'
-  if (event.event_type === 'state_transfer') return '\u4e2d\u95f4\u72b6\u6001 \u2192 state_ref(content_type, producer, consumers, bytes)'
+  if (event.event_type === 'state_transfer') return '各层缓存与隐藏表示 → 下一个角色继续计算'
   const map = {
     retrieve: '\u68c0\u7d22\u8bf7\u6c42 \u2192 retrieve(query, planner_focus, memory_scope)',
     reason: '\u8bc1\u636e\u63a8\u7406 \u2192 reason(evidence_refs, memory_refs, state_refs)',
@@ -2010,6 +2041,8 @@ function emptyPacket(title, desc = '暂无数据') {
 }
 
 function stateText(state) {
+  if (state === 'failed') return '执行失败'
+  if (state === 'stopped') return '已停止'
   if (state === 'done') return '已完成'
   if (state === 'running') return '运行中'
   return '未开始'
@@ -2076,11 +2109,15 @@ function eventLabel(event) {
     run_start: '启动',
     task_queue: '任务队列',
     task_start: '开始任务',
+    agent_start: '角色开始',
+    agent_output: '角色输出',
+    task_failed: '执行失败',
+    execution_result: '代码执行结果',
     handshake: '握手',
     capability_discovery: '能力发现',
     protocol_mapping: '协议映射',
-    agent_message: actionText(event.action_type),
-    state_transfer: `STATE ${listText(event.state_refs)}`,
+    agent_message: event.memory_organization === 'text' ? '文本交接' : '字段交接',
+    state_transfer: '计算状态续接',
     memory_query: memoryLayerForEvent(event) === 'experience' ? '检索经验' : '检索问答记忆',
     memory_hit: memoryLayerForEvent(event) === 'experience' ? `命中经验 ${listText(event.memory_refs)}` : `命中问答记忆 ${listText(event.memory_refs)}`,
     memory_write: `写回记忆 ${listText(event.memory_refs)}`,
@@ -2094,6 +2131,7 @@ function eventLabel(event) {
 
 function actionText(action) {
   const map = {
+    agent_message:'交接消息', agent_start:'角色开始', agent_output:'角色输出', memory_query:'记忆检索', memory_hit:'召回记忆', memory_write:'记忆写回', reuse_computation_state:'续接计算状态', task_failed:'执行失败',
     retrieve: '检索',
     reason: '推理',
     execute: '执行',

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "topiocqa-119-1",
+    "reference_answers": [
+      "It is a small antelope.",
+      "A small antelope",
+      "It is a small antelope"
+    ]
+  },
+  {
+    "id": "topiocqa-119-2",
+    "reference_answers": [
+      "Eastern, southern and western Africa from savannahs, floodplains and tropical grasslands",
+      "Eastern, southern and western Africa.",
+      "Found in eastern, southern and western Africa.",
+      "Eastern, southern and western Africa"
+    ]
+  },
+  {
+    "id": "topiocqa-119-3",
+    "reference_answers": [
+      "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump. The bushy tail, brown to black on the outside, has white insides.",
+      "Slightly raised back, and long neck and limbs and glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+      "This antelope features a slightly raised back, and long neck and limbs. The glossy, yellowish to rufous brown coat contrasts with the white chin, throat, underparts and rump.",
+      "Small, slender, slightly raised back and long neck and limbs."
+    ]
+  }
+]

@@ -101,3 +101,15 @@ dmypy.json
 .editorconfig
 .scratch
 .worktrees/
+
+# 本机清理备份，避免提交历史产物
+.codex_cleanup_backups/
+
+# 本机依赖、文档预览和新增运行产物不作为源码上传
+node_modules/
+/.codex_doc_review/
+/.doc_work/
+/outputs/
+/run_result/
+.env.*
+!.env.example

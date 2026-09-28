@@ -1,0 +1,592 @@
+{
+  "document_id": "6c407819ab80fc4ac4cd98c357f92db71969218d3e8c4db676d6f416771681cc",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "She's So Unusual",
+        "relation": "is",
+        "object": "debut solo studio album",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "artist",
+        "object": "Cyndi Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "nationality",
+            "value": "American"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cyndi Lauper",
+        "relation": "occupation",
+        "object": "pop singer",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "release date",
+        "object": "October 13, 1983",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "record label",
+        "object": "Portrait Records",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "re-release year",
+        "object": "2014",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "re-release purpose",
+        "object": "commemorate its 30th anniversary",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual: A 30th Anniversary Celebration",
+        "relation": "is re-release title of",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual: A 30th Anniversary Celebration",
+        "relation": "contains",
+        "object": "demos",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual: A 30th Anniversary Celebration",
+        "relation": "contains",
+        "object": "remixes of previously released material",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual: A 30th Anniversary Celebration",
+        "relation": "contains",
+        "object": "new artwork",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "formed band",
+        "object": "Blue Angel",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1978"
+          }
+        ],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Blue Angel",
+        "relation": "signed contract with",
+        "object": "Polydor Records",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Blue Angel",
+        "relation": "debut album",
+        "object": "Blue Angel",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Blue Angel (album)",
+        "relation": "commercial performance",
+        "object": "commercial failure",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Blue Angel",
+        "relation": "disbanded after",
+        "object": "firing their manager",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "manager",
+        "relation": "sued",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "amount",
+            "value": "$80,000"
+          }
+        ],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "lawsuit",
+        "relation": "resulted in",
+        "object": "bankruptcy for Lauper",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "performed in",
+        "object": "New York night clubs",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "David Wolff",
+        "relation": "became manager of",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "David Wolff",
+        "relation": "got signed to",
+        "object": "Portrait Records",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "released singles count",
+        "object": "Six",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Girls Just Want to Have Fun",
+        "relation": "is single from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Girls Just Want to Have Fun",
+        "relation": "performance",
+        "object": "worldwide hit",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Girls Just Want to Have Fun",
+        "relation": "chart achievement",
+        "object": "first song to chart on the Billboard Hot 100 for Lauper",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Time After Time",
+        "relation": "is single from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Time After Time",
+        "relation": "chart achievement",
+        "object": "first number-one hit on the Billboard Hot 100 for Lauper",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Time After Time",
+        "relation": "performance",
+        "object": "experienced similar success worldwide",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "She Bop",
+        "relation": "is single from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "She Bop",
+        "relation": "chart peak",
+        "object": "top five",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "All Through the Night",
+        "relation": "is single from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "All Through the Night",
+        "relation": "chart peak",
+        "object": "top five",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "achievement",
+        "object": "first female singer to have four top five singles on the Hot 100 from one album",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "promoted by",
+        "object": "Fun Tour",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "throughout 1983 and 1984"
+          }
+        ],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "genre",
+        "object": "new wave–based",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "songs on She's So Unusual",
+        "relation": "influenced by",
+        "object": "synth-pop",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "songs on She's So Unusual",
+        "relation": "influenced by",
+        "object": "pop rock",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "critical reception",
+        "object": "positive reviews from music critics",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "music critics",
+        "relation": "noted about Lauper",
+        "object": "unique vocals",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "earned",
+        "object": "several awards and accolades",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "earned",
+        "object": "two Grammy Awards",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "event",
+            "value": "27th Annual Grammy Awards"
+          }
+        ],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "one of the Grammy Awards",
+        "relation": "category",
+        "object": "Best New Artist",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "peak position on Billboard 200",
+        "object": "number four",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "weeks in top forty of Billboard 200",
+        "object": "65 weeks",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "sales in United States",
+        "object": "over 7 million copies",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "sales worldwide",
+        "object": "16 million copies",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "is",
+        "object": "Lauper's best-selling album",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "is",
+        "object": "one of the best-selling albums of the 1980s",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "ranked at",
+        "object": "number 494",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "list",
+            "value": "Rolling Stone's list of the 500 greatest albums of all time"
+          },
+          {
+            "kind": "time",
+            "value": "2003"
+          }
+        ],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "placed at",
+        "object": "number 184",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "list",
+            "value": "a 2020 reboot of the list"
+          }
+        ],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "selected by",
+        "object": "Library of Congress",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "2019"
+          }
+        ],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "selected for preservation in",
+        "object": "United States National Recording Registry",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "reason for selection",
+        "object": "being \"culturally, historically, or aesthetically significant\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 3690,
+    "prompt_tokens": 1118,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 1118
+    },
+    "total_tokens": 4808
+  }
+}

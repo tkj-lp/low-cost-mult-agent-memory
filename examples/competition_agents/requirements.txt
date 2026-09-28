@@ -1,16 +1,12 @@
-# Python 运行依赖（competition_agents 示例）
-#
-# 说明：
-# 1. 本项目的前端依赖由 frontend/package.json 管理，不写入本文件。
-# 2. torch 的 CPU/GPU 轮子与系统、CUDA 版本相关。若需要 GPU，请按本机 CUDA
-#    环境选择 PyTorch 官方安装命令；当前本机实验使用 torch 2.5.1+cu121。
-# 3. 若只运行 API 模式，torch/transformers 可不安装；若运行 local/hidden 模式则必须安装。
-# 4. LLMLingua-2 对比模式可安装 llmlingua；未安装时会使用规则压缩兜底。
-
-torch>=2.5
-transformers>=5.12
-huggingface-hub>=1.20
-safetensors>=0.8
-tokenizers>=0.22
-numpy>=2.4
-llmlingua>=0.2.2
+# 已验证的现有环境，无须为了清理升级依赖。
+# 根据部署机器安装匹配的处理器或显卡版 torch。
+torch>=2.5,<3
+transformers>=5.9,<6
+huggingface-hub>=1.16,<2
+safetensors>=0.7,<1
+numpy>=2.4,<3
+sentence-transformers>=5,<6
+snowballstemmer>=2.2,<4
+llmlingua==0.2.2
+pytest>=8,<10
+beautifulsoup4>=4.12,<5

@@ -31,6 +31,8 @@ import {
   configFromRunResult,
   decodeRunResultBuffer,
   defaultExperimentConfig,
+  datasetKeyForFile,
+  datasets,
   normalizeExperimentConfig,
   parseRunResultText,
   selectedCollaboration,
@@ -47,6 +49,8 @@ const runtime = reactive({
   status: 'idle',
   statusText: '未开始',
   currentTask: 0,
+  completedTasks: 0,
+  failedTasks: 0,
   totalTasks: config.taskCount,
   progress: 0,
   currentAgent: '未开始',
@@ -128,6 +132,8 @@ async function startExperiment(overrideConfig) {
   runtime.status = 'starting'
   runtime.statusText = '启动中'
   runtime.currentTask = 0
+  runtime.completedTasks = 0
+  runtime.failedTasks = 0
   runtime.totalTasks = nextConfig.taskCount
   runtime.progress = 0
   runtime.currentAgent = '等待后端事件'
@@ -201,7 +207,7 @@ async function importResult(file) {
     runtime.lastError = ''
     runtime.importedSummary = {
       experimentMode: payload.experiment_mode,
-      dataset: selectedDataset(importedConfig).label,
+      dataset: datasets.find(item => item.value === datasetKeyForFile(payload.dataset_file))?.label || payload.dataset_file || '历史数据集',
       collaboration: selectedCollaboration(importedConfig).label,
       taskCount: payload.task_count
     }
@@ -264,12 +270,22 @@ function startStatusPolling() {
 }
 
 function applyRunnerStatus(payload) {
+  if (payload.config?.dataset && (rowIdFor(payload.config) !== rowIdFor(config) || payload.config.backend !== config.backend || payload.config.taskCount !== config.taskCount)) {
+    runtime.status = 'idle'
+    runtime.statusText = payload.running ? '其他配置正在运行' : '当前配置未运行'
+    runtime.progress = 0
+    runtime.currentTask = 0
+    runtime.currentAgent = '未开始'
+    return
+  }
   const summary = payload.summary || {}
   const status = payload.status || 'idle'
   const taskCount = Number(summary.taskCount || runtime.totalTasks || config.taskCount)
   const completedTasks = Number(summary.completedTasks || 0)
   const currentTask = Number(summary.currentTask || completedTasks || 0)
 
+  runtime.completedTasks = completedTasks
+  runtime.failedTasks = Number(summary.failedTasks || 0)
   runtime.status = status
   runtime.statusText = statusText(status)
   runtime.totalTasks = taskCount
@@ -288,7 +304,7 @@ function applyRunnerStatus(payload) {
   if ((status === 'running' || status === 'starting') && payload.config) {
     runtime.runningRowId = rowIdFor(normalizeExperimentConfig({ ...config, ...payload.config }))
   }
-  if (status === 'completed' || status === 'failed' || (status === 'idle' && runtime.runningRowId)) {
+  if (status === 'completed' || status === 'failed' || status === 'stopped' || (status === 'idle' && runtime.runningRowId)) {
     runtime.runningRowId = ''
     clearStatusTimer()
   }

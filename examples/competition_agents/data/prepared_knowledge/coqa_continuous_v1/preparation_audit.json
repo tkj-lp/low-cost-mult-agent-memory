@@ -1,0 +1,94 @@
+{
+  "source_equal_to_official_story": true,
+  "text_documents": 1,
+  "text_characters": 1413,
+  "text_encoder_called": false,
+  "text_index_present": false,
+  "facts": 34,
+  "owned_sisters_facts": 5,
+  "extraction_attempts": 6,
+  "extraction_input_tokens": 4115,
+  "extraction_output_tokens": 9259,
+  "attempts": [
+    {
+      "file": "7d791a6e0043b72bab1353b9ee00453a6dd4e9464eadc58f529efbb3a01218a8.attempt-0.json",
+      "response_model": "qwen3.7-flash-2026-07-15",
+      "usage": {
+        "completion_tokens": 1589,
+        "prompt_tokens": 699,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 699
+        },
+        "total_tokens": 2288
+      }
+    },
+    {
+      "file": "7d791a6e0043b72bab1353b9ee00453a6dd4e9464eadc58f529efbb3a01218a8.attempt-1.json",
+      "response_model": "qwen3.7-flash-2026-07-15",
+      "usage": {
+        "completion_tokens": 1485,
+        "prompt_tokens": 731,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 731
+        },
+        "total_tokens": 2216
+      }
+    },
+    {
+      "file": "7d791a6e0043b72bab1353b9ee00453a6dd4e9464eadc58f529efbb3a01218a8.attempt-2.json",
+      "response_model": "qwen3.7-flash-2026-07-15",
+      "usage": {
+        "completion_tokens": 1575,
+        "prompt_tokens": 731,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 731
+        },
+        "total_tokens": 2306
+      }
+    },
+    {
+      "file": "f68b32eeffd339c0975afaa511a7d9a8b1f56cd6829f1ecc8c62e9bd739956d3.attempt-0.json",
+      "response_model": null,
+      "usage": {
+        "completion_tokens": 1606,
+        "prompt_tokens": 632,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 632
+        },
+        "total_tokens": 2238
+      }
+    },
+    {
+      "file": "f68b32eeffd339c0975afaa511a7d9a8b1f56cd6829f1ecc8c62e9bd739956d3.attempt-1.json",
+      "response_model": null,
+      "usage": {
+        "completion_tokens": 1549,
+        "prompt_tokens": 658,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 658
+        },
+        "total_tokens": 2207
+      }
+    },
+    {
+      "file": "f68b32eeffd339c0975afaa511a7d9a8b1f56cd6829f1ecc8c62e9bd739956d3.attempt-2.json",
+      "response_model": null,
+      "usage": {
+        "completion_tokens": 1455,
+        "prompt_tokens": 664,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 664
+        },
+        "total_tokens": 2119
+      }
+    }
+  ],
+  "online_answer_runs": 0,
+  "regression_tests_passed": 42
+}

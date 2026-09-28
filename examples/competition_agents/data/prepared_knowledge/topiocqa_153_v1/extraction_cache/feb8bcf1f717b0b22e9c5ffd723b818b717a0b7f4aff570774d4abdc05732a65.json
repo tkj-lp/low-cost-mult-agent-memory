@@ -1,0 +1,537 @@
+{
+  "source_sha256": "3f2328700054fc6894a5c72b240af6cc240025759de6ae92a326db627eb522e3",
+  "extractor_sha256": "feb8bcf1f717b0b22e9c5ffd723b818b717a0b7f4aff570774d4abdc05732a65",
+  "model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "Kinky Boots",
+        "relation": "is a",
+        "object": "musical",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "music and lyrics",
+        "relation": "by",
+        "object": "Cyndi Lauper",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "book",
+        "relation": "by",
+        "object": "Harvey Fierstein",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Kinky Boots (musical)",
+        "relation": "based on",
+        "object": "the 2005 British film Kinky Boots",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "the 2005 British film Kinky Boots",
+        "relation": "written by",
+        "object": "Geoff Deane and Tim Firth",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "the 2005 British film Kinky Boots",
+        "relation": "inspired by",
+        "object": "true events",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "modality",
+            "value": "mostly"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "the musical",
+        "relation": "tells the story of",
+        "object": "Charlie Price",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Charlie Price",
+        "relation": "inherited",
+        "object": "a shoe factory",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "owner",
+            "value": "his father"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Charlie",
+        "relation": "forms",
+        "object": "an unlikely partnership",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "with",
+            "value": "cabaret performer and drag queen Lola"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Charlie and Lola",
+        "relation": "produce",
+        "object": "a line of high-heeled boots",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Charlie and Lola",
+        "relation": "save",
+        "object": "the business",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Charlie and Lola",
+        "relation": "discover that they are not so different after all",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "the show's conception",
+        "relation": "occurred in",
+        "object": "2006",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "the creative team",
+        "relation": "was assembled by",
+        "object": "2010",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "The original production of Kinky Boots",
+        "relation": "premiered at",
+        "object": "the Bank of America Theatre in Chicago",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "October 2012"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "The original production of Kinky Boots",
+        "relation": "direction and choreography by",
+        "object": "Jerry Mitchell",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Stark Sands",
+        "relation": "starred as",
+        "object": "Charlie",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Billy Porter",
+        "relation": "starred as",
+        "object": "Lola",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "It",
+        "relation": "made its Broadway debut at",
+        "object": "the Al Hirschfeld Theatre",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "April 4, 2013"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "previews",
+        "relation": "began on",
+        "object": "March 3, 2013",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "The musical",
+        "relation": "began a US tour in",
+        "object": "2014",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "The Broadway production",
+        "relation": "ended its six-year run on",
+        "object": "April 7, 2019",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "initially been less well received by theatre critics and at the box office than",
+        "object": "another 2013 Broadway production, Matilda the Musical",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "entered the 2013 awards season as",
+        "object": "an underdog",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "surpassed this rival with audiences in weekly box office gross",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "less than a month after opening"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "enjoyed",
+        "object": "a post-Tony boost in advance sales",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "The production",
+        "relation": "earned",
+        "object": "a season-high 13 nominations",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "The production",
+        "relation": "earned",
+        "object": "6 Tony wins",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Best Musical",
+        "relation": "was one of the Tony wins for",
+        "object": "Kinky Boots",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Best Actor",
+        "relation": "was won by",
+        "object": "Billy Porter",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Best Score",
+        "relation": "was won by",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "had her first outing as a Broadway songwriter",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "is",
+        "object": "the first woman to win alone in that category",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "The musical's cast album",
+        "relation": "premiered at number one on",
+        "object": "the Billboard Cast Albums Chart",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "The musical's cast album",
+        "relation": "premiered at number fifty-one on",
+        "object": "the Billboard 200 chart",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "made its West End debut in",
+        "object": "2015",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "it",
+        "relation": "won three Laurence Olivier Awards in 2016",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Best New Musical",
+        "relation": "was one of the Laurence Olivier Awards won by",
+        "object": "Kinky Boots",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 2630,
+    "prompt_tokens": 1013,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 1013
+    },
+    "total_tokens": 3643
+  },
+  "attempts": 2,
+  "offline_seconds": 49.38955449999776,
+  "semantic_verification": "not_independently_verified"
+}

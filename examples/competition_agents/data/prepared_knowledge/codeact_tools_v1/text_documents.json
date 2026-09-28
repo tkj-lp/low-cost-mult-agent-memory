@@ -1,0 +1,9 @@
+[
+  {
+    "id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "title": "Python execution environment",
+    "sentences": [
+      "The execution environment supplies task data in the inputs dictionary. The program must assign a JSON-compatible dictionary to result. The task declares output_fields as the required result keys. Only the modules in allowed_imports are available. Python sum, len, min, max, sorted, list, dict and range are available. The statistics module provides mean, median, pvariance and pstdev. pvariance and pstdev compute population statistics. The math module provides sqrt. File access and network access are unavailable. The executor returns the actual result or an error."
+    ]
+  }
+]

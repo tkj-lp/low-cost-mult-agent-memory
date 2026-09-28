@@ -1,0 +1,5 @@
+# 固定版本、知识库和校准清单按原始字节计算校验值，禁止跨平台换行转换。
+* -text whitespace=cr-at-eol
+# 原始数据和网页快照须保留来源原貌。
+data/** -whitespace
+docs/evidence/** -whitespace

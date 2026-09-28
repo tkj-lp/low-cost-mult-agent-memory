@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import json
 import re
+from copy import deepcopy
+from functools import lru_cache
 from typing import Any
 
 from .entities import canonical_entity, extract_canonical_entities
 from .layers import KNOWLEDGE_LAYER
 from .text import limited_tokens, node_id, question_content_tokens, stable_id
-
 
 ANSWER_LIKE_FIELDS = {
     "answer",
@@ -26,7 +28,12 @@ def _tokens(*values: Any) -> set[str]:
 
 
 def _dataset_name(task_meta: dict[str, Any], dataset_type: str | None) -> str:
-    value = dataset_type or task_meta.get("dataset_type") or task_meta.get("source_dataset") or ""
+    value = (
+        dataset_type
+        or task_meta.get("dataset_type")
+        or task_meta.get("source_dataset")
+        or ""
+    )
     value = _text(value).lower()
     if "topiocqa" in value:
         return "topiocqa"
@@ -80,7 +87,9 @@ def _unit(
     }
 
 
-def _normalize_hotpot(task_meta: dict[str, Any], dataset_type: str, task_id: str) -> list[dict[str, Any]]:
+def _normalize_hotpot(
+    task_meta: dict[str, Any], dataset_type: str, task_id: str
+) -> list[dict[str, Any]]:
     units: list[dict[str, Any]] = []
     for doc_index, doc in enumerate(task_meta.get("context", []) or []):
         if not isinstance(doc, dict):
@@ -106,7 +115,9 @@ def _normalize_hotpot(task_meta: dict[str, Any], dataset_type: str, task_id: str
     return units
 
 
-def _normalize_topiocqa(task_meta: dict[str, Any], dataset_type: str, task_id: str) -> list[dict[str, Any]]:
+def _normalize_topiocqa(
+    task_meta: dict[str, Any], dataset_type: str, task_id: str
+) -> list[dict[str, Any]]:
     units = _normalize_hotpot(task_meta, dataset_type, task_id)
     documents = task_meta.get("context", []) or []
     for position, unit in enumerate(units):
@@ -116,19 +127,30 @@ def _normalize_topiocqa(task_meta: dict[str, Any], dataset_type: str, task_id: s
         sentences = document.get("sentences", []) or []
         start, end = max(0, index - 1), min(len(sentences), index + 2)
         # A bounded overlapping window keeps a split statement with its continuation.
-        unit["text"] = " ".join(_text(sentence) for sentence in sentences[start:end] if _text(sentence))
+        unit["text"] = " ".join(
+            _text(sentence) for sentence in sentences[start:end] if _text(sentence)
+        )
         title, separator, section = unit["title"].partition("[SEP]")
         if separator:
             unit["title"] = title.strip()
             unit["section"] = unit["section"] or section.strip()
-        metadata.update({
-            "source": document.get("source", "dataset_context"),
-            "sentence_range": [start, end],
-        })
-        unit["context_id"] = _context_id(
-            task_id, unit["kind"], position, unit["title"], unit["section"], unit["text"],
+        metadata.update(
+            {
+                "source": document.get("source", "dataset_context"),
+                "sentence_range": [start, end],
+            }
         )
-    history = task_meta.get("conversation_context", []) or task_meta.get("context", []) or []
+        unit["context_id"] = _context_id(
+            task_id,
+            unit["kind"],
+            position,
+            unit["title"],
+            unit["section"],
+            unit["text"],
+        )
+    history = (
+        task_meta.get("conversation_context", []) or task_meta.get("context", []) or []
+    )
     if isinstance(history, list):
         for index, item in enumerate(history):
             if isinstance(item, dict):
@@ -173,7 +195,9 @@ def _normalize_topiocqa(task_meta: dict[str, Any], dataset_type: str, task_id: s
     return unique
 
 
-def _normalize_codeact(task_meta: dict[str, Any], dataset_type: str, task_id: str) -> list[dict[str, Any]]:
+def _normalize_codeact(
+    task_meta: dict[str, Any], dataset_type: str, task_id: str
+) -> list[dict[str, Any]]:
     parts: list[str] = []
     if task_meta.get("task_type"):
         parts.append(f"task_type: {task_meta.get('task_type')}")
@@ -198,7 +222,9 @@ def _normalize_codeact(task_meta: dict[str, Any], dataset_type: str, task_id: st
     ]
 
 
-def _normalize_generic(task_meta: dict[str, Any], dataset_type: str, task_id: str) -> list[dict[str, Any]]:
+def _normalize_generic(
+    task_meta: dict[str, Any], dataset_type: str, task_id: str
+) -> list[dict[str, Any]]:
     units = _normalize_hotpot(task_meta, dataset_type, task_id)
     if units:
         return units
@@ -208,7 +234,23 @@ def _normalize_generic(task_meta: dict[str, Any], dataset_type: str, task_id: st
     return []
 
 
-def _context_units(task_meta: dict[str, Any], dataset_type: str, task_id: str) -> list[dict[str, Any]]:
+def _context_units(
+    task_meta: dict[str, Any], dataset_type: str, task_id: str
+) -> list[dict[str, Any]]:
+    # Provenance, not gold-answer comparison, identifies this invalid source.
+    # Answer annotations must be replaced with actual source passages upstream.
+    if (
+        any(
+            isinstance(doc, dict) and doc.get("source") == "official_answer_annotation"
+            for doc in task_meta.get("context", []) or []
+        )
+        or task_meta.get("evidence_scope")
+        == "official_answer_annotations_existing_project_adapter"
+    ):
+        raise ValueError(
+            "Answer annotations cannot be used as retrieval evidence; "
+            "provide source passages instead of official_answer_annotation."
+        )
     if dataset_type in {"hotpot", "hotpot_continuous"}:
         return _normalize_hotpot(task_meta, dataset_type, task_id)
     if dataset_type == "topiocqa":
@@ -222,6 +264,85 @@ def _extract_entities(*texts: str, limit: int = 14) -> list[str]:
     return extract_canonical_entities(*texts, limit=limit)
 
 
+def _entity_overlap(left: str, right: str) -> bool:
+    """实体别名可以包含完整名称，不能匹配名字内部的字符片段。"""
+    return bool(left and right and (
+        re.search(r"(?<!\w)" + re.escape(left) + r"(?!\w)", right)
+        or re.search(r"(?<!\w)" + re.escape(right) + r"(?!\w)", left)
+    ))
+
+
+@lru_cache(maxsize=2048)
+def _context_features(
+    title: str, section: str, text: str
+) -> tuple[frozenset[str], frozenset[str], frozenset[str]]:
+    """Reuse document features across turns without caching mutable caller data."""
+
+    return (
+        frozenset(_tokens(title, section, text)),
+        frozenset(_extract_entities(title, section, text)),
+        frozenset(_extract_entities(text)),
+    )
+
+
+@lru_cache(maxsize=32)
+def _cached_context_graph(payload: str, dataset_type: str) -> dict[str, Any]:
+    graph = _build_context_hypergraph(json.loads(payload), dataset_type)
+    graph["lookup"] = _context_lookup(graph)
+    return graph
+
+
+def _context_lookup(graph):
+    """倒排表随知识源缓存，不随问题重建。"""
+    edges_by_context = {}
+    for edge in graph["hyperedges"]:
+        for node in edge.get("nodes", []):
+            if node.startswith("context:"):
+                edges_by_context.setdefault(node, []).append(edge)
+    entities, text_entities, entity_contexts = {}, {}, {}
+    for unit in graph["context_units"]:
+        context_id = unit["context_id"]
+        features = _context_features(unit.get("title", ""), unit.get("section", ""), unit["text"])
+        entities[context_id], text_entities[context_id] = features[1:]
+        for entity in entities[context_id]:
+            entity_contexts.setdefault(entity, set()).add(context_id)
+    return edges_by_context, entities, text_entities, entity_contexts
+
+
+def select_connected_hits(ranked, top_k):
+    """保留命中与它依赖的桥接证据，避免末次截取拆断证据链。"""
+    by_id = {hit["context_id"]: hit for hit in ranked}
+    chosen = {}
+    for hit in ranked:
+        bundle = {}
+
+        def include(row, visiting):
+            key = row["context_id"]
+            if key in visiting or key in chosen or key in bundle:
+                return True
+            visiting = visiting | {key}
+            for source in row.get("bridge_source_context_ids", []):
+                if source not in by_id or not include(by_id[source], visiting):
+                    return False
+            bundle[key] = row
+            return True
+
+        if not include(hit, set()):
+            continue
+        if len(chosen) + len(bundle) <= top_k:
+            chosen.update(bundle)
+        if len(chosen) == top_k:
+            break
+    return list(chosen.values())
+
+
+def clear_context_cache() -> None:
+    """Release cached graphs and document features between independent runs."""
+
+    _cached_context_graph.cache_clear()
+    _context_features.cache_clear()
+
+
 def _edge(edge_type: str, edge_key: str, nodes: list[str]) -> dict[str, Any]:
     return {
         "hyperedge_id": node_id("context_hyperedge", edge_key),
@@ -230,7 +351,9 @@ def _edge(edge_type: str, edge_key: str, nodes: list[str]) -> dict[str, Any]:
     }
 
 
-def _build_context_hypergraph(task_meta: dict[str, Any], dataset_type: str) -> dict[str, Any]:
+def _build_context_hypergraph(
+    task_meta: dict[str, Any], dataset_type: str
+) -> dict[str, Any]:
     task_id = _task_id(task_meta)
     question = _text(task_meta.get("question") or task_meta.get("task"))
     group_id = _text(task_meta.get("group_id") or task_meta.get("chain_id"))
@@ -242,7 +365,12 @@ def _build_context_hypergraph(task_meta: dict[str, Any], dataset_type: str) -> d
 
     def add_node(kind: str, value: str, label: str | None = None) -> str:
         node = node_id(kind, value)
-        nodes[node] = {"id": node, "kind": kind, "value": value, "label": label or value}
+        nodes[node] = {
+            "id": node,
+            "kind": kind,
+            "value": value,
+            "label": label or value,
+        }
         return node
 
     task_node = add_node("task", task_id)
@@ -255,13 +383,23 @@ def _build_context_hypergraph(task_meta: dict[str, Any], dataset_type: str) -> d
             [task_node, dataset_node, layer_node],
         )
     )
-    question_node = add_node("question", f"{task_id}:{stable_id(question, length=8)}", question[:96]) if question else ""
+    question_node = (
+        add_node(
+            "question", f"{task_id}:{stable_id(question, length=8)}", question[:96]
+        )
+        if question
+        else ""
+    )
     membership_nodes = [dataset_node, task_node, question_node]
     if group_id:
         membership_nodes.append(add_node("group", group_id))
     if turn_id:
-        membership_nodes.append(add_node("turn", f"{group_id}:{turn_id}" if group_id else turn_id, turn_id))
-    edges.append(_edge("context_task_membership", f"{task_id}:membership", membership_nodes))
+        membership_nodes.append(
+            add_node("turn", f"{group_id}:{turn_id}" if group_id else turn_id, turn_id)
+        )
+    edges.append(
+        _edge("context_task_membership", f"{task_id}:membership", membership_nodes)
+    )
 
     for unit in units:
         context_node = add_node("context", unit["context_id"], unit["text"][:96])
@@ -279,22 +417,45 @@ def _build_context_hypergraph(task_meta: dict[str, Any], dataset_type: str) -> d
         if unit.get("section"):
             topic_nodes.append(add_node("section", unit["section"]))
         if len(topic_nodes) > 1:
-            edges.append(_edge("context_topic", f"{unit['context_id']}:topic", topic_nodes))
+            edges.append(
+                _edge("context_topic", f"{unit['context_id']}:topic", topic_nodes)
+            )
 
         entity_nodes = [context_node]
-        for entity in _extract_entities(unit.get("title", ""), unit.get("section", ""), unit.get("text", "")):
+        for entity in _extract_entities(
+            unit.get("title", ""), unit.get("section", ""), unit.get("text", "")
+        ):
             kind = "date" if any(char.isdigit() for char in entity) else "entity"
             entity_nodes.append(add_node(kind, entity))
         if len(entity_nodes) > 1:
-            edges.append(_edge("context_entities", f"{unit['context_id']}:entities", entity_nodes))
+            edges.append(
+                _edge(
+                    "context_entities", f"{unit['context_id']}:entities", entity_nodes
+                )
+            )
 
         keyword_nodes = [context_node]
-        for token in limited_tokens(" ".join([unit.get("title", ""), unit.get("section", ""), unit.get("text", "")]), limit=18):
+        for token in limited_tokens(
+            " ".join(
+                [unit.get("title", ""), unit.get("section", ""), unit.get("text", "")]
+            ),
+            limit=18,
+        ):
             keyword_nodes.append(add_node("keyword", token))
         if len(keyword_nodes) > 1:
-            edges.append(_edge("context_keywords", f"{unit['context_id']}:keywords", keyword_nodes))
+            edges.append(
+                _edge(
+                    "context_keywords", f"{unit['context_id']}:keywords", keyword_nodes
+                )
+            )
 
-        edges.append(_edge("candidate_evidence", f"{unit['context_id']}:candidate", [question_node, context_node, *topic_nodes[1:]]))
+        edges.append(
+            _edge(
+                "candidate_evidence",
+                f"{unit['context_id']}:candidate",
+                [question_node, context_node, *topic_nodes[1:]],
+            )
+        )
 
     return {
         "graph_type": "context_hypergraph",
@@ -306,7 +467,9 @@ def _build_context_hypergraph(task_meta: dict[str, Any], dataset_type: str) -> d
         "hyperedges": edges,
         "context_units": units,
         "eval_labels": {
-            "gold_fields_present": sorted(key for key in ANSWER_LIKE_FIELDS if key in task_meta),
+            "gold_fields_present": sorted(
+                key for key in ANSWER_LIKE_FIELDS if key in task_meta
+            ),
             "supporting_fact_count": len(task_meta.get("supporting_facts", []) or []),
         },
     }
@@ -318,18 +481,13 @@ def _score_unit(
     focus_tokens: set[str],
     query_entities: set[str],
 ) -> tuple[float, list[str], list[str]]:
-    unit_tokens = _tokens(unit.get("title", ""), unit.get("section", ""), unit.get("text", ""))
+    unit_tokens, unit_entities, _ = _context_features(
+        unit.get("title", ""), unit.get("section", ""), unit.get("text", "")
+    )
     combined = query_tokens | focus_tokens
     matched = sorted(unit_tokens & combined)
     title_overlap = _tokens(unit.get("title", "")) & combined
     section_overlap = _tokens(unit.get("section", "")) & combined
-    unit_entities = set(
-        _extract_entities(
-            unit.get("title", ""),
-            unit.get("section", ""),
-            unit.get("text", ""),
-        )
-    )
     matched_entities = sorted(unit_entities & query_entities)
 
     score = float(len(matched))
@@ -339,6 +497,37 @@ def _score_unit(
     if unit.get("kind") in {"supporting_passage", "tool_task_context"}:
         score += 1.0
     return score, matched, matched_entities
+
+
+def _answer_signal_score(question_tokens: set[str], text: str) -> float:
+    """按问题要求的属性奖励可能承载答案关系的句子。
+
+    这里只读取问题形式和候选正文，不读取标准答案或 supporting_facts。
+    它用于避免多跳桥实体的介绍句占满 top-k，而真正的属性句排在下一位。
+    """
+
+    lowered = _text(text).lower()
+    score = 0.0
+    if {"position", "role", "office", "job"} & question_tokens and re.search(
+        r"\b(?:served|appointed|named|held|elected|became|minister|ambassador|"
+        r"president|director|secretary|protocol)\b",
+        lowered,
+    ):
+        # 需要跨越一次实体桥接后仍能抵消最终词面重排对片名词元的偏好。
+        score += 12.0
+    if {"when", "date", "year"} & question_tokens and re.search(
+        r"\b(?:1[5-9]|20)\d{2}\b", lowered
+    ):
+        score += 4.0
+    if {"where", "location", "country", "city", "place"} & question_tokens and re.search(
+        r"\b(?:located|situated|based|born|in|at|near)\b", lowered
+    ):
+        score += 3.0
+    if {"many", "much", "number", "percentage"} & question_tokens and re.search(
+        r"\b\d+(?:\.\d+)?%?\b", lowered
+    ):
+        score += 3.0
+    return score
 
 
 def search_context(
@@ -360,14 +549,52 @@ def search_context(
     three-sentence windows. `exclude_kinds` filters candidates before ranking.
     """
 
+    from .prepared_knowledge import configured_knowledge
+    prepared = configured_knowledge()
+    if prepared is not None:
+        return prepared.search_graph(query or _text(task_meta.get("question")), top_k)
+    if top_k <= 0:
+        return []
     resolved_dataset = _dataset_name(task_meta, dataset_type)
-    graph = _build_context_hypergraph(task_meta, resolved_dataset)
-    if exclude_kinds:
-        graph["context_units"] = [
-            unit for unit in graph["context_units"] if unit["kind"] not in exclude_kinds
-        ]
+    # Do not retain evaluation labels or unrelated execution traces in cache.
+    graph_meta = {
+        key: task_meta[key]
+        for key in (
+            "group_id",
+            "chain_id",
+            "context",
+            "conversation_context",
+            "supporting_passage",
+            "topic",
+            "topic_section",
+            "task_type",
+            "inputs",
+            "allowed_imports",
+            "tags",
+            "evidence_scope",
+        )
+        if key in task_meta
+    }
+    # 工具任务本身是知识来源；一般问答的问题与轮次不是知识图的一部分。
+    if resolved_dataset == "codeact":
+        graph_meta["task"] = task_meta.get("task", "")
+    source_key = stable_id(json.dumps(graph_meta, ensure_ascii=False, sort_keys=True), length=24)
+    graph_meta["task_id"] = "source-" + source_key
+    payload = json.dumps(graph_meta, ensure_ascii=False, sort_keys=True)
+    graph = (
+        _cached_context_graph(payload, resolved_dataset)
+        if len(payload) <= 262144
+        else _build_context_hypergraph(graph_meta, resolved_dataset)
+    )
+    units = [
+        unit
+        for unit in graph["context_units"]
+        if unit["kind"] not in (exclude_kinds or ())
+    ]
     requested_tokens = question_content_tokens(_text(task_meta.get("question")))
-    query_text = " ".join([_text(task_meta.get("question")), _text(task_meta.get("task")), _text(query)])
+    query_text = " ".join(
+        [_text(task_meta.get("question")), _text(task_meta.get("task")), _text(query)]
+    )
     query_tokens = _tokens(query_text)
     focus_tokens = _tokens(" ".join(planner_focus or []))
     query_entities = set(
@@ -377,33 +604,12 @@ def search_context(
         )
     )
 
-    edges_by_context: dict[str, list[dict[str, Any]]] = {}
-    for edge in graph["hyperedges"]:
-        for node in edge.get("nodes", []):
-            if node.startswith("context:"):
-                edges_by_context.setdefault(node, []).append(edge)
-
-    unit_entities = {
-        unit["context_id"]: set(
-            _extract_entities(
-                unit.get("title", ""),
-                unit.get("section", ""),
-                unit.get("text", ""),
-            )
-        )
-        for unit in graph["context_units"]
-    }
-    unit_text_entities = {
-        unit["context_id"]: set(_extract_entities(unit.get("text", "")))
-        for unit in graph["context_units"]
-    }
-    entity_contexts: dict[str, set[str]] = {}
-    for context_id, entities in unit_entities.items():
-        for entity in entities:
-            entity_contexts.setdefault(entity, set()).add(context_id)
+    edges_by_context, unit_entities, unit_text_entities, entity_contexts = (
+        graph["lookup"] if "lookup" in graph else _context_lookup(graph)
+    )
 
     scored_units: list[dict[str, Any]] = []
-    for unit in graph["context_units"]:
+    for unit in units:
         score, matched_tokens, matched_entities = _score_unit(
             unit,
             query_tokens,
@@ -411,12 +617,16 @@ def search_context(
             query_entities,
         )
         score += 4.0 * len(requested_tokens & _tokens(unit.get("text", "")))
+        answer_signal_score = _answer_signal_score(
+            _tokens(_text(task_meta.get("question"))), unit.get("text", "")
+        )
         scored_units.append(
             {
                 "unit": unit,
                 "base_score": score,
                 "matched_tokens": matched_tokens,
                 "matched_entities": matched_entities,
+                "answer_signal_score": answer_signal_score,
             }
         )
 
@@ -426,28 +636,25 @@ def search_context(
         key=lambda item: (-item["base_score"], item["unit"]["context_id"]),
     )[:seed_count]
     bridge_sources: dict[str, list[tuple[str, float]]] = {}
+    document_entities = {canonical_entity(unit.get("title", "")) for unit in units}
     for seed in seeds:
         context_id = seed["unit"]["context_id"]
         title_entity = canonical_entity(seed["unit"].get("title", ""))
         for entity in unit_text_entities.get(context_id, set()):
             overlaps_query = any(
-                entity == query_entity
-                or entity in query_entity
-                or query_entity in entity
+                _entity_overlap(entity, query_entity)
                 for query_entity in query_entities
             )
             overlaps_title = bool(
                 title_entity
                 and (
-                    entity == title_entity
-                    or entity in title_entity
-                    or title_entity in entity
+                    _entity_overlap(entity, title_entity)
                 )
             )
             if (
                 overlaps_query
                 or overlaps_title
-                or len(entity.split()) < 2
+                or (len(entity.split()) < 2 and entity not in document_entities)
                 or len(entity_contexts.get(entity, set())) < 2
             ):
                 continue
@@ -467,9 +674,7 @@ def search_context(
         title_entity = canonical_entity(unit.get("title", ""))
         for entity in candidate_bridges:
             sources = [
-                source
-                for source in bridge_sources[entity]
-                if source[0] != context_id
+                source for source in bridge_sources[entity] if source[0] != context_id
             ]
             if not sources:
                 continue
@@ -478,19 +683,37 @@ def search_context(
             if entity == title_entity:
                 expansion_score += 4.0
             bridge_paths.append((entity, source_id))
-        score = float(item["base_score"]) + expansion_score
+        title_grounded = bool(
+            _tokens(unit.get("title", "")) & (query_tokens | focus_tokens)
+        )
+        signal_grounded = bool(
+            bridge_paths or item["matched_entities"] or title_grounded
+        )
+        applied_answer_signal = float(item["answer_signal_score"]) * (
+            1.0 if signal_grounded else 0.25
+        )
+        score = float(item["base_score"]) + expansion_score + applied_answer_signal
         if score <= 0:
             continue
         matched_tokens = item["matched_tokens"]
         matched_entities = item["matched_entities"]
         context_node = node_id("context", unit["context_id"])
         matched_edges = edges_by_context.get(context_node, [])[:6]
-        matched_nodes = [context_node, *[node_id("keyword", token) for token in matched_tokens[:8]]]
-        matched_nodes.extend(node_id("entity", entity) for entity in matched_entities[:6])
-        matched_nodes.extend(node_id("entity", entity) for entity, _ in bridge_paths[:4])
+        matched_nodes = [
+            context_node,
+            *[node_id("keyword", token) for token in matched_tokens[:8]],
+        ]
+        matched_nodes.extend(
+            node_id("entity", entity) for entity in matched_entities[:6]
+        )
+        matched_nodes.extend(
+            node_id("entity", entity) for entity, _ in bridge_paths[:4]
+        )
         if unit.get("title") and _tokens(unit["title"]) & (query_tokens | focus_tokens):
             matched_nodes.append(node_id("topic", unit["title"]))
-        if unit.get("section") and _tokens(unit["section"]) & (query_tokens | focus_tokens):
+        if unit.get("section") and _tokens(unit["section"]) & (
+            query_tokens | focus_tokens
+        ):
             matched_nodes.append(node_id("section", unit["section"]))
         hits.append(
             {
@@ -505,6 +728,10 @@ def search_context(
                 "context_score": round(score, 4),
                 "lexical_score": round(float(item["base_score"]), 4),
                 "graph_expansion_score": round(expansion_score, 4),
+                "answer_signal_score": round(applied_answer_signal, 4),
+                "raw_answer_signal_score": round(
+                    float(item["answer_signal_score"]), 4
+                ),
                 "bridge_entities": [entity for entity, _ in bridge_paths],
                 "bridge_source_context_ids": list(
                     dict.fromkeys(source_id for _, source_id in bridge_paths)
@@ -517,7 +744,9 @@ def search_context(
                             "entity" if token in matched_entities else "keyword",
                             token,
                         ),
-                        "hyperedge_id": matched_edges[0]["hyperedge_id"] if matched_edges else "",
+                        "hyperedge_id": matched_edges[0]["hyperedge_id"]
+                        if matched_edges
+                        else "",
                         "context_id": unit["context_id"],
                     }
                     for token in [*matched_entities[:2], *matched_tokens[:3]][:3]
@@ -533,4 +762,5 @@ def search_context(
             }
         )
 
-    return sorted(hits, key=lambda hit: (-hit["context_score"], hit["context_id"]))[:top_k]
+    ranked = sorted(hits, key=lambda hit: (-hit["context_score"], hit["context_id"]))
+    return deepcopy(select_connected_hits(ranked, top_k))

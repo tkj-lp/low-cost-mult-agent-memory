@@ -1,0 +1,1238 @@
+{
+  "config": {
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "latent_steps": 2,
+    "knowledge_files": {
+      "text_documents.json": "920ba7e69e9d03f37372d4400b34b4b06be5864ed8f18a425ff0a4c265cfe380",
+      "facts.json": "4e53c82f11adcf176c3f052689772ae642f9b9f67249a0792dc971cb6227006d",
+      "hypergraph.sqlite": "8899947f887068e1c8422a2bd45f67ac9e514dbad7290ace1006fe26e3d46cf9"
+    },
+    "implementation_hashes": {
+      "competition_agents/llm/latent_only_chat.py": "e285b5860dfd4eda5227391b4c91d6e908bf6d3e3aee2667a920d0a5fc7084c4",
+      "competition_agents/latent_hidden/calibrated_query.py": "6b15e766c83af02a659492deb234b45ef7ffe67fbe350c07c3c568e67aadb384",
+      "competition_agents/latent_hidden/posterior_alignment.py": "2cb052ef02e5db0ebd1875f90cb156995da7a53030beec806e53b95645bdd53b"
+    }
+  },
+  "validation_samples": [
+    {
+      "question": "Which color does Lauper have?",
+      "target": "color of something",
+      "category": "color",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "In which place does Lauper reside?",
+      "target": "where someone lives place residence location",
+      "category": "location",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Does Lauper share a home with others?",
+      "target": "live alone or share a home with others",
+      "category": "companions",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "At what time did this occur for Lauper?",
+      "target": "date time when an event occurred",
+      "category": "time",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the identity of Lauper?",
+      "target": "identity type kind of person or thing",
+      "category": "identity",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the number associated with Lauper?",
+      "target": "number count how many",
+      "category": "quantity",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "To whom does Lauper belong?",
+      "target": "ownership belonging owner",
+      "category": "owner",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Who is related to Lauper?",
+      "target": "family mother father sisters siblings relationship",
+      "category": "family",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What caused this for Lauper?",
+      "target": "cause reason why",
+      "category": "cause",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which action did Lauper take?",
+      "target": "action activity did",
+      "category": "action",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What does Lauper look like?",
+      "target": "appearance description physical characteristics",
+      "category": "appearance",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which words did Lauper speak?",
+      "target": "words said statement",
+      "category": "speech",
+      "entity": "Lauper",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which color does \"Girls Just Want to Have Fun\" have?",
+      "target": "color of something",
+      "category": "color",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "In which place does \"Girls Just Want to Have Fun\" reside?",
+      "target": "where someone lives place residence location",
+      "category": "location",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Does \"Girls Just Want to Have Fun\" share a home with others?",
+      "target": "live alone or share a home with others",
+      "category": "companions",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "At what time did this occur for \"Girls Just Want to Have Fun\"?",
+      "target": "date time when an event occurred",
+      "category": "time",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the identity of \"Girls Just Want to Have Fun\"?",
+      "target": "identity type kind of person or thing",
+      "category": "identity",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the number associated with \"Girls Just Want to Have Fun\"?",
+      "target": "number count how many",
+      "category": "quantity",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "To whom does \"Girls Just Want to Have Fun\" belong?",
+      "target": "ownership belonging owner",
+      "category": "owner",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Who is related to \"Girls Just Want to Have Fun\"?",
+      "target": "family mother father sisters siblings relationship",
+      "category": "family",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What caused this for \"Girls Just Want to Have Fun\"?",
+      "target": "cause reason why",
+      "category": "cause",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which action did \"Girls Just Want to Have Fun\" take?",
+      "target": "action activity did",
+      "category": "action",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What does \"Girls Just Want to Have Fun\" look like?",
+      "target": "appearance description physical characteristics",
+      "category": "appearance",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which words did \"Girls Just Want to Have Fun\" speak?",
+      "target": "words said statement",
+      "category": "speech",
+      "entity": "\"Girls Just Want to Have Fun\"",
+      "kind": "held_out_wording"
+    }
+  ],
+  "calibration_report": {
+    "regularization": 0.1,
+    "trials": [
+      {
+        "strength": 0.01,
+        "held_out_mean_cosine": 0.6766276955604553
+      },
+      {
+        "strength": 0.1,
+        "held_out_mean_cosine": 0.686857283115387
+      },
+      {
+        "strength": 1.0,
+        "held_out_mean_cosine": 0.6524405479431152
+      },
+      {
+        "strength": 10.0,
+        "held_out_mean_cosine": 0.4821096360683441
+      }
+    ],
+    "train_samples": 112,
+    "validation_samples": 24,
+    "trainable_parameters": 1769856,
+    "base_model_training": false,
+    "feature_parts": [
+      "question_input_embedding",
+      "question_content_last_layer",
+      "current_role_last_layer"
+    ],
+    "corpus_sha256": "ef2a5a207e99ed4f1f537987ba0561ca4ef8cecb46099e039f3c8017fa0dbf76",
+    "sample_sha256": "4d55e8e88ba80cd7d5da4d6427aa7cf316b1fc07aa444f716ea320fbd2f78bb5",
+    "teacher": "sentence-transformers/all-MiniLM-L6-v2",
+    "samples": [
+      {
+        "question": "What is the color of Lauper?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does Lauper live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does Lauper live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to Lauper?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is Lauper?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with Lauper?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns Lauper?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of Lauper?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to Lauper?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Lauper do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of Lauper described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Lauper say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Lauper",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of \"Girls Just Want to Have Fun\"?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does \"Girls Just Want to Have Fun\" live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does \"Girls Just Want to Have Fun\" live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to \"Girls Just Want to Have Fun\"?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is \"Girls Just Want to Have Fun\"?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with \"Girls Just Want to Have Fun\"?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns \"Girls Just Want to Have Fun\"?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of \"Girls Just Want to Have Fun\"?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to \"Girls Just Want to Have Fun\"?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did \"Girls Just Want to Have Fun\" do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of \"Girls Just Want to Have Fun\" described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did \"Girls Just Want to Have Fun\" say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of Kinky Boots?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does Kinky Boots live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does Kinky Boots live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to Kinky Boots?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is Kinky Boots?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with Kinky Boots?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns Kinky Boots?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of Kinky Boots?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to Kinky Boots?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Kinky Boots do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of Kinky Boots described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Kinky Boots say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Kinky Boots",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of She's So Unusual?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does She's So Unusual live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does She's So Unusual live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to She's So Unusual?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is She's So Unusual?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with She's So Unusual?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns She's So Unusual?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of She's So Unusual?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to She's So Unusual?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did She's So Unusual do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of She's So Unusual described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did She's So Unusual say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "She's So Unusual",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Find the source statement about True Colors: achieved two more top-five hits.",
+        "target": "achieved two more top-five hits",
+        "category": null,
+        "entity": "True Colors",
+        "kind": "source_description",
+        "source_id": "31b5cd7a6fd5141c2492e652bd98d98b7dba6204d320f7558df8ca8d512e55c0"
+      },
+      {
+        "question": "Find the source statement about Charlie: action causes alienating many in the process.",
+        "target": "action causes alienating many in the process",
+        "category": null,
+        "entity": "Charlie",
+        "kind": "source_description",
+        "source_id": "cf12cb5f949a368f2b4faf058bfcdc8342b91c0ef13563a6525bbaac10671e93"
+      },
+      {
+        "question": "Find the source statement about Lauper: advocate for LGBTQ rights in the United States.",
+        "target": "advocate for LGBTQ rights in the United States",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "ce3c6315f32af95b275737fa5a97ebf05897a2a6d88c21dcbf07f3b6aa212d6e"
+      },
+      {
+        "question": "Find the source statement about Memphis Blues: album of Lauper 2010.",
+        "target": "album of Lauper 2010",
+        "category": null,
+        "entity": "Memphis Blues",
+        "kind": "source_description",
+        "source_id": "6d9ef0a0f7c46d3ccdd2714ce0e949a07863c4b65afaa0f16a3c0672d329f6ab"
+      },
+      {
+        "question": "Find the source statement about \"Time After Time\": award nomination Song of the Year Grammy.",
+        "target": "award nomination Song of the Year Grammy",
+        "category": null,
+        "entity": "\"Time After Time\"",
+        "kind": "source_description",
+        "source_id": "09fb68f23591c98a440ea467f6131bc99f7664129d87afa65031827046e3e94a"
+      },
+      {
+        "question": "Find the source statement about \"Girls Just Want to Have Fun\": award win Best Female Video 1984 MTV Video Music Awards.",
+        "target": "award win Best Female Video 1984 MTV Video Music Awards",
+        "category": null,
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "source_description",
+        "source_id": "e7a521a1318fcef835aeea5494c2db7afa9fb1e295265c681a6a541e2407b1cf"
+      },
+      {
+        "question": "Find the source statement about Kinky Boots: awarded five other Tonys.",
+        "target": "awarded five other Tonys",
+        "category": null,
+        "entity": "Kinky Boots",
+        "kind": "source_description",
+        "source_id": "1582da34f800e0af7c623dcc2107479c09fa685aa6207daf701a879b3dcab4f6"
+      },
+      {
+        "question": "Find the source statement about Lauper: awarded for cast recording.",
+        "target": "awarded for cast recording",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "093b48ab4c275d53ccb276403ad91cbc533ed04b4eaa3354de4a2ac14e4f8551"
+      },
+      {
+        "question": "Find the source statement about the film: based on 112 reviews Rotten Tomatoes.",
+        "target": "based on 112 reviews Rotten Tomatoes",
+        "category": null,
+        "entity": "the film",
+        "kind": "source_description",
+        "source_id": "34bf40516d8dad4189bcceda3c17e4675b2a748d33d973588929e6f6d79ef3f5"
+      },
+      {
+        "question": "Find the source statement about \"Time After Time\": became her first number-one hit on the chart.",
+        "target": "became her first number-one hit on the chart",
+        "category": null,
+        "entity": "\"Time After Time\"",
+        "kind": "source_description",
+        "source_id": "2b66d2061482874aa58e608551a35558adf33fd8e768f19895f72a35bb86d618"
+      },
+      {
+        "question": "Find the source statement about David Wolff: became her manager Lauper.",
+        "target": "became her manager Lauper",
+        "category": null,
+        "entity": "David Wolff",
+        "kind": "source_description",
+        "source_id": "1bb67f997e33dd52537e2ddd291c0e472056e3e79d404412693279eaeaafe58c"
+      },
+      {
+        "question": "Find the source statement about The musical: began a US tour in 2014.",
+        "target": "began a US tour in 2014",
+        "category": null,
+        "entity": "The musical",
+        "kind": "source_description",
+        "source_id": "731eb5ef88fa4f269c29762f1f27d4f9de8578bb82b5ffa6e69b47a0768bd184"
+      },
+      {
+        "question": "Find the source statement about previews: began on March 3, 2013.",
+        "target": "began on March 3, 2013",
+        "category": null,
+        "entity": "previews",
+        "kind": "source_description",
+        "source_id": "4adb7b080dcd81f555d6a8f0b20939a5209ef1ce54420a118fb00f340da80cc0"
+      },
+      {
+        "question": "Find the source statement about many of the songs: being influenced by synth-pop and pop rock.",
+        "target": "being influenced by synth-pop and pop rock",
+        "category": null,
+        "entity": "many of the songs",
+        "kind": "source_description",
+        "source_id": "dd6dfcc1e2297538695368a285b64141f2dfcdfe52963aa7887b41ebb9e1b758"
+      },
+      {
+        "question": "Find the source statement about Music critics: believed she had star potential due to her four-octave singing range.",
+        "target": "believed she had star potential due to her four-octave singing range",
+        "category": null,
+        "entity": "Music critics",
+        "kind": "source_description",
+        "source_id": "04fd7c731249c59b291f532519b76d51c43b57e3c6646aa576ac10ed3a313954"
+      },
+      {
+        "question": "Find the source statement about Memphis Blues: Billboard's most successful blues album of the year 2010.",
+        "target": "Billboard's most successful blues album of the year 2010",
+        "category": null,
+        "entity": "Memphis Blues",
+        "kind": "source_description",
+        "source_id": "8cb8c35868cdc13f0920fbc652f46b0fe68b02c2ca8f2d19147be57da3027cf2"
+      },
+      {
+        "question": "Find the source statement about Cynthia Ann Stephanie Lauper: born June 22, 1953.",
+        "target": "born June 22, 1953",
+        "category": null,
+        "entity": "Cynthia Ann Stephanie Lauper",
+        "kind": "source_description",
+        "source_id": "4fb6ff3e437b10bab3b452e25f9f3c966e076aae43254c4f6452f212678107e6"
+      },
+      {
+        "question": "Find the source statement about Steve Massarsky: bought Blue Angel's contract $5,000.",
+        "target": "bought Blue Angel's contract $5,000",
+        "category": null,
+        "entity": "Steve Massarsky",
+        "kind": "source_description",
+        "source_id": "847c8e79599f6f223776ae0c8e38bdf9397bb0d016a30bd0d6fbf991271c88c4"
+      },
+      {
+        "question": "Find the source statement about the band: broke up .",
+        "target": "broke up ",
+        "category": null,
+        "entity": "the band",
+        "kind": "source_description",
+        "source_id": "a9acc3f1769ffefccd4b32948910bb801735e5589a60860694f335ffb8a7f1aa"
+      },
+      {
+        "question": "Find the source statement about music and lyrics: by Cyndi Lauper Kinky Boots (musical).",
+        "target": "by Cyndi Lauper Kinky Boots (musical)",
+        "category": null,
+        "entity": "music and lyrics",
+        "kind": "source_description",
+        "source_id": "a18c88dc1e76f4b6b42e43e885d1ad6f49755247bc7f3e0036847648a1bb4957"
+      },
+      {
+        "question": "Find the source statement about Lauper: caught the eye of David Wolff.",
+        "target": "caught the eye of David Wolff",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "9d8836b55b923580acee1d833cb7355d8d1ec2fc1066e69628fd688db50edb28"
+      },
+      {
+        "question": "Find the source statement about Lauper: celebrated for humanitarian work.",
+        "target": "celebrated for humanitarian work",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "dc00dd3de9904b3d724fc184dceb0e9168001e857c8ea9301588c8a4bee6b332"
+      },
+      {
+        "question": "Find the source statement about \"She Bop\": certification Gold RIAA over 1,000,000 copies.",
+        "target": "certification Gold RIAA over 1,000,000 copies",
+        "category": null,
+        "entity": "\"She Bop\"",
+        "kind": "source_description",
+        "source_id": "3d333bee00657f47aab199a5f1f4dd04c4261e2d6dd5516bd74b7d7c13bd78e3"
+      },
+      {
+        "question": "Find the source statement about \"Time After Time\": chart duration 20 weeks the chart.",
+        "target": "chart duration 20 weeks the chart",
+        "category": null,
+        "entity": "\"Time After Time\"",
+        "kind": "source_description",
+        "source_id": "befd77e0c99660bd3bc68a9bfd7f70d3549ff940b235f78d351bfcbf13b9356a"
+      },
+      {
+        "question": "Find the source statement about \"All Through the Night\": chart inclusion the list year end Top 100 of 1985 New Zealand.",
+        "target": "chart inclusion the list year end Top 100 of 1985 New Zealand",
+        "category": null,
+        "entity": "\"All Through the Night\"",
+        "kind": "source_description",
+        "source_id": "17ede730e6ea1fb0b2e7bc342a0a283db0ef29b7a46d0a8527b524aa2e2e3d25"
+      },
+      {
+        "question": "Find the source statement about \"Girls Just Want to Have Fun\": chart peak number two United States Billboard Hot 100.",
+        "target": "chart peak number two United States Billboard Hot 100",
+        "category": null,
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "source_description",
+        "source_id": "094005d299e70db856016b1ff646ec9a39decc5ddaba1b0c8ead2dc86db987c6"
+      },
+      {
+        "question": "Find the source statement about \"Time After Time\": chart performance top ten 15 countries.",
+        "target": "chart performance top ten 15 countries",
+        "category": null,
+        "entity": "\"Time After Time\"",
+        "kind": "source_description",
+        "source_id": "06d4a7d4f8d4bc18b5a4be5bf315b10b799b55a0e731082a18dfee324074cb35"
+      },
+      {
+        "question": "Find the source statement about Lauper: composed Broadway musical Kinky Boots.",
+        "target": "composed Broadway musical Kinky Boots",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "15d3d586501a878bf622d0fe2745489d54bea959e18cdcd5223f45e29b65424d"
+      },
+      {
+        "question": "Find the source statement about The re-release: contains new artwork.",
+        "target": "contains new artwork",
+        "category": null,
+        "entity": "The re-release",
+        "kind": "source_description",
+        "source_id": "bfc7ff7dbe709a3e1e0c7d11d569191e7d57fcf6f81597fc65624379f533b2d1"
+      },
+      {
+        "question": "Find the source statement about She's So Unusual: debut album of Lauper 1983.",
+        "target": "debut album of Lauper 1983",
+        "category": null,
+        "entity": "She's So Unusual",
+        "kind": "source_description",
+        "source_id": "2a6364cb0f16adb9457296cc4458c187b198cb5d32b02ff617804f0128926ef0"
+      },
+      {
+        "question": "Find the source statement about critics: decried \"formulaic Britcom plot\".",
+        "target": "decried \"formulaic Britcom plot\"",
+        "category": null,
+        "entity": "critics",
+        "kind": "source_description",
+        "source_id": "31f8a4bc4cd257a993c534abf1ec4516fa69bf3bf859611da0cb4a495a78fb37"
+      },
+      {
+        "question": "Find the source statement about Charlie: develops plan to produce custom footwear for drag queens.",
+        "target": "develops plan to produce custom footwear for drag queens",
+        "category": null,
+        "entity": "Charlie",
+        "kind": "source_description",
+        "source_id": "bf0399b823c6231f4777364300d121c853b97c2abe54fe1600370b9f22fe8228"
+      },
+      {
+        "question": "Find the source statement about Kinky Boots: directed by Julian Jarrold.",
+        "target": "directed by Julian Jarrold",
+        "category": null,
+        "entity": "Kinky Boots",
+        "kind": "source_description",
+        "source_id": "05e5365acb5966ea1375ff86cd1217cdba78b7d26a6f7d1448b49cd37a7612d3"
+      },
+      {
+        "question": "Find the source statement about The original production of Kinky Boots: direction and choreography by Jerry Mitchell.",
+        "target": "direction and choreography by Jerry Mitchell",
+        "category": null,
+        "entity": "The original production of Kinky Boots",
+        "kind": "source_description",
+        "source_id": "3d36907e928559d024946cf3b460b85586b0c3124bce59bef35025958b07af6b"
+      },
+      {
+        "question": "Find the source statement about Charlie and Lola: discover that they are not so different after all .",
+        "target": "discover that they are not so different after all ",
+        "category": null,
+        "entity": "Charlie and Lola",
+        "kind": "source_description",
+        "source_id": "8c62e6a487d3715c0fdb4ff9cc3c099fc1a241faa60c1281e9155d0325c3bc63"
+      },
+      {
+        "question": "Find the source statement about Lauper: dubbed \"Queen of Quirky Pop\".",
+        "target": "dubbed \"Queen of Quirky Pop\"",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "63dfc2ca9b361a3b89b5a5a28ed2515176e4263e48933d1f50d743873b52dee8"
+      },
+      {
+        "question": "Find the source statement about Lauper: earned several awards and accolades for the album.",
+        "target": "earned several awards and accolades for the album",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "0da4965b054b390c6e40e7f70dc32b44404ff1d7f494a560131e18c7c0fd504d"
+      },
+      {
+        "question": "Find the source statement about The Broadway production: ended its six-year run on April 7, 2019.",
+        "target": "ended its six-year run on April 7, 2019",
+        "category": null,
+        "entity": "The Broadway production",
+        "kind": "source_description",
+        "source_id": "5f35cc5b78a35bcf133851944964bff84c7f1ae6dc56b043ca42a7f28ec1ef76"
+      },
+      {
+        "question": "Find the source statement about Kinky Boots: enjoyed a post-Tony boost in advance sales.",
+        "target": "enjoyed a post-Tony boost in advance sales",
+        "category": null,
+        "entity": "Kinky Boots",
+        "kind": "source_description",
+        "source_id": "366f1c6fee4a9b596c6c34a092c70af9461c90943c35fb34aaca5b42942e5632"
+      },
+      {
+        "question": "Find the source statement about Kinky Boots: entered the 2013 awards season as an underdog.",
+        "target": "entered the 2013 awards season as an underdog",
+        "category": null,
+        "entity": "Kinky Boots",
+        "kind": "source_description",
+        "source_id": "9f039803c69093007a355d2e3ddc44cb7e08b614c0bf05dd8923ddfbe5897a7e"
+      },
+      {
+        "question": "Find the source statement about \"Time After Time\": experienced similar success worldwide.",
+        "target": "experienced similar success worldwide",
+        "category": null,
+        "entity": "\"Time After Time\"",
+        "kind": "source_description",
+        "source_id": "42f5e80081ea43c0c6ceec92861e30a3dba49d9b3a903529514b393eb27696b1"
+      },
+      {
+        "question": "Find the source statement about distinctive image: features eccentric clothing.",
+        "target": "features eccentric clothing",
+        "category": null,
+        "entity": "distinctive image",
+        "kind": "source_description",
+        "source_id": "2473fafaf30605e45d97eef6eb804698ca78ea82b49a7a399ad59955a1d8b936"
+      },
+      {
+        "question": "Find the source statement about He: filed $80,000 suit against them.",
+        "target": "filed $80,000 suit against them",
+        "category": null,
+        "entity": "He",
+        "kind": "source_description",
+        "source_id": "07e9d234c68c447cae5f720fa957560f654450af3361b81f6f86968fdf61dc15"
+      },
+      {
+        "question": "Find the source statement about The members of Blue Angel: fired him their manager.",
+        "target": "fired him their manager",
+        "category": null,
+        "entity": "The members of Blue Angel",
+        "kind": "source_description",
+        "source_id": "5fbebffd4c195b81ce076e0fd358a4991a5f0ecec264382acabbf4774daa3e5d"
+      },
+      {
+        "question": "Find the source statement about She's So Unusual: first debut album by a female artist to achieve four top-five hits on the Billboard Hot 100.",
+        "target": "first debut album by a female artist to achieve four top-five hits on the Billboard Hot 100",
+        "category": null,
+        "entity": "She's So Unusual",
+        "kind": "source_description",
+        "source_id": "c8cba777a5a932f3cd1a2082548b18ca0b852cc4127f4cc5e988f2af42993cd6"
+      },
+      {
+        "question": "Find the source statement about Lauper: first woman to win category by herself Tony Award for Best Original Score.",
+        "target": "first woman to win category by herself Tony Award for Best Original Score",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "34c1e781558abbe73b8c0d25eb3a875cbe8ba69fc67843b8f1566e49545c73ad"
+      },
+      {
+        "question": "Find the source statement about suit: forced Lauper into bankruptcy.",
+        "target": "forced Lauper into bankruptcy",
+        "category": null,
+        "entity": "suit",
+        "kind": "source_description",
+        "source_id": "7e37da4512d1047c327afccf03ed339603ef1a660a501ff2271364d886feeed6"
+      },
+      {
+        "question": "Find the source statement about Turi and Lauper: formed Blue Angel.",
+        "target": "formed Blue Angel",
+        "category": null,
+        "entity": "Turi and Lauper",
+        "kind": "source_description",
+        "source_id": "3b5ef345c491fe62957f22b160c9a58641541d37868ab3bdaf5da3d9915df039"
+      },
+      {
+        "question": "Find the source statement about Charlie: forms an unlikely partnership cabaret performer and drag queen Lola.",
+        "target": "forms an unlikely partnership cabaret performer and drag queen Lola",
+        "category": null,
+        "entity": "Charlie",
+        "kind": "source_description",
+        "source_id": "3c7ec7e25f2165927ad8befecb4f5e6a25298fc50306e3b376235d0f0e3b3d31"
+      },
+      {
+        "question": "Find the source statement about Charlie: forms partnership with Lola.",
+        "target": "forms partnership with Lola",
+        "category": null,
+        "entity": "Charlie",
+        "kind": "source_description",
+        "source_id": "711df5bffcbdbffda4b9d5eb02f448e320c8713cd7d7239cb363b4c94e5400cb"
+      },
+      {
+        "question": "Find the source statement about Lauper: found success with the next two singles.",
+        "target": "found success with the next two singles",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "54001225b7f5fc93f71008d7263c5af31c5fdd56c896ff01777b58d825ee091e"
+      },
+      {
+        "question": "Find the source statement about David Wolff: got her signed to Portrait Records.",
+        "target": "got her signed to Portrait Records",
+        "category": null,
+        "entity": "David Wolff",
+        "kind": "source_description",
+        "source_id": "0fda259a269841c39156de670ad0748b10e4549cf1e92b26d828feba02c3c88b"
+      },
+      {
+        "question": "Find the source statement about The members of Blue Angel: had a falling-out with Massarsky.",
+        "target": "had a falling-out with Massarsky",
+        "category": null,
+        "entity": "The members of Blue Angel",
+        "kind": "source_description",
+        "source_id": "389a4f3c23d1d63dbc8b4279123eb0e334b2a7e2863c34bcf22c4b225afe720c"
+      },
+      {
+        "question": "Find the source statement about Lauper: had her first outing as a Broadway songwriter .",
+        "target": "had her first outing as a Broadway songwriter ",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "94944a2d7bac8ff7a7a9addbead15f6927e52c7d9be108ec2b1d5b6d7845c6f2"
+      },
+      {
+        "question": "Find the source statement about David Wolff: had her sign recording contract with Portrait Records.",
+        "target": "had her sign recording contract with Portrait Records",
+        "category": null,
+        "entity": "David Wolff",
+        "kind": "source_description",
+        "source_id": "d1bb6da07f4ba1901facaa4cb1b13e1716d7f55d5c492ff4e14f6d2e30d8638d"
+      },
+      {
+        "question": "Find the source statement about Lauper: had prominent stay at Malibu Shore Club in Lido Beach, Long Island.",
+        "target": "had prominent stay at Malibu Shore Club in Lido Beach, Long Island",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "6c981b5f63a6982b0fa2ee7e6f4dd9218e2e812b09a107076281ee0ca8251670"
+      },
+      {
+        "question": "Find the source statement about Music video for \"Girls Just Want to Have Fun\": hailed by MTV, VH1 and Rolling Stone as one of the greatest videos of the era.",
+        "target": "hailed by MTV, VH1 and Rolling Stone as one of the greatest videos of the era",
+        "category": null,
+        "entity": "Music video for \"Girls Just Want to Have Fun\"",
+        "kind": "source_description",
+        "source_id": "169f5491c2e570ab8fa46f1dfad730518d12e1687a71983ba55caf2365b10f8e"
+      },
+      {
+        "question": "Find the source statement about the film: has an average rating of 5.9/10 Rotten Tomatoes.",
+        "target": "has an average rating of 5.9/10 Rotten Tomatoes",
+        "category": null,
+        "entity": "the film",
+        "kind": "source_description",
+        "source_id": "9a66c7efa2891b732d7b9e5a05448b9e11de36a3b0c8dbdc617cf8ad681d8eef"
+      },
+      {
+        "question": "Find the source statement about It: has sold over 7 million copies in the United States.",
+        "target": "has sold over 7 million copies in the United States",
+        "category": null,
+        "entity": "It",
+        "kind": "source_description",
+        "source_id": "131efe5b563be735b1dd4caae93e5411a6e94bc5671e1bd31608542bcc18640f"
+      },
+      {
+        "question": "Find the source statement about Lauper: hated the album cover.",
+        "target": "hated the album cover",
+        "category": null,
+        "entity": "Lauper",
+        "kind": "source_description",
+        "source_id": "f73dd8c4d9145de3970b862488afd338ec1f62a2e5187fdf7f27dece2d4987ef"
+      },
+      {
+        "question": "Find the source statement about Steve Massarsky: heard the tape.",
+        "target": "heard the tape",
+        "category": null,
+        "entity": "Steve Massarsky",
+        "kind": "source_description",
+        "source_id": "1e4c85e26e35b3191d5a18c2b22e95268d4243a8be33b5939cc9519ab732e7ec"
+      },
+      {
+        "question": "Find the source statement about Girls Just Want to Have Fun: hit on Billboard Hot 100 from She's So Unusual.",
+        "target": "hit on Billboard Hot 100 from She's So Unusual",
+        "category": null,
+        "entity": "Girls Just Want to Have Fun",
+        "kind": "source_description",
+        "source_id": "1007aa5a27bdd13c7aebdfb00d5ba58bc4a60125fa5cbef72107618b3123b829"
+      },
+      {
+        "question": "Find the source statement about Lauper's accolades: include three MTV Video Music Awards.",
+        "target": "include three MTV Video Music Awards",
+        "category": null,
+        "entity": "Lauper's accolades",
+        "kind": "source_description",
+        "source_id": "06f762e87c779ceb5240d670791a098baad16dcf5d1ae312e54ed3a63806e2e1"
+      },
+      {
+        "question": "Find the source statement about Rolling Stone magazine: included it one of the 100 best new wave album covers (2003).",
+        "target": "included it one of the 100 best new wave album covers (2003)",
+        "category": null,
+        "entity": "Rolling Stone magazine",
+        "kind": "source_description",
+        "source_id": "48b278328136c4783976a2cb48713f23ce5e42ae2ca066ca83d81f70e6c3b15f"
+      },
+      {
+        "question": "Which color does Lauper have?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "In which place does Lauper reside?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Does Lauper share a home with others?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "At what time did this occur for Lauper?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the identity of Lauper?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the number associated with Lauper?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "To whom does Lauper belong?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Who is related to Lauper?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What caused this for Lauper?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which action did Lauper take?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What does Lauper look like?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which words did Lauper speak?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Lauper",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which color does \"Girls Just Want to Have Fun\" have?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "In which place does \"Girls Just Want to Have Fun\" reside?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Does \"Girls Just Want to Have Fun\" share a home with others?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "At what time did this occur for \"Girls Just Want to Have Fun\"?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the identity of \"Girls Just Want to Have Fun\"?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the number associated with \"Girls Just Want to Have Fun\"?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "To whom does \"Girls Just Want to Have Fun\" belong?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Who is related to \"Girls Just Want to Have Fun\"?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What caused this for \"Girls Just Want to Have Fun\"?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which action did \"Girls Just Want to Have Fun\" take?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What does \"Girls Just Want to Have Fun\" look like?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which words did \"Girls Just Want to Have Fun\" speak?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "\"Girls Just Want to Have Fun\"",
+        "kind": "held_out_wording"
+      }
+    ],
+    "calibration_seconds": 755.8154349999968
+  }
+}

@@ -1,0 +1,527 @@
+{
+  "document_id": "1c19bf37d286fdebee04467827a62c286ace1ac202076ccf28273fc051499ec9",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "Lauper",
+        "relation": "met",
+        "object": "John Turi",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1978"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "met",
+        "object": "John Turi",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "John Turi",
+        "relation": "role",
+        "object": "saxophonist",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "met",
+        "object": "John Turi",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "agent",
+            "value": "Ted Rosenblatt"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Ted Rosenblatt",
+        "relation": "role",
+        "object": "manager",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Turi and Lauper",
+        "relation": "formed",
+        "object": "Blue Angel",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Blue Angel",
+        "relation": "name",
+        "object": "Blue Angel",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Blue Angel",
+        "relation": "recorded",
+        "object": "a demo tape of original music",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Steve Massarsky",
+        "relation": "heard",
+        "object": "the tape",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Steve Massarsky",
+        "relation": "liked",
+        "object": "Lauper's voice",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Steve Massarsky",
+        "relation": "role",
+        "object": "manager of the Allman Brothers Band",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Steve Massarsky",
+        "relation": "bought",
+        "object": "Blue Angel's contract",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "quantity",
+            "value": "$5,000"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Steve Massarsky",
+        "relation": "became",
+        "object": "their manager",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "received",
+        "object": "recording offers as a solo artist",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "wanted",
+        "object": "the band to be included in any deal she made",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Blue Angel",
+        "relation": "signed by",
+        "object": "Polydor Records",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Blue Angel",
+        "relation": "released",
+        "object": "Blue Angel",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "type",
+            "value": "debut and sole studio album"
+          },
+          {
+            "kind": "time",
+            "value": "1980"
+          }
+        ],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "hated",
+        "object": "the album cover",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "album cover",
+        "relation": "made",
+        "object": "her look like Big Bird",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Rolling Stone magazine",
+        "relation": "included",
+        "object": "it",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "context",
+            "value": "one of the 100 best new wave album covers (2003)"
+          }
+        ],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "the album",
+        "relation": "sold",
+        "object": "poorly",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "the band",
+        "relation": "broke up",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "The members of Blue Angel",
+        "relation": "had a falling-out with",
+        "object": "Massarsky",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "The members of Blue Angel",
+        "relation": "fired",
+        "object": "him",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "him",
+        "relation": "role",
+        "object": "their manager",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "He",
+        "relation": "filed",
+        "object": "an $80,000 suit against them",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "suit",
+        "relation": "forced",
+        "object": "Lauper into bankruptcy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "temporarily lost",
+        "object": "her voice",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "her voice loss",
+        "relation": "due to",
+        "object": "an inverted cyst in her vocal cord",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "spent time",
+        "object": "working in retail stores",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "reason",
+            "value": "due to her financial problems"
+          }
+        ],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "worked",
+        "object": "waitressing at IHOP",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "reason",
+            "value": "due to her financial problems"
+          }
+        ],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "quit",
+        "object": "IHOP",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "was demoted to",
+        "object": "hostess",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "the manager",
+        "relation": "sexually harassed",
+        "object": "her",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "sang",
+        "object": "in local clubs",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Her most frequent gigs",
+        "relation": "were at",
+        "object": "El Sombrero",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Music critics",
+        "relation": "believed",
+        "object": "she had star potential",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Music critics",
+        "relation": "saw",
+        "object": "Lauper perform with Blue Angel",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "star potential",
+        "relation": "due to",
+        "object": "her four-octave singing range",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "had",
+        "object": "a prominent stay at the Malibu Shore Club in Lido Beach, Long Island",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "stated",
+        "object": "that she was during this time raped by one of the band's male guitarists in the 1980s",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "met",
+        "object": "David Wolff",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "In 1981"
+          }
+        ],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "met",
+        "object": "David Wolff",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "while singing in a local New York bar"
+          }
+        ],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "David Wolff",
+        "relation": "took over as",
+        "object": "her manager",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "David Wolff",
+        "relation": "had",
+        "object": "her sign a recording contract with Portrait Records",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Portrait Records",
+        "relation": "is a subsidiary of",
+        "object": "Epic Records",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 3327,
+    "prompt_tokens": 1018,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 1018
+    },
+    "total_tokens": 4345
+  }
+}

@@ -1,0 +1,425 @@
+{
+  "review_basis": "complete original story only; evaluation answers and answer spans were not used",
+  "model_output": "data\\prepared_knowledge\\coqa_continuous_v1\\extraction_cache\\7d791a6e0043b72bab1353b9ee00453a6dd4e9464eadc58f529efbb3a01218a8.attempt-0.json",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "source_sha256": "e562679ab959501e27b94eafc2d395251153b1ab6ac76fe4d97d6f7018370067",
+  "raw_facts": 25,
+  "reviewed_facts": 34,
+  "changes": [
+    {
+      "raw_fact_number": 3,
+      "reason": "Separate co-residents into mother and sisters; keep the original source relation.",
+      "before": {
+        "subject": "Cotton",
+        "relation": "shared her hay bed with",
+        "object": "her mommy and 5 other sisters",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "Cotton",
+        "relation": "shared her hay bed with",
+        "object": "Cotton's mommy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 4,
+      "reason": "Ground the possessive mention and bind its owner to Cotton.",
+      "before": {
+        "subject": "Cotton's sisters",
+        "relation": "were",
+        "object": "cute and fluffy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "her sisters",
+        "relation": "were",
+        "object": "cute and fluffy",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "subject_owner",
+            "value": "Cotton"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 7,
+      "reason": "Ground the possessive mention and bind its owner to Cotton.",
+      "before": {
+        "subject": "Cotton's sisters",
+        "relation": "were",
+        "object": "orange with beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "her sisters",
+        "relation": "were",
+        "object": "orange with beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "subject_owner",
+            "value": "Cotton"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 8,
+      "reason": "Preserve both orange colour and white stripes in the comparison with the mother.",
+      "before": {
+        "subject": "Cotton's mommy",
+        "relation": "had",
+        "object": "beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "Cotton's mommy",
+        "relation": "had",
+        "object": "orange with beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 12,
+      "reason": "Resolve paint from its explicit antecedent without claiming permanent fur colour.",
+      "before": {
+        "subject": "Cotton",
+        "relation": "used",
+        "object": "it to paint herself like them",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "Cotton",
+        "relation": "painted herself with",
+        "object": "orange paint",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "one day"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 13,
+      "reason": "Replace invented possessive compound by its source mention; retain the event condition.",
+      "before": {
+        "subject": "Cotton's mommy and sisters",
+        "relation": "started laughing when they found Cotton painted",
+        "object": "laughing",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "her mommy and sisters",
+        "relation": "started",
+        "object": "laughing",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "condition",
+            "value": "When her mommy and sisters found her"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 15,
+      "reason": "Retain the mother as attribution for her description.",
+      "before": {
+        "subject": "Cotton's fur",
+        "relation": "was described as",
+        "object": "pretty and special",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "Cotton's fur",
+        "relation": "was described as",
+        "object": "pretty and special",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "attribution",
+            "value": "Cotton's mommy"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 18,
+      "reason": "Separate the person being dropped from the destination.",
+      "before": {
+        "subject": "Cotton's mommy",
+        "relation": "dropped",
+        "object": "Cotton into a big bucket of water",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "Cotton's mommy",
+        "relation": "dropped",
+        "object": "Cotton",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "destination",
+            "value": "a big bucket of water"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 20,
+      "reason": "Resolve both the sisters and whose face is licked using source-grounded owners.",
+      "before": {
+        "subject": "Cotton's sisters",
+        "relation": "licked",
+        "object": "Cotton's face",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "her sisters",
+        "relation": "licked",
+        "object": "face",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "subject_owner",
+            "value": "Cotton"
+          },
+          {
+            "kind": "object_owner",
+            "value": "Cotton"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 22,
+      "reason": "Do not guess whether the collective dialogue speaker includes the mother.",
+      "before": {
+        "subject": "Cotton's sisters",
+        "relation": "cried",
+        "object": "Don't ever do that again, Cotton!",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "they all",
+        "relation": "cried",
+        "object": "Don't ever do that again, Cotton!",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    },
+    {
+      "raw_fact_number": 23,
+      "reason": "The warning occurred; its hypothetical outcome must not become a negated warning event.",
+      "before": {
+        "subject": "Cotton's sisters",
+        "relation": "warned",
+        "object": "Next time you might mess up that pretty white fur of yours",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      "after": {
+        "subject": "they all",
+        "relation": "warned",
+        "object": "Next time you might mess up that pretty white fur of yours",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    }
+  ],
+  "source_supported_additions": [
+    {
+      "subject": "Cotton",
+      "relation": "shared her hay bed with",
+      "object": "her sisters",
+      "polarity": "positive",
+      "qualifiers": [
+        {
+          "kind": "object_owner",
+          "value": "Cotton"
+        },
+        {
+          "kind": "count",
+          "value": "5"
+        }
+      ],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Cotton",
+      "relation": "is a",
+      "object": "little white kitten",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Cotton",
+      "relation": "was",
+      "object": "cute and fluffy",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Cotton",
+      "relation": "lived",
+      "object": "alone",
+      "polarity": "negative",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Cotton",
+      "relation": "has mother",
+      "object": "Cotton's mommy",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Cotton",
+      "relation": "has sisters",
+      "object": "her sisters",
+      "polarity": "positive",
+      "qualifiers": [
+        {
+          "kind": "object_owner",
+          "value": "Cotton"
+        }
+      ],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "her mommy and sisters",
+      "relation": "asked",
+      "object": "What are you doing, Cotton?!",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Cotton",
+      "relation": "said",
+      "object": "I only wanted to be more like you",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "they all",
+      "relation": "said",
+      "object": "we wouldn't want that",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    }
+  ],
+  "limits": [
+    "Collective dialogue speaker they all remains unresolved.",
+    "One intact source entry is not proof that every atomic source claim was retained."
+  ],
+  "status": "source-reviewed; not an independent accuracy benchmark"
+}

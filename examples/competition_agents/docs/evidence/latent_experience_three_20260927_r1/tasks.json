@@ -1,0 +1,1155 @@
+{
+  "complete": true,
+  "tasks": [
+    {
+      "task_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-1",
+      "question": "What color was Cotton?",
+      "prediction": "White.",
+      "reference": [
+        "white"
+      ],
+      "error": null,
+      "elapsed_ms": 13774.142600013874,
+      "calls": [
+        {
+          "role": "planner",
+          "input_tokens": 129,
+          "output_tokens": 0,
+          "forward_positions": 131,
+          "model_forward_ms": 5729.824800277129,
+          "alignment_ms": 88.07990001514554,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 5860.431100009009,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nUse original source facts to answer the current question. Previous answers may be wrong. Preserve identities, relations, negation, numbers and qualifications. Source records contain subject, relation, object, polarity and qualifiers. All roles continue the same computation; earlier source facts remain available. Only the final role writes an answer. Internal roles work without writing words.<|im_end|>\n",
+              "tokens": 74
+            },
+            {
+              "category": "external_question",
+              "text": "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n<|im_start|>user\nWhat color was Cotton?<|im_end|>\n",
+              "tokens": 31,
+              "content_positions": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ]
+            },
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nResolve references in the current question. Identify the requested relation and constraints internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 23
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 0,
+          "layer_positions": [
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131,
+            131
+          ],
+          "state_before_bytes": 0,
+          "state_after_bytes": 7512064,
+          "tool": null
+        },
+        {
+          "role": "retriever",
+          "input_tokens": 85,
+          "output_tokens": 0,
+          "forward_positions": 87,
+          "model_forward_ms": 3760.290600010194,
+          "alignment_ms": 62.54920014180243,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 1,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 3833.951700013131,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nUse the inherited question and constraints to locate the required source relations. Retain evidence internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 26
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            },
+            {
+              "category": "external_facts",
+              "text": "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n<|im_start|>user\nNew original source facts:\n[{\"id\":\"f21\",\"subject\":\"Cotton\",\"relation\":\"was\",\"object\":\"white\",\"polarity\":\"positive\"}]<|im_end|>\n",
+              "tokens": 58
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 131,
+          "layer_positions": [
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87,
+            87
+          ],
+          "state_before_bytes": 7512064,
+          "state_after_bytes": 12500992,
+          "tool": {
+            "query_kind": "calibrated_model_representation",
+            "query_text": null,
+            "query_bytes": 1536,
+            "roots": [
+              "entity:cotton"
+            ],
+            "category": "color",
+            "alignment": 0.9418420791625977,
+            "memory_threshold": 0.5599045944213867,
+            "require_topic_alignment": false,
+            "memory_best_score": -1.0,
+            "memory_sufficient": false,
+            "decision_reason": "no_resident_evidence",
+            "memory_search_ms": 1.052799983881414,
+            "index_search_ms": 0.6077999714761972,
+            "knowledge_searches": 1,
+            "memory_and_fact_read_ms": 0.062400009483098984,
+            "source_ids": [
+              "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f"
+            ],
+            "fresh_source_ids": [
+              "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f"
+            ],
+            "memory_source_ids": [],
+            "ranked_candidates": [
+              {
+                "id": "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f",
+                "score": 0.5828663110733032
+              },
+              {
+                "id": "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42",
+                "score": 0.39525264501571655
+              },
+              {
+                "id": "8ac1dd7169fa80f56869dfbe675e452e611b6b910b97df9a01d1d7ba05fce719",
+                "score": 0.35056829929351807
+              },
+              {
+                "id": "904e1777215f82dad37d39eb409acfa1dda0ba3b2104cdb74ba2c0ae9d925fcf",
+                "score": 0.3196905255317688
+              },
+              {
+                "id": "c09ed15162353386588fe5050d8bdfb7503b708e53cf13fe4356a016ca502390",
+                "score": 0.2976844310760498
+              },
+              {
+                "id": "1b9c9ffcefd6bec53e8fcfe1e349872b8da6e76edabf13b1d0fb0bba89e6db03",
+                "score": 0.28632494807243347
+              },
+              {
+                "id": "82e25be97de73e53f74cce2412044ec8573d77fac316d9e3276930567900878e",
+                "score": 0.2717243432998657
+              },
+              {
+                "id": "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b",
+                "score": 0.20489074289798737
+              },
+              {
+                "id": "7b872307a1cda3ff3a04773dcf02e174e9c9a151a183c4a381a49289a6d6b822",
+                "score": 0.19424495100975037
+              },
+              {
+                "id": "d62d70c5293ed3697913c90a9049d607d02a7cac5f0bf9e434f1a74779506c79",
+                "score": 0.15808935463428497
+              },
+              {
+                "id": "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc",
+                "score": 0.15111306309700012
+              },
+              {
+                "id": "a8c008e78c23859ebeec6dcbc4b56aef3d2b661c1bca4779ac6f78a1a3460b25",
+                "score": 0.1469636857509613
+              },
+              {
+                "id": "96eeb2698e008ae394cde1b9f89f7a5cc1e9f0d788ca9d591eceb5f43a03e587",
+                "score": 0.14401421427726746
+              },
+              {
+                "id": "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3",
+                "score": 0.14230167865753174
+              },
+              {
+                "id": "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712",
+                "score": 0.13769447803497314
+              },
+              {
+                "id": "91eed54fb1b467ac2aaa3acc873701e881b144c4aaac57ddb84927ad4a444f13",
+                "score": 0.1318732249736786
+              },
+              {
+                "id": "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8",
+                "score": 0.13061535358428955
+              },
+              {
+                "id": "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+                "score": 0.12338054925203323
+              },
+              {
+                "id": "0c4fa4b55555fb44a8c1c2b900f7a9aac23e6a896be75fc44102a4bbd66a22e9",
+                "score": 0.10623444616794586
+              },
+              {
+                "id": "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+                "score": 0.08124419301748276
+              },
+              {
+                "id": "54b3e36130d11f68f9dc89ed9ecc7a8c2a4cc542406b36d9a9c5e12f047f65f1",
+                "score": 0.07777450233697891
+              },
+              {
+                "id": "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412",
+                "score": 0.0673932433128357
+              }
+            ],
+            "all_selected_from_memory": false,
+            "returned_fact_bytes": 98,
+            "experience_reads": 0,
+            "experience_applied": 0,
+            "experience_writes": 1,
+            "experience_status": "connected_retrieval_strategy",
+            "experience_created": 1,
+            "experience_candidates_skipped": 0,
+            "experience_lookup_ms": 0.0,
+            "experience_write_ms": 11.551600066013634,
+            "experience_pruned": 0,
+            "experience_rejection": "no_memory_or_new_constraint",
+            "experience_write_status": "committed",
+            "experience_written_id": "retrieval-experience-faa30d9d4ea53554efccd097"
+          }
+        },
+        {
+          "role": "reasoner",
+          "input_tokens": 29,
+          "output_tokens": 0,
+          "forward_positions": 31,
+          "model_forward_ms": 1814.6558000007644,
+          "alignment_ms": 58.7129999184981,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 1875.5763999652117,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nDerive the answer from original source facts in the current context. Preserve negation and ownership internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 28
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 218,
+          "layer_positions": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ],
+          "state_before_bytes": 12500992,
+          "state_after_bytes": 14278656,
+          "tool": null
+        },
+        {
+          "role": "summarizer",
+          "input_tokens": 33,
+          "output_tokens": 3,
+          "forward_positions": 36,
+          "model_forward_ms": 2084.078500047326,
+          "alignment_ms": 0,
+          "latent_steps": 0,
+          "latent_vector_bytes": 0,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "finish_reason": "stop",
+          "elapsed_ms": 2186.0521000344306,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nAnswer the current question using the original source facts. Return only the complete final answer. Return unknown if the sources are insufficient.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 33
+            }
+          ],
+          "raw_response_content": "White.",
+          "cached_prefix_positions": 249,
+          "layer_positions": [
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36,
+            36
+          ],
+          "state_before_bytes": 14278656,
+          "state_after_bytes": 16343040,
+          "tool": null
+        }
+      ],
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "white",
+        "contradiction": false
+      }
+    },
+    {
+      "task_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-2",
+      "question": "Where did she live?",
+      "prediction": "A barn.",
+      "reference": [
+        "in a barn",
+        "in a barn near"
+      ],
+      "error": null,
+      "elapsed_ms": 13110.772900050506,
+      "calls": [
+        {
+          "role": "planner",
+          "input_tokens": 55,
+          "output_tokens": 0,
+          "forward_positions": 57,
+          "model_forward_ms": 3036.8000000016764,
+          "alignment_ms": 67.84979987423867,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 3107.9163999529555,
+          "inputs": [
+            {
+              "category": "external_question",
+              "text": "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n<|im_start|>user\nWhere did she live?<|im_end|>\n",
+              "tokens": 31,
+              "content_positions": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ]
+            },
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nResolve references in the current question. Identify the requested relation and constraints internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 23
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 285,
+          "layer_positions": [
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57
+          ],
+          "state_before_bytes": 16343040,
+          "state_after_bytes": 19611648,
+          "tool": null
+        },
+        {
+          "role": "retriever",
+          "input_tokens": 149,
+          "output_tokens": 0,
+          "forward_positions": 151,
+          "model_forward_ms": 5593.704800005071,
+          "alignment_ms": 64.60869999136776,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 3,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 5664.790800074115,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nUse the inherited question and constraints to locate the required source relations. Retain evidence internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 26
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            },
+            {
+              "category": "external_facts",
+              "text": "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n<|im_start|>user\nNew original source facts:\n[{\"id\":\"f11\",\"subject\":\"Cotton\",\"relation\":\"NOT lived\",\"object\":\"alone\",\"polarity\":\"negative\"},{\"id\":\"f12\",\"subject\":\"Cotton\",\"relation\":\"lived in\",\"object\":\"a nice warm place above the barn\",\"polarity\":\"positive\"},{\"id\":\"f33\",\"subject\":\"Cotton\",\"relation\":\"lived in\",\"object\":\"a barn near a farm house\",\"polarity\":\"positive\"}]<|im_end|>\n",
+              "tokens": 122
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 342,
+          "layer_positions": [
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151,
+            151
+          ],
+          "state_before_bytes": 19611648,
+          "state_after_bytes": 28270592,
+          "tool": {
+            "query_kind": "calibrated_model_representation",
+            "query_text": null,
+            "query_bytes": 1536,
+            "roots": [
+              "entity:cotton"
+            ],
+            "category": "location",
+            "alignment": 0.8832837343215942,
+            "memory_threshold": 0.297247428894043,
+            "require_topic_alignment": false,
+            "memory_best_score": 0.08484548330307007,
+            "memory_sufficient": false,
+            "decision_reason": "insufficient_relation_confidence",
+            "memory_search_ms": 0.650899950414896,
+            "index_search_ms": 0.3806999884545803,
+            "knowledge_searches": 1,
+            "memory_and_fact_read_ms": 0.09790004696696997,
+            "source_ids": [
+              "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+              "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+              "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+            ],
+            "fresh_source_ids": [
+              "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+              "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+              "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+            ],
+            "memory_source_ids": [],
+            "ranked_candidates": [
+              {
+                "id": "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+                "score": 0.5707545280456543
+              },
+              {
+                "id": "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412",
+                "score": 0.44085627794265747
+              },
+              {
+                "id": "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+                "score": 0.43917524814605713
+              },
+              {
+                "id": "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3",
+                "score": 0.30760711431503296
+              },
+              {
+                "id": "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42",
+                "score": 0.18354058265686035
+              },
+              {
+                "id": "54b3e36130d11f68f9dc89ed9ecc7a8c2a4cc542406b36d9a9c5e12f047f65f1",
+                "score": 0.15487608313560486
+              },
+              {
+                "id": "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc",
+                "score": 0.1338176131248474
+              },
+              {
+                "id": "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f",
+                "score": 0.08484548330307007
+              },
+              {
+                "id": "7b872307a1cda3ff3a04773dcf02e174e9c9a151a183c4a381a49289a6d6b822",
+                "score": 0.07831795513629913
+              },
+              {
+                "id": "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8",
+                "score": 0.07686513662338257
+              },
+              {
+                "id": "c09ed15162353386588fe5050d8bdfb7503b708e53cf13fe4356a016ca502390",
+                "score": 0.06380175054073334
+              },
+              {
+                "id": "82e25be97de73e53f74cce2412044ec8573d77fac316d9e3276930567900878e",
+                "score": 0.029723312705755234
+              },
+              {
+                "id": "0c4fa4b55555fb44a8c1c2b900f7a9aac23e6a896be75fc44102a4bbd66a22e9",
+                "score": -0.021065421402454376
+              },
+              {
+                "id": "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712",
+                "score": -0.02452756278216839
+              },
+              {
+                "id": "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b",
+                "score": -0.029343754053115845
+              },
+              {
+                "id": "904e1777215f82dad37d39eb409acfa1dda0ba3b2104cdb74ba2c0ae9d925fcf",
+                "score": -0.044771336019039154
+              },
+              {
+                "id": "91eed54fb1b467ac2aaa3acc873701e881b144c4aaac57ddb84927ad4a444f13",
+                "score": -0.11880769848823547
+              },
+              {
+                "id": "d62d70c5293ed3697913c90a9049d607d02a7cac5f0bf9e434f1a74779506c79",
+                "score": -0.11988819390535355
+              },
+              {
+                "id": "a8c008e78c23859ebeec6dcbc4b56aef3d2b661c1bca4779ac6f78a1a3460b25",
+                "score": -0.14413650333881378
+              },
+              {
+                "id": "8ac1dd7169fa80f56869dfbe675e452e611b6b910b97df9a01d1d7ba05fce719",
+                "score": -0.1859036934375763
+              },
+              {
+                "id": "1b9c9ffcefd6bec53e8fcfe1e349872b8da6e76edabf13b1d0fb0bba89e6db03",
+                "score": -0.18900807201862335
+              },
+              {
+                "id": "96eeb2698e008ae394cde1b9f89f7a5cc1e9f0d788ca9d591eceb5f43a03e587",
+                "score": -0.19951146364212036
+              }
+            ],
+            "all_selected_from_memory": false,
+            "returned_fact_bytes": 356,
+            "experience_reads": 1,
+            "experience_applied": 0,
+            "experience_writes": 2,
+            "experience_status": "connected_retrieval_strategy",
+            "experience_created": 1,
+            "experience_candidates_skipped": 0,
+            "experience_lookup_ms": 0.01610000617802143,
+            "experience_write_ms": 6.5960000501945615,
+            "experience_pruned": 0,
+            "experience_id": "retrieval-experience-faa30d9d4ea53554efccd097",
+            "experience_rejection": "no_candidate_reduction",
+            "experience_write_status": "committed",
+            "experience_written_id": "retrieval-experience-27598bd584f4a9ea995720ec"
+          }
+        },
+        {
+          "role": "reasoner",
+          "input_tokens": 29,
+          "output_tokens": 0,
+          "forward_positions": 31,
+          "model_forward_ms": 1832.797599839978,
+          "alignment_ms": 66.61580014042556,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 1901.5532999765128,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nDerive the answer from original source facts in the current context. Preserve negation and ownership internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 28
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 493,
+          "layer_positions": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ],
+          "state_before_bytes": 28270592,
+          "state_after_bytes": 30048256,
+          "tool": null
+        },
+        {
+          "role": "summarizer",
+          "input_tokens": 33,
+          "output_tokens": 4,
+          "forward_positions": 37,
+          "model_forward_ms": 2291.468200040981,
+          "alignment_ms": 0,
+          "latent_steps": 0,
+          "latent_vector_bytes": 0,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "finish_reason": "stop",
+          "elapsed_ms": 2424.547899980098,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nAnswer the current question using the original source facts. Return only the complete final answer. Return unknown if the sources are insufficient.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 33
+            }
+          ],
+          "raw_response_content": "A barn.",
+          "cached_prefix_positions": 524,
+          "layer_positions": [
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37,
+            37
+          ],
+          "state_before_bytes": 30048256,
+          "state_after_bytes": 32169984,
+          "tool": null
+        }
+      ],
+      "answer_coverage": {
+        "coverage": 0.5,
+        "score": 0.5,
+        "correct": false,
+        "status": "partial",
+        "matched_reference": "in a barn",
+        "contradiction": false
+      }
+    },
+    {
+      "task_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-3",
+      "question": "Did she live alone?",
+      "prediction": "No, she did not live alone.",
+      "reference": [
+        "no",
+        "No"
+      ],
+      "error": null,
+      "elapsed_ms": 10928.000100073405,
+      "calls": [
+        {
+          "role": "planner",
+          "input_tokens": 55,
+          "output_tokens": 0,
+          "forward_positions": 57,
+          "model_forward_ms": 3109.993200050667,
+          "alignment_ms": 56.70379986986518,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 3170.824100030586,
+          "inputs": [
+            {
+              "category": "external_question",
+              "text": "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n<|im_start|>user\nDid she live alone?<|im_end|>\n",
+              "tokens": 31,
+              "content_positions": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ]
+            },
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nResolve references in the current question. Identify the requested relation and constraints internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 23
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 561,
+          "layer_positions": [
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57,
+            57
+          ],
+          "state_before_bytes": 32169984,
+          "state_after_bytes": 35438592,
+          "tool": null
+        },
+        {
+          "role": "retriever",
+          "input_tokens": 27,
+          "output_tokens": 0,
+          "forward_positions": 29,
+          "model_forward_ms": 1786.481799907051,
+          "alignment_ms": 61.03330000769347,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 3,
+          "elapsed_ms": 1850.873599993065,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nUse the inherited question and constraints to locate the required source relations. Retain evidence internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 26
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 618,
+          "layer_positions": [
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29,
+            29
+          ],
+          "state_before_bytes": 35438592,
+          "state_after_bytes": 37101568,
+          "tool": {
+            "query_kind": "calibrated_model_representation",
+            "query_text": null,
+            "query_bytes": 1536,
+            "roots": [
+              "entity:cotton"
+            ],
+            "category": "companions",
+            "alignment": 0.6989096999168396,
+            "memory_threshold": 0.5830863308906555,
+            "require_topic_alignment": false,
+            "memory_best_score": 0.791079044342041,
+            "memory_sufficient": true,
+            "decision_reason": "calibrated_relation_match_with_complete_resident_bundle",
+            "memory_search_ms": 0.4977000644430518,
+            "index_search_ms": 0.0,
+            "knowledge_searches": 0,
+            "memory_and_fact_read_ms": 0.019400031305849552,
+            "source_ids": [
+              "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+              "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+              "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+            ],
+            "fresh_source_ids": [],
+            "memory_source_ids": [
+              "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+              "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+              "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+            ],
+            "ranked_candidates": [
+              {
+                "id": "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+                "score": 0.791079044342041
+              },
+              {
+                "id": "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412",
+                "score": 0.34287622570991516
+              },
+              {
+                "id": "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+                "score": 0.3388490080833435
+              }
+            ],
+            "all_selected_from_memory": true,
+            "returned_fact_bytes": 356,
+            "experience_reads": 1,
+            "experience_applied": 1,
+            "experience_writes": 1,
+            "experience_status": "connected_retrieval_strategy",
+            "experience_created": 0,
+            "experience_candidates_skipped": 1,
+            "experience_lookup_ms": 0.012399978004395962,
+            "experience_write_ms": 5.477899918332696,
+            "experience_pruned": 0,
+            "experience_id": "retrieval-experience-27598bd584f4a9ea995720ec",
+            "experience_certificate": {
+              "kind": "omitted_similarity_upper_bound",
+              "top_score": 0.791079044342041,
+              "omitted_upper_bound": 0.09615376591682434,
+              "selection_cutoff": 0.7110790443420411,
+              "complete_resident_bundle": true,
+              "passed": true,
+              "validation_target": "retrieval_selection_equivalence_only"
+            },
+            "experience_write_status": "committed",
+            "experience_written_id": "retrieval-experience-27598bd584f4a9ea995720ec"
+          }
+        },
+        {
+          "role": "reasoner",
+          "input_tokens": 29,
+          "output_tokens": 0,
+          "forward_positions": 31,
+          "model_forward_ms": 1887.3981999931857,
+          "alignment_ms": 60.44739997014403,
+          "latent_steps": 2,
+          "latent_vector_bytes": 12288,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "elapsed_ms": 1949.8991000000387,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nDerive the answer from original source facts in the current context. Preserve negation and ownership internally.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 28
+            },
+            {
+              "category": "boundary",
+              "text": "<|im_end|>",
+              "tokens": 1
+            }
+          ],
+          "raw_response_content": "",
+          "cached_prefix_positions": 647,
+          "layer_positions": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ],
+          "state_before_bytes": 37101568,
+          "state_after_bytes": 38879232,
+          "tool": null
+        },
+        {
+          "role": "summarizer",
+          "input_tokens": 33,
+          "output_tokens": 9,
+          "forward_positions": 42,
+          "model_forward_ms": 3652.918600011617,
+          "alignment_ms": 0,
+          "latent_steps": 0,
+          "latent_vector_bytes": 0,
+          "facts_encoded": 0,
+          "facts_reused_without_encoding": 0,
+          "finish_reason": "stop",
+          "elapsed_ms": 3946.1462000617757,
+          "inputs": [
+            {
+              "category": "instruction",
+              "text": "<|im_start|>system\nAnswer the current question using the original source facts. Return only the complete final answer. Return unknown if the sources are insufficient.<|im_end|>\n<|im_start|>assistant\n",
+              "tokens": 33
+            }
+          ],
+          "raw_response_content": "No, she did not live alone.",
+          "cached_prefix_positions": 678,
+          "layer_positions": [
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42,
+            42
+          ],
+          "state_before_bytes": 38879232,
+          "state_after_bytes": 41287680,
+          "tool": null
+        }
+      ],
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "no",
+        "contradiction": false
+      }
+    }
+  ]
+}

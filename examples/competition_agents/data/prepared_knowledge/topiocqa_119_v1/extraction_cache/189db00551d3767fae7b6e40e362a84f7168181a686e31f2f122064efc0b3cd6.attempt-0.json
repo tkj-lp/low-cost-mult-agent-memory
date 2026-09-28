@@ -1,0 +1,98 @@
+{
+  "document_id": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "red sunbird bush",
+        "relation": "is a species of",
+        "object": "acanthus family",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "red sunbird bush",
+        "relation": "is described as",
+        "object": "ornate species",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "isolated population of the red sunbird bush",
+        "relation": "was discovered in",
+        "object": "8 km Leinde Fadale forest",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "November 2002"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "8 km Leinde Fadale forest",
+        "relation": "is located in",
+        "object": "uplands adjacent to the park",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "red sunbird bush",
+        "relation": "occurs at elevation",
+        "object": "1,600 to 1,670 m.a.s.l.",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "red sunbird bush occurrence location",
+        "relation": "is distance from nearest populations",
+        "object": "some 1,200 km",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "entity",
+            "value": "nearest populations in the Afromontane archipelago"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "park boundary",
+        "relation": "has been suggested to be extended to protect",
+        "object": "the forest",
+        "polarity": "uncertain",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 554,
+    "prompt_tokens": 473,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 473
+    },
+    "total_tokens": 1027
+  }
+}

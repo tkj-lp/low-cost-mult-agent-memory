@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import os
-import time
-from contextlib import contextmanager
 
-from competition_agents.llm import get_llm_client
 
 
 AUTOFORM_PRINCIPLE = (
@@ -48,47 +45,3 @@ def build_autoform_instruction(
         "Source message to transform:\n"
         f"{source_message}"
     )
-
-
-def generate_autoform_message(
-    *,
-    sender: str,
-    receiver: str,
-    action: str,
-    source_message: str,
-) -> tuple[str, dict[str, object]]:
-    """让模型自主生成 AutoForm 通信 payload，并返回审计信息。"""
-
-    prompt = build_autoform_instruction(
-        sender=sender,
-        receiver=receiver,
-        action=action,
-        source_message=source_message,
-    )
-    started = time.perf_counter()
-    with _without_hidden_capture():
-        generated = get_llm_client("autoform").generate(prompt).strip()
-    elapsed_ms = (time.perf_counter() - started) * 1000
-    payload = generated or source_message
-    audit = {
-        "communication_style": "autoform",
-        "autoform_prompt_chars": len(prompt),
-        "generated_text_chars": len(payload),
-        "transmitted_text_chars": len(payload),
-        "transform_latency_ms": elapsed_ms,
-        "source_text_chars": len(source_message),
-    }
-    return payload, audit
-
-
-@contextmanager
-def _without_hidden_capture():
-    previous = os.environ.get("LOCAL_CAPTURE_HIDDEN")
-    os.environ["LOCAL_CAPTURE_HIDDEN"] = "0"
-    try:
-        yield
-    finally:
-        if previous is None:
-            os.environ.pop("LOCAL_CAPTURE_HIDDEN", None)
-        else:
-            os.environ["LOCAL_CAPTURE_HIDDEN"] = previous

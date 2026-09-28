@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "schema": "prepared-knowledge-v3",
+  "corpus_sha256": "80badc3eb3966ee50de1cc1ceb664d7b8ac445668e944e4efe7b07c31ac6c357",
+  "counts": {
+    "documents": 1,
+    "facts": 12,
+    "incidence": 33,
+    "fact_sources": 12,
+    "constraints": 1,
+    "nodes": 29,
+    "local_reference_nodes": 8,
+    "covered_sentences": 1
+  },
+  "database_integrity": "ok",
+  "artifact_checksums": "passed",
+  "source_validation": "structure, document anchors, cited object/qualifier anchors and sentence-reference coverage",
+  "semantic_verification": "not a proof of semantic correctness or lossless extraction",
+  "query_scope": "one direct graph search per question, top 12 facts; no planner or answer model",
+  "queries": []
+}

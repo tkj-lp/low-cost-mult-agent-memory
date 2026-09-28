@@ -2,8 +2,25 @@ from __future__ import annotations
 
 from .benchmark import evaluate_retrieval_modes
 from .builder import build_hypergraph_view, ensure_hypergraph_view, task_node_id
-from .context import search_context
+from .context import clear_context_cache, search_context
+from .contracts import (
+    BatchPolicy,
+    EpisodeMemoryInput,
+    ExperienceMemoryInput,
+    ExperienceReview,
+    KnowledgeMemoryInput,
+    MaintenanceReport,
+    MemoryEncoder,
+    MemoryRelationUpdate,
+    RetrievalHit,
+    RetrievalRequest,
+    RetrievalResult,
+    TaskFeedback,
+    TaskMemoryCommit,
+    WriteReceipt,
+)
 from .distill import archive_scope, distill_experience
+from .encoders import SentenceTransformerEncoder
 from .evolution import (
     apply_decay,
     deduplicate_memory,
@@ -13,6 +30,17 @@ from .evolution import (
     prepare_searchable_memory,
     prune_memory,
     retention_profile,
+)
+from .index import clear_hypergraph_index_cache
+from .layers import (
+    EPISODIC_LAYER,
+    EXPERIENCE_LAYER,
+    KNOWLEDGE_LAYER,
+    MEMORY_LAYERS,
+    MemoryLayer,
+    memory_layer_for_record,
+    normalize_memory_layer,
+    partition_memory_by_layer,
 )
 from .memory_model import (
     build_evidence_chain,
@@ -34,24 +62,6 @@ from .retrieval import (
     search_semantic_memory,
     search_tag_memory,
 )
-from .index import clear_hypergraph_index_cache
-from .layers import (
-    EPISODIC_LAYER,
-    EXPERIENCE_LAYER,
-    KNOWLEDGE_LAYER,
-    MEMORY_LAYERS,
-    MemoryLayer,
-    memory_layer_for_record,
-    normalize_memory_layer,
-    partition_memory_by_layer,
-)
-from .retrieval_batches import (
-    KNOWLEDGE_FOLLOWUP_BATCH,
-    MEMORY_ROUTE_BATCH,
-    build_retrieval_batches,
-    resolve_followup_decision,
-    update_retrieval_batch,
-)
 from .reuse_metrics import (
     evaluate_paired_memory_gain,
     evaluate_run_reuse,
@@ -63,25 +73,8 @@ from .search import (
     memory_organization_for_mode,
     search_hypergraph_memory,
 )
-from .store import SQLiteHypergraphMemoryStore
-from .contracts import (
-    BatchPolicy,
-    EpisodeMemoryInput,
-    ExperienceMemoryInput,
-    ExperienceReview,
-    KnowledgeMemoryInput,
-    MaintenanceReport,
-    MemoryEncoder,
-    MemoryRelationUpdate,
-    RetrievalHit,
-    RetrievalRequest,
-    RetrievalResult,
-    TaskFeedback,
-    TaskMemoryCommit,
-    WriteReceipt,
-)
 from .service import MemoryService
-from .encoders import SentenceTransformerEncoder
+from .store import SQLiteHypergraphMemoryStore
 from .text_memory import (
     compare_retrieval_sets,
     retrieval_metrics,
@@ -147,6 +140,7 @@ __all__ = [
     "prune_memory",
     "retention_profile",
     "clear_hypergraph_index_cache",
+    "clear_context_cache",
     "MemoryLayer",
     "KNOWLEDGE_LAYER",
     "EPISODIC_LAYER",
@@ -155,11 +149,6 @@ __all__ = [
     "memory_layer_for_record",
     "normalize_memory_layer",
     "partition_memory_by_layer",
-    "MEMORY_ROUTE_BATCH",
-    "KNOWLEDGE_FOLLOWUP_BATCH",
-    "build_retrieval_batches",
-    "resolve_followup_decision",
-    "update_retrieval_batch",
     "search_text_context",
     "search_text_memory",
     "task_node_id",

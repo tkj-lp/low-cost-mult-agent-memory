@@ -1,0 +1,1 @@
+{"task":"What color was Cotton?","facts":[["s1","Cotton","color","white"]]}

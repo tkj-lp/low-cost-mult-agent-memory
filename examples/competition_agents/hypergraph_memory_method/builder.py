@@ -669,11 +669,11 @@ def _legacy_hypergraph_view(record: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_hypergraph_view(
-    record: dict[str, Any], *, persist: bool = True
+    record: dict[str, Any], *, persist: bool = True, _normalized: bool = False
 ) -> dict[str, Any]:
     """Build an explainable hypergraph view for one reusable memory record."""
 
-    normalized = normalize_memory_record(record)
+    normalized = record if _normalized else normalize_memory_record(record)
     record.update(
         {key: value for key, value in normalized.items() if key != "hypergraph"}
     )

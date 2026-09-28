@@ -1,0 +1,188 @@
+{
+  "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "The fauna of the national park",
+        "relation": "is",
+        "object": "very diverse",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "103 species of mammals",
+        "relation": "have been recorded at censuses",
+        "object": "at censuses",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "censuses"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Species",
+        "relation": "include",
+        "object": "yellow-backed duiker",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Species",
+        "relation": "include",
+        "object": "African golden cat (\"Profelis aurata\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The African buffalo",
+        "relation": "is",
+        "object": "the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "relation": "is found within the boundaries of",
+        "object": "the national park",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "To protect the animals and the ecosystem",
+        "relation": "was launched",
+        "object": "the Gashaka Primate Project",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the African elephant (\"Loxodonta africana\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the klipspringer (\"Oreotragus oreotragus\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the West African wild dog (\"Lycaon pictus manguensis\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the hartebeest (\"Alcelaphus buselaphus\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the world's largest antelope, the giant eland (\"Taurotragus Derbianus\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the roan antelope (\"Hippotragus equinus\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the kob antelope (\"Kobus kob\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the oribi (\"Ourebia ourebi\")",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Living in the national park",
+        "relation": "are also",
+        "object": "the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\")",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "attribute",
+            "value": "in larger stocks"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 1203,
+    "prompt_tokens": 611,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 611
+    },
+    "total_tokens": 1814
+  }
+}

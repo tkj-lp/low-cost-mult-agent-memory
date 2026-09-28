@@ -1,0 +1,97 @@
+{
+  "source_sha256": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+  "extractor_sha256": "189db00551d3767fae7b6e40e362a84f7168181a686e31f2f122064efc0b3cd6",
+  "model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "red sunbird bush",
+        "relation": "discovery location",
+        "object": "8 km Leinde Fadale forest",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "November 2002"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "red sunbird bush",
+        "relation": "is a",
+        "object": "ornate species of the acanthus family",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "red sunbird bush",
+        "relation": "population type",
+        "object": "isolated population",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "red sunbird bush",
+        "relation": "occurrence elevation",
+        "object": "1,600 to 1,670 m.a.s.l.",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "red sunbird bush",
+        "relation": "distance from nearest populations",
+        "object": "some 1,200 km",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "entity",
+            "value": "nearest populations in the Afromontane archipelago"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "park boundary",
+        "relation": "suggested action",
+        "object": "extended",
+        "polarity": "uncertain",
+        "qualifiers": [
+          {
+            "kind": "purpose",
+            "value": "to protect the forest"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 531,
+    "prompt_tokens": 507,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 507
+    },
+    "total_tokens": 1038
+  },
+  "attempts": 3,
+  "offline_seconds": 15.716217600042,
+  "semantic_verification": "not_independently_verified"
+}

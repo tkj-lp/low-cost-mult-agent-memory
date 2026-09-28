@@ -1,0 +1,19 @@
+{
+  "dataset": "TopiOCQA",
+  "conversation": 119,
+  "official_turns": 11,
+  "repository_turns": 10,
+  "selected_turns": 3,
+  "selection": "原分支第一组官方会话，按原顺序取前几轮，不根据模型成绩筛选。",
+  "official_url": "https://huggingface.co/datasets/McGill-NLP/TopiOCQA/blob/543f3fc424da32c8b024fb5ae182946860be5517/data/topiocqa_valid.jsonl",
+  "branch": "personal/codex/competition-console-update-20260706",
+  "commit": "43301ee774083ffadd43eb0f4cf80b1c550d5fc6",
+  "branch_file": "official_topiocqa_001_10turns.json",
+  "official_file": "topiocqa_valid.jsonl",
+  "branch_sha256": "c16a91fbc54d69ebad6e0038b91f3279a0dba3c07402cb1c97828bfc0aafca30",
+  "official_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+  "source_documents": 7,
+  "excluded_annotation_documents": 36,
+  "source_policy": "保留分支内整段来源；排除答案解释，不扩写、不补全原始资料中缺失的数值。",
+  "question_verification": "全部分支问题逐字匹配官方原始会话；来源段落取自分支。"
+}

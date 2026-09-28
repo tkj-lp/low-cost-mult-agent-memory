@@ -1,0 +1,1 @@
+{"task":"Did Cotton live alone?","lookup":false,"evidence":{"sources":{"d1":"mc160.test.41"},"facts":[["s4","Cotton","NOT lived","alone","","d1"]]}}

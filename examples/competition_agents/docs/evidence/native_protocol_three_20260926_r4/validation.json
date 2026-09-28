@@ -1,0 +1,36 @@
+{
+  "checks": {
+    "baseline_snapshots_unchanged": true,
+    "baseline_results_unchanged": true,
+    "run_snapshot_matches_executed_sources": true,
+    "only_shared_protocol_source_changed": true,
+    "knowledge_unchanged": true,
+    "first_planner_messages_equal_online_baseline": true,
+    "native_client_unchanged": true,
+    "generation_configuration_unchanged": true,
+    "raw_model_outputs_unchanged_by_client": true,
+    "no_cross_role_cache": true,
+    "one_attempt_per_call": true,
+    "same_three_task_ids": true
+  },
+  "all_checks_passed": true,
+  "regression_tests_passed": 64,
+  "semantic_review": [
+    {
+      "turn_id": 1,
+      "final_correct": true,
+      "reason": "白色与原文一致。"
+    },
+    {
+      "turn_id": 2,
+      "final_correct": true,
+      "reason": "农舍附近的谷仓与原文一致；没有因未细分谷仓上方而判错。"
+    },
+    {
+      "turn_id": 3,
+      "final_correct": null,
+      "reason": "检索交接引用未提供的 f1，且选出住所而非独居事实；流程未生成最终答案。"
+    }
+  ],
+  "repeats_per_parser_version": 1
+}

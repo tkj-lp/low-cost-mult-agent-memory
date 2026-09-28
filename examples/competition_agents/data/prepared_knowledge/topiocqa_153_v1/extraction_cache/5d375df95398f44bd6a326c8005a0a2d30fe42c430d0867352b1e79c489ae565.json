@@ -1,0 +1,895 @@
+{
+  "source_sha256": "807028fcfd68684aa3ab93b640a577d404241fc5ef59ea7f14d550159c5abb51",
+  "extractor_sha256": "5d375df95398f44bd6a326c8005a0a2d30fe42c430d0867352b1e79c489ae565",
+  "model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "is",
+        "object": "lead single",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "release date",
+        "object": "October 17, 1983",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number two",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "United States"
+          },
+          {
+            "kind": "chart",
+            "value": "Billboard Hot 100"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "certification",
+        "object": "Platinum",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "issuer",
+            "value": "Recording Industry Association of America"
+          },
+          {
+            "kind": "quantity",
+            "value": "2,000,000 copies"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart performance",
+        "object": "top ten",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "count",
+            "value": "19 countries"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "count",
+            "value": "10 countries"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Australia"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Canada"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Ireland"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Japan"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "New Zealand"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Brazil"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Norway"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "award nomination",
+        "object": "Record of the Year",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "event",
+            "value": "1985 Grammy Awards"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "award nomination",
+        "object": "Best Female Pop Vocal Performance",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "event",
+            "value": "1985 Grammy Awards"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "award win",
+        "object": "Best Female Video",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "event",
+            "value": "1984 MTV Video Music Awards"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Girls Just Want to Have Fun\"",
+        "relation": "chart inclusion",
+        "object": "top spots",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "year end Top 100 of 1984"
+          },
+          {
+            "kind": "location",
+            "value": "New Zealand"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "is",
+        "object": "second single",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "release date",
+        "object": "March 1984",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "chart peak",
+        "object": "number one",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "duration",
+            "value": "two consecutive weeks"
+          },
+          {
+            "kind": "chart",
+            "value": "Billboard Hot 100"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "is",
+        "object": "first number one hit",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "owner",
+            "value": "Lauper"
+          },
+          {
+            "kind": "chart",
+            "value": "Hot 100"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "chart duration",
+        "object": "20 weeks",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "chart",
+            "value": "the chart"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "certification",
+        "object": "Gold",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "issuer",
+            "value": "RIAA"
+          },
+          {
+            "kind": "quantity",
+            "value": "1,000,000 copies sold"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "chart performance",
+        "object": "top ten",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "count",
+            "value": "15 countries"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "award nomination",
+        "object": "Song of the Year",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "event",
+            "value": "Grammy"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"Time After Time\"",
+        "relation": "chart inclusion",
+        "object": "top spots",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "year end Top 100 of 1984"
+          },
+          {
+            "kind": "location",
+            "value": "New Zealand"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "is",
+        "object": "third single",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "release date",
+        "object": "July 2, 1984",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "chart peak",
+        "object": "number three",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "chart",
+            "value": "Hot 100"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "is",
+        "object": "third consecutive top five hit",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "chart duration",
+        "object": "18 weeks",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "chart",
+            "value": "the chart"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "certification",
+        "object": "Gold",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "issuer",
+            "value": "RIAA"
+          },
+          {
+            "kind": "quantity",
+            "value": "over 1,000,000 copies"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "chart performance",
+        "object": "top ten",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "count",
+            "value": "8 countries"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "status",
+        "object": "controversial",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "upon release"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"She Bop\"",
+        "relation": "list position",
+        "object": "number 15",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "list",
+            "value": "PMRC's \"Filthy Fifteen\""
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "is",
+        "object": "single number four",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "release date",
+        "object": "September 1984",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "chart peak",
+        "object": "number five",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "chart",
+            "value": "Hot 100"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "writer",
+        "object": "Jules Shear",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "original recorder",
+        "object": "Jules Shear",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Jules Shear",
+        "relation": "provided",
+        "object": "backing vocals",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "for",
+            "value": "\"All Through the Night\""
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "chart performance",
+        "object": "top ten",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "count",
+            "value": "6 countries"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "certification",
+        "object": "Gold",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Canada"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"All Through the Night\"",
+        "relation": "chart inclusion",
+        "object": "the list",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "year end Top 100 of 1985"
+          },
+          {
+            "kind": "location",
+            "value": "New Zealand"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "\"Money Changes Everything\"",
+        "relation": "is",
+        "object": "Single number five",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          4
+        ]
+      },
+      {
+        "subject": "\"Money Changes Everything\"",
+        "relation": "release date",
+        "object": "December 1984",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          4
+        ]
+      },
+      {
+        "subject": "\"Money Changes Everything\"",
+        "relation": "chart peak",
+        "object": "number 27",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "chart",
+            "value": "Hot 100"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          4
+        ]
+      },
+      {
+        "subject": "\"Money Changes Everything\"",
+        "relation": "is",
+        "object": "first single to not reach the top ten",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "owner",
+            "value": "Lauper"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          4
+        ]
+      },
+      {
+        "subject": "\"Money Changes Everything\"",
+        "relation": "chart peak",
+        "object": "number 19",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "location",
+            "value": "Australia"
+          },
+          {
+            "kind": "chart",
+            "value": "its chart"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          4
+        ]
+      },
+      {
+        "subject": "\"When You Were Mine\"",
+        "relation": "is",
+        "object": "sixth and final single",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          5
+        ]
+      },
+      {
+        "subject": "\"When You Were Mine\"",
+        "relation": "is",
+        "object": "cover",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "original artist",
+            "value": "Prince"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          5
+        ]
+      },
+      {
+        "subject": "\"When You Were Mine\"",
+        "relation": "release date",
+        "object": "January 31, 1985",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "locations",
+            "value": "Canada and Japan only"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          5
+        ]
+      },
+      {
+        "subject": "\"When You Were Mine\"",
+        "relation": "chart peak",
+        "object": "number 62",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "chart",
+            "value": "Canadian Singles Chart"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          5
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 4613,
+    "prompt_tokens": 1295,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 1295
+    },
+    "total_tokens": 5908
+  },
+  "attempts": 1,
+  "offline_seconds": 35.32598419999704,
+  "semantic_verification": "not_independently_verified"
+}

@@ -1,0 +1,7 @@
+Conversation memory: empty.
+
+Current question:
+What color was Cotton?
+
+Planner output (unverified):
+The question asks for the color of "Cotton." To answer this, I need to identify who or what "Cotton" refers to in the provided sources and find any description of their physical appearance, specifically their hair or skin color. The retriever should look for mentions of a character named Cotton and any adjectives describing their visual attributes.

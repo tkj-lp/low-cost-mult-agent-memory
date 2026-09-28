@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from competition_agents.embedding import EmbeddingResult
-from competition_agents.memory import add_memory
 from hypergraph_memory_method import (
     SQLiteHypergraphMemoryStore,
     build_hypergraph_view,
@@ -14,8 +13,8 @@ from hypergraph_memory_method import (
     evaluate_retrieval_modes,
     evaluate_task_reuse,
     load_persistent_memory,
-    normalize_memory_record,
     memory_organization_for_mode,
+    normalize_memory_record,
     search_hypergraph_memory,
     search_memory_by_mode,
     validate_evidence_chain,
@@ -154,47 +153,8 @@ def test_compact_trace_removes_recursive_memory_and_evaluation_answers() -> None
     assert compacted["memory_hits"] == [{"memory_id": "mem-0001", "summary": "prior"}]
 
 
-def test_memory_graph_uses_canonical_entities_without_evaluation_labels() -> None:
-    source = _evidence_record()
-    source["trace"]["task_meta"]["expected_reuse"] = ["turn-1.answer"]
-    source["trace"]["task_meta"]["supporting_facts"] = [
-        ["Shirley Temple", "She served as Chief of Protocol."]
-    ]
-    memory = add_memory(
-        [],
-        source_agent=source["source_agent"],
-        task_topic=source["task_topic"],
-        summary=source["summary"],
-        tags=source["tags"],
-        trace=source["trace"],
-    )
-
-    record = memory[0]
-    graph_nodes = {
-        node
-        for edge in record["hypergraph"]["hyperedges"]
-        for node in edge.get("nodes", [])
-    }
-    assert "shirley temple" in record["entities"]
-    assert "entity:shirley temple" in graph_nodes
-    assert not any(node.startswith("expected_reuse:") for node in graph_nodes)
 
 
-def test_add_memory_remains_compatible_and_gains_chain_fields() -> None:
-    source = _evidence_record()
-    memory = add_memory(
-        [],
-        source_agent=source["source_agent"],
-        task_topic=source["task_topic"],
-        summary=source["summary"],
-        tags=source["tags"],
-        trace=source["trace"],
-    )
-
-    assert len(memory) == 1
-    assert memory[0]["memory_type"] == "evidence"
-    assert memory[0]["evidence_chain_valid"] is True
-    assert memory[0]["hypergraph"]["evidence_chain"]["completeness"] == 1.0
 
 
 def test_semantic_mode_recalls_without_keyword_overlap(monkeypatch) -> None:
@@ -309,29 +269,6 @@ def test_persistent_store_updates_only_explicit_reuse(tmp_path: Path) -> None:
         assert reused["record_version"] == 2
 
 
-def test_existing_write_and_search_interfaces_support_opt_in_persistence(
-    tmp_path: Path, monkeypatch
-) -> None:
-    database = tmp_path / "transparent.sqlite3"
-    monkeypatch.setenv("HYPERGRAPH_MEMORY_DB", str(database))
-    monkeypatch.setenv("HYPERGRAPH_MEMORY_AUTOPERSIST", "1")
-    monkeypatch.setenv("HYPERGRAPH_MEMORY_AUTOLOAD", "1")
-
-    source = _evidence_record("mem-0007")
-    add_memory(
-        [],
-        source_agent=source["source_agent"],
-        task_topic=source["task_topic"],
-        summary=source["summary"],
-        tags=source["tags"],
-        trace=source["trace"],
-    )
-
-    with SQLiteHypergraphMemoryStore(database) as store:
-        assert store.count() == 1
-    assert load_persistent_memory()[0]["memory_id"] == "mem-0001"
-    hits = search_hypergraph_memory([], "Chief of Protocol Shirley Temple", top_k=1)
-    assert hits[0]["memory_id"] == "mem-0001"
 
 
 def test_persistence_is_disabled_without_explicit_database(

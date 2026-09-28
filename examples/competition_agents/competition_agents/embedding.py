@@ -134,15 +134,6 @@ def _embed_local(text: str) -> EmbeddingResult:
     )
 
 
-def _embed_local_hidden(text: str) -> EmbeddingResult:
-    from competition_agents.latent_hidden.hidden_state import extract_last_hidden_state
-
-    result, _ = extract_last_hidden_state(text)
-    return EmbeddingResult(
-        vector=[float(value) for value in result.pooled_vector],
-        provider="local_hidden",
-        model=result.model_name,
-    )
 
 
 @lru_cache(maxsize=2048)
@@ -159,8 +150,6 @@ def _embed_text_cached(
         result = _embed_openai_compatible(text)
     elif provider == "local":
         result = _embed_local(text)
-    elif provider in {"local_hidden", "local_hf", "hidden"}:
-        result = _embed_local_hidden(text)
     elif provider == "hash":
         result = EmbeddingResult(
             vector=hash_embedding(text),
@@ -172,8 +161,8 @@ def _embed_text_cached(
     return tuple(result.vector), result.provider, result.model
 
 
-def embed_text(text: str) -> EmbeddingResult:
-    provider = get_embedding_provider()
+def embed_text(text: str, *, provider: str | None = None) -> EmbeddingResult:
+    provider = provider or get_embedding_provider()
     model_key = (
         os.environ.get("EMBEDDING_MODEL")
         or os.environ.get("LOCAL_EMBEDDING_MODEL")

@@ -1,0 +1,21 @@
+{
+  "tests_passed": 96,
+  "both_prompts_unchanged": true,
+  "text_code_unchanged": true,
+  "same_tasks_and_corpus": true,
+  "frozen_code_matches": true,
+  "calls_by_mode": {
+    "text": 12,
+    "protocol": 12
+  },
+  "all_calls_without_retry": true,
+  "third_answer_uses_previous_observation": true,
+  "third_knowledge_searches": 0,
+  "protocol_fact_counts": [
+    1,
+    4,
+    4
+  ],
+  "failed_run_retained": "../memory_retention_api_three_20260925_r1",
+  "source_review": "两组均3题有来源支持，地点描述略有重复但无明确错位"
+}

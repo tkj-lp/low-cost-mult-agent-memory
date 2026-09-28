@@ -1,0 +1,60 @@
+{
+  "selections": [
+    {
+      "name": "纯文本",
+      "selected": [
+        "●纯文本",
+        "⊙普通文本记忆",
+        "相似度检索"
+      ]
+    },
+    {
+      "name": "协议字段",
+      "selected": [
+        "●协议字段",
+        "⌘超图记忆",
+        "超图跳跃检索"
+      ]
+    },
+    {
+      "name": "隐状态",
+      "selected": [
+        "●隐状态",
+        "⌘超图记忆",
+        "超图跳跃检索"
+      ]
+    },
+    {
+      "name": "AutoForm",
+      "selected": [
+        "●AutoForm",
+        "⊙普通文本记忆",
+        "相似度检索"
+      ]
+    },
+    {
+      "name": "LLMLingua-2",
+      "selected": [
+        "●LLMLingua-2",
+        "⊙普通文本记忆",
+        "相似度检索"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "page": "协作机制",
+      "text": "多智能体低开销通信实验系统\n实验控制台\n协作机制\n记忆复用\n指标评估\n▦ 实验记录\n⇩ 导出报告⌄\n结果展示\n当前展示：连续问答固定三题 / 隐状态 / 超图记忆 / 超图跳跃检索 / 09-27 15:14\n数据集\n连续问答固定三题\n⌄\n协作方式\n纯文本\n协议字段\n隐状态\nAutoForm\nLLMLingua-2\n⌄\n记忆组织\n超图记忆\n⌄\n检索方式\n超图跳跃检索\n⌄\n对比基线\n不对比\n对比\n⌄\n⟳\n刷新\n协\n运行模式\n隐状态传递 / hypergraph / hypergraph\n轮\n当前轮次\n任务 1 / 共 3 轮\n信\n消息次数\n2 次\n文\n文本开销\n--\n态\n状态传递\n3 次\n记\n记忆命中\n0 次\n角\n当前角色\n已完成\n连续任务条\n点击任务查看该轮记录\n任务 1\n已完成\n\nWhat color was Cotton?\n\n开始任务\nAGENT_OUTPUT\nSTATE -\n100%\n任务 2\n已完成\n\nWhere did she live?\n\n开始任务\nAGENT_OUTPUT\nSTATE -\n100%\n任务 3\n已完成\n\nDid she live alone?\n\n开始任务\nAGENT_OUTPUT\nSTATE -\n100%\n运行时协作链路\nWhat color was Cotton?\nRetriever\nMemory\nSummarizer\n1. 检索问答记忆\n2. 写回记忆 8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f\n1 条\n3. 写回记忆 retrieval-experience-b7c8d7cdd58e640d76b5de71\n1 条\n结构化消息\n状态传递\n记忆检索/复用\n工具执行\n协议信息\n任务 1\n协议字段\n传递内容\nRetriever → Memory\nMEMORY_QUERY\n\nRetriever 向问答记忆超图发起检索请求。\n\n发送方\nRetriever\n接收方\nMemory\n动作类型\nMEMORY_QUERY\n传递内容\n问答记忆检索 query=calibrated_model_representation\n状态引用\n-\n记忆引用\n-\n通信开销\n-\n返回结果\n{\"hit_count\":0,\"memory_layer\":\"evidence\"}\n协议映射\n问答检索 → qa_memory.search(query, top_k)\n查看原始协议包\n实时日志\n当前查看：任务 1\n时间\t发送方\t接收方\t事件类型\t动作\t状态引用\t记忆引用\t文本开销\t耗时\t结果\n15:13:41.331\tRuntime\tPlanner\ttask_start\tTASK_START\t-\t-\t0 字符\t0 ms\t开始\n15:13:44.728\tPlanner\tDashboard\tagent_output\tAGENT_OUTPUT\t-\t-\t0 字符\t3396.41 ms\t{\"content\":\"\",\"representation\":\"hidden_state\"}\n15:13:44.728\tPlanner\tRetriever\tstate_transfer\tREUSE_COMPUTATION_STATE\t-\t-\t0 字符\t0 ms\t{\"representation\":\"shared_computation_state\",\"summary\":\"续接同进程计算状态；跨机器传输量未测量。\"}\n15:13:47.281\tRetriever\tDashboard\tagent_output\tAGENT_OUTPUT\t-\t-\t0 字符\t2551.16 ms\t{\"content\":\"\",\"representation\":\"hidden_state\"}\n15:13:47.282\tRetriever\tReasoner\tstate_transfer\tREUSE_COMPUTATION_STATE\t-\t-\t0 字符\t0 ms\t{\"representation\":\"shared_computation_state\",\"summary\":\"续接同进程计算状态；跨机器传输量未测量。\"}\n15:13:48.721\tReasoner\tDashboard\tagent_output\tAGENT_OUTPUT\t-\t-\t0 字符\t1437.63 ms\t{\"content\":\"\",\"representation\":\"hidden_state\"}\n15:13:48.721\tReasoner\tSummarizer\tstate_transfer\tREUSE_COMPUTATION_STATE\t-\t-\t0 字符\t0 ms\t{\"representation\":\"shared_computation_state\",\"summary\":\"续接同进程计算状态；跨机器传输量未测量。\"}\n15:13:50.065\tSummarizer\tDashboard\tagent_output\tAGENT_OUTPUT\t-\t-\t0 字符\t1343.51 ms\t{\"content\":\"White.\",\"representation\":\"final_text\"}\n15:13:50.077\tRetriever\tMemory\tmemory_query\tMEMORY_QUERY\t-\t-\t0 字符\t0.44 ms\t{\"hit_count\":0,\"memory_layer\":\"evidence\"}\n15:13:50.078\tSummarizer\tMemory\tmemory_write\tMEMORY_WRITE\t-\t8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f\t0 字符\t0 ms\t8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f：Cotton | was | white\n15:13:50.078\tSummarizer\tMemory\tmemory_write\tMEMORY_WRITE\t-\tretrieval-experience-b7c8d7cdd58e640d76b5de71\t0 字符\t0 ms\tretrieval-experience-b7c8d7cdd58e640d76b5de71：先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。\n15:13:50.078\tSummarizer\tDashboard\ttask_done\tTASK_DONE\t-\t-\t0 字符\t8743.43 ms\t{\"answer\":\"White.\",\"final_answer\":\"White.\",\"error\":null}\n版本：v1.0.0 | © 2025 多智能体低开销通信实验系统\n开源社区版，仅用于学术研究与比赛演示"
+    },
+    {
+      "page": "记忆复用",
+      "text": "多智能体低开销通信实验系统\n实验控制台\n协作机制\n记忆复用\n指标评估\n▦ 实验记录\n⇩ 导出报告⌄\n数据集\n连续问答固定三题\n⌄\n协作方式\n纯文本\n协议字段\n隐状态\nAutoForm\nLLMLingua-2\n⌄\n记忆组织\n超图记忆\n⌄\n检索方式\n超图跳跃检索\n⌄\n对比基线\n不对比\n对比\n⌄\n⟳\n刷新\n连续任务记忆流转\n协作模式：隐状态传递\n数据集：连续问答固定三题\n记忆组织：超图记忆｜检索方式：超图跳跃\n任务 1\nWhat color was Cotton?\n任务 2\nWhere did she live?\n任务 3\nDid she live alone?\n1\n生成查询\n任务问题\n\nDid she live alone?\n\n首轮或无显式期望复用\n2\n检索记忆库\n检索查询\n\nDid she live alone?\n\n检索方式：hypergraph\n3\n参与回答\n命中记忆\n\n44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3（--），532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99（--），e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412（--）\n\n3 条候选，0 条被采用\n4\n写回共享记忆\n复用到回答\n\nNo, she did not live alone.\n\n未记录被复用记忆\n5\n写入新记忆\n\nretrieval-experience-539da5d079df62522bb21ba0\n\n写回共享记忆库\n检索情况\n当前任务问题\nDid she live alone?\n44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3\n候选\n\nCotton | lived | alone\n\n选择理由：由当前检索器排序返回\n命中方式\nhypergraph\n分数\n--\n采用状态\n候选排序\n532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99\n候选\n\nCotton | lived in | a nice warm place above the barn\n\n选择理由：由当前检索器排序返回\n命中方式\nhypergraph\n分数\n--\n采用状态\n候选排序\ne22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412\n候选\n\nCotton | lived in | a barn near a farm house\n\n选择理由：由当前检索器排序返回\n命中方式\nhypergraph\n分数\n--\n采用状态\n候选排序\n记忆详情\n记忆编号\n44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3\n来源 Agent\nMemory\n创建时间\n15:14:07\n任务主题\nDid she live alone?\n摘要\nCotton | lived | alone\n标签\n--\n命中方式\nhypergraph\n命中分数\n--\n复用状态\n候选命中\n状态引用\n本任务未记录关联状态引用\n证据链\n1\n原问题\n\nDid she live alone?\n\n2\n生成查询\n\nDid she live alone?\n\n3\n选中记忆\n\n44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3：Cotton | lived | alone\n\n4\n支撑依据\n\n由当前检索器排序返回\n\n5\n最终回答\n\nNo, she did not live alone.\n\n版本：v1.0.0 | © 2025 多智能体低开销通信实验系统\n开源社区版，仅用于学术研究与比赛演示"
+    },
+    {
+      "page": "指标评估",
+      "text": "多智能体低开销通信实验系统\n实验控制台\n协作机制\n记忆复用\n指标评估\n▦ 实验记录\n⇩ 导出报告⌄\n数据集\n连续问答固定三题\n⌄\n协作方式\n纯文本\n协议字段\n隐状态\nAutoForm\nLLMLingua-2\n⌄\n记忆组织\n超图记忆\n⌄\n检索方式\n超图跳跃检索\n⌄\n对比基线\n不对比\n对比\n⌄\n⟳\n刷新\n当前方法：隐状态 + 超图记忆 + 超图跳跃检索\n▣\n真实消息载荷 ⓘ\n未测量\n\n同进程共享状态；跨机器传输量未测量\n\n◷\n单任务耗时 ⓘ\n8.57 秒\n\n平均每个任务端到端耗时\n\n↔\n通信开销 ⓘ\n未测量\n\n当前复用同进程计算状态，尚未测量跨机器传输。\n\n▰\n记忆命中任务占比 ⓘ\n33.3%\n\n旧口径 memory_hit_rate：有任意记忆命中的任务占比，不判断是否相关\n\n◎\n答案覆盖度 ⓘ\n83.3%\n\n参考答案覆盖度；少答部分计分，明确矛盾不计为正确\n\nⓘ\n真实消息载荷趋势\n暂无可绘制数据\n完成一次真实运行后会显示对应任务的趋势图。\nⓘ\n总任务耗时趋势\n秒\n9\n7.2\n5.4\n3.6\n1.8\n0\n任务1\n任务2\n任务3\n隐状态 + 超图跳跃检索\nⓘ\n计算状态复用\n续接次数与缓存峰值\n9 / 40320.0KB\n隐状态 + 超图跳跃检索\nⓘ\n方法对比汇总\n完整方法\t真实消息载荷\n实际 / 引用\t单任务耗时\n完整 / 状态生成\t非文本状态\n续接次数 / 缓存峰值或历史载荷\t记忆复用\n命中任务占比 / QA召回 / QA精度\t回答正确率\n覆盖度（旧记录匹配率）/ 历史词元分数\t消息次数\t效率提升\n隐状态 + 超图记忆 + 超图跳跃检索\t未测量 / 未测量\t8.57 秒 / --\t续接 9 / 缓存峰值 40320.0 KB\t33.3% / -- / --\t83.3% / --\t0\t--\n版本：v1.0.0 | © 2025 多智能体低开销通信实验系统\n开源社区版，仅用于学术研究与比赛演示"
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

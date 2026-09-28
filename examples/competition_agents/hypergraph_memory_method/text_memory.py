@@ -1,10 +1,42 @@
 from __future__ import annotations
 
+import math
 import time
 from typing import Any
 
 from .context import _context_units, _dataset_name, _task_id, _text
 from .text import tokenize
+
+
+def search_semantic_context(task_meta, query, *, embed, dataset_type=None, top_k=4):
+    """普通余弦相似度知识检索；不建超图、不使用图或属性重排。"""
+    from .prepared_knowledge import configured_knowledge
+    prepared = configured_knowledge()
+    if prepared is not None:
+        return prepared.search_text(query, embed, top_k)
+    resolved = _dataset_name(task_meta, dataset_type)
+    units = [unit for unit in _context_units(task_meta, resolved, _task_id(task_meta))
+             if not unit["kind"].startswith("dialogue_")]
+    if not units or top_k <= 0:
+        return []
+    query_embedding = embed(query)
+    if query_embedding.provider == "hash":
+        raise ValueError("语义知识检索必须使用真实编码器，不能使用哈希向量。")
+    q = query_embedding.vector
+    ranked = []
+    for unit in units:
+        encoded = embed(" ".join(filter(None, (unit.get("title"), unit.get("section"), unit["text"]))))
+        vector = encoded.vector
+        if (encoded.provider, encoded.model, len(vector)) != (
+            query_embedding.provider, query_embedding.model, len(q)
+        ) or not q or not all(math.isfinite(v) for v in [*q, *vector]):
+            raise ValueError("知识库向量与查询向量空间不匹配或包含无效数值。")
+        denominator = math.sqrt(sum(v * v for v in q) * sum(v * v for v in vector))
+        score = sum(a * b for a, b in zip(q, vector)) / denominator if denominator else 0.0
+        ranked.append({**unit, "context_score": score, "retrieval_score": score,
+                       "retrieval_backend": "semantic_context", "matched_nodes": [],
+                       "matched_hyperedges": [], "reasoning_path": []})
+    return sorted(ranked, key=lambda row: (-row["retrieval_score"], row["context_id"]))[:top_k]
 
 
 def _token_set(*values: Any) -> set[str]:

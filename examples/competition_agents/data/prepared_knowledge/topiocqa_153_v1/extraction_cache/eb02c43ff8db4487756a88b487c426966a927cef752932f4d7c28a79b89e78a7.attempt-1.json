@@ -1,0 +1,143 @@
+{
+  "document_id": "f6f8508ef770c797d8a3157dfedc6ada6c9050932fc0df8bbb280939e56d5aa8",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "The film",
+        "relation": "received",
+        "object": "mixed reviews",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "critics",
+        "relation": "decried",
+        "object": "\"formulaic Britcom plot\"",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the film",
+        "relation": "has",
+        "object": "an approval rating of 58%",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "source",
+            "value": "Rotten Tomatoes"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the film",
+        "relation": "based on",
+        "object": "112 reviews",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "source",
+            "value": "Rotten Tomatoes"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the film",
+        "relation": "has",
+        "object": "an average rating of 5.9/10",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "source",
+            "value": "Rotten Tomatoes"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The website's critics consensus",
+        "relation": "reads",
+        "object": "\"Kinky Boots relies heavily on the Full Monty formula of Britcoms, while playing it too safe in a desperate attempt not to offend. Ejiofor's performance is its redeeming virtue.\"",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "source",
+            "value": "Rotten Tomatoes"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the film",
+        "relation": "has",
+        "object": "a weighted average score of 57%",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "source",
+            "value": "Metacritic"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the film",
+        "relation": "based on",
+        "object": "reviews from 31 critics",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "source",
+            "value": "Metacritic"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the film",
+        "relation": "indicating",
+        "object": "\"mixed or average\" reviews",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "source",
+            "value": "Metacritic"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 841,
+    "prompt_tokens": 702,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 702
+    },
+    "total_tokens": 1543
+  }
+}

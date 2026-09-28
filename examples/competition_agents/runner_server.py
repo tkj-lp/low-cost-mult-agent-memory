@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 from urllib.parse import urlparse
 
 from hypergraph_memory_method.reuse_metrics import evaluate_run_reuse
@@ -36,90 +37,11 @@ METRICS_CACHE: list[dict[str, Any]] = []
 FILE_RECORD_CACHE: dict[str, tuple[tuple[int, ...], list[dict[str, Any]]]] = {}
 
 
-DATASETS = {
-    "topiocqa-1": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/topiocqa_1_10turns.json",
-    },
-    "topiocqa-2": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/topiocqa_2_10turns.json",
-    },
-    "topiocqa-official-1": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/official_topiocqa_001_10turns.json",
-    },
-    "topiocqa-official-2": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/official_topiocqa_002_10turns.json",
-    },
-    "topiocqa-official-3": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/official_topiocqa_003_10turns.json",
-    },
-    "qrecc-official-1": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/official_qrecc_001_10turns.json",
-    },
-    "qrecc-official-2": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/official_qrecc_002_10turns.json",
-    },
-    "qrecc-official-3": {
-        "task_count": 10,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/official_qrecc_003_10turns.json",
-    },
-    "official-topiocqa-qrecc-6chains": {
-        "task_count": 60,
-        "dataset_type": "continuous",
-        "file": "examples/competition_agents/data/official_topiocqa_qrecc_6chains_10turns.json",
-    },
-    **{
-        f"topiocqa-factoid-ranked-{index}": {
-            "task_count": 10,
-            "dataset_type": "continuous",
-            "file": f"examples/competition_agents/data/official_factoid_ranked_topiocqa_{index:03d}_10turns.json",
-        }
-        for index in range(1, 4)
-    },
-    **{
-        f"qrecc-factoid-ranked-{index}": {
-            "task_count": 10,
-            "dataset_type": "continuous",
-            "file": f"examples/competition_agents/data/official_factoid_ranked_qrecc_{index:03d}_10turns.json",
-        }
-        for index in range(1, 4)
-    },
-    "codeact-1": {
-        "task_count": 10,
-        "dataset_type": "codeact",
-        "file": "examples/competition_agents/data/codeact_1_10tasks.json",
-    },
-    "codeact-2": {
-        "task_count": 10,
-        "dataset_type": "codeact",
-        "file": "examples/competition_agents/data/codeact_2_10tasks.json",
-    },
-}
+from competition_agents.methods.catalog import CATALOG, DATASETS as METHOD_DATASETS, METHODS, validate
 
-EXPERIMENT_MODES = {
-    "plain": "baseline_text",
-    "autogen": "autogen_text",
-    "camel": "camel_text",
-    "autoform": "autoform_text",
-    "llmlingua": "llmlingua_text",
-    "structured": "protocol_api",
-    "protocol-vector": "protocol_api_embedding",
-    "latent": "hidden_api",
-}
+DATASETS = {key: {**value, 'task_count': value['taskCount'], 'dataset_type': value['datasetType']}
+            for key, value in METHOD_DATASETS.items()}
+EXPERIMENT_MODES = {key: value['experimentMode'] for key, value in METHODS.items()}
 
 
 class RunnerState:
@@ -130,77 +52,53 @@ class RunnerState:
     command: list[str] = []
     last_error: str = ""
     archived_pid: int | None = None
+    run_id: str = ''
+    stopped: bool = False
+    finished_at: float | None = None
 
 
 STATE = RunnerState()
 
 
 def normalize_config(raw: dict[str, Any]) -> dict[str, Any]:
-    dataset_key = str(raw.get("dataset") or "topiocqa-1")
-    if dataset_key not in DATASETS:
-        raise ValueError(f"不支持的数据集：{dataset_key}")
-    collaboration = str(raw.get("collaborationMode") or "plain")
-    if collaboration not in EXPERIMENT_MODES:
-        raise ValueError(f"不支持的协作方式：{collaboration}")
-    memory_mode = str(raw.get("memoryMode") or "text")
-    retrieval_mode = str(raw.get("retrievalMode") or "keyword")
-    if memory_mode == "hypergraph" and retrieval_mode not in {"hypergraph", "fusion"}:
-        raise ValueError("超图记忆只能使用超图跳跃或融合检索")
-    if memory_mode != "hypergraph" and retrieval_mode not in {"keyword", "tag", "semantic"}:
-        raise ValueError("普通文本记忆只能使用关键词、标签或语义相似度")
-
-    backend = str(raw.get("backend") or "local")
-    if backend not in {"local", "openai-compatible"}:
-        raise ValueError(f"不支持的模型后端：{backend}")
-
-    dataset = DATASETS[dataset_key]
-    return {
-        **raw,
-        "dataset": dataset_key,
-        "taskCount": int(raw.get("taskCount") or dataset["task_count"]),
-        "collaborationMode": collaboration,
-        "memoryMode": memory_mode,
-        "retrievalMode": retrieval_mode,
-        "backend": backend,
-        "localModel": str(raw.get("localModel") or "Qwen/Qwen2.5-0.5B-Instruct"),
-        "baseUrl": str(raw.get("baseUrl") or ""),
-        "remoteModel": str(raw.get("remoteModel") or ""),
-        "apiKey": str(raw.get("apiKey") or ""),
+    collaboration = str(raw.get('collaborationMode') or 'plain')
+    method = METHODS.get(collaboration)
+    if method is None:
+        raise ValueError('不支持的协作方式。')
+    dataset_key = str(raw.get('dataset') or CATALOG['defaultDataset'])
+    dataset = DATASETS.get(dataset_key)
+    if dataset is None:
+        raise ValueError('所选数据集没有绑定已准备好的知识库。')
+    config = {
+        'dataset': dataset_key,
+        'taskCount': dataset.get('runTaskCount', dataset['taskCount']),
+        'collaborationMode': collaboration,
+        'memoryMode': str(raw.get('memoryMode') or method['memory']),
+        'retrievalMode': str(raw.get('retrievalMode') or method['retrieval']),
+        'backend': str(raw.get('backend') or 'local'),
+        'localModel': str(raw.get('localModel') or CATALOG['defaultLocalModel']),
+        'baseUrl': str(raw.get('baseUrl') or ''),
+        'remoteModel': str(raw.get('remoteModel') or CATALOG['defaultRemoteModel']),
+        'apiKey': str(raw.get('apiKey') or ''),
     }
+    validate(config)
+    return config
 
 
 def build_command(config: dict[str, Any]) -> list[str]:
-    dataset = DATASETS[config["dataset"]]
-    # Knowledge access is identical across collaboration and memory modes.
-    # Text/hypergraph memory selection only changes QA/experience memory storage.
-    context_source = "hypergraph" if dataset["dataset_type"] != "codeact" else "inline"
-    return [
-        sys.executable,
-        "examples/competition_agents/run_demo.py",
-        "--experiment-mode",
-        EXPERIMENT_MODES[config["collaborationMode"]],
-        "--llm-backend",
-        "local" if config["backend"] == "local" else "api",
-        "--dataset-type",
-        dataset["dataset_type"],
-        "--dataset-file",
-        dataset["file"],
-        "--limit",
-        str(config["taskCount"]),
-        "--context-source",
-        context_source,
-        "--memory-retrieval-mode",
-        config["retrievalMode"],
-        "--show-memory",
-        "--show-latent",
-        "--show-state",
-        "--event-log-file",
-        str(EVENT_LOG_FILE),
-    ]
+    validate(config)
+    return [sys.executable, 'examples/competition_agents/run_competition.py',
+            '--method', config['collaborationMode'], '--dataset', config['dataset'],
+            '--backend', config['backend'], '--local-model', config['localModel'],
+            '--remote-model', config['remoteModel'], '--limit', str(config['taskCount']),
+            '--event-log-file', str(EVENT_LOG_FILE)]
 
 
 def build_env(config: dict[str, Any]) -> dict[str, str]:
     env = os.environ.copy()
+    for key in ('TEXT_COMM_STYLE', 'LOCAL_FAST_MODE', 'LOCAL_CAPTURE_HIDDEN',
+                'AGENT_EXECUTION_CONTEXT', 'HANDOFF_EMBEDDING_PROVIDER'):
+        env.pop(key, None)
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
     if config["backend"] == "local":
@@ -254,13 +152,16 @@ def start_run(config: dict[str, Any]) -> dict[str, Any]:
         except FileNotFoundError:
             pass
 
+    STATE.run_id = uuid4().hex
+    STATE.stopped = False
+    STATE.finished_at = None
     command = build_command(config)
     stdout_handle = STDOUT_LOG_FILE.open("wb")
     try:
         process = subprocess.Popen(
             command,
             cwd=ROOT,
-            env=build_env(config),
+            env={**build_env(config), 'COMPETITION_RUN_ID': STATE.run_id},
             stdout=stdout_handle,
             stderr=subprocess.STDOUT,
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
@@ -272,7 +173,7 @@ def start_run(config: dict[str, Any]) -> dict[str, Any]:
     STATE.process = process
     STATE.stdout_handle = stdout_handle
     STATE.started_at = time.time()
-    STATE.config = config
+    STATE.config = {**config, "apiKey": ""}
     STATE.command = command
     STATE.last_error = ""
     STATE.archived_pid = None
@@ -285,6 +186,7 @@ def stop_run() -> dict[str, Any]:
     refresh_process_state()
     process = STATE.process
     if process and process.poll() is None:
+        STATE.stopped = True
         if os.name == "nt":
             process.send_signal(signal.CTRL_BREAK_EVENT)
         else:
@@ -302,6 +204,8 @@ def refresh_process_state() -> None:
     global METRICS_CACHE_AT, METRICS_CACHE
     process = STATE.process
     if process and process.poll() is not None:
+        if STATE.finished_at is None:
+            STATE.finished_at = time.time()
         if STATE.stdout_handle:
             STATE.stdout_handle.close()
             STATE.stdout_handle = None
@@ -310,7 +214,9 @@ def refresh_process_state() -> None:
                 METRICS_CACHE = []
                 METRICS_CACHE_AT = 0.0
             STATE.archived_pid = process.pid
-        if process.returncode and process.returncode != 0:
+        if STATE.stopped:
+            STATE.last_error = ''
+        elif process.returncode and process.returncode != 0:
             STATE.last_error = tail_text(STDOUT_LOG_FILE, 1600) or f"进程退出码：{process.returncode}"
         elif process.returncode == 0:
             STATE.last_error = ""
@@ -328,7 +234,7 @@ def read_events() -> list[dict[str, Any]]:
             events.append(json.loads(line))
         except json.JSONDecodeError:
             continue
-    return events
+    return [e for e in events if e.get('run_id') == STATE.run_id] if STATE.run_id else []
 
 
 def has_archived_records() -> bool:
@@ -458,11 +364,11 @@ def delete_archived_record(record_id: str) -> bool:
 
 
 def dataset_key_for_file(dataset_file: str) -> str:
-    file_name = Path(str(dataset_file)).name
+    normalized = str(dataset_file).replace('\\', '/')
     for key, dataset in DATASETS.items():
-        if Path(dataset["file"]).name == file_name:
+        if normalized.endswith(dataset['file']):
             return key
-    return file_name or "unknown"
+    return normalized or "unknown"
 
 
 def collaboration_key_for_mode(mode: str) -> str:
@@ -578,7 +484,7 @@ def per_task_series(task_results: list[dict[str, Any]], key: str) -> list[float]
         if key == "text_chars":
             values.append(float(safe_int(metrics.get("text_chars"))))
         elif key == "actual_message_bytes":
-            values.append(
+            values.append(metrics['actual_message_bytes'] if 'actual_message_bytes' in metrics else
                 float(
                     safe_int(
                         metrics.get("logical_protocol_bytes")
@@ -595,6 +501,8 @@ def per_task_series(task_results: list[dict[str, Any]], key: str) -> list[float]
             if hit_rate is None:
                 hit_rate = 1.0 if safe_int(task_result.get("memory_hit_count")) > 0 else 0.0
             values.append(round(hit_rate * 100, 2))
+        elif key == 'handoff_payload_bytes':
+            values.append(safe_float(metrics.get(key)))
     return values
 
 
@@ -735,6 +643,9 @@ def method_record_from_run(
         communication_bytes = safe_int(metrics.get("communication_bytes"))
     if not communication_bytes:
         communication_bytes = protocol_bytes
+    if 'actual_message_bytes' in metrics:
+        protocol_bytes = safe_float(metrics['actual_message_bytes'])
+        communication_bytes = protocol_bytes
     answer_token_f1 = answer_token_f1_from_run(run, task_results)
     evidence_coverage = reference_evidence_coverage(task_results)
     plan_execution = planner_execution_rate(task_results)
@@ -757,12 +668,34 @@ def method_record_from_run(
         "memoryMode": memory,
         "retrievalMode": retrieval or "unknown",
         "taskCount": task_count,
+        "runId": payload.get('run_id'),
+        "model": payload.get('model'),
+        "backend": payload.get('backend'),
+        "baselineVersion": payload.get('baseline_version'),
+        "datasetHash": payload.get('dataset_sha256'),
+        "knowledgeHash": payload.get('knowledge_corpus_sha256'),
+        "timingValid": payload.get('full_workflow_timing_valid') is True,
+        "runStatus": payload.get('status', 'legacy'),
+        "handoffPayloadBytes": safe_float(metrics.get('handoff_payload_bytes')),
+        "handoffMeasurement": metrics.get('handoff_measurement'),
+        "inputTokens": safe_float(metrics.get('input_tokens')),
+        "outputTokens": safe_float(metrics.get('output_tokens')),
+        "modelCalls": safe_float(metrics.get('model_calls')),
+        "modelServiceMs": safe_float(metrics.get('model_service_ms')),
+        "knowledgeSearchMs": safe_float(metrics.get('knowledge_search_ms')),
+        "knowledgeSearches": safe_float(metrics.get('knowledge_searches')),
+        "memorySearchMs": safe_float(metrics.get('memory_search_ms')),
+        "executionMs": safe_float(metrics.get('execution_ms')),
         "messageCount": safe_int(metrics.get("message_count")),
         "textChars": safe_int(metrics.get("text_chars")),
         "protocolBytes": protocol_bytes,
         "actualMessageBytes": protocol_bytes,
         "stateTransferCount": state_transfer_count,
         "stateBytes": state_bytes,
+        "statePeakBytes": safe_int(metrics.get('state_peak_bytes')),
+        "stateReuseCount": safe_int(metrics.get('state_reuse_count')),
+        "stateTransmissionMeasured": protocol_bytes is not None,
+        "answerCoverage": safe_float(run.get('answer_accuracy')),
         "communicationCost": communication_bytes,
         "referenceControlBytes": communication_bytes,
         "stateGenerationMs": state_generation_ms,
@@ -779,7 +712,8 @@ def method_record_from_run(
         "expectedReuseHitRate": expected_reuse_hit_rate,
         "memoryReuseRate": correct_reuse_rate,
         "effectiveMemoryReuseRate": None,
-        "answerAccuracy": exact_match,
+        "answerAccuracy": safe_float(run.get('answer_accuracy')) if 'answer_accuracy' in run else exact_match,
+        "answerMetric": payload.get('evaluation_metric') or ('reference_coverage' if 'answer_accuracy' in run else 'legacy_exact_match'),
         "answerTokenF1": answer_token_f1,
         "memoryRecallRate": recall,
         "memoryPrecisionRate": memory_precision,
@@ -788,12 +722,15 @@ def method_record_from_run(
         "series": {
             "textChars": per_task_series(task_results, "text_chars"),
             "actualMessageBytes": per_task_series(task_results, "actual_message_bytes"),
+            "handoffPayloadBytes": per_task_series(task_results, "handoff_payload_bytes"),
             "elapsedSeconds": per_task_series(task_results, "elapsed_seconds"),
             "memoryReuse": per_task_series(task_results, "memory_reuse"),
         },
     }
     if include_payload:
         record["payload"] = {
+            **{key: payload.get(key) for key in ('run_id', 'model', 'backend', 'baseline_version', 'dataset_sha256',
+                                               'knowledge_corpus_sha256', 'full_workflow_timing_valid', 'evaluation_metric', 'status')},
             "schema_version": payload.get("schema_version", 1),
             "experiment_mode": experiment_mode,
             "memory_retrieval_mode": run.get("memory_retrieval_mode") or payload.get("memory_retrieval_mode"),
@@ -998,7 +935,10 @@ def event_summary(events: list[dict[str, Any]]) -> dict[str, Any]:
     run_start = next((event for event in events if event.get("event_type") == "run_start"), {})
     if run_start:
         task_count = int(run_start.get("task_count") or 0)
-    task_done = [event for event in events if event.get("event_type") == "task_done"]
+    task_done = [event for event in events if event.get("event_type") == "task_done"
+                 and not (event.get('return_result') or {}).get('error') and event.get('status') != 'failed']
+    failed = [event for event in events if event.get('event_type') == 'task_failed'
+              or (event.get('event_type') == 'task_done' and (event.get('return_result') or {}).get('error'))]
     task_start = [event for event in events if event.get("event_type") == "task_start"]
     latest = next((event for event in reversed(events) if event.get("task_index")), {})
     latest_agent = latest.get("to_agent") or latest.get("from_agent") or "未开始"
@@ -1008,7 +948,8 @@ def event_summary(events: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "taskCount": task_count or len(task_start),
         "currentTask": int(latest.get("task_index") or len(task_done) or 0),
-        "completedTasks": len(task_done),
+        "completedTasks": len({event.get('task_id', event.get('task_index')) for event in task_done}),
+        "failedTasks": len({event.get('task_id', event.get('task_index')) for event in failed}),
         "currentAgent": normalize_agent(latest_agent),
         "messageCount": len([event for event in events if event.get("event_type") == "agent_message"]),
         "textChars": text_chars,
@@ -1037,16 +978,8 @@ def normalize_agent(agent: str) -> str:
 def latest_run_result_payload() -> dict[str, Any] | None:
     refresh_process_state()
     latest_payload = read_run_result_payload(STDOUT_LOG_FILE)
-    if latest_payload:
+    if latest_payload and latest_payload.get('run_id') == STATE.run_id:
         return latest_payload
-    if RUN_ARCHIVE_DIR.exists():
-        latest_path = max(
-            RUN_ARCHIVE_DIR.rglob('*.json'),
-            key=lambda item: item.stat().st_mtime,
-            default=None,
-        )
-        if latest_path is not None:
-            return read_run_result_payload(latest_path)
     return None
 
 def status_payload() -> dict[str, Any]:
@@ -1056,10 +989,14 @@ def status_payload() -> dict[str, Any]:
     returncode = process.poll() if process else None
     events = read_events()
     summary = event_summary(events)
-    status = "running" if running else "completed" if summary["runDone"] else "failed" if STATE.last_error else "idle"
-    elapsed = int(time.time() - STATE.started_at) if STATE.started_at else 0
+    status = ('running' if running else 'stopped' if STATE.stopped else 'failed'
+              if STATE.last_error or summary['failedTasks'] else 'completed'
+              if summary['runDone'] and summary['completedTasks'] == summary['taskCount']
+              else 'failed' if process is not None else 'idle')
+    elapsed = int((STATE.finished_at or time.time()) - STATE.started_at) if STATE.started_at else 0
     return {
         "status": status,
+        "runId": STATE.run_id,
         "running": running,
         "returnCode": returncode,
         "startedAt": datetime.fromtimestamp(STATE.started_at, timezone.utc).isoformat() if STATE.started_at else "",
@@ -1086,6 +1023,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
+        if path == "/api/runner/methods":
+            self.send_json(CATALOG)
+            return
         if path == "/api/runner/status":
             self.send_json(status_payload())
             return

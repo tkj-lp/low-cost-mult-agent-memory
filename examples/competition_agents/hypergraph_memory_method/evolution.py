@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import json
+import re
 from copy import deepcopy
 from datetime import datetime, timezone
-import re
 from typing import Any, Iterable
 
-from .gating import record_primary_trigger_families
 from .distill import lifecycle_stage, reuse_success_rate
+from .gating import record_primary_trigger_families
 from .text import normalize_text
 
 
@@ -27,7 +28,36 @@ def experience_identity(record: dict[str, Any]) -> str:
     primary_families = (
         ",".join(sorted(record_primary_trigger_families(record))) or "unspecified"
     )
-    return f"{problem}|{solution}|{primary_families}"
+    # Similar trigger families do not establish equivalent applicability.
+    # In particular, never merge opposite failure restrictions or scopes.
+    return json.dumps(
+        [
+            problem,
+            solution,
+            primary_families,
+            sorted(
+                {
+                    _normalized_pattern(value)
+                    for value in record.get("trigger_conditions", [])
+                }
+            ),
+            _normalized_pattern(record.get("failure_pattern")),
+            *[
+                str(record.get(field) or "")
+                for field in (
+                    "namespace",
+                    "task_family",
+                    "task_type",
+                    "experience_scope",
+                    "experience_scope_key",
+                    "review_status",
+                    "quality_status",
+                )
+            ],
+            record.get("use_as_positive", True),
+        ],
+        ensure_ascii=False,
+    )
 
 
 def _unique_values(values: Iterable[Any]) -> list[Any]:
@@ -91,6 +121,8 @@ def merge_experience_records(records: list[dict[str, Any]]) -> dict[str, Any]:
         "reuse_benefits",
         "failure_patterns",
         "source_cases",
+        "source_memory_ids",
+        "knowledge_refs",
     )
     for field in list_fields:
         values: list[Any] = []

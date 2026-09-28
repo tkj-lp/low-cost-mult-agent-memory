@@ -1,7 +1,8 @@
 <template>
   <section class="page memory-page memory-flow-page">
     <section class="memory-shared-filter" :class="{ locked: memorySelectionLocked }">
-      <MetricsFilterBar
+      <div class="run-view-switch"><button :class="{ active: displaySource === 'current' }" @click="displaySource = 'current'">当前运行</button><button :class="{ active: displaySource === 'history' }" :disabled="runnerRunning" @click="displaySource = 'history'">历史回放</button></div>
+      <MetricsFilterBar v-if="displaySource === 'history'"
         :model-value="sharedFilters"
         :baseline-options="memoryBaselineOptions"
         @update:model-value="updateSharedFilters"
@@ -34,7 +35,7 @@
             :class="[task.status, { active: task.key === selectedTaskKey }]"
             @click="selectTask(task.key)"
           >
-            <strong>任务 {{ task.index }}</strong>
+            <strong>任务 {{ task.index }} · {{ ({done:'已完成',failed:'执行失败',stopped:'已停止',running:'运行中',waiting:'待执行'})[task.status] }}</strong>
             <span>{{ task.shortTitle }}</span>
           </button>
         </div>
@@ -132,7 +133,7 @@
             <div><dt>标签</dt><dd>{{ selectedMemory.tags }}</dd></div>
             <div><dt>命中方式</dt><dd>{{ selectedMemory.method }}</dd></div>
             <div><dt>命中分数</dt><dd>{{ selectedMemory.score }}</dd></div>
-            <div><dt>复用状态</dt><dd>{{ selectedMemory.adopted ? '已参与本轮回答' : '候选命中' }}</dd></div>
+            <div><dt>复用状态</dt><dd>{{ selectedMemory.method === '写入' ? '本轮新写入，尚未复用' : selectedMemory.adopted ? '已参与本轮回答' : '候选命中' }}</dd></div>
             <div><dt>状态引用</dt><dd>{{ stateRefText }}</dd></div>
           </dl>
         </section>
@@ -170,6 +171,7 @@
 </template>
 
 <script setup>
+import { taskExecutionState, eventsForRun } from '../runtimeState.mjs'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { loadResultTrace } from '../resultTrace'
 import {
@@ -204,6 +206,9 @@ const runtimeEvents = ref([])
 const savedConfig = ref(readSavedConfig())
 const sharedFilters = ref(withFilterDefaults(savedConfig.value))
 const runnerRunning = ref(false)
+const activeRunId = ref('')
+const runnerStatus = ref('idle')
+const displaySource = ref('current')
 const memoryRecords = ref([])
 const memoryLoadError = ref('')
 const selectedTracePayload = shallowRef(null)
@@ -234,8 +239,8 @@ const selectedArchivePayload = computed(() => {
   return trace ?? importedRunPayload.value ?? null
 })
 const displayRuntimeEvents = computed(() =>
-  memorySelectionLocked.value
-    ? runtimeEvents.value
+  displaySource.value === 'current'
+    ? eventsForRun(runtimeEvents.value, activeRunId.value)
     : selectedArchivePayload.value
       ? eventsFromImportedPayload(selectedArchivePayload.value)
       : []
@@ -351,7 +356,7 @@ const selectedMemory = computed(() => {
     time: formatTime(write.timestamp),
     topic: write.task_title || selectedTask.value?.title || '--',
     tags: '--',
-    adopted: true,
+    adopted: false,
     stateRefs: write.state_refs || []
   }
 })
@@ -448,7 +453,7 @@ const evidenceChain = computed(() => [
   {
     label: '支撑依据',
     value: selectedMemory.value
-      ? `${selectedMemory.value.reason}${selectedMemory.value.scoreComponents ? `；${selectedMemory.value.scoreComponents}` : ''}`
+      ? `${selectedMemory.value.reason || '仅展示已记录来源，未额外验证答案归因'}${selectedMemory.value.scoreComponents ? `；${selectedMemory.value.scoreComponents}` : ''}`
       : '没有可用记忆支撑本轮回答',
     tone: adoptedMemoryIds.value.size ? 'purple' : 'gray'
   },
@@ -546,14 +551,14 @@ async function refreshRuntimeEvents() {
     const wasRunning = runnerRunning.value
     await refreshRunnerStatus()
     if (wasRunning && !runnerRunning.value) await refreshMemoryRecords()
-    if (!runnerRunning.value && !wasRunning) return
+    if (!activeRunId.value) return
     const response = await fetch(`${RUNNER_EVENTS_URL}?t=${Date.now()}`, { cache: 'no-store' })
     if (!response.ok) {
       runtimeEvents.value = []
       return
     }
     const payload = await response.json()
-    runtimeEvents.value = Array.isArray(payload.events) ? payload.events : []
+    runtimeEvents.value = eventsForRun(Array.isArray(payload.events) ? payload.events : [], activeRunId.value)
   } catch {
     runtimeEvents.value = []
   } finally {
@@ -569,6 +574,12 @@ async function refreshRunnerStatus() {
       return
     }
     const payload = await response.json()
+    if (payload.runId !== activeRunId.value) {
+      runtimeEvents.value = []
+      activeRunId.value = payload.runId || ''
+      if (payload.running) displaySource.value = 'current'
+    }
+    runnerStatus.value = payload.status || 'idle'
     runnerRunning.value = Boolean(payload.running || payload.status === 'running')
   } catch {
     runnerRunning.value = false
@@ -602,7 +613,7 @@ async function loadSelectedTrace() {
   selectedTraceRecordId.value = ''
   try {
     const payload = await loadResultTrace(record)
-    if (selectedMemoryRecord.value?.recordId !== requestedRecordId) return
+    if (runnerRunning.value || selectedMemoryRecord.value?.recordId !== requestedRecordId) return
     selectedTracePayload.value = payload
     selectedTraceRecordId.value = requestedRecordId
   } catch {
@@ -673,13 +684,12 @@ function formatArchiveTime(value) {
 
 function taskStatus(index) {
   const events = displayRuntimeEvents.value.filter((event) => Number(event.task_index || 0) === index)
-  if (events.some((event) => event.event_type === 'task_done')) return 'done'
-  if (events.some((event) => event.event_type === 'task_start')) return 'running'
-  return 'waiting'
+  return taskExecutionState(events, null, displaySource.value === 'current' ? runnerStatus.value : 'completed')
 }
 
 function eventsFromImportedPayload(payload) {
   const primaryRun = latestPrimaryRun(payload) || {}
+  if (Array.isArray(primaryRun.events)) return primaryRun.events
   const taskResults = Array.isArray(primaryRun.task_results) ? primaryRun.task_results : []
   const timestamp = payload?.archived_at || new Date().toISOString()
   const events = [
@@ -994,9 +1004,9 @@ function modeLabel(value) {
 
 function datasetLabelFromMeta(meta) {
   const file = String(meta.dataset_file || '')
-  const dataset = datasets.find((item) => file.includes(item.file.split('/').pop()))
+  const dataset = datasets.find((item) => item.value === datasetKeyForFile(file))
   if (dataset) return dataset.label
-  return meta.dataset_type || '等待运行'
+  return file || meta.dataset_type || '等待运行'
 }
 
 function memoryModeLabel(value) {

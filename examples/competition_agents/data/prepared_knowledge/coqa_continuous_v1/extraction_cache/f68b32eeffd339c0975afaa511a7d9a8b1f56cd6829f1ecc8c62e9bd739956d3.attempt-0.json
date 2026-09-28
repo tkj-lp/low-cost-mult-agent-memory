@@ -1,0 +1,266 @@
+{
+  "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+  "result": {
+    "facts": [
+      {
+        "subject": "Cotton",
+        "relation": "lived in",
+        "object": "a barn near a farm house",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "lived in",
+        "object": "a nice warm place above the barn",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "the farmer's horses",
+        "relation": "slept in",
+        "object": "the barn",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "shared her hay bed with",
+        "object": "her mommy and 5 other sisters",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "Cotton's sisters",
+        "relation": "were",
+        "object": "cute and fluffy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "was",
+        "object": "white",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          4
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "was the only",
+        "object": "white one in the bunch",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          4
+        ]
+      },
+      {
+        "subject": "The rest of Cotton's sisters",
+        "relation": "were",
+        "object": "orange with beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          5
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "had",
+        "object": "beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          5
+        ]
+      },
+      {
+        "subject": "Being different",
+        "relation": "made",
+        "object": "Cotton quite sad",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          6
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "wished she looked like",
+        "object": "the rest of her family",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          7
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "found",
+        "object": "a can of the old farmer's orange paint",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          8
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "used",
+        "object": "it to paint herself like them",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          9
+        ]
+      },
+      {
+        "subject": "Cotton's mommy and sisters",
+        "relation": "started laughing when they found",
+        "object": "Cotton",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          10
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "rubbed her face on",
+        "object": "Cotton's",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          13
+        ]
+      },
+      {
+        "subject": "Cotton's fur",
+        "relation": "was",
+        "object": "pretty and special",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          13
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "said they would never want",
+        "object": "Cotton to be any other way",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          13
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "picked up",
+        "object": "Cotton",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          14
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "dropped",
+        "object": "Cotton into a big bucket of water",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          14
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "came out as",
+        "object": "herself again",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          15
+        ]
+      },
+      {
+        "subject": "Cotton's sisters",
+        "relation": "licked",
+        "object": "Cotton's face",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          16
+        ]
+      },
+      {
+        "subject": "Cotton's fur",
+        "relation": "was all dry after",
+        "object": "Cotton's sisters licked her face",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          16
+        ]
+      },
+      {
+        "subject": "Cotton's sisters",
+        "relation": "cried",
+        "object": "\"Don't ever do that again, Cotton!\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          17
+        ]
+      },
+      {
+        "subject": "Cotton's sisters",
+        "relation": "said they wouldn't want",
+        "object": "Cotton to mess up that pretty white fur of hers",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          18
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "thought",
+        "object": "\"I change my mind. I like being special\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          19
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 1606,
+    "prompt_tokens": 632,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 632
+    },
+    "total_tokens": 2238
+  }
+}

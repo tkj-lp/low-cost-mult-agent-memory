@@ -1,0 +1,1035 @@
+{
+  "backup": "E:\\论文\\复现\\langgraph-main\\langgraph-main\\.codex_cleanup_backups\\competition_before_cleanup_20260927_143608.zip",
+  "backup_sha256": "57c2118973a543e6a6ba700a828ea9a80892c09f6931a7e57d1cc44af9fe62b9",
+  "delete": [
+    {
+      "path": ".pytest_cache",
+      "files": 6,
+      "bytes": 60213
+    },
+    {
+      "path": "__pycache__",
+      "files": 24,
+      "bytes": 779690
+    },
+    {
+      "path": "agents",
+      "files": 33,
+      "bytes": 377885
+    },
+    {
+      "path": "audit_field_budget.py",
+      "files": 1,
+      "bytes": 4086
+    },
+    {
+      "path": "audit_projection_validation.py",
+      "files": 1,
+      "bytes": 5074
+    },
+    {
+      "path": "audit_protocol_bottlenecks.py",
+      "files": 1,
+      "bytes": 3941
+    },
+    {
+      "path": "audit_real_action_fields.py",
+      "files": 1,
+      "bytes": 3995
+    },
+    {
+      "path": "audit_role_pipeline.py",
+      "files": 1,
+      "bytes": 2266
+    },
+    {
+      "path": "audit_text_fields.py",
+      "files": 1,
+      "bytes": 2896
+    },
+    {
+      "path": "baselines/__pycache__",
+      "files": 2,
+      "bytes": 500
+    },
+    {
+      "path": "baselines/autoform/__pycache__",
+      "files": 4,
+      "bytes": 9142
+    },
+    {
+      "path": "baselines/llmlingua2/__pycache__",
+      "files": 4,
+      "bytes": 13567
+    },
+    {
+      "path": "baselines/text_protocol_v1_20260925",
+      "files": 16,
+      "bytes": 161011
+    },
+    {
+      "path": "benchmark_field_rendering.py",
+      "files": 1,
+      "bytes": 1687
+    },
+    {
+      "path": "benchmark_history_retrieval.py",
+      "files": 1,
+      "bytes": 3289
+    },
+    {
+      "path": "build_hotpot_continuous_tasks.py",
+      "files": 1,
+      "bytes": 7471
+    },
+    {
+      "path": "build_prepared_knowledge.py",
+      "files": 1,
+      "bytes": 16466
+    },
+    {
+      "path": "competition_agents/__pycache__",
+      "files": 34,
+      "bytes": 651814
+    },
+    {
+      "path": "competition_agents/capabilities.py",
+      "files": 1,
+      "bytes": 2390
+    },
+    {
+      "path": "competition_agents/context_representation.py",
+      "files": 1,
+      "bytes": 40678
+    },
+    {
+      "path": "competition_agents/graph.py",
+      "files": 1,
+      "bytes": 6494
+    },
+    {
+      "path": "competition_agents/hypergraph_memory.py",
+      "files": 1,
+      "bytes": 388
+    },
+    {
+      "path": "competition_agents/latent_field_collaboration.py",
+      "files": 1,
+      "bytes": 10712
+    },
+    {
+      "path": "competition_agents/latent_hidden/__pycache__",
+      "files": 21,
+      "bytes": 163156
+    },
+    {
+      "path": "competition_agents/latent_hidden/adapter.py",
+      "files": 1,
+      "bytes": 556
+    },
+    {
+      "path": "competition_agents/latent_hidden/context_adapter.py",
+      "files": 1,
+      "bytes": 5162
+    },
+    {
+      "path": "competition_agents/latent_hidden/hidden_state.py",
+      "files": 1,
+      "bytes": 14270
+    },
+    {
+      "path": "competition_agents/latent_hidden/latent_memory.py",
+      "files": 1,
+      "bytes": 2024
+    },
+    {
+      "path": "competition_agents/latent_hidden/local_model.py",
+      "files": 1,
+      "bytes": 3350
+    },
+    {
+      "path": "competition_agents/latent_hidden/native_alignment.py",
+      "files": 1,
+      "bytes": 5390
+    },
+    {
+      "path": "competition_agents/latent_hidden/projection_cache.py",
+      "files": 1,
+      "bytes": 3682
+    },
+    {
+      "path": "competition_agents/latent_session_collaboration.py",
+      "files": 1,
+      "bytes": 7847
+    },
+    {
+      "path": "competition_agents/llm/__pycache__",
+      "files": 25,
+      "bytes": 322770
+    },
+    {
+      "path": "competition_agents/llm/base.py",
+      "files": 1,
+      "bytes": 1334
+    },
+    {
+      "path": "competition_agents/llm/client.py",
+      "files": 1,
+      "bytes": 1744
+    },
+    {
+      "path": "competition_agents/llm/execution_context.py",
+      "files": 1,
+      "bytes": 27126
+    },
+    {
+      "path": "competition_agents/llm/field_output_schema.py",
+      "files": 1,
+      "bytes": 3236
+    },
+    {
+      "path": "competition_agents/llm/forward_timing.py",
+      "files": 1,
+      "bytes": 2510
+    },
+    {
+      "path": "competition_agents/llm/latent_session_chat.py",
+      "files": 1,
+      "bytes": 15668
+    },
+    {
+      "path": "competition_agents/llm/local_hf.py",
+      "files": 1,
+      "bytes": 17660
+    },
+    {
+      "path": "competition_agents/llm/mock.py",
+      "files": 1,
+      "bytes": 9200
+    },
+    {
+      "path": "competition_agents/llm/openai_compatible.py",
+      "files": 1,
+      "bytes": 26893
+    },
+    {
+      "path": "competition_agents/llm/prefix_cache.py",
+      "files": 1,
+      "bytes": 7425
+    },
+    {
+      "path": "competition_agents/memory.py",
+      "files": 1,
+      "bytes": 76469
+    },
+    {
+      "path": "competition_agents/methods/__pycache__",
+      "files": 7,
+      "bytes": 27002
+    },
+    {
+      "path": "competition_agents/prepared_collaboration.py",
+      "files": 1,
+      "bytes": 40411
+    },
+    {
+      "path": "competition_agents/protocol.py",
+      "files": 1,
+      "bytes": 3661
+    },
+    {
+      "path": "competition_agents/restricted_python_codeact.py",
+      "files": 1,
+      "bytes": 12152
+    },
+    {
+      "path": "competition_agents/state.py",
+      "files": 1,
+      "bytes": 26313
+    },
+    {
+      "path": "competition_agents/state_store.py",
+      "files": 1,
+      "bytes": 5656
+    },
+    {
+      "path": "data/codeact_1_10tasks.json",
+      "files": 1,
+      "bytes": 6832
+    },
+    {
+      "path": "data/codeact_2_10tasks.json",
+      "files": 1,
+      "bytes": 6497
+    },
+    {
+      "path": "data/codeact_tasks.json",
+      "files": 1,
+      "bytes": 11456
+    },
+    {
+      "path": "data/hotpot_continuous_tasks.json",
+      "files": 1,
+      "bytes": 30187
+    },
+    {
+      "path": "data/hotpot_continuous_tasks_3turn.json",
+      "files": 1,
+      "bytes": 8561
+    },
+    {
+      "path": "data/hotpot_multihop_sample.json",
+      "files": 1,
+      "bytes": 169182
+    },
+    {
+      "path": "data/official_factoid_ranked_qrecc_001_10turns.json",
+      "files": 1,
+      "bytes": 16249
+    },
+    {
+      "path": "data/official_factoid_ranked_qrecc_002_10turns.json",
+      "files": 1,
+      "bytes": 16541
+    },
+    {
+      "path": "data/official_factoid_ranked_qrecc_003_10turns.json",
+      "files": 1,
+      "bytes": 21576
+    },
+    {
+      "path": "data/official_factoid_ranked_topiocqa_001_10turns.json",
+      "files": 1,
+      "bytes": 19754
+    },
+    {
+      "path": "data/official_factoid_ranked_topiocqa_002_10turns.json",
+      "files": 1,
+      "bytes": 28190
+    },
+    {
+      "path": "data/official_factoid_ranked_topiocqa_003_10turns.json",
+      "files": 1,
+      "bytes": 20108
+    },
+    {
+      "path": "data/official_factoid_ranked_topiocqa_qrecc_6chains_10turns.json",
+      "files": 1,
+      "bytes": 122403
+    },
+    {
+      "path": "data/official_qrecc_001_10turns.json",
+      "files": 1,
+      "bytes": 24565
+    },
+    {
+      "path": "data/official_qrecc_002_10turns.json",
+      "files": 1,
+      "bytes": 28348
+    },
+    {
+      "path": "data/official_qrecc_003_10turns.json",
+      "files": 1,
+      "bytes": 28314
+    },
+    {
+      "path": "data/official_topiocqa_001_10turns.json",
+      "files": 1,
+      "bytes": 67495
+    },
+    {
+      "path": "data/official_topiocqa_002_10turns.json",
+      "files": 1,
+      "bytes": 65108
+    },
+    {
+      "path": "data/official_topiocqa_003_10turns.json",
+      "files": 1,
+      "bytes": 80445
+    },
+    {
+      "path": "data/official_topiocqa_qrecc_6chains_10turns.json",
+      "files": 1,
+      "bytes": 294260
+    },
+    {
+      "path": "data/protocol_projection_suite_frozen.json",
+      "files": 1,
+      "bytes": 20853
+    },
+    {
+      "path": "data/protocol_projection_suite_manifest.json",
+      "files": 1,
+      "bytes": 546
+    },
+    {
+      "path": "data/protocol_projection_validation.json",
+      "files": 1,
+      "bytes": 3306
+    },
+    {
+      "path": "data/protocol_projection_validation_frozen.json",
+      "files": 1,
+      "bytes": 18251
+    },
+    {
+      "path": "data/protocol_projection_validation_manifest.json",
+      "files": 1,
+      "bytes": 352
+    },
+    {
+      "path": "data/qa_reuse_annotations.json",
+      "files": 1,
+      "bytes": 5992
+    },
+    {
+      "path": "data/retired_knowledge_20260925",
+      "files": 547,
+      "bytes": 23027779
+    },
+    {
+      "path": "data/text_fields_acceptance.json",
+      "files": 1,
+      "bytes": 2034
+    },
+    {
+      "path": "data/text_fields_no_memory_control.json",
+      "files": 1,
+      "bytes": 313
+    },
+    {
+      "path": "data/topiocqa_1_10turns.json",
+      "files": 1,
+      "bytes": 15121
+    },
+    {
+      "path": "data/topiocqa_2_10turns.json",
+      "files": 1,
+      "bytes": 14407
+    },
+    {
+      "path": "data/topiocqa_two_chains_10turns_refined.json",
+      "files": 1,
+      "bytes": 49581
+    },
+    {
+      "path": "diagnose_first_question.py",
+      "files": 1,
+      "bytes": 1254
+    },
+    {
+      "path": "diagnose_first_question_controls.py",
+      "files": 1,
+      "bytes": 1415
+    },
+    {
+      "path": "diagnose_first_question_controls_05b.py",
+      "files": 1,
+      "bytes": 1431
+    },
+    {
+      "path": "diagnose_first_question_float32.py",
+      "files": 1,
+      "bytes": 1266
+    },
+    {
+      "path": "diagnose_latent_feedback.py",
+      "files": 1,
+      "bytes": 1194
+    },
+    {
+      "path": "fair_comparison_results",
+      "files": 1370,
+      "bytes": 85313947
+    },
+    {
+      "path": "frontend/src/components/monitor/CommunicationTraceCard.vue",
+      "files": 1,
+      "bytes": 4085
+    },
+    {
+      "path": "frontend/src/components/monitor/CurrentAgentOutputCard.vue",
+      "files": 1,
+      "bytes": 1992
+    },
+    {
+      "path": "frontend/src/components/monitor/EventStreamCard.vue",
+      "files": 1,
+      "bytes": 2388
+    },
+    {
+      "path": "frontend/src/components/monitor/MemoryEvidenceCard.vue",
+      "files": 1,
+      "bytes": 2916
+    },
+    {
+      "path": "frontend/src/components/monitor/MonitorSummaryBar.vue",
+      "files": 1,
+      "bytes": 1231
+    },
+    {
+      "path": "frontend/src/components/monitor/TaskPipelineCard.vue",
+      "files": 1,
+      "bytes": 2922
+    },
+    {
+      "path": "frontend_server.err.log",
+      "files": 1,
+      "bytes": 0
+    },
+    {
+      "path": "frontend_server.out.log",
+      "files": 1,
+      "bytes": 0
+    },
+    {
+      "path": "HANDOFF_CONTRACT.md",
+      "files": 1,
+      "bytes": 2063
+    },
+    {
+      "path": "hypergraph_memory_method/__pycache__",
+      "files": 80,
+      "bytes": 1226783
+    },
+    {
+      "path": "hypergraph_memory_method/evaluate_retrieval.py",
+      "files": 1,
+      "bytes": 12915
+    },
+    {
+      "path": "hypergraph_memory_method/run_topiocqa_retrieval_compare.py",
+      "files": 1,
+      "bytes": 13758
+    },
+    {
+      "path": "hypergraph_memory_method/tests/__pycache__",
+      "files": 15,
+      "bytes": 598977
+    },
+    {
+      "path": "hypergraph_memory_method/visualize_run.py",
+      "files": 1,
+      "bytes": 4164
+    },
+    {
+      "path": "prepare_coqa_knowledge.py",
+      "files": 1,
+      "bytes": 3809
+    },
+    {
+      "path": "prepare_official_references.py",
+      "files": 1,
+      "bytes": 5842
+    },
+    {
+      "path": "reassess_reuse.py",
+      "files": 1,
+      "bytes": 5041
+    },
+    {
+      "path": "repair_prepared_extraction.py",
+      "files": 1,
+      "bytes": 5512
+    },
+    {
+      "path": "requirements-latent-experiment.txt",
+      "files": 1,
+      "bytes": 99
+    },
+    {
+      "path": "review_source_corrections.py",
+      "files": 1,
+      "bytes": 7772
+    },
+    {
+      "path": "run_calibrated_latent.py",
+      "files": 1,
+      "bytes": 12229
+    },
+    {
+      "path": "run_codeact_samples.py",
+      "files": 1,
+      "bytes": 11626
+    },
+    {
+      "path": "run_demo.py",
+      "files": 1,
+      "bytes": 98399
+    },
+    {
+      "path": "run_demo_api.ps1",
+      "files": 1,
+      "bytes": 1324
+    },
+    {
+      "path": "run_fair_comparison.py",
+      "files": 1,
+      "bytes": 25913
+    },
+    {
+      "path": "run_hidden_generation_demo.py",
+      "files": 1,
+      "bytes": 2268
+    },
+    {
+      "path": "run_hidden_latent_samples.py",
+      "files": 1,
+      "bytes": 95367
+    },
+    {
+      "path": "run_hotpot.ps1",
+      "files": 1,
+      "bytes": 1334
+    },
+    {
+      "path": "run_hotpot_samples.py",
+      "files": 1,
+      "bytes": 15451
+    },
+    {
+      "path": "run_latent_hidden_demo.py",
+      "files": 1,
+      "bytes": 3245
+    },
+    {
+      "path": "run_latent_only.py",
+      "files": 1,
+      "bytes": 7144
+    },
+    {
+      "path": "run_latent_protocol_comparison.py",
+      "files": 1,
+      "bytes": 8759
+    },
+    {
+      "path": "run_latent_session.py",
+      "files": 1,
+      "bytes": 7901
+    },
+    {
+      "path": "run_native_local_protocol.py",
+      "files": 1,
+      "bytes": 8785
+    },
+    {
+      "path": "run_prepared_comparison.py",
+      "files": 1,
+      "bytes": 12553
+    },
+    {
+      "path": "run_topiocqa_123_four_methods.ps1",
+      "files": 1,
+      "bytes": 3254
+    },
+    {
+      "path": "select_short_answer_official_chains.py",
+      "files": 1,
+      "bytes": 11390
+    },
+    {
+      "path": "setup_openeuler_env.sh",
+      "files": 1,
+      "bytes": 8878
+    },
+    {
+      "path": "tests/__pycache__",
+      "files": 93,
+      "bytes": 1827993
+    },
+    {
+      "path": "tests/test_answer_postprocess.py",
+      "files": 1,
+      "bytes": 2429
+    },
+    {
+      "path": "tests/test_codeact_graph_execution.py",
+      "files": 1,
+      "bytes": 3943
+    },
+    {
+      "path": "tests/test_compact_field_rendering.py",
+      "files": 1,
+      "bytes": 5014
+    },
+    {
+      "path": "tests/test_context_hypergraph_retrieval.py",
+      "files": 1,
+      "bytes": 6349
+    },
+    {
+      "path": "tests/test_context_representation.py",
+      "files": 1,
+      "bytes": 33182
+    },
+    {
+      "path": "tests/test_continuous_collaboration.py",
+      "files": 1,
+      "bytes": 12136
+    },
+    {
+      "path": "tests/test_delivered_handoff.py",
+      "files": 1,
+      "bytes": 8519
+    },
+    {
+      "path": "tests/test_execution_context.py",
+      "files": 1,
+      "bytes": 11108
+    },
+    {
+      "path": "tests/test_fair_collaboration.py",
+      "files": 1,
+      "bytes": 20222
+    },
+    {
+      "path": "tests/test_handoff_contract.py",
+      "files": 1,
+      "bytes": 7645
+    },
+    {
+      "path": "tests/test_hidden_state_storage.py",
+      "files": 1,
+      "bytes": 3426
+    },
+    {
+      "path": "tests/test_hypergraph_memory.py",
+      "files": 1,
+      "bytes": 32427
+    },
+    {
+      "path": "tests/test_input_cost_optimizations.py",
+      "files": 1,
+      "bytes": 4572
+    },
+    {
+      "path": "tests/test_latent_protocol_chat.py",
+      "files": 1,
+      "bytes": 8264
+    },
+    {
+      "path": "tests/test_latent_session.py",
+      "files": 1,
+      "bytes": 9498
+    },
+    {
+      "path": "tests/test_layered_agent_orchestration.py",
+      "files": 1,
+      "bytes": 7903
+    },
+    {
+      "path": "tests/test_layered_hypergraph_memory.py",
+      "files": 1,
+      "bytes": 4558
+    },
+    {
+      "path": "tests/test_memory_mode_matrix_config.py",
+      "files": 1,
+      "bytes": 2728
+    },
+    {
+      "path": "tests/test_official_references.py",
+      "files": 1,
+      "bytes": 1867
+    },
+    {
+      "path": "tests/test_openai_compatible_reasoner.py",
+      "files": 1,
+      "bytes": 5009
+    },
+    {
+      "path": "tests/test_planner_agent.py",
+      "files": 1,
+      "bytes": 1672
+    },
+    {
+      "path": "tests/test_prefix_cache.py",
+      "files": 1,
+      "bytes": 5205
+    },
+    {
+      "path": "tests/test_prepared_collaboration_tools.py",
+      "files": 1,
+      "bytes": 5732
+    },
+    {
+      "path": "tests/test_protocol_bottlenecks.py",
+      "files": 1,
+      "bytes": 976
+    },
+    {
+      "path": "tests/test_protocol_projection.py",
+      "files": 1,
+      "bytes": 10343
+    },
+    {
+      "path": "tests/test_reasoner_experience_rules.py",
+      "files": 1,
+      "bytes": 6057
+    },
+    {
+      "path": "tests/test_reassess_reuse.py",
+      "files": 1,
+      "bytes": 4245
+    },
+    {
+      "path": "tests/test_restricted_python_codeact.py",
+      "files": 1,
+      "bytes": 1652
+    },
+    {
+      "path": "tests/test_retriever_memory_context.py",
+      "files": 1,
+      "bytes": 19357
+    },
+    {
+      "path": "tests/test_state_store_lifecycle.py",
+      "files": 1,
+      "bytes": 2305
+    },
+    {
+      "path": "tests/test_summarizer_memory_quality.py",
+      "files": 1,
+      "bytes": 1850
+    },
+    {
+      "path": "tests/test_text_fields_pipeline.py",
+      "files": 1,
+      "bytes": 8978
+    },
+    {
+      "path": "train_context_adapter.py",
+      "files": 1,
+      "bytes": 16974
+    },
+    {
+      "path": "upgrade_prepared_context.py",
+      "files": 1,
+      "bytes": 2350
+    },
+    {
+      "path": "verify_prepared_knowledge.py",
+      "files": 1,
+      "bytes": 4979
+    },
+    {
+      "path": "三题新协作实验报告_20260925.md",
+      "files": 1,
+      "bytes": 9691
+    },
+    {
+      "path": "仅最终生成文字的协作实现与三题实测_20260927.md",
+      "files": 1,
+      "bytes": 7666
+    },
+    {
+      "path": "任务字段协议实现与验证_20260924.md",
+      "files": 1,
+      "bytes": 7597
+    },
+    {
+      "path": "全方案复用对照与字段耗时诊断_20260921.md",
+      "files": 1,
+      "bytes": 10183
+    },
+    {
+      "path": "协作修复与公平测试说明_20260920.md",
+      "files": 1,
+      "bytes": 6889
+    },
+    {
+      "path": "协作模式隔离说明_20260926.md",
+      "files": 1,
+      "bytes": 4404
+    },
+    {
+      "path": "协议字段与超图瓶颈审计_20260923.md",
+      "files": 1,
+      "bytes": 5968
+    },
+    {
+      "path": "协议字段压缩修复_20260924.md",
+      "files": 1,
+      "bytes": 4427
+    },
+    {
+      "path": "协议输入占比与共享字段修复_20260924.md",
+      "files": 1,
+      "bytes": 4914
+    },
+    {
+      "path": "单题四角色执行续接实现与测试_20260921.md",
+      "files": 1,
+      "bytes": 12309
+    },
+    {
+      "path": "单题跨角色计算复用审计_20260921.md",
+      "files": 1,
+      "bytes": 6678
+    },
+    {
+      "path": "压缩表示接入与训练说明_20260921.md",
+      "files": 1,
+      "bytes": 8619
+    },
+    {
+      "path": "固定计算复用优化报告_20260921.md",
+      "files": 1,
+      "bytes": 7862
+    },
+    {
+      "path": "完整方案对比与实现缺口_20260921.md",
+      "files": 1,
+      "bytes": 4732
+    },
+    {
+      "path": "文本与协议字段链路验收_20260923.md",
+      "files": 1,
+      "bytes": 6828
+    },
+    {
+      "path": "新协作方式推导_20260925.md",
+      "files": 1,
+      "bytes": 7055
+    },
+    {
+      "path": "最终四方案实现与流程审计_20260923.md",
+      "files": 1,
+      "bytes": 6682
+    },
+    {
+      "path": "本地协议字段兼容与计时_20260926.md",
+      "files": 1,
+      "bytes": 5637
+    },
+    {
+      "path": "检索校准与经验记忆审计_20260927.md",
+      "files": 1,
+      "bytes": 11727
+    },
+    {
+      "path": "模型输入压缩与复用优化报告_20260921.md",
+      "files": 1,
+      "bytes": 9255
+    },
+    {
+      "path": "流程排查实测结论_20260923.md",
+      "files": 1,
+      "bytes": 4213
+    },
+    {
+      "path": "经验层接入与三题核查_20260927.md",
+      "files": 1,
+      "bytes": 8148
+    },
+    {
+      "path": "统一知识库构建与接入说明.md",
+      "files": 1,
+      "bytes": 5000
+    },
+    {
+      "path": "角色表示链路实现说明_20260923.md",
+      "files": 1,
+      "bytes": 5243
+    },
+    {
+      "path": "超图构建机制推导与结构审计_20260924.md",
+      "files": 1,
+      "bytes": 13681
+    },
+    {
+      "path": "连续协作流程.md",
+      "files": 1,
+      "bytes": 8598
+    },
+    {
+      "path": "隐状态协作实现与三题实测_20260926.md",
+      "files": 1,
+      "bytes": 9174
+    }
+  ],
+  "retained_agent_modules": [
+    "competition_agents/__init__.py",
+    "competition_agents/answer_evaluation.py",
+    "competition_agents/embedding.py",
+    "competition_agents/evidence_memory.py",
+    "competition_agents/field_collaboration.py",
+    "competition_agents/handoff.py",
+    "competition_agents/latent_hidden/__init__.py",
+    "competition_agents/latent_hidden/calibrated_graph_tool.py",
+    "competition_agents/latent_hidden/calibrated_query.py",
+    "competition_agents/latent_hidden/experienced_graph_tool.py",
+    "competition_agents/latent_hidden/graph_state_tool.py",
+    "competition_agents/latent_hidden/posterior_alignment.py",
+    "competition_agents/llm/__init__.py",
+    "competition_agents/llm/audited_chat.py",
+    "competition_agents/llm/experimental_state_chat.py",
+    "competition_agents/llm/latent_only_chat.py",
+    "competition_agents/llm/native_local_chat.py",
+    "competition_agents/methods/__init__.py",
+    "competition_agents/methods/autoform.py",
+    "competition_agents/methods/catalog.py",
+    "competition_agents/methods/latent.py",
+    "competition_agents/methods/llmlingua.py",
+    "competition_agents/methods/protocol.py",
+    "competition_agents/methods/runner.py",
+    "competition_agents/methods/text.py",
+    "competition_agents/plain_text_collaboration.py",
+    "competition_agents/runtime_events.py"
+  ],
+  "retained_tests": [
+    "model_fixture.py",
+    "test_action_fields.py",
+    "test_answer_coverage.py",
+    "test_calibrated_latent.py",
+    "test_clear_experience.py",
+    "test_continuous_preparation.py",
+    "test_field_collaboration.py",
+    "test_indexed_fusion.py",
+    "test_latent_only.py",
+    "test_locked_methods.py",
+    "test_native_local_chat.py",
+    "test_plain_text_collaboration.py",
+    "test_prepared_knowledge.py",
+    "test_retrieval_experience.py",
+    "test_source_context_packet.py"
+  ],
+  "action": "moved_to_recoverable_archive",
+  "archive_directory": "E:\\论文\\复现\\langgraph-main\\langgraph-main\\.codex_cleanup_backups\\retired_20260927",
+  "removed_files_including_generated": 2454,
+  "removed_root_python_scripts": 37,
+  "restored_20260927": {
+    "note": "保留原清单作为历史审计；以下原分支数据和执行器已恢复，不再属于当前缺失文件。",
+    "data_files": [
+      "data/codeact_1_10tasks.json",
+      "data/codeact_2_10tasks.json",
+      "data/codeact_tasks.json",
+      "data/hotpot_continuous_tasks.json",
+      "data/hotpot_continuous_tasks_3turn.json",
+      "data/hotpot_multihop_sample.json",
+      "data/official_factoid_ranked_qrecc_001_10turns.json",
+      "data/official_factoid_ranked_qrecc_002_10turns.json",
+      "data/official_factoid_ranked_qrecc_003_10turns.json",
+      "data/official_factoid_ranked_topiocqa_001_10turns.json",
+      "data/official_factoid_ranked_topiocqa_002_10turns.json",
+      "data/official_factoid_ranked_topiocqa_003_10turns.json",
+      "data/official_factoid_ranked_topiocqa_qrecc_6chains_10turns.json",
+      "data/official_qrecc_001_10turns.json",
+      "data/official_qrecc_002_10turns.json",
+      "data/official_qrecc_003_10turns.json",
+      "data/official_topiocqa_001_10turns.json",
+      "data/official_topiocqa_002_10turns.json",
+      "data/official_topiocqa_003_10turns.json",
+      "data/official_topiocqa_qrecc_6chains_10turns.json",
+      "data/qa_reuse_annotations.json",
+      "data/topiocqa_1_10turns.json",
+      "data/topiocqa_2_10turns.json",
+      "data/topiocqa_two_chains_10turns_refined.json"
+    ],
+    "code": [
+      "competition_agents/restricted_python_codeact.py",
+      "tests/test_restricted_python_codeact.py"
+    ],
+    "backup_retained": true
+  }
+}

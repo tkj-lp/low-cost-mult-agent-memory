@@ -28,7 +28,7 @@
       @imported="handleImportedResults"
     />
     <footer class="app-footer">
-      <div>版本：v1.0.0 <span class="footer-sep">|</span> © 2025 多智能体低开销通信实验系统</div>
+      <div>方案版本：第 {{ schemeVersion }} 版 <span class="footer-sep">|</span> © 2026 多智能体低开销通信实验系统</div>
       <div>开源社区版，仅用于学术研究与比赛演示</div>
     </footer>
   </div>
@@ -36,6 +36,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import catalog from '../../config/methods.json'
 import AppHeader from './components/AppHeader.vue'
 import ExperimentConsole from './components/ExperimentConsole.vue'
 import MonitorPage from './pages/MonitorPage.vue'
@@ -46,6 +47,7 @@ import ResultImportDialog from './components/ResultImportDialog.vue'
 const IMPORTED_RESULTS_STORAGE_KEY = 'competition-agent-imported-results-v2'
 const CONFIG_STORAGE_KEY = 'competition-agent-console-config'
 const FILTER_SYNC_EVENT = 'competition-agent-filter-sync'
+const schemeVersion = catalog.version.match(/-v(\d+)/)?.[1] || catalog.version
 const activeTab = ref('实验控制台')
 const recordDialogOpen = ref(false)
 const savedImportedResults = readSavedImportedResults()

@@ -1,0 +1,1196 @@
+{
+  "implementation": "calibrated-latent-experience-v1",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "latent_steps": 2,
+  "knowledge_files": {
+    "text_documents.json": "c57dfbfc779632d818791e4b938f202037535d2bbc7086592046f224cfbb3a40",
+    "facts.json": "1f84a436198c54b8bb434a26f3107ca68b2f82b5a94286b8c6e17497918f81a8",
+    "hypergraph.sqlite": "4dd974616065995d84efb14dde9ac8b9edbe23b3dbb611cf69f0651fe0fe08eb"
+  },
+  "implementation_hashes": {
+    "competition_agents/llm/latent_only_chat.py": "2847e22f7b7cf4a34f21061c4c770dcdcd9d034f64d41f2ca65c98a29837408f",
+    "competition_agents/latent_hidden/graph_state_tool.py": "b835e063562353c113f1974f7c9940998042801c2b5df0fa0f18f87635eb4e07",
+    "competition_agents/latent_hidden/calibrated_graph_tool.py": "760c77950abb5bd019663ca2e01af3d92e7a5d941f60be9901a96f2a290b465d",
+    "competition_agents/latent_hidden/calibrated_query.py": "77e39582d5554590e548df7bb43afe6098237da3a6138ef63c9c5578ba843207",
+    "competition_agents/latent_hidden/posterior_alignment.py": "2cb052ef02e5db0ebd1875f90cb156995da7a53030beec806e53b95645bdd53b",
+    "competition_agents/llm/experimental_state_chat.py": "760d3bad3c8f05c843ce05e5645ea3fd86efa330477e57be07fe740a11dffd04",
+    "competition_agents/latent_hidden/experienced_graph_tool.py": "53320377d05fba6507339d381d42d0bc2140f0c3e0cf9e457d6c516e0eb5499b",
+    "hypergraph_memory_method/retrieval_experience.py": "1235e5d01bb25bf37d8d154f324de719d676a9da3d443c45d0e82b5172996de0",
+    "hypergraph_memory_method/store.py": "cd4c80e4848dd6aea4a735bf8a7ed49fa3d785931d5046def391cddeca0922bf",
+    "hypergraph_memory_method/evolution.py": "3b93b49b3ffbf3e3fbcf39992f7cf8413dc109b844aa18fa6302feb4a550f278",
+    "run_calibrated_latent.py": "f5f395a7ee1f3c6e1380605bea9d63e8f6876afd5d92c1c189187ab6c4387865"
+  },
+  "source_sha256": {
+    "run_prepared_comparison.py": "bf8c8302d018e7c6639d2bfe51a33b646f5c9d3f200a7a7ef6df5e07d54abb65",
+    "requirements.txt": "308da34de4bd2ee974d26bdf1f5a6ac84d565281e496e725c59b33e747c071cc",
+    "competition_agents/prepared_collaboration.py": "29072ffc13b0efbbf2ad7e4497f41444b2b0a7ab7488b147321587e8a8575ab9",
+    "competition_agents/plain_text_collaboration.py": "7f84f033b9c901f0aba201bb63a4ba47e8b4e8d0daca0e12084ebbedf5b5fc68",
+    "competition_agents/field_collaboration.py": "d6974c0f2e178f55eca30128e620c131a49fb63fc67bb29bdcb435b3e10248c9",
+    "competition_agents/embedding.py": "0c1b11c55ec99a4ca755d16def0b11b6f9a03a59aa93acb716ebed5aa535aa4e",
+    "hypergraph_memory_method/focused_retrieval.py": "b53e91230153d6c86ce6a03d7d29ccbbfd81dfd1e2f2e2922afc4a8ee8b04390",
+    "competition_agents/answer_evaluation.py": "ff3ddf46dc4301b3d856f0e625d265b4506e7f12476fa26f91ff1723ab5cb558",
+    "competition_agents/llm/audited_chat.py": "e4102ca1e0021a7697db30a83d2d17f5c127a58a12280ef744ed721d353aa771",
+    "hypergraph_memory_method/prepared_knowledge.py": "d9cec2116d39868ce45ca9427c5cbb3413bba618504dee05fb27c8e53bf7eef7",
+    "hypergraph_memory_method/source_context.py": "d162ef8243c3dba094e6c5daf39de23a95ef464eac46e2b6d5b1bf09653fd0bb",
+    "competition_agents/llm/__init__.py": "0ac8e15e398174d3ff36c34852f072cf0d452c78494b6de7cabb48e90a56d5ed",
+    "competition_agents/llm/native_local_chat.py": "578622f21fc4f1957782cce0e8751130de83de301b7afdd0f9b61d225ca2032a",
+    "run_native_local_protocol.py": "111ebb3f0cfd93eba0be6d894e6fece1969c26ac97c828b620588095dcfd423f",
+    "competition_agents/llm/latent_only_chat.py": "2847e22f7b7cf4a34f21061c4c770dcdcd9d034f64d41f2ca65c98a29837408f",
+    "competition_agents/latent_hidden/graph_state_tool.py": "b835e063562353c113f1974f7c9940998042801c2b5df0fa0f18f87635eb4e07",
+    "competition_agents/latent_hidden/calibrated_graph_tool.py": "760c77950abb5bd019663ca2e01af3d92e7a5d941f60be9901a96f2a290b465d",
+    "competition_agents/latent_hidden/calibrated_query.py": "77e39582d5554590e548df7bb43afe6098237da3a6138ef63c9c5578ba843207",
+    "competition_agents/latent_hidden/posterior_alignment.py": "2cb052ef02e5db0ebd1875f90cb156995da7a53030beec806e53b95645bdd53b",
+    "competition_agents/llm/experimental_state_chat.py": "760d3bad3c8f05c843ce05e5645ea3fd86efa330477e57be07fe740a11dffd04",
+    "competition_agents/latent_hidden/experienced_graph_tool.py": "53320377d05fba6507339d381d42d0bc2140f0c3e0cf9e457d6c516e0eb5499b",
+    "hypergraph_memory_method/retrieval_experience.py": "1235e5d01bb25bf37d8d154f324de719d676a9da3d443c45d0e82b5172996de0",
+    "hypergraph_memory_method/store.py": "cd4c80e4848dd6aea4a735bf8a7ed49fa3d785931d5046def391cddeca0922bf",
+    "hypergraph_memory_method/evolution.py": "3b93b49b3ffbf3e3fbcf39992f7cf8413dc109b844aa18fa6302feb4a550f278",
+    "run_calibrated_latent.py": "f5f395a7ee1f3c6e1380605bea9d63e8f6876afd5d92c1c189187ab6c4387865"
+  },
+  "setup_ms_excluded": 1847.599200089462,
+  "calibration_directory": "E:\\论文\\复现\\langgraph-main\\langgraph-main\\examples\\competition_agents\\data\\prepared_knowledge\\latent_readout_20260927_v1",
+  "gate": {
+    "thresholds": {
+      "color": 0.5599045944213867,
+      "location": 0.297247428894043,
+      "companions": 0.5830863308906555,
+      "time": 0.3555093598365784,
+      "identity": 0.4719525468349457,
+      "quantity": 0.4318366837501526,
+      "owner": 0.40911354541778566,
+      "family": 1.01,
+      "cause": 0.46938969612121584,
+      "action": 0.35401119709014894,
+      "appearance": 1.01,
+      "speech": 0.4270122241973877
+    },
+    "alignment_threshold": 0.8560775709152222,
+    "require_topic_alignment": false,
+    "gate_calibration_policies": [
+      {
+        "require_topic_alignment": true,
+        "accepted_complete_memory_cases": 0,
+        "accepted_missing_relation_cases": 0
+      },
+      {
+        "require_topic_alignment": false,
+        "accepted_complete_memory_cases": 6,
+        "accepted_missing_relation_cases": 0
+      }
+    ],
+    "calibration_category_correct": 18,
+    "samples": 24,
+    "audits": [
+      {
+        "expected_category": "color",
+        "predicted_category": "color",
+        "alignment": 0.8404117822647095,
+        "teacher_relevant_source_ids": [
+          "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f",
+          "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42"
+        ],
+        "best_relevant_score": 0.44622933864593506,
+        "best_irrelevant_score": 0.3812345862388611
+      },
+      {
+        "expected_category": "location",
+        "predicted_category": "location",
+        "alignment": 0.7713371515274048,
+        "teacher_relevant_source_ids": [
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+        ],
+        "best_relevant_score": 0.5690748691558838,
+        "best_irrelevant_score": 0.22504045069217682
+      },
+      {
+        "expected_category": "companions",
+        "predicted_category": "companions",
+        "alignment": 0.7423111200332642,
+        "teacher_relevant_source_ids": [
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+        ],
+        "best_relevant_score": 0.47736606001853943,
+        "best_irrelevant_score": 0.55832839012146
+      },
+      {
+        "expected_category": "time",
+        "predicted_category": "time",
+        "alignment": 0.7734595537185669,
+        "teacher_relevant_source_ids": [
+          "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42"
+        ],
+        "best_relevant_score": 0.35635218024253845,
+        "best_irrelevant_score": 0.33550935983657837
+      },
+      {
+        "expected_category": "identity",
+        "predicted_category": "color",
+        "alignment": 0.8360775709152222,
+        "teacher_relevant_source_ids": [
+          "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc"
+        ],
+        "best_relevant_score": 0.30118781328201294,
+        "best_irrelevant_score": 0.5399045944213867
+      },
+      {
+        "expected_category": "quantity",
+        "predicted_category": "quantity",
+        "alignment": 0.7161440849304199,
+        "teacher_relevant_source_ids": [
+          "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712",
+          "0c4fa4b55555fb44a8c1c2b900f7a9aac23e6a896be75fc44102a4bbd66a22e9"
+        ],
+        "best_relevant_score": 0.2611045241355896,
+        "best_irrelevant_score": 0.4118366837501526
+      },
+      {
+        "expected_category": "owner",
+        "predicted_category": "owner",
+        "alignment": 0.8062076568603516,
+        "teacher_relevant_source_ids": [
+          "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b",
+          "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712",
+          "91eed54fb1b467ac2aaa3acc873701e881b144c4aaac57ddb84927ad4a444f13",
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+        ],
+        "best_relevant_score": 0.375815212726593,
+        "best_irrelevant_score": 0.2123587429523468
+      },
+      {
+        "expected_category": "family",
+        "predicted_category": "owner",
+        "alignment": 0.6046828627586365,
+        "teacher_relevant_source_ids": [
+          "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b",
+          "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3"
+        ],
+        "best_relevant_score": 0.455073744058609,
+        "best_irrelevant_score": 0.3406302332878113
+      },
+      {
+        "expected_category": "cause",
+        "predicted_category": "cause",
+        "alignment": 0.6487612128257751,
+        "teacher_relevant_source_ids": [
+          "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc",
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412",
+          "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8"
+        ],
+        "best_relevant_score": 0.3333439528942108,
+        "best_irrelevant_score": 0.4137601852416992
+      },
+      {
+        "expected_category": "action",
+        "predicted_category": "action",
+        "alignment": 0.7799392938613892,
+        "teacher_relevant_source_ids": [
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412",
+          "1b9c9ffcefd6bec53e8fcfe1e349872b8da6e76edabf13b1d0fb0bba89e6db03",
+          "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f"
+        ],
+        "best_relevant_score": 0.35001814365386963,
+        "best_irrelevant_score": 0.25941383838653564
+      },
+      {
+        "expected_category": "appearance",
+        "predicted_category": "identity",
+        "alignment": 0.5888011455535889,
+        "teacher_relevant_source_ids": [
+          "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3",
+          "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42",
+          "7b872307a1cda3ff3a04773dcf02e174e9c9a151a183c4a381a49289a6d6b822"
+        ],
+        "best_relevant_score": 0.4471902847290039,
+        "best_irrelevant_score": 0.42778486013412476
+      },
+      {
+        "expected_category": "speech",
+        "predicted_category": "speech",
+        "alignment": 0.7237401008605957,
+        "teacher_relevant_source_ids": [
+          "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8"
+        ],
+        "best_relevant_score": 0.18236969411373138,
+        "best_irrelevant_score": 0.4051458239555359
+      },
+      {
+        "expected_category": "color",
+        "predicted_category": "color",
+        "alignment": 0.8101986646652222,
+        "teacher_relevant_source_ids": [
+          "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f",
+          "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42"
+        ],
+        "best_relevant_score": 0.46592599153518677,
+        "best_irrelevant_score": 0.40180909633636475
+      },
+      {
+        "expected_category": "location",
+        "predicted_category": "location",
+        "alignment": 0.7787588834762573,
+        "teacher_relevant_source_ids": [
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+        ],
+        "best_relevant_score": 0.5552725791931152,
+        "best_irrelevant_score": 0.27724742889404297
+      },
+      {
+        "expected_category": "companions",
+        "predicted_category": "companions",
+        "alignment": 0.7406461238861084,
+        "teacher_relevant_source_ids": [
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+        ],
+        "best_relevant_score": 0.4752644896507263,
+        "best_irrelevant_score": 0.5630863308906555
+      },
+      {
+        "expected_category": "time",
+        "predicted_category": "time",
+        "alignment": 0.7682492733001709,
+        "teacher_relevant_source_ids": [
+          "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42"
+        ],
+        "best_relevant_score": 0.36272352933883667,
+        "best_irrelevant_score": 0.302592396736145
+      },
+      {
+        "expected_category": "identity",
+        "predicted_category": "color",
+        "alignment": 0.8208902478218079,
+        "teacher_relevant_source_ids": [
+          "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc"
+        ],
+        "best_relevant_score": 0.31161272525787354,
+        "best_irrelevant_score": 0.5024961829185486
+      },
+      {
+        "expected_category": "quantity",
+        "predicted_category": "quantity",
+        "alignment": 0.7898917198181152,
+        "teacher_relevant_source_ids": [
+          "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712",
+          "0c4fa4b55555fb44a8c1c2b900f7a9aac23e6a896be75fc44102a4bbd66a22e9"
+        ],
+        "best_relevant_score": 0.3225858211517334,
+        "best_irrelevant_score": 0.3870140612125397
+      },
+      {
+        "expected_category": "owner",
+        "predicted_category": "owner",
+        "alignment": 0.8116980791091919,
+        "teacher_relevant_source_ids": [
+          "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b",
+          "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712",
+          "91eed54fb1b467ac2aaa3acc873701e881b144c4aaac57ddb84927ad4a444f13",
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+        ],
+        "best_relevant_score": 0.392950177192688,
+        "best_irrelevant_score": 0.23961763083934784
+      },
+      {
+        "expected_category": "family",
+        "predicted_category": "owner",
+        "alignment": 0.6211336851119995,
+        "teacher_relevant_source_ids": [
+          "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b",
+          "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3"
+        ],
+        "best_relevant_score": 0.5021175146102905,
+        "best_irrelevant_score": 0.38911354541778564
+      },
+      {
+        "expected_category": "cause",
+        "predicted_category": "cause",
+        "alignment": 0.6151800751686096,
+        "teacher_relevant_source_ids": [
+          "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc",
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412",
+          "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8"
+        ],
+        "best_relevant_score": 0.3235345482826233,
+        "best_irrelevant_score": 0.4493896961212158
+      },
+      {
+        "expected_category": "action",
+        "predicted_category": "action",
+        "alignment": 0.748166561126709,
+        "teacher_relevant_source_ids": [
+          "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3",
+          "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99",
+          "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412",
+          "1b9c9ffcefd6bec53e8fcfe1e349872b8da6e76edabf13b1d0fb0bba89e6db03",
+          "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f"
+        ],
+        "best_relevant_score": 0.33101779222488403,
+        "best_irrelevant_score": 0.3340111970901489
+      },
+      {
+        "expected_category": "appearance",
+        "predicted_category": "identity",
+        "alignment": 0.6177507638931274,
+        "teacher_relevant_source_ids": [
+          "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3",
+          "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42",
+          "7b872307a1cda3ff3a04773dcf02e174e9c9a151a183c4a381a49289a6d6b822"
+        ],
+        "best_relevant_score": 0.4102969169616699,
+        "best_irrelevant_score": 0.4519525468349457
+      },
+      {
+        "expected_category": "speech",
+        "predicted_category": "speech",
+        "alignment": 0.7243474721908569,
+        "teacher_relevant_source_ids": [
+          "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8"
+        ],
+        "best_relevant_score": 0.1807878315448761,
+        "best_irrelevant_score": 0.4070122241973877
+      }
+    ],
+    "limits": "thresholds selected on calibration data, not a guarantee on unseen questions"
+  },
+  "calibration_report": {
+    "regularization": 0.1,
+    "trials": [
+      {
+        "strength": 0.01,
+        "held_out_mean_cosine": 0.6745625138282776
+      },
+      {
+        "strength": 0.1,
+        "held_out_mean_cosine": 0.7010505199432373
+      },
+      {
+        "strength": 1.0,
+        "held_out_mean_cosine": 0.6711512207984924
+      },
+      {
+        "strength": 10.0,
+        "held_out_mean_cosine": 0.4956374168395996
+      }
+    ],
+    "train_samples": 82,
+    "validation_samples": 24,
+    "trainable_parameters": 1769856,
+    "base_model_training": false,
+    "feature_parts": [
+      "question_input_embedding",
+      "question_content_last_layer",
+      "current_role_last_layer"
+    ],
+    "corpus_sha256": "acf3e42ff932b4e75eecfa17fb351b2c976edb4a957365bbcbed8e5edbd6b8ea",
+    "sample_sha256": "518b22841da48eb4c8d4062e5b1f0d309c592c7d67d3681265f781b928bf705a",
+    "teacher": "sentence-transformers/all-MiniLM-L6-v2",
+    "samples": [
+      {
+        "question": "What is the color of Cotton?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does Cotton live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does Cotton live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to Cotton?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is Cotton?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with Cotton?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns Cotton?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of Cotton?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to Cotton?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Cotton do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of Cotton described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Cotton say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Cotton",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of Cotton's mommy?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does Cotton's mommy live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does Cotton's mommy live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to Cotton's mommy?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is Cotton's mommy?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with Cotton's mommy?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns Cotton's mommy?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of Cotton's mommy?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to Cotton's mommy?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Cotton's mommy do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of Cotton's mommy described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Cotton's mommy say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Cotton's mommy",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of her sisters?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does her sisters live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does her sisters live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to her sisters?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is her sisters?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with her sisters?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns her sisters?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of her sisters?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to her sisters?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did her sisters do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of her sisters described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did her sisters say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "her sisters",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of they all?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does they all live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does they all live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to they all?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is they all?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with they all?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns they all?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of they all?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to they all?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did they all do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of they all described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did they all say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "they all",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Find the source statement about her mommy and sisters: started laughing When her mommy and sisters found her.",
+        "target": "started laughing When her mommy and sisters found her",
+        "category": null,
+        "entity": "her mommy and sisters",
+        "kind": "source_description",
+        "source_id": "08400c3aa266e45e282ac9bd4f84ef6961b5d850e56414c80b9253e1974b45ef"
+      },
+      {
+        "question": "Find the source statement about Cotton: shared her hay bed with Cotton's mommy.",
+        "target": "shared her hay bed with Cotton's mommy",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "0c4fa4b55555fb44a8c1c2b900f7a9aac23e6a896be75fc44102a4bbd66a22e9"
+      },
+      {
+        "question": "Find the source statement about Cotton: wished she looked like the rest of her family.",
+        "target": "wished she looked like the rest of her family",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3"
+      },
+      {
+        "question": "Find the source statement about Cotton's mommy: picked up Cotton.",
+        "target": "picked up Cotton",
+        "category": null,
+        "entity": "Cotton's mommy",
+        "kind": "source_description",
+        "source_id": "1b9c9ffcefd6bec53e8fcfe1e349872b8da6e76edabf13b1d0fb0bba89e6db03"
+      },
+      {
+        "question": "Find the source statement about Cotton: shared her hay bed with her sisters Cotton 5.",
+        "target": "shared her hay bed with her sisters Cotton 5",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712"
+      },
+      {
+        "question": "Find the source statement about Cotton: said I only wanted to be more like you.",
+        "target": "said I only wanted to be more like you",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8"
+      },
+      {
+        "question": "Find the source statement about they all: cried Don't ever do that again, Cotton!.",
+        "target": "cried Don't ever do that again, Cotton!",
+        "category": null,
+        "entity": "they all",
+        "kind": "source_description",
+        "source_id": "257b612d05807ade4b3582712fbb2b519eec0ed3d72ba39fdd7f23264baf5514"
+      },
+      {
+        "question": "Find the source statement about Being different: made Cotton quite sad.",
+        "target": "made Cotton quite sad",
+        "category": null,
+        "entity": "Being different",
+        "kind": "source_description",
+        "source_id": "2edd7e1c2b43286fcaa78582070f511dfa19390a4843ed8b6cf00d5caa7d3b60"
+      },
+      {
+        "question": "Find the source statement about Cotton: has sisters her sisters Cotton.",
+        "target": "has sisters her sisters Cotton",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b"
+      },
+      {
+        "question": "Find the source statement about Cotton's fur: was described as pretty and special Cotton's mommy.",
+        "target": "was described as pretty and special Cotton's mommy",
+        "category": null,
+        "entity": "Cotton's fur",
+        "kind": "source_description",
+        "source_id": "3b9f2bf5dcd3ca5c2611877d475abb57fe548881d17a08b5526262380d95faed"
+      },
+      {
+        "question": "Find the source statement about Cotton's mommy: said We would never want you to be any other way.",
+        "target": "said We would never want you to be any other way",
+        "category": null,
+        "entity": "Cotton's mommy",
+        "kind": "source_description",
+        "source_id": "3cde021815e12e1547faaa09c58cd5279c99ce7bd162320c8174b69715f0db1f"
+      },
+      {
+        "question": "Find the source statement about Cotton: lived alone.",
+        "target": "lived alone",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3"
+      },
+      {
+        "question": "Find the source statement about Cotton: lived in a nice warm place above the barn.",
+        "target": "lived in a nice warm place above the barn",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99"
+      },
+      {
+        "question": "Find the source statement about Cotton: came out of the water as herself again.",
+        "target": "came out of the water as herself again",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "54b3e36130d11f68f9dc89ed9ecc7a8c2a4cc542406b36d9a9c5e12f047f65f1"
+      },
+      {
+        "question": "Find the source statement about her mommy and sisters: asked What are you doing, Cotton?!.",
+        "target": "asked What are you doing, Cotton?!",
+        "category": null,
+        "entity": "her mommy and sisters",
+        "kind": "source_description",
+        "source_id": "54c5eab632082e3d707c624791b1ededaa8d9f53384d88a202b690eee65c2d89"
+      },
+      {
+        "question": "Find the source statement about they all: said we wouldn't want that.",
+        "target": "said we wouldn't want that",
+        "category": null,
+        "entity": "they all",
+        "kind": "source_description",
+        "source_id": "67c3b444f63c09e701c218ec6d449cf72bb21e4b8a2f42c7d8520bd1124578f3"
+      },
+      {
+        "question": "Find the source statement about Cotton's mommy: had orange with beautiful white tiger stripes.",
+        "target": "had orange with beautiful white tiger stripes",
+        "category": null,
+        "entity": "Cotton's mommy",
+        "kind": "source_description",
+        "source_id": "689867e21271b96896d3c7820f0396a7334f25d951e552e7cd711e43a5028ea0"
+      },
+      {
+        "question": "Find the source statement about Cotton: was cute and fluffy.",
+        "target": "was cute and fluffy",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "7b872307a1cda3ff3a04773dcf02e174e9c9a151a183c4a381a49289a6d6b822"
+      },
+      {
+        "question": "Find the source statement about Cotton: is a little white kitten.",
+        "target": "is a little white kitten",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "82e25be97de73e53f74cce2412044ec8573d77fac316d9e3276930567900878e"
+      },
+      {
+        "question": "Find the source statement about Cotton's fur: became all dry.",
+        "target": "became all dry",
+        "category": null,
+        "entity": "Cotton's fur",
+        "kind": "source_description",
+        "source_id": "887bb3564f37500be807d402c3557e5dbc97b1dcf4e0db111f0e0ae7eee148f2"
+      },
+      {
+        "question": "Find the source statement about Cotton: painted herself with orange paint one day.",
+        "target": "painted herself with orange paint one day",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42"
+      },
+      {
+        "question": "Find the source statement about Cotton: was white.",
+        "target": "was white",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f"
+      },
+      {
+        "question": "Find the source statement about her sisters: were orange with beautiful white tiger stripes Cotton.",
+        "target": "were orange with beautiful white tiger stripes Cotton",
+        "category": null,
+        "entity": "her sisters",
+        "kind": "source_description",
+        "source_id": "8ac1dd7169fa80f56869dfbe675e452e611b6b910b97df9a01d1d7ba05fce719"
+      },
+      {
+        "question": "Find the source statement about Cotton: was the only white one in the bunch.",
+        "target": "was the only white one in the bunch",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "904e1777215f82dad37d39eb409acfa1dda0ba3b2104cdb74ba2c0ae9d925fcf"
+      },
+      {
+        "question": "Find the source statement about her sisters: licked face Cotton Cotton.",
+        "target": "licked face Cotton Cotton",
+        "category": null,
+        "entity": "her sisters",
+        "kind": "source_description",
+        "source_id": "91eed54fb1b467ac2aaa3acc873701e881b144c4aaac57ddb84927ad4a444f13"
+      },
+      {
+        "question": "Find the source statement about her sisters: were cute and fluffy Cotton.",
+        "target": "were cute and fluffy Cotton",
+        "category": null,
+        "entity": "her sisters",
+        "kind": "source_description",
+        "source_id": "96eeb2698e008ae394cde1b9f89f7a5cc1e9f0d788ca9d591eceb5f43a03e587"
+      },
+      {
+        "question": "Find the source statement about the farmer's horses: slept in the barn.",
+        "target": "slept in the barn",
+        "category": null,
+        "entity": "the farmer's horses",
+        "kind": "source_description",
+        "source_id": "9c6e9a59e204c27820998d531440c9cba6dfb27e6b2888d1b525d04ca5a8c424"
+      },
+      {
+        "question": "Find the source statement about Cotton's mommy: rubbed her face on Cotton's face.",
+        "target": "rubbed her face on Cotton's face",
+        "category": null,
+        "entity": "Cotton's mommy",
+        "kind": "source_description",
+        "source_id": "a7713e4543a9594ec5f24532fd66d60c6ae5aaaa7b73b8403bbda479ffa0dea7"
+      },
+      {
+        "question": "Find the source statement about Cotton's mommy: dropped Cotton a big bucket of water.",
+        "target": "dropped Cotton a big bucket of water",
+        "category": null,
+        "entity": "Cotton's mommy",
+        "kind": "source_description",
+        "source_id": "a8c008e78c23859ebeec6dcbc4b56aef3d2b661c1bca4779ac6f78a1a3460b25"
+      },
+      {
+        "question": "Find the source statement about Cotton: found a can of the old farmer's orange paint.",
+        "target": "found a can of the old farmer's orange paint",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "c09ed15162353386588fe5050d8bdfb7503b708e53cf13fe4356a016ca502390"
+      },
+      {
+        "question": "Find the source statement about Cotton: thought I change my mind. I like being special.",
+        "target": "thought I change my mind. I like being special",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc"
+      },
+      {
+        "question": "Find the source statement about Cotton: has mother Cotton's mommy.",
+        "target": "has mother Cotton's mommy",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "d62d70c5293ed3697913c90a9049d607d02a7cac5f0bf9e434f1a74779506c79"
+      },
+      {
+        "question": "Find the source statement about they all: warned Next time you might mess up that pretty white fur of yours.",
+        "target": "warned Next time you might mess up that pretty white fur of yours",
+        "category": null,
+        "entity": "they all",
+        "kind": "source_description",
+        "source_id": "e0834cd2d571e132613f2d34f7a84b08f6a943525033d6ab08b83feeb9a95b3b"
+      },
+      {
+        "question": "Find the source statement about Cotton: lived in a barn near a farm house.",
+        "target": "lived in a barn near a farm house",
+        "category": null,
+        "entity": "Cotton",
+        "kind": "source_description",
+        "source_id": "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+      },
+      {
+        "question": "Which color does Cotton have?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "In which place does Cotton reside?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Does Cotton share a home with others?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "At what time did this occur for Cotton?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the identity of Cotton?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the number associated with Cotton?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "To whom does Cotton belong?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Who is related to Cotton?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What caused this for Cotton?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which action did Cotton take?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What does Cotton look like?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which words did Cotton speak?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Cotton",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which color does Cotton's mommy have?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "In which place does Cotton's mommy reside?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Does Cotton's mommy share a home with others?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "At what time did this occur for Cotton's mommy?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the identity of Cotton's mommy?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the number associated with Cotton's mommy?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "To whom does Cotton's mommy belong?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Who is related to Cotton's mommy?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What caused this for Cotton's mommy?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which action did Cotton's mommy take?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What does Cotton's mommy look like?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which words did Cotton's mommy speak?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Cotton's mommy",
+        "kind": "held_out_wording"
+      }
+    ],
+    "calibration_seconds": 396.4760340000503
+  },
+  "experience_memory": {
+    "status": "connected",
+    "initial_records": 0,
+    "database": "fair_comparison_results\\latent_experience_three_20260927_r2\\experience.sqlite",
+    "validation_target": "retrieval_selection_equivalence_only",
+    "writeback_in_task_time": true
+  },
+  "limits": [
+    "calibration is lightweight training, base model frozen",
+    "coverage gate is calibrated confidence plus complete source bundles, not a logical proof",
+    "same live session cache only; no general cross-session state stitching",
+    "evaluation tasks are loaded only after calibration and gate selection"
+  ]
+}

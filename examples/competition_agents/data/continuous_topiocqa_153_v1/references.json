@@ -1,0 +1,27 @@
+[
+  {
+    "id": "topiocqa-153-1",
+    "reference_answers": [
+      "Cyndi Lauper",
+      "Cyndi Lauper."
+    ]
+  },
+  {
+    "id": "topiocqa-153-2",
+    "reference_answers": [
+      "Cyndi Lauper",
+      "Cynthia Ann Stephanie Lauper is an American singer, songwriter, actress and activist",
+      "UNANSWERABLE",
+      "Charlie and Lola"
+    ]
+  },
+  {
+    "id": "topiocqa-153-3",
+    "reference_answers": [
+      "Based on the 2005 British film \"Kinky Boots\", the musical tells the story of Charlie Price.",
+      "It tells the story of Charlie Price",
+      "Charlie Price.",
+      "Charlie Price and Lola."
+    ]
+  }
+]

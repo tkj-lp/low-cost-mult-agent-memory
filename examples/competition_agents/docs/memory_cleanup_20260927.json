@@ -1,0 +1,72 @@
+{
+  "backup": "E:\\论文\\复现\\langgraph-main\\langgraph-main\\.codex_cleanup_backups\\memory_unused_20260927_221701.zip",
+  "backup_sha256": "f4bf6bf5c6c509f9992c3149feed062996d47c8e2afb825762586549bd17b73a",
+  "removed": [
+    {
+      "path": "hypergraph_memory_method/protocol_projection.py",
+      "bytes": 10810,
+      "sha256": "fe7924a0766a9ac1ee55ba29d1ae7c931c51d8b8b206b41ee72fff5e94874a39"
+    },
+    {
+      "path": "hypergraph_memory_method/visualization.py",
+      "bytes": 24845,
+      "sha256": "5cd9c5aaed1ddf116173b038415fdd03918c2ab245caf44a75800bad1e7b11d0"
+    },
+    {
+      "path": "hypergraph_memory_method/evaluate_run_result.py",
+      "bytes": 1377,
+      "sha256": "a3ae9c3d68efb51131baa94e5a304fb678de224b7e0b783d24aa3e92e73fa08c"
+    },
+    {
+      "path": "hypergraph_memory_method/retrieval_batches.py",
+      "bytes": 3617,
+      "sha256": "5d83ae66302778ee059bb515c0298400b7eb297280e0ad744154bbfa8fed678a"
+    }
+  ],
+  "modified": [
+    "hypergraph_memory_method/__init__.py",
+    "config/baselines.lock.json"
+  ],
+  "reason": "当前五种协作方式、代码工具链、建库工具与现有测试均不调用四项旧实现；只移除闲置模块及入口导出。",
+  "runtime_semantics_changed": false,
+  "backup_files": [
+    {
+      "path": "hypergraph_memory_method/protocol_projection.py",
+      "bytes": 10810,
+      "sha256": "fe7924a0766a9ac1ee55ba29d1ae7c931c51d8b8b206b41ee72fff5e94874a39"
+    },
+    {
+      "path": "hypergraph_memory_method/visualization.py",
+      "bytes": 24845,
+      "sha256": "5cd9c5aaed1ddf116173b038415fdd03918c2ab245caf44a75800bad1e7b11d0"
+    },
+    {
+      "path": "hypergraph_memory_method/evaluate_run_result.py",
+      "bytes": 1377,
+      "sha256": "a3ae9c3d68efb51131baa94e5a304fb678de224b7e0b783d24aa3e92e73fa08c"
+    },
+    {
+      "path": "hypergraph_memory_method/retrieval_batches.py",
+      "bytes": 3617,
+      "sha256": "5d83ae66302778ee059bb515c0298400b7eb297280e0ad744154bbfa8fed678a"
+    },
+    {
+      "path": "hypergraph_memory_method/__init__.py",
+      "bytes": 4286,
+      "sha256": "f1dce54f47371c8788a0de4212463d29f31bbe105fc78efa3f9c5a7eaf5f4704"
+    },
+    {
+      "path": "config/baselines.lock.json",
+      "bytes": 24150,
+      "sha256": "7492567dd0c909b0c0c27b974a2d552a35b0a96d1ab18798922fef0f921bbd84"
+    }
+  ],
+  "top_level_python_before": 41,
+  "top_level_python_after": 37,
+  "unused_implementation_lines_removed": 1043,
+  "validation": {
+    "tests_passed": 257,
+    "tests_skipped": 1
+  },
+  "report": "docs/memory_cleanup_and_latent_comparison_20260927.md"
+}

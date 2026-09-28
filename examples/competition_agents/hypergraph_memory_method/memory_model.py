@@ -71,7 +71,9 @@ def compact_trace(trace: dict[str, Any] | None) -> dict[str, Any]:
     if not isinstance(trace, dict):
         return {}
 
-    compacted = deepcopy(trace)
+    # Project recursive histories before copying; copying first traverses every
+    # nested past memory even though those fields are immediately discarded.
+    compacted = dict(trace)
     task_meta = compacted.get("task_meta")
     if isinstance(task_meta, dict):
         compacted["task_meta"] = {
@@ -134,7 +136,7 @@ def compact_trace(trace: dict[str, Any] | None) -> dict[str, Any]:
             if key not in EVALUATION_ONLY_FIELDS
             and key not in {"memory_hit_details", "memory_context", "experience_rules"}
         }
-    return compacted
+    return deepcopy(compacted)
 
 
 def _fact_parts(value: Any) -> tuple[str, str]:
@@ -525,12 +527,36 @@ def canonical_search_document(record: dict[str, Any]) -> str:
     return "\n".join(str(part).strip() for part in parts if str(part).strip())
 
 
+def validate_memory_ids(records: list[dict[str, Any]]) -> None:
+    """Reject ambiguous caller IDs before an index can silently overwrite a record."""
+
+    seen: set[str] = set()
+    for record in records:
+        memory_id = str(record.get("memory_id") or "")
+        if not memory_id:
+            continue
+        if memory_id in seen:
+            raise ValueError(
+                f"Duplicate memory_id {memory_id!r}; use globally unique IDs "
+                "from MemoryService instead of assigning IDs from list length."
+            )
+        seen.add(memory_id)
+
+
 def normalize_memory_record(
     record: dict[str, Any], *, compact: bool = True
 ) -> dict[str, Any]:
     """补齐统一记忆契约，同时保持现有字段和主语义不变。"""
 
-    normalized = deepcopy(record)
+    normalized = deepcopy(
+        {key: value for key, value in record.items() if key != "trace"}
+    )
+    if "trace" in record:
+        normalized["trace"] = (
+            compact_trace(record["trace"])
+            if compact and isinstance(record["trace"], dict)
+            else deepcopy(record["trace"])
+        )
     created_at = str(normalized.get("created_at") or _now_iso())
     memory_id = str(
         normalized.get("memory_id")
@@ -645,10 +671,17 @@ def normalize_memory_record(
             length=20,
         )
     )
-    if compact and isinstance(normalized.get("trace"), dict):
-        normalized["trace"] = compact_trace(normalized["trace"])
     normalized["memory_kinds"] = infer_memory_kinds(normalized)
     normalized["evidence_chain"] = build_evidence_chain(normalized)
+    # 事实字段只来自实际检索证据，不能从答案或标注重新构造。
+    from .fields import fact_fields
+
+    normalized["evidence_fields"] = [
+        fact_fields(step["text"], source_id=step["source"].get("source_id", ""))
+        for step in normalized["evidence_chain"].get("steps", [])
+        if step.get("kind") == "evidence"
+        and step.get("source", {}).get("source_type") == "agent_retrieval"
+    ]
     normalized["evidence_chain_id"] = normalized["evidence_chain"].get("chain_id", "")
     normalized["evidence_chain_valid"] = bool(normalized["evidence_chain"].get("valid"))
     normalized["evidence_chain_completeness"] = float(
@@ -659,11 +692,11 @@ def normalize_memory_record(
 
 
 def compact_reuse_projection(
-    record: dict[str, Any], *, max_steps: int = 6
+    record: dict[str, Any], *, max_steps: int = 6, _normalized: bool = False
 ) -> dict[str, Any]:
     """返回供后续智能体直接复用的紧凑记忆与证据链投影。"""
 
-    normalized = normalize_memory_record(record)
+    normalized = record if _normalized else normalize_memory_record(record)
     chain = normalized["evidence_chain"]
     if max_steps < 1:
         raise ValueError("max_steps must be positive")

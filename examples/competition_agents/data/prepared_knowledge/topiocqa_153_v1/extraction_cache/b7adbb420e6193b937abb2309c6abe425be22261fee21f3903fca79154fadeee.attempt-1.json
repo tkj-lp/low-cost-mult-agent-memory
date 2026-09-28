@@ -1,0 +1,168 @@
+{
+  "document_id": "99d0778e618c86eea511d26e2f6b82e94959874b77871c7f763941da3fa5ecf6",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "Kinky Boots",
+        "relation": "is a",
+        "object": "2005 British comedy-drama film",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "directed by",
+        "object": "Julian Jarrold",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "written by",
+        "object": "Geoff Deane",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "written by",
+        "object": "Tim Firth",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "based on",
+        "object": "true events",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "tells of",
+        "object": "struggling shoe factory owner Charlie",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Charlie",
+        "relation": "forms partnership with",
+        "object": "Lola",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lola",
+        "relation": "is a",
+        "object": "drag queen",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Charlie and Lola",
+        "relation": "partnership purpose",
+        "object": "save the business",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Charlie",
+        "relation": "develops plan to produce",
+        "object": "custom footwear for drag queens",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Charlie's firm",
+        "relation": "known for",
+        "object": "men's dress shoes",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Charlie",
+        "relation": "action causes alienation of",
+        "object": "many in the process",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The film",
+        "relation": "received",
+        "object": "mixed reviews from critics",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "The film",
+        "relation": "later developed",
+        "object": "a cult following",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "The film",
+        "relation": "inspired",
+        "object": "the 2013 stage musical of the same name",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 1009,
+    "prompt_tokens": 684,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 684
+    },
+    "total_tokens": 1693
+  }
+}

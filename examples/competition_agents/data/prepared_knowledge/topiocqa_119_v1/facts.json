@@ -1,0 +1,1308 @@
+[
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "the Pendjari and W National Parks (Benin)",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "026b4b2d3fdbbe08102d72969ab43775ba427f0085abf9f156986495fc4c4eaf"
+  },
+  {
+    "subject": "Oribi",
+    "relation": "have been observed feeding on",
+    "polarity": "positive",
+    "object": "flowers",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "05c2bf80ee30765cf25c7c44f8ed20d46af7f8e8ffb3a687be8afeb475212c69"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Benoue, Bouba Njida and Faro National Parks (Cameroon)",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "06ef338bd048e2a0cbc79d8ec5a1a89d11574c702f72df00a8133bb0fd2803f6"
+  },
+  {
+    "subject": "Groups of oribi",
+    "relation": "congregate in",
+    "polarity": "positive",
+    "object": "the rainy season",
+    "qualifiers": [
+      {
+        "kind": "when",
+        "value": "when grasses are abundant"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "07e7ae26ed5ee1fce34d422f1a9c70bad2ac24aeef8e13f48481def05c40dd11"
+  },
+  {
+    "subject": "the thin, straight horns",
+    "relation": "are long",
+    "polarity": "positive",
+    "object": "long",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "12509229ae5e731c38a5a8ed58a2d43e280e0566c154fe3f9d1f8ca787c9149b"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the world's largest antelope, the giant eland (\"Taurotragus Derbianus\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "13ad75b8ca9289987e0068d8f0dffb7f382b1ee415d0c879f8d02af3303ed9c8"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "is a",
+    "polarity": "positive",
+    "object": "small, slender antelope",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "161327bea916da8847548d2c4388baa446a291393ce516e5c4ea3bd98b32d84b"
+  },
+  {
+    "subject": "The fauna of the national park",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "very diverse",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "197802f32f5abf1041529b6a68228b0f9d8d5c56d6c30b25ed69e0b52c5cc72f"
+  },
+  {
+    "subject": "Mineral licks",
+    "relation": "are visited regularly by",
+    "polarity": "positive",
+    "object": "oribi",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "1d5c138c45ed1e4ea218eba3c79e914b3191e046fe97e3fb4219ab90568688cd"
+  },
+  {
+    "subject": "Numbers",
+    "relation": "have declined due to",
+    "polarity": "negative",
+    "object": "competition from livestock",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "243241e410775688311858ac37ae0941082d9ab91a3f8ae69b9fac8b20f3b511"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the oribi (\"Ourebia ourebi\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "24636f066d3e029454f98dee94e51f837d7e2869552929d2a56ba8d43543e7a2"
+  },
+  {
+    "subject": "The total area",
+    "relation": "covers about",
+    "polarity": "positive",
+    "object": "6,402 km",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "2814da97cc6eb3f7b039856abfe1e2656c582066797c4abfd10ab4e6caf6eedb"
+  },
+  {
+    "subject": "The subspecies",
+    "relation": "show some variation in colouration",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "29fd0e09dd462d83bf2bef6efafedf28eb9fbc4c71f6aecdeb6c68fc68b43abf"
+  },
+  {
+    "subject": "This antelope",
+    "relation": "features",
+    "polarity": "positive",
+    "object": "long neck and limbs",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "2a3ff442dd671b167ab693dba8923aa6eabf8c867cdbb6140ebcdd69bb633f1d"
+  },
+  {
+    "subject": "much of the northern GGNP",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "savannah grassland",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "2c70203e709b38b107f66a6c152988928dc0ce1887cd13482b8c356d0986e915"
+  },
+  {
+    "subject": "the southern GGNP sector of the park",
+    "relation": "characterized by",
+    "polarity": "positive",
+    "object": "very mountainous, steep slopes as well as deep valleys and gorges",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "2df2c929ceadf18c7c58d70f609bca2a2ca7c5ba65247bb4bf43666083d05cc2"
+  },
+  {
+    "subject": "Numbers",
+    "relation": "have declined due to",
+    "polarity": "negative",
+    "object": "agricultural expansion",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "304665e34db0730d9165f5bc243b6145346e39dd2000ac4d63871280abd37a15"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Gashaka Gumti National Park in Nigeria",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "3155ae017e43eb440729233164646af37e9f39178d37f36eefe6a8a7b758b176"
+  },
+  {
+    "subject": "red sunbird bush",
+    "relation": "discovery location",
+    "polarity": "positive",
+    "object": "8 km Leinde Fadale forest",
+    "qualifiers": [
+      {
+        "kind": "time",
+        "value": "November 2002"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+    "id": "33c8ab1255d092ccb686da8180bd86abf65cf766438b0752b5c291d3aeaa5bf8"
+  },
+  {
+    "subject": "Hunting",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "a relatively minor threat",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "33f119bd2c858071a64f572537acac8a97dc5e892a09cbf4918cdf3912ca0f3e"
+  },
+  {
+    "subject": "the subspecies \"O. o. haggardi\"",
+    "relation": "listed as",
+    "polarity": "positive",
+    "object": "Vulnerable",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "3746f7f09764c3c1f9a382ff63746ba11e06cf34b5cd7c230240f2d709f6c693"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the kob antelope (\"Kobus kob\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "374ccd19d7dec898111ad95bcbc57e4cf4cc2755763e0d754ae51754496b5a16"
+  },
+  {
+    "subject": "This antelope",
+    "relation": "features",
+    "polarity": "positive",
+    "object": "long neck and limbs",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "39bdbbc52c9aeb40e492d746cce59d925408d5ab45abc72cec659dc02e76c89f"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Manovo-Gounda St.",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "39ebd359d4f7f49ff2514b5f1917a1703073a92c4fb1394e4d3a3c2346b6c90f"
+  },
+  {
+    "subject": "The bushy tail",
+    "relation": "has",
+    "polarity": "positive",
+    "object": "white insides",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "3fe1fb7c0527ce5101ea2924203d0bcf7c3572f8f862f708bb921bb4df4010c0"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "weighs",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "434db0c4dc30498f70b553240c585a087c28d0291c3cd7c217d861929f986ad2"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "454f177831560115d9610a543d8021451dc3ce283904d606dd81733b9d32a181"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\")",
+    "qualifiers": [
+      {
+        "kind": "attribute",
+        "value": "in larger stocks"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "46338501255eae00499f04a34a0317ed6fb39b78f399740729a8f2f6eeec59ed"
+  },
+  {
+    "subject": "preferred varieties",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "\"Loudetia\"",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "467feb6553d3812f97adbab7d7e8ec6c2f088ac32b31bf45009a0f142a0b70e6"
+  },
+  {
+    "subject": "Chappal Waddi",
+    "relation": "location",
+    "polarity": "positive",
+    "object": "the park's southern sections",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "47eca8d1c901f8a8d5d5b863446ac92cecf88a5da27c88e51b16cda6885422be"
+  },
+  {
+    "subject": "The bushy tail",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "brown to black on the outside",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "491f47f9ca7562ab3a29e85001db3829c36d1cd7b6a4a1f2682509ae6523d746"
+  },
+  {
+    "subject": "Gashaka-Gumti National Park",
+    "relation": "location",
+    "polarity": "positive",
+    "object": "Nigeria",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "4cf4f8dbe9c6dd86c7bcb6e869305625524030d10e85b9e98c35843ec251b930"
+  },
+  {
+    "subject": "The largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+    "relation": "is found within the boundaries of",
+    "polarity": "positive",
+    "object": "the national park",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "4d350e93a9b05c46124ba594dea83a4698f0cf18861d218c6f98deb03bfbd7a2"
+  },
+  {
+    "subject": "Species",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "African golden cat (\"Profelis aurata\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "5163de7db56e31911986d5107b84fe01ff514b2968adeaebe732edf43e67a8aa"
+  },
+  {
+    "subject": "the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire)",
+    "relation": "has been attributed to",
+    "polarity": "positive",
+    "object": "poaching",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "54d220a49c44482aa67e0dcc144b3c776ff5425d25ad624910de656392273f0a"
+  },
+  {
+    "subject": "females",
+    "relation": "are smaller than",
+    "polarity": "positive",
+    "object": "males",
+    "qualifiers": [
+      {
+        "kind": "condition",
+        "value": "except for \"O. o. ourebi\""
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "58618fafd35e67a94dcc50c185a4dc4783f151be5cffa607c5ae1eb7e2a89f5c"
+  },
+  {
+    "subject": "Gashaka-Gumti National Park",
+    "relation": "gazetted from",
+    "polarity": "positive",
+    "object": "two game reserves",
+    "qualifiers": [
+      {
+        "kind": "time",
+        "value": "1991"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "58e87fdf7d54aec6de32c8c262b94f2c050bb3c53e5670967a8d671304d4185a"
+  },
+  {
+    "subject": "red sunbird bush",
+    "relation": "distance from nearest populations",
+    "polarity": "positive",
+    "object": "some 1,200 km",
+    "qualifiers": [
+      {
+        "kind": "entity",
+        "value": "nearest populations in the Afromontane archipelago"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+    "id": "5c8aabc05b24e4f2db511597d377d890e60237d9a0cad211957be85839c3608d"
+  },
+  {
+    "subject": "Gashaka-Gumti National Park",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "Nigeria’s largest national park",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "5d0ba1e3c404061a17768e6a16a0337ae32cf8b3f77fddeeeb872e232b851675"
+  },
+  {
+    "subject": "Altitude",
+    "relation": "ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "5f529439d3bab6165203a69da39503cc4dff36e697a2e6e26685b10f40976e0f"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "606a9184ddb49459b6847453bd5fa35d0413e9a64ee644eb43f4aeb5ea7e4ae4"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the West African wild dog (\"Lycaon pictus manguensis\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "62deb5cff7f1aac03c7d05c3d377c51f7222b7cf8eaa8c457374d0d997a6eec5"
+  },
+  {
+    "subject": "Chappal Waddi",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "Nigeria’s highest mountain",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "63a094ad7b6d7896878ec0946ea28f96751c8090451204a8aa30534be6871846"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Serengeti National Park (Tanzania)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "65992390ae6e20d1e5ceddb4031656d8844850ddb157cf2bf33561263c250cb1"
+  },
+  {
+    "subject": "the thin, straight horns",
+    "relation": "are smooth at the tips",
+    "polarity": "positive",
+    "object": "smooth at the tips",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "689e9777ba9d7e2278fcaf4acbe62f6009b48002dda034d6c8c6a6c4eb1c9da6"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "weighs",
+    "polarity": "positive",
+    "object": "weighs",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "6a70918864e9c7f55ac3a64b306b5c3c002f754839bd1441461b18d0e9d0f599"
+  },
+  {
+    "subject": "The glossy, yellowish to rufous brown coat",
+    "relation": "contrasts with",
+    "polarity": "positive",
+    "object": "the white chin, throat, underparts and rump",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "72e635e13444f45e2667ab9bf5e4df90e22e8c488f375caa189db2b7c7ebfebb"
+  },
+  {
+    "subject": "Typically diurnal",
+    "relation": "is active mainly during",
+    "polarity": "positive",
+    "object": "the day",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "73ae302a77cfd27d138746e023c07a4bc3ef57e579941a76639cf8dd9fb3b1aa"
+  },
+  {
+    "subject": "the southern GGNP sector of the park",
+    "relation": "has",
+    "polarity": "positive",
+    "object": "a rugged terrain",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "77d41a5d12acb1b04b1486bc14e6f66497f1db8acfb027855d53a12d6433a620"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Floris National Park (Central African Republic)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "786326c73b99afb32ad727d45bf1b80376b72c9f17d769838eb5f91445e554b9"
+  },
+  {
+    "subject": "Gashaka-Gumti National Park",
+    "relation": "located in",
+    "polarity": "positive",
+    "object": "the eastern provinces of Taraba and Adamawa",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "7e89752b07e8dad0226a8b91c6da2b76256a17feb3438e1c006b9f5b57e634c4"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "reaches at the shoulder",
+    "polarity": "positive",
+    "object": "nearly at the shoulder",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "7ebe48ed799b85ccc3037c4d1e3c68e03119d3549bc30e5943431008210949fe"
+  },
+  {
+    "subject": "red sunbird bush",
+    "relation": "occurrence elevation",
+    "polarity": "positive",
+    "object": "1,600 to 1,670 m.a.s.l.",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+    "id": "7fa271c728256dd1e3be35d859b268b9fec591decd8ecb2dfbed4b0ed8d1643f"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the African elephant (\"Loxodonta africana\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "823f13aa8b572a4c171e1c97cf7f6f11a42b70ab8b8d8f39a6a8e10196ae752c"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Golden Gate Highlands National Park (South Africa)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "871e383a4de4f94aa0b47668a9005808ed022ec7dd59c493775ca828a25a857a"
+  },
+  {
+    "subject": "Grasses",
+    "relation": "can constitute up to",
+    "polarity": "positive",
+    "object": "90%",
+    "qualifiers": [
+      {
+        "kind": "of the diet",
+        "value": "of the diet"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "8d414c7367db509d05318959efe5a5343abc3aa90219697050736557b1039932"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "found in",
+    "polarity": "positive",
+    "object": "eastern, southern and western Africa",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "8f8928a04e1773337497d868ce3232c9fd39c9324ac0f9fa6de635f836b83060"
+  },
+  {
+    "subject": "preferred varieties",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "\"Hyparrhenia\"",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "9391774134f5c1ff7c10efe3d78f489d9097123897513fc647c2316972983cc3"
+  },
+  {
+    "subject": "the thin, straight horns",
+    "relation": "are ringed at the base",
+    "polarity": "positive",
+    "object": "ringed at the base",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "95b9fccab1b26386dc07d2a4fde5b147f753f960701839869c5e2adfb42b012a"
+  },
+  {
+    "subject": "Gashaka-Gumti National Park",
+    "relation": "is a",
+    "polarity": "positive",
+    "object": "national park",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "96b70a4c99068dee619c2ba531c66a78d9a013e180d301078433ece401c66780"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Aouk Hunting Zone (Chad)",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "98ab72308c2105d01d7968b625c09db47a275ba254033a4214aee6696e1f24f7"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the hartebeest (\"Alcelaphus buselaphus\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "9a8667e6732298ab4161f67edde93240487a1bd32e23e27eaf277a89768e3049"
+  },
+  {
+    "subject": "preferred varieties",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "\"Eulalia\"",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "9d0295d51947f07c855ba39b2416a9b629286a086991fdc5ae7f23275954c27d"
+  },
+  {
+    "subject": "Oribi",
+    "relation": "have been observed feeding on",
+    "polarity": "positive",
+    "object": "\"Boletus\" mushrooms",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "9e81c6f52600ba28e163876dc6f5a93827a848e80c409f92159a506ee1898b18"
+  },
+  {
+    "subject": "males",
+    "relation": "are slightly smaller than",
+    "polarity": "positive",
+    "object": "females",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "9f1cfcb03770d6df5f321c114695a3ac070243d766050da49af4b575656aba6d"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the roan antelope (\"Hippotragus equinus\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "a03dd8cca316d7b531115762e77e0e67b4386ec91a34fe467db073c5fc840fe1"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "reaches nearly at the shoulder",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "a2ffea4ff79ec59a292674fde7cd328d343c6816147873bc172399dc648b235d"
+  },
+  {
+    "subject": "oribi",
+    "relation": "prefers",
+    "polarity": "positive",
+    "object": "fresh grasses",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "a35f3451af5309708ba56e63bb05fd621a0e70cbe62b82573ad8c28e4099db1b"
+  },
+  {
+    "subject": "The head-and-body length",
+    "relation": "is typically between",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "a370ca669d749e8a41a5ea5a4fad02cb94bd070e8d7ec5d4147c085771c9c4c9"
+  },
+  {
+    "subject": "preferred varieties",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "\"Themeda\" species",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "ab8175fb5a353d585c6cd107cfa8d9f7eb57caba44ce58107c1da96f2fa7c992"
+  },
+  {
+    "subject": "To protect the animals and the ecosystem",
+    "relation": "was launched",
+    "polarity": "positive",
+    "object": "the Gashaka Primate Project",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "ac396450455fe1601f61a83a29345da1c422223dbed75144c69e0f6429e611a4"
+  },
+  {
+    "subject": "oribi",
+    "relation": "browses",
+    "polarity": "positive",
+    "object": "occasionally",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "af85d82a967324cd5b743028514d3c6c5698a61e524d4ecccf831e65f5ca26f7"
+  },
+  {
+    "subject": "This antelope",
+    "relation": "features",
+    "polarity": "positive",
+    "object": "a slightly raised back",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "b050b9243ed21051ce80f67ee0219284b2db6e3395730b40b247d47c97da96ad"
+  },
+  {
+    "subject": "The total population",
+    "relation": "estimated at",
+    "polarity": "positive",
+    "object": "750,000",
+    "qualifiers": [
+      {
+        "kind": "time",
+        "value": "as of 2008"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "b15ad69af8564d4871db2bdf7cd91584d3a5de7cb682345e3ec71e3f6f12ee97"
+  },
+  {
+    "subject": "The glossy, yellowish to rufous brown coat",
+    "relation": "contrasts with",
+    "polarity": "positive",
+    "object": "the white chin, throat, underparts and rump",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "b3b1fcc2f0646fa173c6623c00038f4d4a28e550b1197401adb28f74231f7576"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "b6ef3bd704227d5d62f2e0e6a25331dbc42faaea25d2d7be95fcc69a81333a7b"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "first described by",
+    "polarity": "positive",
+    "object": "the German zoologist Eberhard August Wilhelm von Zimmermann",
+    "qualifiers": [
+      {
+        "kind": "time",
+        "value": "1782"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "bbfc6564fa4a258cc41e2374e5879744bf24008d98223faea08ccc9d1557da38"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Masai Mara Game Reserve and Ruma National Park (Kenya)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "bcf176a847bf6e368fe8d785ffbf166fc73d8b1711358269eb05a6b9956dc56c"
+  },
+  {
+    "subject": "oribi",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "grazer",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "bee638d0b27a8399513d4895e6c158ae1638ff165af3bb0e295d40dd8d355290"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "has subspecies identified",
+    "polarity": "positive",
+    "object": "Eight subspecies",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "c7d5a99c6e9b4fce2a417ea319de3f4b2a29708672ccb6823823119a41d32a65"
+  },
+  {
+    "subject": "The bushy tail",
+    "relation": "has",
+    "polarity": "positive",
+    "object": "completely black tail",
+    "qualifiers": [
+      {
+        "kind": "condition",
+        "value": "except in \"O. o. hastata\""
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "c8114494db652882af6696fac589c1c7eab9d5289f981352f22ec4d623f9f7ac"
+  },
+  {
+    "subject": "Living in the national park",
+    "relation": "are also",
+    "polarity": "positive",
+    "object": "the klipspringer (\"Oreotragus oreotragus\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "cc89aa81e368f5aa42af8339cce59a19301954970d30b673c88a92e0ffd913c0"
+  },
+  {
+    "subject": "This antelope",
+    "relation": "features",
+    "polarity": "positive",
+    "object": "a slightly raised back",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "cd72eb64aef707bf04a3d54a08e001aafb3ae87023f0fc03b6c301fd0eb8c147"
+  },
+  {
+    "subject": "103 species of mammals",
+    "relation": "have been recorded at censuses",
+    "polarity": "positive",
+    "object": "at censuses",
+    "qualifiers": [
+      {
+        "kind": "time",
+        "value": "censuses"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "cf23882ea670a0f0040db52caba9f18812e01b0d3204a112cd486bee338df317"
+  },
+  {
+    "subject": "preferred varieties",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "\"Andropogon\"",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "d111861e4717231ac2727953ad6e80895ca6176f11e1bf58466991766f5b8cb3"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "scientific name",
+    "polarity": "positive",
+    "object": "\"Ourebia ourebi\"",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "d26cb7867611cea5687e4c0444f85bdda2bde5c1f9308902a05711149846bbd5"
+  },
+  {
+    "subject": "red sunbird bush",
+    "relation": "is a",
+    "polarity": "positive",
+    "object": "ornate species of the acanthus family",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+    "id": "d4953eef3cdc8e57bdfc70458a978332916babe2629daea4ee93a34a03b9337d"
+  },
+  {
+    "subject": "Species",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "yellow-backed duiker",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "d7e31aeeeba9b3f6b15bb0151dcd5c24f9d78df4aa5297fff559d34fbb5c7b0b"
+  },
+  {
+    "subject": "the oribi",
+    "relation": "shows",
+    "polarity": "positive",
+    "object": "some tolerance to hunting",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "d7edf15b44b213176a1eb24bfa58efeeea9b559c6a9fd97505d089fb26b5ec82"
+  },
+  {
+    "subject": "the southern GGNP sector of the park",
+    "relation": "is home to",
+    "polarity": "positive",
+    "object": "montane forests",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "deed673a95211ffa6a70223cf7651067903bc64a8ad6da7dd743d510f0023d9e"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "is member of genus",
+    "polarity": "positive",
+    "object": "sole member of its genus",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "ebe6056b5067646a1a555ad923d41c67addbc7cb84e8b4ade7af31cb2d977e3b"
+  },
+  {
+    "subject": "the total population",
+    "relation": "feared to be",
+    "polarity": "positive",
+    "object": "declining",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "ec5903e2f78d341d999ad56fd73b55778f4cc4b385b1b74e513642313e543748"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "occurs in",
+    "polarity": "positive",
+    "object": "Omo National Park (Ethiopia)",
+    "qualifiers": [],
+    "sentences": [
+      1
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "ed556405a58c7f216119d4aa1c86e5fd89d1f2255bfa874575d1cca8308c5a20"
+  },
+  {
+    "subject": "park boundary",
+    "relation": "suggested action",
+    "polarity": "uncertain",
+    "object": "extended",
+    "qualifiers": [
+      {
+        "kind": "purpose",
+        "value": "to protect the forest"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+    "id": "f3eb586967f5739dbadae4a4ad067f1dfc47ce1fca08a0b29565b32454b3049e"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "Sexually dimorphic",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+    "id": "f794b13566e4ee37cd56c4589b2280ec230f452c6ca621031d76f4a0a1fac957"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "classified as",
+    "polarity": "positive",
+    "object": "Least Concern",
+    "qualifiers": [
+      {
+        "kind": "organization",
+        "value": "IUCN"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "f7d5988e56dd703b607164a2a0fe86486262c9e3ee925871c45aab1728f18c22"
+  },
+  {
+    "subject": "Gashaka-Gumti National Park",
+    "relation": "location relative to",
+    "polarity": "positive",
+    "object": "the border with Cameroon",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+    "id": "f87f71cf74b4496299dd970073075f9f5b16f4ad696d2f9b8b4c19b594fd73c9"
+  },
+  {
+    "subject": "Only males",
+    "relation": "possess",
+    "polarity": "positive",
+    "object": "horns",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "fad4ff396fd06e795f00f541e74ad1451582d8530b7be8bd7fdaa164222eac35"
+  },
+  {
+    "subject": "The oribi",
+    "relation": "type of animal",
+    "polarity": "positive",
+    "object": "small antelope",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+    "id": "fadcfded7c6014945a4a2679b20907dea8d1bd7d91353c0647c87f56ad61a481"
+  },
+  {
+    "subject": "red sunbird bush",
+    "relation": "population type",
+    "polarity": "positive",
+    "object": "isolated population",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "8a87e37f6196ac8160287ecbb863fad30c9f172b6b16a805cabba9a1675667b8",
+    "id": "fbae72ae2ef0086dc04751e93a4609bb807edab3be9bff322bf704d20b4490f2"
+  },
+  {
+    "subject": "preferred varieties",
+    "relation": "include",
+    "polarity": "positive",
+    "object": "\"Pennisetum\"",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+    "id": "fda719277487858602c12de8bcb4467941a53cd17e6cbcef64637214bd9a7394"
+  },
+  {
+    "subject": "the total population",
+    "relation": "estimated at",
+    "polarity": "positive",
+    "object": "less than 10,000 mature individuals",
+    "qualifiers": [
+      {
+        "kind": "time",
+        "value": "as of 2008"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "a9598f2ea0c84e05dc279901a0d34161609418d5585ae4ad0d70f1c0e3466e3d",
+    "id": "ff76a3657f4b18d914d0ef2f47c8ae8d894748811b974e9d7f71094a73b8275e"
+  },
+  {
+    "subject": "The African buffalo",
+    "relation": "is",
+    "polarity": "positive",
+    "object": "the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "398369a8aaa0f89f9604e841e22fa8e1e660571438116264d1b450c40bf5feaa",
+    "id": "ffd67664ec7575609ba9154aa9dc6a688056cd1e0c847ec868e81362b1beceb8"
+  }
+]

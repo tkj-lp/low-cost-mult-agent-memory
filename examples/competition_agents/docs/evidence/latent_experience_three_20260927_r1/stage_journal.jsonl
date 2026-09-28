@@ -1,0 +1,15 @@
+{"role": "planner", "event": "done", "seconds": 5.860431100009009, "output_tokens": 0, "answer": null}
+{"role": "retriever", "event": "done", "seconds": 3.833951700013131, "output_tokens": 0, "answer": null}
+{"role": "reasoner", "event": "done", "seconds": 1.8755763999652117, "output_tokens": 0, "answer": null}
+{"role": "summarizer", "event": "done", "seconds": 2.1860521000344306, "output_tokens": 3, "answer": "White."}
+{"event": "task_done", "question": "What color was Cotton?", "answer": "White.", "error": null, "seconds": 13.774142600013874}
+{"role": "planner", "event": "done", "seconds": 3.1079163999529555, "output_tokens": 0, "answer": null}
+{"role": "retriever", "event": "done", "seconds": 5.664790800074115, "output_tokens": 0, "answer": null}
+{"role": "reasoner", "event": "done", "seconds": 1.9015532999765128, "output_tokens": 0, "answer": null}
+{"role": "summarizer", "event": "done", "seconds": 2.424547899980098, "output_tokens": 4, "answer": "A barn."}
+{"event": "task_done", "question": "Where did she live?", "answer": "A barn.", "error": null, "seconds": 13.110772900050506}
+{"role": "planner", "event": "done", "seconds": 3.170824100030586, "output_tokens": 0, "answer": null}
+{"role": "retriever", "event": "done", "seconds": 1.850873599993065, "output_tokens": 0, "answer": null}
+{"role": "reasoner", "event": "done", "seconds": 1.9498991000000387, "output_tokens": 0, "answer": null}
+{"role": "summarizer", "event": "done", "seconds": 3.9461462000617757, "output_tokens": 9, "answer": "No, she did not live alone."}
+{"event": "task_done", "question": "Did she live alone?", "answer": "No, she did not live alone.", "error": null, "seconds": 10.928000100073405}

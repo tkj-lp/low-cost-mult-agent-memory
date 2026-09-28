@@ -1,0 +1,756 @@
+{
+  "source_sha256": "b3f8efe3fe11b723aaaf4f3a7b8133eca284fd0b07428fca1a468b9f93301580",
+  "extractor_sha256": "852ea1d105d4f6c5f659e1e09b9c26d73dc6bb9dbbfb2380f73523038c17da76",
+  "model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "Cynthia Ann Stephanie Lauper",
+        "relation": "born",
+        "object": "June 22, 1953",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cynthia Ann Stephanie Lauper",
+        "relation": "is",
+        "object": "American singer, songwriter and actress",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "known for",
+        "object": "distinctive image",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "distinctive image",
+        "relation": "features",
+        "object": "eccentric clothing",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "distinctive image",
+        "relation": "features",
+        "object": "variety of hair colors",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "known for",
+        "object": "powerful four-octave vocal range",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "dubbed",
+        "object": "\"Queen of Quirky Pop\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "sold",
+        "object": "over 50 million records worldwide",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "celebrated for",
+        "object": "humanitarian work",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "advocate for",
+        "object": "LGBTQ rights in the United States",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "debut album of",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1983"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "first debut album by a female artist to achieve",
+        "object": "four top-five hits on the Billboard Hot 100",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Girls Just Want to Have Fun",
+        "relation": "hit on Billboard Hot 100 from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Time After Time",
+        "relation": "hit on Billboard Hot 100 from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "She Bop",
+        "relation": "hit on Billboard Hot 100 from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "All Through the Night",
+        "relation": "hit on Billboard Hot 100 from",
+        "object": "She's So Unusual",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "earned",
+        "object": "Best New Artist at the 27th Annual Grammy Awards",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1985"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Music video for \"Girls Just Want to Have Fun\"",
+        "relation": "won",
+        "object": "Best Female Video",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "event",
+            "value": "inaugural 1984 MTV Video Music Awards"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Music video for \"Girls Just Want to Have Fun\"",
+        "relation": "hailed by",
+        "object": "MTV, VH1 and Rolling Stone as one of the greatest videos of the era",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "True Colors",
+        "relation": "second album of",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1986"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "True Colors",
+        "relation": "achieved",
+        "object": "two more top-five hits",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "title track",
+        "relation": "top-five hit from",
+        "object": "True Colors",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Change of Heart",
+        "relation": "top-five hit from",
+        "object": "True Colors",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "The Goonies 'R' Good Enough",
+        "relation": "single chart success of",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1985"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "I Drove All Night",
+        "relation": "single chart success of",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1989"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Same Ol' Story",
+        "relation": "number-one hit on Hot Dance Club Play charts",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Into the Nightlife",
+        "relation": "number-one hit on Hot Dance Club Play charts",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "2008"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          1
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "released",
+        "object": "twelve studio albums",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "Since 1983"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "participated in",
+        "object": "many other projects",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "Since 1983"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Memphis Blues",
+        "relation": "album of",
+        "object": "Lauper",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "2010"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Memphis Blues",
+        "relation": "Billboard's most successful blues album of the year",
+        "object": "2010",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Memphis Blues",
+        "relation": "remained at number one on Billboard Blues Albums chart for",
+        "object": "13 consecutive weeks",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "won",
+        "object": "Tony Award for Best Original Score",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "2013"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "composed",
+        "object": "Broadway musical Kinky Boots",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "first woman to win category by herself",
+        "object": "Tony Award for Best Original Score",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "awarded",
+        "object": "five other Tonys",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Kinky Boots",
+        "relation": "awarded",
+        "object": "Best Musical",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "awarded",
+        "object": "Grammy Award for Best Musical Theater Album",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "2014"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "awarded for",
+        "object": "cast recording",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "West End production",
+        "relation": "won",
+        "object": "Laurence Olivier Award for Best New Musical",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "2016"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          2
+        ]
+      },
+      {
+        "subject": "Lauper's accolades",
+        "relation": "include",
+        "object": "two Grammy Awards",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper's accolades",
+        "relation": "include",
+        "object": "a Primetime Emmy Award",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper's accolades",
+        "relation": "include",
+        "object": "a Tony Award",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper's accolades",
+        "relation": "include",
+        "object": "three MTV Video Music Awards",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper's accolades",
+        "relation": "include",
+        "object": "four Billboard Music Awards",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper's accolades",
+        "relation": "include",
+        "object": "two American Music Awards",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper's accolades",
+        "relation": "include",
+        "object": "a star on the Hollywood Walk of Fame",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "one of the few singers to win",
+        "object": "three of the four major American entertainment awards (EGOT)",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "inducted into",
+        "object": "Songwriters Hall of Fame",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "2015"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "Lauper",
+        "relation": "inducted into",
+        "object": "Rock and Roll Hall of Fame",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "November 2025"
+          }
+        ],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "She's So Unusual",
+        "relation": "ranked",
+        "object": "494th among Rolling Stone's 2003 list of the 500 Greatest Albums of All Time",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "VH1",
+        "relation": "named",
+        "object": "\"Time After Time\" one of the best songs of the preceding 25 years",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      },
+      {
+        "subject": "VH1",
+        "relation": "named",
+        "object": "Lauper the 58th-greatest woman in rock and roll",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ],
+        "original_internal_indices": [
+          3
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 3894,
+    "prompt_tokens": 1234,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 1234
+    },
+    "total_tokens": 5128
+  },
+  "attempts": 1,
+  "offline_seconds": 33.83216889994219,
+  "semantic_verification": "not_independently_verified"
+}

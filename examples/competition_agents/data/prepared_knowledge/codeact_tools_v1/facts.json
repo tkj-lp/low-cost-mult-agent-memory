@@ -1,0 +1,151 @@
+[
+  {
+    "subject": "The statistics module",
+    "relation": "provides",
+    "polarity": "positive",
+    "object": "mean, median, pvariance and pstdev",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "1fe63a09fcaf5d88aa2e6c9b7293e330ade0ea69a0b557bde8c1346992bb0075"
+  },
+  {
+    "subject": "pvariance and pstdev",
+    "relation": "compute",
+    "polarity": "positive",
+    "object": "population statistics",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "5372c4abf3e6f005fd837cb72977e31fd36f9a88e76b7587ea6c2c7ac0cba836"
+  },
+  {
+    "subject": "The program",
+    "relation": "must assign",
+    "polarity": "positive",
+    "object": "a JSON-compatible dictionary",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "6997f58021562300f2053a9ed25898bd6da862e6b2c61cc4607c4fd44282a58f"
+  },
+  {
+    "subject": "The execution environment",
+    "relation": "supplies",
+    "polarity": "positive",
+    "object": "task data",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "69ada28b73232135480c6f7382093e79a4cfca519e4572366605b67453a14efc"
+  },
+  {
+    "subject": "The executor",
+    "relation": "returns",
+    "polarity": "positive",
+    "object": "the actual result or an error",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "756975a70bfffb366ee2c2dcc9dcfe0981a8cbd06f2a161b88ca4f19eee180dc"
+  },
+  {
+    "subject": "Only the modules in allowed_imports",
+    "relation": "are available",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "7f147143a5433fe0be8ba904bed408148f05956d221135936fa8751a9eed38bb"
+  },
+  {
+    "subject": "The task",
+    "relation": "declares",
+    "polarity": "positive",
+    "object": "output_fields",
+    "qualifiers": [
+      {
+        "kind": "attribute",
+        "value": "as the required result keys"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "8c3af047e2b77d8a3cd894421f0261423729ccd5e48d21213f085f3132c9e8d2"
+  },
+  {
+    "subject": "File access",
+    "relation": "are unavailable",
+    "polarity": "negative",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "96ad8853a15c105cb2193704aa9ff026c5700968401874458d8ca17f163312b7"
+  },
+  {
+    "subject": "The math module",
+    "relation": "provides",
+    "polarity": "positive",
+    "object": "sqrt",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "bef625f7b91abc14160b81f4dd5f92c437240e0f8b4bd657f02e37856a3a3810"
+  },
+  {
+    "subject": "task data",
+    "relation": "is supplied in",
+    "polarity": "positive",
+    "object": "the inputs dictionary",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "c8bff8f8522d27aeaf6c2e37b3706df4c81f0100c272d0f1bbcc33de8322ffe1"
+  },
+  {
+    "subject": "network access",
+    "relation": "are unavailable",
+    "polarity": "negative",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "dc6fa1fd6164dfe29edb0590db7ad93a4c05f77cfe9c6ea4b5c60ff65e4131e3"
+  },
+  {
+    "subject": "Python sum, len, min, max, sorted, list, dict and range",
+    "relation": "are available",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+    "id": "f3fdc3c7bb99c76cf9308ed5a5902fb08d70fb9f34555426539a091f66e356f9"
+  }
+]

@@ -60,7 +60,7 @@ def memory_object(evidence, qa_hits, experience_rules):
 
 
 def decode_memory_object(delivered):
-    obj = json_object(delivered)
+    obj = delivered if isinstance(delivered, dict) else json_object(delivered)
     if (obj and obj.get("schema") == "memory_object_v1"
             and all(isinstance(obj.get(key), list) for key in ("evidence", "history_qa", "experience"))
             and all(isinstance(e, dict) and isinstance(e.get("text"), str) for e in obj["evidence"])
@@ -106,6 +106,20 @@ def conversational_reference(question):
         r"\bwhat about\b|\bhow about\b", str(question), re.I))
 
 
+def parse_answer_review(raw):
+    """只接受显式审阅动作；不把模板、解释或空响应写成最终答案。"""
+    value = str(raw or "").strip().strip("`").strip()
+    if value.upper().rstrip(".") == "KEEP":
+        return {"decision": "keep"}
+    if value.upper().rstrip(".") == "UNKNOWN":
+        return {"decision": "revise", "answer": "unknown"}
+    match = re.fullmatch(r"FIX:\s*(\S[^\n]*)", value, re.I)
+    if match:
+        return {"decision": "revise", "answer": match.group(1).strip()}
+    # 兼容已有结构化客户端。
+    return json_object(raw) or {}
+
+
 def parse_planner_output(raw, metrics=None):
     obj = json_object(raw)
     metrics = metrics or {}
@@ -133,8 +147,7 @@ def parse_planner_output(raw, metrics=None):
 def decide_qa_retrieval(policy, question, qa_available):
     """Retriever owns the final gate; uncertain follow-ups recall conservatively."""
     query_type = policy.get("query_type", "unknown")
-    needed = qa_available and (query_type != "standalone" or conversational_reference(question)
-                              or bool(policy.get("reference_target")))
+    needed = qa_available and (query_type != "standalone" or conversational_reference(question))
     return {**policy, "need_qa_memory": bool(needed), "need_memory": bool(needed),
             "decision_source": "retriever", "qa_memory_reason": (
                 "qa_memory_empty" if not qa_available else "history_reference_or_uncertain_query"

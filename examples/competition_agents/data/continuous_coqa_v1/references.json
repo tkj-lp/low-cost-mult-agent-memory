@@ -1,0 +1,72 @@
+[
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-1",
+    "reference_answers": [
+      "white"
+    ],
+    "official_answer": {
+      "span_start": 59,
+      "span_end": 93,
+      "span_text": "a little white kitten named Cotton",
+      "input_text": "white",
+      "turn_id": 1
+    }
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-2",
+    "reference_answers": [
+      "in a barn",
+      "in a barn near"
+    ],
+    "official_answer": {
+      "span_start": 18,
+      "span_end": 80,
+      "span_text": "in a barn near a farm house, there lived a little white kitten",
+      "input_text": "in a barn",
+      "turn_id": 2
+    }
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-3",
+    "reference_answers": [
+      "no",
+      "No"
+    ],
+    "official_answer": {
+      "span_start": 196,
+      "span_end": 215,
+      "span_text": "Cotton wasn't alone",
+      "input_text": "no",
+      "turn_id": 3
+    }
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-4",
+    "reference_answers": [
+      "with her mommy and 5 sisters",
+      "her mommy and 5 other sisters"
+    ],
+    "official_answer": {
+      "span_start": 281,
+      "span_end": 315,
+      "span_text": "with her mommy and 5 other sisters",
+      "input_text": "with her mommy and 5 sisters",
+      "turn_id": 4
+    }
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-5",
+    "reference_answers": [
+      "orange and white",
+      "orange with white tiger stripes",
+      "orange"
+    ],
+    "official_answer": {
+      "span_start": 428,
+      "span_end": 490,
+      "span_text": "her sisters were all orange with beautiful white tiger stripes",
+      "input_text": "orange and white",
+      "turn_id": 5
+    }
+  }
+]

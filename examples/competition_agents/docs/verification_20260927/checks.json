@@ -1,0 +1,78 @@
+{
+  "version": "competition-locked-v1",
+  "tests": {
+    "passed": 226,
+    "skipped": 1
+  },
+  "frontend_build": "passed",
+  "browser": {
+    "five_choices": "passed",
+    "fixed_pairing": "passed",
+    "latent_local_only": "passed",
+    "actual_backend_start": "passed",
+    "pages_without_javascript_errors": "passed",
+    "new_results_replay_recorded_events": "passed"
+  },
+  "llmlingua2": {
+    "package": "0.2.2",
+    "official_model": "microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
+    "real_compression_smoke": "passed",
+    "not_a_full_accuracy_benchmark": true
+  },
+  "latent_three_task_check": {
+    "complete": true,
+    "metrics": {
+      "input_tokens": 686,
+      "output_tokens": 16,
+      "elapsed_ms": 25704.41290002782,
+      "model_service_ms": 25663.951500086114,
+      "knowledge_search_ms": 0.42360008228570223,
+      "knowledge_searches": 2,
+      "memory_search_ms": 3.4513998543843627,
+      "memory_write_ms": 19.638099940493703,
+      "experience_reads": 2,
+      "experience_applied": 1,
+      "experience_writes": 4,
+      "actual_message_bytes": null,
+      "text_chars": 0,
+      "task_count": 3,
+      "elapsed_seconds": 25.70441290002782,
+      "model_calls": 12,
+      "state_peak_bytes": 41287680,
+      "state_reuse_count": 9,
+      "message_count": 0,
+      "memory_hit_rate": 0.3333333333333333
+    },
+    "answer_coverage": 0.8333333333333334,
+    "answers": [
+      {
+        "question": "What color was Cotton?",
+        "prediction": "White.",
+        "coverage": 1.0,
+        "error": null
+      },
+      {
+        "question": "Where did she live?",
+        "prediction": "A barn.",
+        "coverage": 0.5,
+        "error": null
+      },
+      {
+        "question": "Did she live alone?",
+        "prediction": "No, she did not live alone.",
+        "coverage": 1.0,
+        "error": null
+      }
+    ]
+  },
+  "limits": [
+    "本轮没有重新进行五种方式的真实模型对比，四种文字入口以模拟客户端测试流程。",
+    "隐状态三题完整运行，但地点题答案只达到部分覆盖。",
+    "同进程计算复用，不将缓存引用大小当跨机器传输载荷；未证明稳定提速。"
+  ],
+  "cleanup": {
+    "removed_files_including_generated": 2454,
+    "root_retired_python_scripts": 37,
+    "action": "移出比赛目录，保留可恢复归档"
+  }
+}

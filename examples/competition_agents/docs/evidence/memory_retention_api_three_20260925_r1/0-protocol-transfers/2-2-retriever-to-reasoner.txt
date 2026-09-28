@@ -1,0 +1,1 @@
+{"task":"Where did Cotton live?","facts":[["s2","Cotton","lived in","a nice warm place above the barn"],["s3","Cotton","lived in","a barn near a farm house"]]}

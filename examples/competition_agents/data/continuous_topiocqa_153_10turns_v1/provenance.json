@@ -1,0 +1,78 @@
+{
+  "dataset": "TopiOCQA",
+  "conversation": 153,
+  "branch_file": "official_factoid_ranked_topiocqa_003_10turns.json",
+  "branch_sha256": "7b8c31701601cdaa876e57318951ce71c4d625ecc172c750b48a032f101a32f9",
+  "branch": "personal/codex/competition-console-update-20260706",
+  "selected_turns": 10,
+  "original_turns": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "selection": "用户指定分支中的原始会话，从第一轮按原顺序取10题；不补入标准历史答案。",
+  "knowledge_policy": "完整会话文件涉及的原文完整章节；不导入答案标注，不按测试题数裁剪章节正文。",
+  "source_version": "维基百科公开页面快照；不是原始评测年代的冻结知识库。",
+  "fetched_at": "2026-09-27T09:43:13.954802+00:00",
+  "sources": [
+    {
+      "title": "Cyndi Lauper [SEP] 1980–1982: Blue Angel",
+      "url": "https://en.wikipedia.org/wiki/Cyndi_Lauper",
+      "html_sha256": "e7b64802de314d110f749c6a70abb978e83615ab79d2874dc6b6477294787de5",
+      "text_sha256": "7e8c4c520b2e584ee53ef1131623269380d3f73196b6379c3e1bbfa5a48ead9a",
+      "characters": 1946
+    },
+    {
+      "title": "Cyndi Lauper [SEP] Introduction",
+      "url": "https://en.wikipedia.org/wiki/Cyndi_Lauper",
+      "html_sha256": "e7b64802de314d110f749c6a70abb978e83615ab79d2874dc6b6477294787de5",
+      "text_sha256": "0519e922cf7953c229e75bc5d1c8281f05b9bee7e0611c0521bf688396fa4e59",
+      "characters": 2749
+    },
+    {
+      "title": "Kinky Boots (film) [SEP] Critical response",
+      "url": "https://en.wikipedia.org/wiki/Kinky_Boots_%28film%29",
+      "html_sha256": "5c40d5178bf15e0e9a3ea3c4a26fdedfe27a5e0fb5db80f431b60a7d208039be",
+      "text_sha256": "832dc4d7995a652f5676b143949acfa6e93a9a8e91609ae8d5198e3ec7676636",
+      "characters": 590
+    },
+    {
+      "title": "Kinky Boots (film) [SEP] Introduction",
+      "url": "https://en.wikipedia.org/wiki/Kinky_Boots_%28film%29",
+      "html_sha256": "5c40d5178bf15e0e9a3ea3c4a26fdedfe27a5e0fb5db80f431b60a7d208039be",
+      "text_sha256": "a6c734f0529f14f4330543fc5930a38e698d36b9b1e480e554bafb006e78a34c",
+      "characters": 577
+    },
+    {
+      "title": "Kinky Boots (musical) [SEP] Introduction",
+      "url": "https://en.wikipedia.org/wiki/Kinky_Boots_%28musical%29",
+      "html_sha256": "c28bc60700c91137e126a6d1bc6bec6fed3827627acd4e9969b8dfcc92faef64",
+      "text_sha256": "79b100e3a27b48a7c364562538b01dcef237263fc59542b81f395d53768b93a6",
+      "characters": 1946
+    },
+    {
+      "title": "She's So Unusual [SEP] Introduction",
+      "url": "https://en.wikipedia.org/wiki/She%27s_So_Unusual",
+      "html_sha256": "35a209899a2dc57c86f92d6dd65e3d2e3fcf7771252db1f1b54dedfe8e34705c",
+      "text_sha256": "611318b08da5ae9ee3d2ade806958ca1790cfd35630405115a76197a81c6de5c",
+      "characters": 2432
+    },
+    {
+      "title": "She's So Unusual [SEP] Singles",
+      "url": "https://en.wikipedia.org/wiki/She%27s_So_Unusual",
+      "html_sha256": "35a209899a2dc57c86f92d6dd65e3d2e3fcf7771252db1f1b54dedfe8e34705c",
+      "text_sha256": "937dcafbe199a37e7a9f16e5f92612149644d4b5755e659a0f891a547f8e9d8f",
+      "characters": 3074
+    }
+  ],
+  "official_sha256": "a1598add3b55eb093d8642adb73bc7b7e380af9a80eb4c4c0fc0a48a35b2d667",
+  "reused_sources": "continuous_topiocqa_153_v1",
+  "prepared_at": "2026-09-28T02:57:55.255224+00:00"
+}

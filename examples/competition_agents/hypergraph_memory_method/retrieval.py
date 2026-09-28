@@ -6,8 +6,8 @@ from typing import Any, Literal
 
 from competition_agents.embedding import embed_text
 
-from .index import _cosine_similarity, get_cached_hypergraph_index
-from .memory_model import normalize_memory_record
+from .index import _cosine_similarity, compatible_embedding, get_cached_hypergraph_index
+from .memory_model import normalize_memory_record, validate_memory_ids
 from .text import tokenize
 
 RetrievalMode = Literal["keyword", "tag", "semantic", "hypergraph", "fusion"]
@@ -186,14 +186,31 @@ def search_semantic_memory(
     query_embedding = embed_text(query)
     scored: list[tuple[float, dict[str, Any]]] = []
     records = _records if _records is not None else _prepared(memory)
+    if query_embedding.provider == "hash":
+        # A whole-text digest does not preserve meaning. Report a lexical
+        # fallback instead of ranking unrelated texts by random hash distance.
+        return [
+            {
+                **hit,
+                "retrieval_mode": "semantic",
+                "semantic_provider": "hash",
+                "semantic_fallback": True,
+            }
+            for hit in search_keyword_memory(
+                memory, query, top_k=top_k, _records=records
+            )
+        ]
     for record in records:
         values = record.get("embedding")
-        if not isinstance(values, list) or not values:
+        if not compatible_embedding(query_embedding, record):
+            record = dict(record)
             document_embedding = embed_text(str(record.get("search_document") or ""))
             values = document_embedding.vector
             record["embedding"] = values
             record["embedding_provider"] = document_embedding.provider
             record["embedding_model"] = document_embedding.model
+        if not compatible_embedding(query_embedding, record):
+            continue
         try:
             score = _cosine_similarity(
                 query_embedding.vector, [float(value) for value in values]
@@ -234,6 +251,36 @@ def search_memory_by_mode(
 ) -> list[dict[str, Any]]:
     """以稳定输入输出切换五种记忆检索模式。"""
 
+    if top_k <= 0 or not str(query).strip():
+        return []
+    allowed_types = set(memory_types or ()) | set(type_limits or ())
+    include_failed = allowed_types == {"failed_experience"}
+    memory = [
+        record
+        for record in memory
+        if (
+            not allowed_types
+            or str(record.get("memory_type") or "evidence") in allowed_types
+        )
+        and (
+            include_failed
+            or (
+                record.get("use_as_positive", True)
+                and str(record.get("quality_status") or "")
+                not in {"failed", "rejected"}
+                and str(record.get("review_status") or "")
+                not in {"rejected", "archived", "superseded"}
+                and not record.get("pruned", False)
+                and not (
+                    record.get("memory_type") == "experience"
+                    and record.get("review_status") in {"candidate", "pending"}
+                )
+            )
+        )
+    ]
+    validate_memory_ids(memory)
+    if not memory:
+        return []
     candidate_k = len(memory) if type_limits else top_k
     if mode == "keyword":
         return _limit_by_memory_type(
@@ -272,47 +319,22 @@ def search_memory_by_mode(
     if mode != "fusion":
         raise ValueError(f"Unsupported retrieval mode: {mode}")
 
-    candidate_k = len(memory) if type_limits else max(top_k * 3, 6)
-    records = _prepared(memory)
-    rankings = {
-        "keyword": search_keyword_memory(memory, query, top_k=candidate_k, _records=records),
-        "tag": search_tag_memory(memory, query, top_k=candidate_k, _records=records),
-        "semantic": [
-            hit
-            for hit in search_semantic_memory(memory, query, top_k=candidate_k, _records=records)
-            if not hit.get("semantic_fallback")
-        ],
-        "hypergraph": get_cached_hypergraph_index(memory).search(
-            query, top_k=candidate_k
-        ),
-    }
-    fused_scores: defaultdict[str, float] = defaultdict(float)
-    candidates: dict[str, dict[str, Any]] = {}
-    channels: defaultdict[str, list[str]] = defaultdict(list)
-    weights = {"keyword": 0.5, "tag": 0.2, "semantic": 0.8, "hypergraph": 4.5}
-    for channel, hits in rankings.items():
-        for rank, hit in enumerate(hits, start=1):
-            memory_id = str(hit["memory_id"])
-            fused_scores[memory_id] += weights[channel] / (60 + rank)
-            if channel == "hypergraph":
-                fused_scores[memory_id] += min(float(hit.get("continuous_reuse_score", 0.0) or 0.0), 30.0) / 200.0
-            channels[memory_id].append(channel)
-            if memory_id not in candidates or channel == "hypergraph":
-                candidates[memory_id] = hit
-
-    ordered = sorted(
-        fused_scores, key=lambda memory_id: (-fused_scores[memory_id], memory_id)
-    )
+    # 全局超图索引已经集成实体、关键词、标签、语义补召回和关系扩展。
+    # 不再在外层重复规范化全部记忆、执行三次全量文本检索。
+    # 单类型限额不需要取回整个库；多类型仍保留完整候选以满足各类配额。
+    kinds = {str(record.get("memory_type") or "evidence") for record in memory}
+    candidate_k = len(memory) if type_limits and len(kinds) > 1 else top_k
+    indexed_hits = get_cached_hypergraph_index(memory).search(query, top_k=candidate_k)
     hits = [
         {
-            **candidates[memory_id],
+            **hit,
             "retrieval_mode": "fusion",
             "memory_organization": "hypergraph",
-            "fusion_score": round(fused_scores[memory_id], 6),
-            "retrieval_score": round(fused_scores[memory_id], 6),
-            "fusion_channels": sorted(channels[memory_id]),
+            "fusion_implementation": "indexed_multichannel",
+            "fusion_score": hit["retrieval_score"],
+            "fusion_channels": hit.get("recall_channels", []),
         }
-        for memory_id in ordered
+        for hit in indexed_hits
     ]
     return _limit_by_memory_type(
         hits,
@@ -330,7 +352,9 @@ def _limit_by_memory_type(
     type_limits: dict[str, int] | None,
 ) -> list[dict[str, Any]]:
     allowed = set(memory_types or [])
-    limits = {str(key): max(0, int(value)) for key, value in (type_limits or {}).items()}
+    limits = {
+        str(key): max(0, int(value)) for key, value in (type_limits or {}).items()
+    }
     if limits:
         allowed |= set(limits)
     selected: list[dict[str, Any]] = []

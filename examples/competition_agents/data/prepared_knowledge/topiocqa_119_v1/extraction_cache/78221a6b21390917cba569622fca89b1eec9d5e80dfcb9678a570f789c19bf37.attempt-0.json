@@ -1,0 +1,168 @@
+{
+  "document_id": "11a990fd2aaaed26fa24ea19b65e099f6a5b8351a3fab4584d78b82f88bfacae",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "oribi",
+        "relation": "is",
+        "object": "grazer",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "oribi",
+        "relation": "prefers",
+        "object": "fresh grasses",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "oribi",
+        "relation": "browses",
+        "object": "occasionally",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Grasses",
+        "relation": "can constitute up to",
+        "object": "90%",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "of the diet",
+            "value": "of the diet"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "preferred varieties",
+        "relation": "include",
+        "object": "\"Andropogon\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "preferred varieties",
+        "relation": "include",
+        "object": "\"Eulalia\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "preferred varieties",
+        "relation": "include",
+        "object": "\"Hyparrhenia\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "preferred varieties",
+        "relation": "include",
+        "object": "\"Loudetia\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "preferred varieties",
+        "relation": "include",
+        "object": "\"Pennisetum\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "preferred varieties",
+        "relation": "include",
+        "object": "\"Themeda\" species",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Mineral licks",
+        "relation": "are visited regularly by",
+        "object": "oribi",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Oribi",
+        "relation": "have been observed feeding on",
+        "object": "flowers",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Oribi",
+        "relation": "have been observed feeding on",
+        "object": "\"Boletus\" mushrooms",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Groups of oribi",
+        "relation": "congregate in",
+        "object": "the rainy season",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "when",
+            "value": "when grasses are abundant"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 979,
+    "prompt_tokens": 472,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 472
+    },
+    "total_tokens": 1451
+  }
+}

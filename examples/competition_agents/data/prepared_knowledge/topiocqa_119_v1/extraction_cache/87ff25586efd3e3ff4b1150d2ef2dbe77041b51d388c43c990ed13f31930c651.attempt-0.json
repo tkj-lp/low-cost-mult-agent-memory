@@ -1,0 +1,163 @@
+{
+  "document_id": "362a4eace9bbcaff9de72af53f598ee37ea62c6f7ad8a71741f1cf287a8e336c",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "Gashaka-Gumti National Park",
+        "relation": "is a",
+        "object": "national park",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Gashaka-Gumti National Park",
+        "relation": "location",
+        "object": "Nigeria",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Gashaka-Gumti National Park",
+        "relation": "gazetted from",
+        "object": "two game reserves",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1991"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Gashaka-Gumti National Park",
+        "relation": "is",
+        "object": "Nigeria’s largest national park",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Gashaka-Gumti National Park",
+        "relation": "located in",
+        "object": "the eastern provinces of Taraba and Adamawa",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Gashaka-Gumti National Park",
+        "relation": "location relative to",
+        "object": "the border with Cameroon",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The total area",
+        "relation": "covers about",
+        "object": "6,402 km",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "much of the northern GGNP",
+        "relation": "is",
+        "object": "savannah grassland",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the southern GGNP sector of the park",
+        "relation": "has",
+        "object": "a rugged terrain",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the southern GGNP sector of the park",
+        "relation": "characterized by",
+        "object": "very mountainous, steep slopes as well as deep valleys and gorges",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the southern GGNP sector of the park",
+        "relation": "is home to",
+        "object": "montane forests",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Altitude",
+        "relation": "ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Chappal Waddi",
+        "relation": "is",
+        "object": "Nigeria’s highest mountain",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Chappal Waddi",
+        "relation": "location",
+        "object": "the park's southern sections",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 1051,
+    "prompt_tokens": 525,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 525
+    },
+    "total_tokens": 1576
+  }
+}

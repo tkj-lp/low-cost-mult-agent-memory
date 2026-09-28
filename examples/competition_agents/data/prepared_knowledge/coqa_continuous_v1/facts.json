@@ -1,0 +1,463 @@
+[
+  {
+    "subject": "her mommy and sisters",
+    "relation": "started",
+    "polarity": "positive",
+    "object": "laughing",
+    "qualifiers": [
+      {
+        "kind": "condition",
+        "value": "When her mommy and sisters found her"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "08400c3aa266e45e282ac9bd4f84ef6961b5d850e56414c80b9253e1974b45ef"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "shared her hay bed with",
+    "polarity": "positive",
+    "object": "Cotton's mommy",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "0c4fa4b55555fb44a8c1c2b900f7a9aac23e6a896be75fc44102a4bbd66a22e9"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "wished",
+    "polarity": "positive",
+    "object": "she looked like the rest of her family",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "18331e78a6858b7eb3c99a2bbf145776f2d34bb4111fa004cbd0e37186855da3"
+  },
+  {
+    "subject": "Cotton's mommy",
+    "relation": "picked up",
+    "polarity": "positive",
+    "object": "Cotton",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "1b9c9ffcefd6bec53e8fcfe1e349872b8da6e76edabf13b1d0fb0bba89e6db03"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "shared her hay bed with",
+    "polarity": "positive",
+    "object": "her sisters",
+    "qualifiers": [
+      {
+        "kind": "object_owner",
+        "value": "Cotton"
+      },
+      {
+        "kind": "count",
+        "value": "5"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "1d9fda0527ab95f2163f9864355b994c7bf5e7a5a97c6ba260b70f0da957e712"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "said",
+    "polarity": "positive",
+    "object": "I only wanted to be more like you",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "211ec60d575438df93419fc2a5339fdeba5e7287d46a874d80a95648075642a8"
+  },
+  {
+    "subject": "they all",
+    "relation": "cried",
+    "polarity": "positive",
+    "object": "Don't ever do that again, Cotton!",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "257b612d05807ade4b3582712fbb2b519eec0ed3d72ba39fdd7f23264baf5514"
+  },
+  {
+    "subject": "Being different",
+    "relation": "made",
+    "polarity": "positive",
+    "object": "Cotton quite sad",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "2edd7e1c2b43286fcaa78582070f511dfa19390a4843ed8b6cf00d5caa7d3b60"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "has sisters",
+    "polarity": "positive",
+    "object": "her sisters",
+    "qualifiers": [
+      {
+        "kind": "object_owner",
+        "value": "Cotton"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "336a49b34388f5c7ccbd95af67f693a6502d3e2f13eb58616dd05ccafdb1703b"
+  },
+  {
+    "subject": "Cotton's fur",
+    "relation": "was described as",
+    "polarity": "positive",
+    "object": "pretty and special",
+    "qualifiers": [
+      {
+        "kind": "attribution",
+        "value": "Cotton's mommy"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "3b9f2bf5dcd3ca5c2611877d475abb57fe548881d17a08b5526262380d95faed"
+  },
+  {
+    "subject": "Cotton's mommy",
+    "relation": "said",
+    "polarity": "positive",
+    "object": "We would never want you to be any other way",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "3cde021815e12e1547faaa09c58cd5279c99ce7bd162320c8174b69715f0db1f"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "lived",
+    "polarity": "negative",
+    "object": "alone",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "44d4ff82398791e944f63db181c9eb78dd5c8b97e7b7a24f0be625cfe05019c3"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "lived in",
+    "polarity": "positive",
+    "object": "a nice warm place above the barn",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "532f47dd2a3a59a15ff7bcce8f59411221a4b46f494847ee6aadf3327d793b99"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "came out of the water as",
+    "polarity": "positive",
+    "object": "herself again",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "54b3e36130d11f68f9dc89ed9ecc7a8c2a4cc542406b36d9a9c5e12f047f65f1"
+  },
+  {
+    "subject": "her mommy and sisters",
+    "relation": "asked",
+    "polarity": "positive",
+    "object": "What are you doing, Cotton?!",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "54c5eab632082e3d707c624791b1ededaa8d9f53384d88a202b690eee65c2d89"
+  },
+  {
+    "subject": "they all",
+    "relation": "said",
+    "polarity": "positive",
+    "object": "we wouldn't want that",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "67c3b444f63c09e701c218ec6d449cf72bb21e4b8a2f42c7d8520bd1124578f3"
+  },
+  {
+    "subject": "Cotton's mommy",
+    "relation": "had",
+    "polarity": "positive",
+    "object": "orange with beautiful white tiger stripes",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "689867e21271b96896d3c7820f0396a7334f25d951e552e7cd711e43a5028ea0"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "was",
+    "polarity": "positive",
+    "object": "cute and fluffy",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "7b872307a1cda3ff3a04773dcf02e174e9c9a151a183c4a381a49289a6d6b822"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "is a",
+    "polarity": "positive",
+    "object": "little white kitten",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "82e25be97de73e53f74cce2412044ec8573d77fac316d9e3276930567900878e"
+  },
+  {
+    "subject": "Cotton's fur",
+    "relation": "became",
+    "polarity": "positive",
+    "object": "all dry",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "887bb3564f37500be807d402c3557e5dbc97b1dcf4e0db111f0e0ae7eee148f2"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "painted herself with",
+    "polarity": "positive",
+    "object": "orange paint",
+    "qualifiers": [
+      {
+        "kind": "time",
+        "value": "one day"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "88aa2601a7d0f95b03b8f9baad2520ea57966d2792d258bc74a2519dc388bd42"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "was",
+    "polarity": "positive",
+    "object": "white",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "8a20c1a70ae4f1c307c5c9ebf7608a1ea715a2f0ecb5bc402b95904e291d123f"
+  },
+  {
+    "subject": "her sisters",
+    "relation": "were",
+    "polarity": "positive",
+    "object": "orange with beautiful white tiger stripes",
+    "qualifiers": [
+      {
+        "kind": "subject_owner",
+        "value": "Cotton"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "8ac1dd7169fa80f56869dfbe675e452e611b6b910b97df9a01d1d7ba05fce719"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "was the only",
+    "polarity": "positive",
+    "object": "white one in the bunch",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "904e1777215f82dad37d39eb409acfa1dda0ba3b2104cdb74ba2c0ae9d925fcf"
+  },
+  {
+    "subject": "her sisters",
+    "relation": "licked",
+    "polarity": "positive",
+    "object": "face",
+    "qualifiers": [
+      {
+        "kind": "subject_owner",
+        "value": "Cotton"
+      },
+      {
+        "kind": "object_owner",
+        "value": "Cotton"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "91eed54fb1b467ac2aaa3acc873701e881b144c4aaac57ddb84927ad4a444f13"
+  },
+  {
+    "subject": "her sisters",
+    "relation": "were",
+    "polarity": "positive",
+    "object": "cute and fluffy",
+    "qualifiers": [
+      {
+        "kind": "subject_owner",
+        "value": "Cotton"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "96eeb2698e008ae394cde1b9f89f7a5cc1e9f0d788ca9d591eceb5f43a03e587"
+  },
+  {
+    "subject": "the farmer's horses",
+    "relation": "slept in",
+    "polarity": "positive",
+    "object": "the barn",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "9c6e9a59e204c27820998d531440c9cba6dfb27e6b2888d1b525d04ca5a8c424"
+  },
+  {
+    "subject": "Cotton's mommy",
+    "relation": "rubbed her face on Cotton's",
+    "polarity": "positive",
+    "object": "face",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "a7713e4543a9594ec5f24532fd66d60c6ae5aaaa7b73b8403bbda479ffa0dea7"
+  },
+  {
+    "subject": "Cotton's mommy",
+    "relation": "dropped",
+    "polarity": "positive",
+    "object": "Cotton",
+    "qualifiers": [
+      {
+        "kind": "destination",
+        "value": "a big bucket of water"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "a8c008e78c23859ebeec6dcbc4b56aef3d2b661c1bca4779ac6f78a1a3460b25"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "found",
+    "polarity": "positive",
+    "object": "a can of the old farmer's orange paint",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "c09ed15162353386588fe5050d8bdfb7503b708e53cf13fe4356a016ca502390"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "thought",
+    "polarity": "positive",
+    "object": "I change my mind. I like being special",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "c77badf40cf4362a14c25de2e0e78ebc8f495b125445ba8e83756c16375f2bdc"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "has mother",
+    "polarity": "positive",
+    "object": "Cotton's mommy",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "d62d70c5293ed3697913c90a9049d607d02a7cac5f0bf9e434f1a74779506c79"
+  },
+  {
+    "subject": "they all",
+    "relation": "warned",
+    "polarity": "positive",
+    "object": "Next time you might mess up that pretty white fur of yours",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "e0834cd2d571e132613f2d34f7a84b08f6a943525033d6ab08b83feeb9a95b3b"
+  },
+  {
+    "subject": "Cotton",
+    "relation": "lived in",
+    "polarity": "positive",
+    "object": "a barn near a farm house",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+    "id": "e22cf3f86c1c42f542aaf2ce31204e674a7d74d4cdf8c9aad2a0be3837cae412"
+  }
+]

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-import math
 import json
+import math
+import hashlib
+import pickle
 import threading
 from collections import OrderedDict, defaultdict
+from copy import deepcopy
 from typing import Any
 
 from competition_agents.embedding import embed_text
@@ -12,7 +15,12 @@ from .builder import build_hypergraph_view
 from .entities import extract_canonical_entities
 from .evolution import prepare_searchable_memory, retention_profile
 from .gating import evaluate_candidate_gate
-from .memory_model import compact_reuse_projection, normalize_memory_record
+from .memory_model import (
+    compact_reuse_projection,
+    compact_trace,
+    normalize_memory_record,
+    validate_memory_ids,
+)
 from .query_profile import build_query_profile, profile_nodes
 from .schema import (
     NODE_CLAIM,
@@ -51,30 +59,30 @@ _INDEX_CACHE_LOCK = threading.Lock()
 def _memory_index_signature(memory: list[dict[str, Any]]) -> str:
     """Fingerprint graph-relevant fields while ignoring mutable usage counters."""
 
+    # Include vectors, provenance and review state: changing any of them must
+    # invalidate cached rankings even when the caller omits a version bump.
+    ignored = {
+        "hypergraph",
+        "retrieval_count",
+        "reuse_count",
+        "reuse_success_count",
+        "reuse_failure_count",
+        "last_retrieved_at",
+        "last_reused_at",
+        "confidence",
+    }
     rows = []
     for record in memory:
-        rows.append(
-            {
-                "id": record.get("global_memory_id") or record.get("memory_id"),
-                "version": record.get("record_version", 1),
-                "memory_type": record.get("memory_type", "evidence"),
-                "task_topic": record.get("task_topic", ""),
-                "summary": record.get("summary", ""),
-                "tags": record.get("tags", []),
-                "entities": record.get("entities", []),
-                "group_id": record.get("group_id", ""),
-                "turn_id": record.get("turn_id", ""),
-                "artifact_types": record.get("artifact_types", []),
-                "problem_pattern": record.get("problem_pattern", ""),
-                "solution_pattern": record.get("solution_pattern", ""),
-                "failure_pattern": record.get("failure_pattern", ""),
-                "trigger_conditions": record.get("trigger_conditions", []),
-                "supporting_evidence": record.get("supporting_evidence", []),
-                "evidence": record.get("evidence", []),
-                "lifecycle_stage": record.get("lifecycle_stage", "episodic"),
-                "pruned": bool(record.get("pruned", False)),
-            }
-        )
+        row = {key: value for key, value in record.items() if key not in ignored}
+        # Fingerprint numeric vectors without formatting every float as text.
+        # Recompute from contents so in-place edits still invalidate the index.
+        if isinstance(row.get("embedding"), list):
+            row["embedding"] = hashlib.sha256(
+                pickle.dumps(row["embedding"], protocol=5)
+            ).hexdigest()
+        if isinstance(row.get("trace"), dict):
+            row["trace"] = compact_trace(row["trace"])
+        rows.append(row)
     serialized = json.dumps(rows, ensure_ascii=False, sort_keys=True, default=str)
     return stable_id(serialized, length=32)
 
@@ -148,18 +156,22 @@ def _node_sort_key(node: str) -> tuple[int, str]:
 
 
 def _cosine_similarity(left: list[float], right: list[float]) -> float:
-    dimensions = min(len(left), len(right))
-    if dimensions == 0:
+    dimensions = len(left)
+    if dimensions == 0 or dimensions != len(right):
+        return 0.0
+    if not all(math.isfinite(value) for value in [*left, *right]):
         return 0.0
     left_values = left[:dimensions]
     right_values = right[:dimensions]
-    dot = sum(a * b for a, b in zip(left_values, right_values))
-    left_norm = math.sqrt(sum(a * a for a in left_values))
-    right_norm = math.sqrt(sum(b * b for b in right_values))
-    if left_norm == 0.0 or right_norm == 0.0:
+    left_norm = math.hypot(*left_values)
+    right_norm = math.hypot(*right_values)
+    if not left_norm or not right_norm or not math.isfinite(left_norm + right_norm):
         return 0.0
+    cosine = sum(
+        (a / left_norm) * (b / right_norm) for a, b in zip(left_values, right_values)
+    )
     # Map cosine from [-1, 1] to [0, 1] so it can be fused with positive graph scores.
-    return max(0.0, min(1.0, (dot / (left_norm * right_norm) + 1.0) / 2.0))
+    return max(0.0, min(1.0, (cosine + 1.0) / 2.0))
 
 
 def _embedding_score(query_embedding: list[float], record: dict[str, Any]) -> float:
@@ -173,11 +185,33 @@ def _embedding_score(query_embedding: list[float], record: dict[str, Any]) -> fl
     return _cosine_similarity(query_embedding, vector)
 
 
-def _continuous_reuse_score(profile: dict[str, Any], record: dict[str, Any]) -> tuple[float, dict[str, Any]]:
+def compatible_embedding(result: Any, record: dict[str, Any]) -> bool:
+    """Only compare vectors produced by the same declared embedding space."""
+
+    return (
+        result.provider != "hash"
+        and record.get("embedding_provider") == result.provider
+        and record.get("embedding_model") == result.model
+        and isinstance(record.get("embedding"), list)
+        and len(record["embedding"]) == len(result.vector)
+    )
+
+
+def _continuous_reuse_score(
+    profile: dict[str, Any], record: dict[str, Any]
+) -> tuple[float, dict[str, Any]]:
     """Boost records that satisfy the current continuous-task reuse contract."""
 
-    group_ids = {normalize_text(str(value)) for value in profile.get("group_ids", []) if str(value).strip()}
-    artifacts = {normalize_text(str(value)) for value in profile.get("artifacts", []) if str(value).strip()}
+    group_ids = {
+        normalize_text(str(value))
+        for value in profile.get("group_ids", [])
+        if str(value).strip()
+    }
+    artifacts = {
+        normalize_text(str(value))
+        for value in profile.get("artifacts", [])
+        if str(value).strip()
+    }
     record_group = normalize_text(str(record.get("group_id") or ""))
     record_turn = normalize_text(str(record.get("turn_id") or ""))
     record_artifacts = {
@@ -220,6 +254,15 @@ class HypergraphIndex:
         self.node_to_hyperedge_ids = node_to_hyperedge_ids
         self.hyperedge_to_memory_id = hyperedge_to_memory_id
         self.memory_to_nodes = memory_to_nodes
+        self.token_to_memory_ids: dict[str, set[str]] = defaultdict(set)
+        self.tag_to_memory_ids: dict[str, set[str]] = defaultdict(set)
+        for memory_id, record in memory_by_id.items():
+            for token in set(tokenize(str(record.get("search_document") or ""))):
+                self.token_to_memory_ids[token].add(memory_id)
+            for tag in record.get("tags", []):
+                self.tag_to_memory_ids[str(tag).strip().lower().replace("_", "-")].add(
+                    memory_id
+                )
 
     @classmethod
     def from_memory_records(cls, memory: list[dict[str, Any]]) -> "HypergraphIndex":
@@ -231,10 +274,11 @@ class HypergraphIndex:
         hyperedge_to_memory_id: dict[str, str] = {}
         memory_to_nodes: dict[str, set[str]] = defaultdict(set)
 
+        validate_memory_ids(memory)
         for raw_record in prepare_searchable_memory(memory):
             record = normalize_memory_record(raw_record)
             memory_id = record["memory_id"]
-            hypergraph = build_hypergraph_view(record, persist=False)
+            hypergraph = build_hypergraph_view(record, persist=False, _normalized=True)
             record["hypergraph"] = hypergraph
             memory_by_id[memory_id] = record
 
@@ -299,16 +343,16 @@ class HypergraphIndex:
                         }
                     )
 
-        semantic_candidates: list[tuple[float, str]] = []
-        for memory_id, record in self.memory_by_id.items():
-            document_tokens = set(tokenize(str(record.get("search_document") or "")))
-            lexical_overlap = len(query_token_set & document_tokens)
-            tags = {
-                str(tag).strip().lower().replace("_", "-")
-                for tag in record.get("tags", [])
-            }
-            tag_overlap = len(query_token_set & tags)
-            semantic_score = _embedding_score(query_embedding, record)
+        lexical_counts: dict[str, int] = defaultdict(int)
+        tag_counts: dict[str, int] = defaultdict(int)
+        for token in query_token_set:
+            for memory_id in self.token_to_memory_ids.get(token, ()):
+                lexical_counts[memory_id] += 1
+            for memory_id in self.tag_to_memory_ids.get(token, ()):
+                tag_counts[memory_id] += 1
+        for memory_id in sorted(lexical_counts.keys() | tag_counts.keys()):
+            lexical_overlap = lexical_counts.get(memory_id, 0)
+            tag_overlap = tag_counts.get(memory_id, 0)
             if lexical_overlap:
                 entry = candidate(memory_id)
                 entry["recall_channels"].add("keyword")
@@ -331,10 +375,14 @@ class HypergraphIndex:
                         "memory_id": memory_id,
                     }
                 )
-            semantic_candidates.append((semantic_score, memory_id))
 
         # 哈希向量只用于接口回退，不具备语义召回资格；真实向量可独立产生候选。
         if query_embedding_result.provider != "hash":
+            semantic_candidates = [
+                (_embedding_score(query_embedding, record), memory_id)
+                for memory_id, record in self.memory_by_id.items()
+                if compatible_embedding(query_embedding_result, record)
+            ]
             semantic_limit = max(top_k * 4, 8)
             for semantic_score, memory_id in sorted(semantic_candidates, reverse=True)[
                 :semantic_limit
@@ -405,7 +453,9 @@ class HypergraphIndex:
                 continue
             embedding_score = max(
                 float(entry.get("semantic_score", 0.0) or 0.0),
-                _embedding_score(query_embedding, record),
+                _embedding_score(query_embedding, record)
+                if compatible_embedding(query_embedding_result, record)
+                else 0.0,
             )
             scores = score_components(
                 record, matched_nodes, embedding_score=embedding_score
@@ -418,7 +468,9 @@ class HypergraphIndex:
                 if profile.get("evidence_chain_requested")
                 else 0.0
             )
-            continuous_reuse_score, continuous_reuse_debug = _continuous_reuse_score(profile, record)
+            continuous_reuse_score, continuous_reuse_debug = _continuous_reuse_score(
+                profile, record
+            )
             scores["retrieval_score"] = round(
                 scores["retrieval_score"]
                 + gate.score
@@ -456,11 +508,10 @@ class HypergraphIndex:
                     "matched_nodes": sorted(matched_nodes, key=_node_sort_key),
                     "matched_hyperedges": sorted(entry["matched_hyperedges"]),
                     "reasoning_path": reasoning_path,
-                    "reusable_memory": compact_reuse_projection(record),
                 }
             )
 
-        return sorted(
+        selected = sorted(
             ranked_hits,
             key=lambda hit: (
                 -hit["retrieval_score"],
@@ -480,25 +531,42 @@ class HypergraphIndex:
                 hit["memory_id"],
             ),
         )[:top_k]
+        for hit in selected:
+            hit["reusable_memory"] = compact_reuse_projection(
+                self.memory_by_id[hit["memory_id"]], _normalized=True
+            )
+        # Consumers may annotate hits. Never let them mutate the cached index.
+        return deepcopy(selected)
 
     def refresh_runtime_fields(self, memory: list[dict[str, Any]]) -> None:
         """Refresh counters that affect ranking without rebuilding graph topology."""
 
-        dynamic_fields = (
+        count_fields = (
             "retrieval_count",
             "reuse_count",
             "reuse_success_count",
             "reuse_failure_count",
-            "last_retrieved_at",
-            "last_reused_at",
-            "confidence",
         )
-        for raw_record in memory:
-            memory_id = str(raw_record.get("memory_id") or "")
-            cached = self.memory_by_id.get(memory_id)
-            if cached is None:
+        raw_by_id = {str(record.get("memory_id") or ""): record for record in memory}
+        for memory_id, cached in self.memory_by_id.items():
+            sources = [
+                raw_by_id[value]
+                for value in {memory_id, *cached.get("merged_memory_ids", [])}
+                if value in raw_by_id
+            ]
+            if not sources:
                 continue
-            for field in dynamic_fields:
-                if field in raw_record:
-                    cached[field] = raw_record[field]
+            for field in count_fields:
+                cached[field] = sum(
+                    int(source.get(field, 0) or 0) for source in sources
+                )
+            for field in ("last_retrieved_at", "last_reused_at"):
+                values = [str(source[field]) for source in sources if source.get(field)]
+                if values:
+                    cached[field] = max(values)
+                else:
+                    cached.pop(field, None)
+            cached["confidence"] = max(
+                float(source.get("confidence", 0.5) or 0.0) for source in sources
+            )
             cached.update(retention_profile(cached))

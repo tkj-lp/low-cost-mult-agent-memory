@@ -18,11 +18,9 @@
           />
         </div>
         <div class="field count-field">
-          <label>任务数量</label>
-          <div class="stepper" aria-label="任务数量">
-            <button type="button" @click="updateTaskCount(-1)">−</button>
+          <label>本次任务数量</label>
+          <div class="stepper fixed-count" aria-label="固定任务数量">
             <span>{{ modelValue.taskCount }}</span>
-            <button type="button" @click="updateTaskCount(1)">＋</button>
           </div>
         </div>
         <p class="dataset-note">{{ datasetNote }}</p>
@@ -34,6 +32,8 @@
           <button
             v-for="mode in collaborationModes"
             :key="mode.value"
+            :disabled="modelValue.dataset === 'codeact' && !['plain', 'structured'].includes(mode.value)"
+            :title="modelValue.dataset === 'codeact' && !['plain', 'structured'].includes(mode.value) ? '该方式尚未适配代码执行工具' : ''"
             class="choice-button"
             :class="{ selected: modelValue.collaborationMode === mode.value }"
             type="button"
@@ -49,7 +49,7 @@
         <label>记忆组织方式</label>
         <div class="choice-group memory">
           <button
-            v-for="mode in memoryModes"
+            v-for="mode in availableMemoryModes"
             :key="mode.value"
             class="choice-button"
             :class="{ selected: modelValue.memoryMode === mode.value }"
@@ -84,15 +84,15 @@
           <label>模型后端</label>
           <BaseSelect
             :model-value="modelValue.backend"
-            :options="backends"
+            :options="availableBackends"
             @update:model-value="emitPatch({ backend: $event })"
           />
         </div>
         <div v-if="modelValue.backend === 'local'" class="field">
-          <label>model</label>
+          <label>模型</label>
           <BaseSelect
             :model-value="modelValue.localModel"
-            :options="localModels"
+            :options="availableLocalModels"
             @update:model-value="emitPatch({ localModel: $event })"
           />
         </div>
@@ -107,7 +107,7 @@
             />
           </div>
           <div class="field">
-            <label>model</label>
+            <label>模型</label>
             <input
               type="text"
               :value="modelValue.remoteModel"
@@ -143,7 +143,8 @@ import {
   localModels,
   memoryModes,
   retrievalOptionsFor,
-  selectedDataset
+  selectedDataset,
+  selectedCollaboration
 } from '../experimentOptions'
 
 const props = defineProps({
@@ -157,10 +158,14 @@ const emit = defineEmits(['update:config'])
 
 const datasetOptions = datasets.map(({ label, value }) => ({ label, value }))
 
+const chosenMethod = computed(() => selectedCollaboration(props.modelValue))
+const availableMemoryModes = computed(() => memoryModes.filter((item) => item.value === chosenMethod.value.memory))
+const availableBackends = computed(() => backends.filter((item) => chosenMethod.value.backends.includes(item.value)))
+const availableLocalModels = computed(() => localModels.filter((item) => !chosenMethod.value.models || chosenMethod.value.models.includes(item.value)))
 const retrievalOptions = computed(() => retrievalOptionsFor(props.modelValue.memoryMode))
 const datasetNote = computed(() => {
   const dataset = selectedDataset(props.modelValue)
-  return `${dataset.taskCount} 轮任务，来源：${dataset.file.split('/').pop()}`
+  return dataset.datasetType === 'codeact' ? '按原顺序运行前10项功能任务；原库20项全部保留，非官方连续问答基准。' : '官方第153组完整10轮，按原顺序连续执行；使用同一份固定预备知识库。'
 })
 
 function emitPatch(patch) {
@@ -171,13 +176,8 @@ function updateDataset(datasetValue) {
   const dataset = datasets.find((item) => item.value === datasetValue)
   emitPatch({
     dataset: datasetValue,
-    taskCount: dataset?.taskCount ?? props.modelValue.taskCount
+    taskCount: dataset?.runTaskCount ?? dataset?.taskCount ?? props.modelValue.taskCount
   })
-}
-
-function updateTaskCount(delta) {
-  const nextCount = Math.max(1, Number(props.modelValue.taskCount || 1) + delta)
-  emitPatch({ taskCount: nextCount })
 }
 
 function updateMemoryMode(memoryMode) {
@@ -187,3 +187,8 @@ function updateMemoryMode(memoryMode) {
   })
 }
 </script>
+
+<style scoped>
+.fixed-count { grid-template-columns: 1fr; }
+.fixed-count span { border: 0; }
+</style>

@@ -1,0 +1,183 @@
+{
+  "document_id": "32f7f95b4a8eea051d133279c2c91f33947f413f4066471a05686b9de8217c71",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "The oribi",
+        "relation": "scientific name",
+        "object": "\"Ourebia ourebi\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "type of animal",
+        "object": "small antelope",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "found in",
+        "object": "eastern, southern and western Africa",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "is member of genus",
+        "object": "sole member of its genus",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "first described by",
+        "object": "the German zoologist Eberhard August Wilhelm von Zimmermann",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "1782"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "has subspecies identified",
+        "object": "Eight subspecies",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "reaches at the shoulder",
+        "object": "nearly at the shoulder",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "weighs",
+        "object": "weighs",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "This antelope",
+        "relation": "features",
+        "object": "a slightly raised back",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "This antelope",
+        "relation": "features",
+        "object": "long neck and limbs",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The glossy, yellowish to rufous brown coat",
+        "relation": "contrasts with",
+        "object": "the white chin, throat, underparts and rump",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Only males",
+        "relation": "possess",
+        "object": "horns",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the thin, straight horns",
+        "relation": "are long",
+        "object": "long",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the thin, straight horns",
+        "relation": "are smooth at the tips",
+        "object": "smooth at the tips",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the thin, straight horns",
+        "relation": "are ringed at the base",
+        "object": "ringed at the base",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Typically diurnal",
+        "relation": "is active mainly during",
+        "object": "the day",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 1059,
+    "prompt_tokens": 513,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 513
+    },
+    "total_tokens": 1572
+  }
+}

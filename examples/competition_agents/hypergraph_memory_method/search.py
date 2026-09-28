@@ -3,8 +3,8 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from .layers import memory_layer_for_record
 from .retrieval import RETRIEVAL_MODE_VALUES, RetrievalMode, search_memory_by_mode
-
 
 DEFAULT_RETRIEVAL_MODE: RetrievalMode = "hypergraph"
 
@@ -12,11 +12,15 @@ DEFAULT_RETRIEVAL_MODE: RetrievalMode = "hypergraph"
 def configured_retrieval_mode(value: str | None = None) -> RetrievalMode:
     """读取并校验当前共享记忆检索方式。"""
 
-    mode = str(value or os.environ.get("MEMORY_RETRIEVAL_MODE") or DEFAULT_RETRIEVAL_MODE)
+    mode = str(
+        value or os.environ.get("MEMORY_RETRIEVAL_MODE") or DEFAULT_RETRIEVAL_MODE
+    )
     mode = mode.strip().lower()
     if mode not in RETRIEVAL_MODE_VALUES:
         supported = ", ".join(RETRIEVAL_MODE_VALUES)
-        raise ValueError(f"Unsupported memory retrieval mode: {mode!r}. Expected one of: {supported}.")
+        raise ValueError(
+            f"Unsupported memory retrieval mode: {mode!r}. Expected one of: {supported}."
+        )
     return mode  # type: ignore[return-value]
 
 
@@ -48,7 +52,23 @@ def load_persistent_memory(database_path: str | None = None) -> list[dict[str, A
 
 
 def _with_persistent_memory(memory: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    persisted = load_persistent_memory()
+    # A legacy database may contain old task episodes. Loading it must not
+    # resurrect those episodes in a different batch or bypass caller filtering.
+    persisted = [
+        record
+        for record in load_persistent_memory()
+        if memory_layer_for_record(record) == "experience"
+        and str(record.get("memory_type") or "") == "experience"
+        and (
+            record.get("review_status") == "active"
+            or (
+                not record.get("review_status")
+                and record.get("quality_status") == "verified"
+            )
+        )
+        and record.get("use_as_positive", True)
+        and str(record.get("quality_status") or "") not in {"failed", "rejected"}
+    ]
     if not persisted:
         return memory
     merged: dict[str, dict[str, Any]] = {}

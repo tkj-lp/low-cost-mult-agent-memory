@@ -1,0 +1,107 @@
+{
+  "version": "competition-locked-v5-10turns",
+  "defaultDataset": "topiocqa-ranked-153",
+  "defaultTaskCount": 10,
+  "defaultLocalModel": "Qwen/Qwen2.5-1.5B-Instruct",
+  "defaultRemoteModel": "qwen3.7-flash-2026-07-15",
+  "datasets": [
+    {
+      "value": "topiocqa-ranked-153",
+      "label": "连续问答 · TopiOCQA 第153组完整10题",
+      "taskCount": 10,
+      "runTaskCount": 10,
+      "datasetType": "continuous",
+      "file": "data/continuous_topiocqa_153_10turns_v1/questions.json",
+      "references": "data/continuous_topiocqa_153_10turns_v1/references.json",
+      "knowledge": "data/prepared_knowledge/topiocqa_153_v2",
+      "calibration": "data/prepared_knowledge/topiocqa_153_readout_v2"
+    },
+    {
+      "value": "codeact",
+      "label": "代码执行 · 仓库20项功能任务",
+      "taskCount": 20,
+      "runTaskCount": 10,
+      "datasetType": "codeact",
+      "file": "data/codeact_tasks.json",
+      "knowledge": "data/prepared_knowledge/codeact_tools_v1",
+      "methods": [
+        "plain",
+        "structured"
+      ]
+    }
+  ],
+  "retrievalModes": [
+    {
+      "value": "semantic",
+      "label": "相似度检索"
+    },
+    {
+      "value": "hypergraph",
+      "label": "超图跳跃检索"
+    }
+  ],
+  "methods": [
+    {
+      "value": "plain",
+      "label": "纯文本",
+      "experimentMode": "baseline_text",
+      "memory": "text",
+      "retrieval": "semantic",
+      "backends": [
+        "local",
+        "openai-compatible"
+      ],
+      "entry": "competition_agents.methods.text:create"
+    },
+    {
+      "value": "structured",
+      "label": "协议字段",
+      "experimentMode": "protocol_api",
+      "memory": "hypergraph",
+      "retrieval": "hypergraph",
+      "backends": [
+        "local",
+        "openai-compatible"
+      ],
+      "entry": "competition_agents.methods.protocol:create"
+    },
+    {
+      "value": "latent",
+      "label": "隐状态",
+      "experimentMode": "hidden_api",
+      "memory": "hypergraph",
+      "retrieval": "hypergraph",
+      "backends": [
+        "local"
+      ],
+      "models": [
+        "Qwen/Qwen2.5-1.5B-Instruct"
+      ],
+      "entry": "competition_agents.methods.latent:create"
+    },
+    {
+      "value": "autoform",
+      "label": "AutoForm",
+      "experimentMode": "autoform_text",
+      "memory": "text",
+      "retrieval": "semantic",
+      "backends": [
+        "local",
+        "openai-compatible"
+      ],
+      "entry": "competition_agents.methods.autoform:create"
+    },
+    {
+      "value": "llmlingua",
+      "label": "LLMLingua-2",
+      "experimentMode": "llmlingua_text",
+      "memory": "text",
+      "retrieval": "semantic",
+      "backends": [
+        "local",
+        "openai-compatible"
+      ],
+      "entry": "competition_agents.methods.llmlingua:create"
+    }
+  ]
+}

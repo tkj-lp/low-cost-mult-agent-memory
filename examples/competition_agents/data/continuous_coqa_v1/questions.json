@@ -1,0 +1,32 @@
+[
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-1",
+    "group_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel",
+    "turn_id": 1,
+    "question": "What color was Cotton?"
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-2",
+    "group_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel",
+    "turn_id": 2,
+    "question": "Where did she live?"
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-3",
+    "group_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel",
+    "turn_id": 3,
+    "question": "Did she live alone?"
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-4",
+    "group_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel",
+    "turn_id": 4,
+    "question": "Who did she live with?"
+  },
+  {
+    "id": "coqa-3dr23u6we5exclen4th8uq9rb42tel-turn-5",
+    "group_id": "coqa-3dr23u6we5exclen4th8uq9rb42tel",
+    "turn_id": 5,
+    "question": "What color were her sisters?"
+  }
+]

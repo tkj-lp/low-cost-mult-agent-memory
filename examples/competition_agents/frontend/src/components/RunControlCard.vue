@@ -53,7 +53,7 @@
       <p v-if="runtime.memoryClearMessage" role="status">{{ runtime.memoryClearMessage }}</p>
 
       <section class="status-panel">
-        <h3>当前运行状态</h3>
+        <h3>当前运行状态 · {{ runtime.statusText }}</h3>
         <div class="status-grid">
           <div class="status-list">
             <div v-for="item in statusItems" :key="item.label" class="status-item">
@@ -66,14 +66,15 @@
             <div class="progress-block">
               <div class="progress-label">
                 <span class="mini-icon">◴</span>
-                <span>任务进度：</span>
+                <span>成功任务：</span>
               </div>
               <div class="progress-line">
-                <strong>{{ runtime.currentTask }} / {{ runtime.totalTasks }}</strong>
+                <strong>{{ runtime.completedTasks || 0 }} / {{ runtime.totalTasks }}</strong>
                 <div class="progress-bar"><span :style="{ width: `${runtime.progress}%` }"></span></div>
                 <em>{{ runtime.progress }}%</em>
               </div>
             </div>
+            <div v-if="runtime.failedTasks" class="error-text">失败 {{ runtime.failedTasks }} 题</div>
             <div class="progress-block compact">
               <div class="progress-label">
                 <span class="mini-icon">▣</span>

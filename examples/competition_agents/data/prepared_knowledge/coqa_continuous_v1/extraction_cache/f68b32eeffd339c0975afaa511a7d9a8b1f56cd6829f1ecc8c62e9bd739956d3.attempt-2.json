@@ -1,0 +1,236 @@
+{
+  "document_id": "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8",
+  "result": {
+    "facts": [
+      {
+        "subject": "Cotton",
+        "relation": "lived in",
+        "object": "a barn near a farm house",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "lived in",
+        "object": "a nice warm place above the barn",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "the farmer's horses",
+        "relation": "slept in",
+        "object": "the barn",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          1
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "shared her hay bed with",
+        "object": "her mommy and 5 other sisters",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          2
+        ]
+      },
+      {
+        "subject": "All of her sisters",
+        "relation": "were",
+        "object": "cute and fluffy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          3
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "was",
+        "object": "the only white one in the bunch",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          4
+        ]
+      },
+      {
+        "subject": "The rest of her sisters",
+        "relation": "were",
+        "object": "all orange with beautiful white tiger stripes like Cotton's mommy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          5
+        ]
+      },
+      {
+        "subject": "Being different",
+        "relation": "made",
+        "object": "Cotton quite sad",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          6
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "often wished she looked like",
+        "object": "the rest of her family",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          7
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "found",
+        "object": "a can of the old farmer's orange paint",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          8
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "used it to paint herself like them",
+        "object": "them",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          9
+        ]
+      },
+      {
+        "subject": "her mommy and sisters",
+        "relation": "started laughing when they found her",
+        "object": "her",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          10
+        ]
+      },
+      {
+        "subject": "her mommy and sisters",
+        "relation": "asked",
+        "object": "\"What are you doing, Cotton?!\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          11
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "said",
+        "object": "\"I only wanted to be more like you\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          12
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "rubbed her face on Cotton's",
+        "object": "Cotton's",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          13
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "said",
+        "object": "\"Oh Cotton, but your fur is so pretty and special, like you. We would never want you to be any other way\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          13
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "picked her up and dropped her into",
+        "object": "a big bucket of water",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          14
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "came out as",
+        "object": "herself again",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          15
+        ]
+      },
+      {
+        "subject": "Her sisters",
+        "relation": "licked her face until",
+        "object": "Cotton's fur was all all dry",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          16
+        ]
+      },
+      {
+        "subject": "they all",
+        "relation": "cried",
+        "object": "\"Don't ever do that again, Cotton!\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          17
+        ]
+      },
+      {
+        "subject": "they all",
+        "relation": "said",
+        "object": "\"Next time you might mess up that pretty white fur of yours and we wouldn't want that!\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          17
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "thought",
+        "object": "\"I change my mind. I like being special\"",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          18
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 1455,
+    "prompt_tokens": 664,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 664
+    },
+    "total_tokens": 2119
+  }
+}

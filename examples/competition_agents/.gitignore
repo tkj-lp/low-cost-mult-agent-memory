@@ -7,3 +7,6 @@ __pycache__/
 data/hotpot_dev_distractor_v1.json
 node_modules
 hypergraph_memory_method/artifacts/
+runtime/
+frontend/dist/
+.pytest_cache/

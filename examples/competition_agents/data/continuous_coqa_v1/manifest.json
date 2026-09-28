@@ -1,0 +1,25 @@
+{
+  "dataset": "CoQA",
+  "version": "1.0",
+  "official_url": "https://downloads.cs.stanford.edu/nlp/data/coqa/coqa-dev-v1.0.json",
+  "official_file_sha256": "dfa367a9733ce53222918d0231d9b3bedc2b8ee831a2845f62dfc70701f2540a",
+  "conversation_id": "3dr23u6we5exclen4th8uq9rb42tel",
+  "source_collection": "mctest",
+  "selection": "first conversation in official dev file; first five consecutive turns",
+  "turns": 5,
+  "documents": 1,
+  "source_characters": 1413,
+  "source_sha256": "e562679ab959501e27b94eafc2d395251153b1ab6ac76fe4d97d6f7018370067",
+  "source_policy": "whole official story, verbatim; no split, expansion, answer spans or rewritten questions",
+  "text_retrieval": "full-context; no chunk index, vector index or preselection",
+  "extractor_model": "qwen3.7-flash-2026-07-15",
+  "online_input": "questions.json only; preceding answers must come from the current run",
+  "offline_input": "knowledge_sources.json only",
+  "evaluation_only": "references.json",
+  "files": {
+    "knowledge_sources.json": "7666dc733685a6b317928333230a9fe7ccd2bcfbd5fd12c061c4cdb8fa25d058",
+    "questions.json": "4110c2eac0daaebbc8b04f2447f84213176b0412b9095fd16d8dc8a1e7f0a65b",
+    "references.json": "3485712e332cd03013a0ee82b8368e4e6f3336cc7b17d481791ebcfe006af6ac",
+    "source.txt": "e562679ab959501e27b94eafc2d395251153b1ab6ac76fe4d97d6f7018370067"
+  }
+}

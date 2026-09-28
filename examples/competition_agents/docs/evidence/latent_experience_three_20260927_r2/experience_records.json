@@ -1,0 +1,238 @@
+[
+  {
+    "memory_id": "retrieval-experience-faa30d9d4ea53554efccd097",
+    "global_memory_id": "retrieval-experience-faa30d9d4ea53554efccd097",
+    "memory_type": "experience",
+    "memory_layer": "experience",
+    "source_agent": "RetrieverAgent",
+    "namespace": "3f9012be6a203e850fa0c6d1e76e66dd6fa7cf2563cd49a66939aeb50cbb032c",
+    "strategy_version": 1,
+    "created_at": "2026-09-27T06:09:23.220157+00:00",
+    "task_topic": "关系检索候选选择",
+    "summary": "先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。",
+    "problem_pattern": "relation-search-f518995ebfab366bf2e99114",
+    "solution_pattern": "prioritize-observed-relation-paths-with-score-bound",
+    "trigger_conditions": [
+      "same-knowledge-and-query-version",
+      "resident-source-paths",
+      "no-new-explicit-constraint",
+      "omitted-score-bound-certified"
+    ],
+    "failure_pattern": "fall-back-to-complete-search-if-conditions-fail",
+    "relation_paths": [
+      [
+        "was"
+      ]
+    ],
+    "observed_categories": [
+      "color"
+    ],
+    "source_memory_ids": [
+      "retrieval-trace-23c2768261a3d6d66e87cf69"
+    ],
+    "observations": 1,
+    "confidence": 0.5,
+    "lifecycle_stage": "episodic",
+    "validation_target": "retrieval_selection_equivalence_only",
+    "answer_correctness_verified": false,
+    "updated_at": "2026-09-27T06:09:23.220157+00:00",
+    "schema_version": "1.0",
+    "tags": [],
+    "archive_scope": "task",
+    "record_version": 1,
+    "retrieval_count": 1,
+    "reuse_count": 0,
+    "reuse_success_count": 0,
+    "reuse_failure_count": 0,
+    "entities": [],
+    "supporting_facts": [],
+    "supporting_evidence": [],
+    "evidence": [],
+    "state_refs": [],
+    "artifact_types": [
+      "experience",
+      "strategy"
+    ],
+    "task_id": "",
+    "group_id": "",
+    "turn_id": "",
+    "dataset_type": "",
+    "task_type": "",
+    "knowledge_refs": [],
+    "memory_kinds": [
+      "experience",
+      "strategy"
+    ],
+    "evidence_chain": {
+      "schema_version": "1.0",
+      "chain_id": "chain-47cb90f1028b5db3",
+      "memory_id": "retrieval-experience-faa30d9d4ea53554efccd097",
+      "question": "关系检索候选选择",
+      "final_claim_id": "retrieval-experience-faa30d9d4ea53554efccd097:claim:final",
+      "steps": [
+        {
+          "step_id": "retrieval-experience-faa30d9d4ea53554efccd097:claim:final",
+          "position": 1,
+          "kind": "final_claim",
+          "text": "先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。",
+          "title": "",
+          "source": {
+            "source_type": "agent_conclusion",
+            "source_id": "final-answer",
+            "source_agent": "RetrieverAgent",
+            "task_id": "",
+            "group_id": "",
+            "turn_id": "",
+            "dataset_type": ""
+          },
+          "confidence": 0.5,
+          "depends_on": [],
+          "memory_refs": []
+        }
+      ],
+      "links": [],
+      "source_memory_ids": [],
+      "valid": false,
+      "issues": [
+        {
+          "code": "unsupported_final_claim",
+          "message": "最终结论没有证据依赖。"
+        }
+      ],
+      "completeness": 0.35,
+      "evidence_count": 0,
+      "claim_count": 1
+    },
+    "evidence_fields": [],
+    "evidence_chain_id": "chain-47cb90f1028b5db3",
+    "evidence_chain_valid": false,
+    "evidence_chain_completeness": 0.35,
+    "search_document": "experience\n关系检索候选选择\n先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。\nexperience strategy\nrelation-search-f518995ebfab366bf2e99114\nprioritize-observed-relation-paths-with-score-bound\nfall-back-to-complete-search-if-conditions-fail\nsame-knowledge-and-query-version resident-source-paths no-new-explicit-constraint omitted-score-bound-certified\n先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。",
+    "guard_rejections": 1
+  },
+  {
+    "memory_id": "retrieval-experience-27598bd584f4a9ea995720ec",
+    "global_memory_id": "retrieval-experience-27598bd584f4a9ea995720ec",
+    "memory_type": "experience",
+    "memory_layer": "experience",
+    "source_agent": "RetrieverAgent",
+    "namespace": "3f9012be6a203e850fa0c6d1e76e66dd6fa7cf2563cd49a66939aeb50cbb032c",
+    "strategy_version": 1,
+    "created_at": "2026-09-27T06:09:31.528934+00:00",
+    "task_topic": "关系检索候选选择",
+    "summary": "先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。",
+    "problem_pattern": "relation-search-e790a7156c26538b74d88886",
+    "solution_pattern": "prioritize-observed-relation-paths-with-score-bound",
+    "trigger_conditions": [
+      "same-knowledge-and-query-version",
+      "resident-source-paths",
+      "no-new-explicit-constraint",
+      "omitted-score-bound-certified"
+    ],
+    "failure_pattern": "fall-back-to-complete-search-if-conditions-fail",
+    "relation_paths": [
+      [
+        "lived"
+      ],
+      [
+        "lived in"
+      ]
+    ],
+    "observed_categories": [
+      "companions",
+      "location"
+    ],
+    "source_memory_ids": [
+      "retrieval-trace-eb5073683289b7aceaac7927",
+      "retrieval-trace-a4e645e72f1f3ed53b2f8f65"
+    ],
+    "observations": 2,
+    "confidence": 0.5,
+    "lifecycle_stage": "episodic",
+    "validation_target": "retrieval_selection_equivalence_only",
+    "answer_correctness_verified": false,
+    "updated_at": "2026-09-27T06:09:38.688818+00:00",
+    "schema_version": "1.0",
+    "tags": [],
+    "archive_scope": "task",
+    "record_version": 1,
+    "retrieval_count": 1,
+    "reuse_count": 1,
+    "reuse_success_count": 1,
+    "reuse_failure_count": 0,
+    "entities": [],
+    "supporting_facts": [],
+    "supporting_evidence": [],
+    "evidence": [],
+    "state_refs": [],
+    "artifact_types": [
+      "experience",
+      "strategy"
+    ],
+    "task_id": "",
+    "group_id": "",
+    "turn_id": "",
+    "dataset_type": "",
+    "task_type": "",
+    "knowledge_refs": [],
+    "memory_kinds": [
+      "experience",
+      "strategy"
+    ],
+    "evidence_chain": {
+      "schema_version": "1.0",
+      "chain_id": "chain-69ea915f1ba1e2ff",
+      "memory_id": "retrieval-experience-27598bd584f4a9ea995720ec",
+      "question": "关系检索候选选择",
+      "final_claim_id": "retrieval-experience-27598bd584f4a9ea995720ec:claim:final",
+      "steps": [
+        {
+          "step_id": "retrieval-experience-27598bd584f4a9ea995720ec:claim:final",
+          "position": 1,
+          "kind": "final_claim",
+          "text": "先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。",
+          "title": "",
+          "source": {
+            "source_type": "agent_conclusion",
+            "source_id": "final-answer",
+            "source_agent": "RetrieverAgent",
+            "task_id": "",
+            "group_id": "",
+            "turn_id": "",
+            "dataset_type": ""
+          },
+          "confidence": 0.5,
+          "depends_on": [],
+          "memory_refs": []
+        }
+      ],
+      "links": [],
+      "source_memory_ids": [],
+      "valid": false,
+      "issues": [
+        {
+          "code": "unsupported_final_claim",
+          "message": "最终结论没有证据依赖。"
+        }
+      ],
+      "completeness": 0.35,
+      "evidence_count": 0,
+      "claim_count": 1
+    },
+    "evidence_fields": [],
+    "evidence_chain_id": "chain-69ea915f1ba1e2ff",
+    "evidence_chain_valid": false,
+    "evidence_chain_completeness": 0.35,
+    "search_document": "experience\n关系检索候选选择\n先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。\nexperience strategy\nrelation-search-e790a7156c26538b74d88886\nprioritize-observed-relation-paths-with-score-bound\nfall-back-to-complete-search-if-conditions-fail\nsame-knowledge-and-query-version resident-source-paths no-new-explicit-constraint omitted-score-bound-certified\n先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。",
+    "last_reused_at": "2026-09-27T06:09:38.688818+00:00",
+    "last_validation": {
+      "kind": "omitted_similarity_upper_bound",
+      "top_score": 0.791079044342041,
+      "omitted_upper_bound": 0.09615376591682434,
+      "selection_cutoff": 0.7110790443420411,
+      "complete_resident_bundle": true,
+      "passed": true,
+      "validation_target": "retrieval_selection_equivalence_only"
+    }
+  }
+]

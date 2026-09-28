@@ -1,0 +1,172 @@
+{
+  "source_sha256": "05d3bebaac4da765cc29d74d50f76f71ae40e359bb31d2f7e5f13b79aa2b7838",
+  "extractor_sha256": "8293c0ff5dad94d02cc0a6f1fa052f3a9056aafc061aa07f8bc61ff12263bda5",
+  "model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "The oribi",
+        "relation": "is a",
+        "object": "small, slender antelope",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "reaches nearly at the shoulder",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "weighs",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The head-and-body length",
+        "relation": "is typically between",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The oribi",
+        "relation": "is",
+        "object": "Sexually dimorphic",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "males",
+        "relation": "are slightly smaller than",
+        "object": "females",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "females",
+        "relation": "are smaller than",
+        "object": "males",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "condition",
+            "value": "except for \"O. o. ourebi\""
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "This antelope",
+        "relation": "features",
+        "object": "a slightly raised back",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "This antelope",
+        "relation": "features",
+        "object": "long neck and limbs",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The glossy, yellowish to rufous brown coat",
+        "relation": "contrasts with",
+        "object": "the white chin, throat, underparts and rump",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The bushy tail",
+        "relation": "is",
+        "object": "brown to black on the outside",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The bushy tail",
+        "relation": "has",
+        "object": "white insides",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The bushy tail",
+        "relation": "has",
+        "object": "completely black tail",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "condition",
+            "value": "except in \"O. o. hastata\""
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The subspecies",
+        "relation": "show some variation in colouration",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 936,
+    "prompt_tokens": 503,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 503
+    },
+    "total_tokens": 1439
+  },
+  "attempts": 1,
+  "offline_seconds": 8.217976100044325,
+  "semantic_verification": "not_independently_verified"
+}

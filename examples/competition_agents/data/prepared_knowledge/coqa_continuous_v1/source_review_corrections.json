@@ -1,0 +1,399 @@
+{
+  "83ddf4e6422a06e389c6850f7db4b3359d005b49933893476367e68210a384f8": {
+    "facts": [
+      {
+        "subject": "Cotton",
+        "relation": "lived in",
+        "object": "a barn near a farm house",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "lived in",
+        "object": "a nice warm place above the barn",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "the farmer's horses",
+        "relation": "slept in",
+        "object": "the barn",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "shared her hay bed with",
+        "object": "Cotton's mommy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "her sisters",
+        "relation": "were",
+        "object": "cute and fluffy",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "subject_owner",
+            "value": "Cotton"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "was",
+        "object": "white",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "was the only",
+        "object": "white one in the bunch",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "her sisters",
+        "relation": "were",
+        "object": "orange with beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "subject_owner",
+            "value": "Cotton"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "had",
+        "object": "orange with beautiful white tiger stripes",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Being different",
+        "relation": "made",
+        "object": "Cotton quite sad",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "wished",
+        "object": "she looked like the rest of her family",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "found",
+        "object": "a can of the old farmer's orange paint",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "painted herself with",
+        "object": "orange paint",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "time",
+            "value": "one day"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "her mommy and sisters",
+        "relation": "started",
+        "object": "laughing",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "condition",
+            "value": "When her mommy and sisters found her"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "rubbed her face on Cotton's",
+        "object": "face",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton's fur",
+        "relation": "was described as",
+        "object": "pretty and special",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "attribution",
+            "value": "Cotton's mommy"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "said",
+        "object": "We would never want you to be any other way",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "picked up",
+        "object": "Cotton",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton's mommy",
+        "relation": "dropped",
+        "object": "Cotton",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "destination",
+            "value": "a big bucket of water"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "came out of the water as",
+        "object": "herself again",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "her sisters",
+        "relation": "licked",
+        "object": "face",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "subject_owner",
+            "value": "Cotton"
+          },
+          {
+            "kind": "object_owner",
+            "value": "Cotton"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton's fur",
+        "relation": "became",
+        "object": "all dry",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "they all",
+        "relation": "cried",
+        "object": "Don't ever do that again, Cotton!",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "they all",
+        "relation": "warned",
+        "object": "Next time you might mess up that pretty white fur of yours",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "thought",
+        "object": "I change my mind. I like being special",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "shared her hay bed with",
+        "object": "her sisters",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "object_owner",
+            "value": "Cotton"
+          },
+          {
+            "kind": "count",
+            "value": "5"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "is a",
+        "object": "little white kitten",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "was",
+        "object": "cute and fluffy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "lived",
+        "object": "alone",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "has mother",
+        "object": "Cotton's mommy",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "has sisters",
+        "object": "her sisters",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "object_owner",
+            "value": "Cotton"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "her mommy and sisters",
+        "relation": "asked",
+        "object": "What are you doing, Cotton?!",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Cotton",
+        "relation": "said",
+        "object": "I only wanted to be more like you",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "they all",
+        "relation": "said",
+        "object": "we wouldn't want that",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  }
+}

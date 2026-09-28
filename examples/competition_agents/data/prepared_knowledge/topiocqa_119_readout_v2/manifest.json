@@ -1,0 +1,1551 @@
+{
+  "config": {
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "latent_steps": 2,
+    "knowledge_files": {
+      "text_documents.json": "3b4a42c92582ba311014a7598421d51960617b16fcf954516378e3dbc7571135",
+      "facts.json": "3de949c6175734c52e3135e3a625c188695488c57e52889d0157a4aa782ce1c7",
+      "hypergraph.sqlite": "f0c5cd9be74bd6101b3fb5cc26c72f1ee3636c723b88c0077192ed6f69ba486f"
+    },
+    "implementation_hashes": {
+      "competition_agents/llm/latent_only_chat.py": "e285b5860dfd4eda5227391b4c91d6e908bf6d3e3aee2667a920d0a5fc7084c4",
+      "competition_agents/latent_hidden/calibrated_query.py": "77e39582d5554590e548df7bb43afe6098237da3a6138ef63c9c5578ba843207",
+      "competition_agents/latent_hidden/posterior_alignment.py": "2cb052ef02e5db0ebd1875f90cb156995da7a53030beec806e53b95645bdd53b"
+    }
+  },
+  "validation_samples": [
+    {
+      "question": "Which color does The oribi have?",
+      "target": "color of something",
+      "category": "color",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "In which place does The oribi reside?",
+      "target": "where someone lives place residence location",
+      "category": "location",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Does The oribi share a home with others?",
+      "target": "live alone or share a home with others",
+      "category": "companions",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "At what time did this occur for The oribi?",
+      "target": "date time when an event occurred",
+      "category": "time",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the identity of The oribi?",
+      "target": "identity type kind of person or thing",
+      "category": "identity",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the number associated with The oribi?",
+      "target": "number count how many",
+      "category": "quantity",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "To whom does The oribi belong?",
+      "target": "ownership belonging owner",
+      "category": "owner",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Who is related to The oribi?",
+      "target": "family mother father sisters siblings relationship",
+      "category": "family",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What caused this for The oribi?",
+      "target": "cause reason why",
+      "category": "cause",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which action did The oribi take?",
+      "target": "action activity did",
+      "category": "action",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What does The oribi look like?",
+      "target": "appearance description physical characteristics",
+      "category": "appearance",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which words did The oribi speak?",
+      "target": "words said statement",
+      "category": "speech",
+      "entity": "The oribi",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which color does Living in the national park have?",
+      "target": "color of something",
+      "category": "color",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "In which place does Living in the national park reside?",
+      "target": "where someone lives place residence location",
+      "category": "location",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Does Living in the national park share a home with others?",
+      "target": "live alone or share a home with others",
+      "category": "companions",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "At what time did this occur for Living in the national park?",
+      "target": "date time when an event occurred",
+      "category": "time",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the identity of Living in the national park?",
+      "target": "identity type kind of person or thing",
+      "category": "identity",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What is the number associated with Living in the national park?",
+      "target": "number count how many",
+      "category": "quantity",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "To whom does Living in the national park belong?",
+      "target": "ownership belonging owner",
+      "category": "owner",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Who is related to Living in the national park?",
+      "target": "family mother father sisters siblings relationship",
+      "category": "family",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What caused this for Living in the national park?",
+      "target": "cause reason why",
+      "category": "cause",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which action did Living in the national park take?",
+      "target": "action activity did",
+      "category": "action",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "What does Living in the national park look like?",
+      "target": "appearance description physical characteristics",
+      "category": "appearance",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    },
+    {
+      "question": "Which words did Living in the national park speak?",
+      "target": "words said statement",
+      "category": "speech",
+      "entity": "Living in the national park",
+      "kind": "held_out_wording"
+    }
+  ],
+  "calibration_report": {
+    "regularization": 0.1,
+    "trials": [
+      {
+        "strength": 0.01,
+        "held_out_mean_cosine": 0.5782719850540161
+      },
+      {
+        "strength": 0.1,
+        "held_out_mean_cosine": 0.5925431251525879
+      },
+      {
+        "strength": 1.0,
+        "held_out_mean_cosine": 0.5568215847015381
+      },
+      {
+        "strength": 10.0,
+        "held_out_mean_cosine": 0.41884949803352356
+      }
+    ],
+    "train_samples": 151,
+    "validation_samples": 24,
+    "trainable_parameters": 1769856,
+    "base_model_training": false,
+    "feature_parts": [
+      "question_input_embedding",
+      "question_content_last_layer",
+      "current_role_last_layer"
+    ],
+    "corpus_sha256": "965791d59c63d23ead1819fdf12846bc558d6dcc4eee737843ec669f3e3a4fb7",
+    "sample_sha256": "f7a835d15967fd04b3480d832c2d7b2d5bc5ea7303f85f3aa91fdfcbbab13579",
+    "teacher": "sentence-transformers/all-MiniLM-L6-v2",
+    "samples": [
+      {
+        "question": "What is the color of The oribi?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does The oribi live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does The oribi live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to The oribi?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is The oribi?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with The oribi?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns The oribi?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of The oribi?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to The oribi?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did The oribi do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of The oribi described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did The oribi say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "The oribi",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of Living in the national park?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does Living in the national park live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does Living in the national park live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to Living in the national park?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is Living in the national park?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with Living in the national park?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns Living in the national park?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of Living in the national park?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to Living in the national park?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Living in the national park do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of Living in the national park described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Living in the national park say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Living in the national park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of Gashaka-Gumti National Park?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does Gashaka-Gumti National Park live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does Gashaka-Gumti National Park live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to Gashaka-Gumti National Park?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is Gashaka-Gumti National Park?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with Gashaka-Gumti National Park?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns Gashaka-Gumti National Park?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of Gashaka-Gumti National Park?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to Gashaka-Gumti National Park?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Gashaka-Gumti National Park do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of Gashaka-Gumti National Park described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did Gashaka-Gumti National Park say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What is the color of preferred varieties?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Where does preferred varieties live?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Does preferred varieties live with anyone?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "When did this happen to preferred varieties?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What kind of thing is preferred varieties?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How many are associated with preferred varieties?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who owns preferred varieties?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Who are the family members of preferred varieties?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Why did this happen to preferred varieties?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did preferred varieties do?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "How is the appearance of preferred varieties described?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "What did preferred varieties say?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "preferred varieties",
+        "kind": "general_attribute"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in the Pendjari and W National Parks (Benin).",
+        "target": "occurs in the Pendjari and W National Parks (Benin)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "026b4b2d3fdbbe08102d72969ab43775ba427f0085abf9f156986495fc4c4eaf"
+      },
+      {
+        "question": "Find the source statement about Oribi: have been observed feeding on flowers.",
+        "target": "have been observed feeding on flowers",
+        "category": null,
+        "entity": "Oribi",
+        "kind": "source_description",
+        "source_id": "05c2bf80ee30765cf25c7c44f8ed20d46af7f8e8ffb3a687be8afeb475212c69"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Benoue, Bouba Njida and Faro National Parks (Cameroon).",
+        "target": "occurs in Benoue, Bouba Njida and Faro National Parks (Cameroon)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "06ef338bd048e2a0cbc79d8ec5a1a89d11574c702f72df00a8133bb0fd2803f6"
+      },
+      {
+        "question": "Find the source statement about Groups of oribi: congregate in the rainy season when grasses are abundant.",
+        "target": "congregate in the rainy season when grasses are abundant",
+        "category": null,
+        "entity": "Groups of oribi",
+        "kind": "source_description",
+        "source_id": "07e7ae26ed5ee1fce34d422f1a9c70bad2ac24aeef8e13f48481def05c40dd11"
+      },
+      {
+        "question": "Find the source statement about the thin, straight horns: are long long.",
+        "target": "are long long",
+        "category": null,
+        "entity": "the thin, straight horns",
+        "kind": "source_description",
+        "source_id": "12509229ae5e731c38a5a8ed58a2d43e280e0566c154fe3f9d1f8ca787c9149b"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the world's largest antelope, the giant eland (\"Taurotragus Derbianus\").",
+        "target": "are also the world's largest antelope, the giant eland (\"Taurotragus Derbianus\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "13ad75b8ca9289987e0068d8f0dffb7f382b1ee415d0c879f8d02af3303ed9c8"
+      },
+      {
+        "question": "Find the source statement about The oribi: is a small, slender antelope.",
+        "target": "is a small, slender antelope",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "161327bea916da8847548d2c4388baa446a291393ce516e5c4ea3bd98b32d84b"
+      },
+      {
+        "question": "Find the source statement about The fauna of the national park: is very diverse.",
+        "target": "is very diverse",
+        "category": null,
+        "entity": "The fauna of the national park",
+        "kind": "source_description",
+        "source_id": "197802f32f5abf1041529b6a68228b0f9d8d5c56d6c30b25ed69e0b52c5cc72f"
+      },
+      {
+        "question": "Find the source statement about Mineral licks: are visited regularly by oribi.",
+        "target": "are visited regularly by oribi",
+        "category": null,
+        "entity": "Mineral licks",
+        "kind": "source_description",
+        "source_id": "1d5c138c45ed1e4ea218eba3c79e914b3191e046fe97e3fb4219ab90568688cd"
+      },
+      {
+        "question": "Find the source statement about Numbers: have declined due to competition from livestock.",
+        "target": "have declined due to competition from livestock",
+        "category": null,
+        "entity": "Numbers",
+        "kind": "source_description",
+        "source_id": "243241e410775688311858ac37ae0941082d9ab91a3f8ae69b9fac8b20f3b511"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the oribi (\"Ourebia ourebi\").",
+        "target": "are also the oribi (\"Ourebia ourebi\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "24636f066d3e029454f98dee94e51f837d7e2869552929d2a56ba8d43543e7a2"
+      },
+      {
+        "question": "Find the source statement about The total area: covers about 6,402 km.",
+        "target": "covers about 6,402 km",
+        "category": null,
+        "entity": "The total area",
+        "kind": "source_description",
+        "source_id": "2814da97cc6eb3f7b039856abfe1e2656c582066797c4abfd10ab4e6caf6eedb"
+      },
+      {
+        "question": "Find the source statement about The subspecies: show some variation in colouration .",
+        "target": "show some variation in colouration ",
+        "category": null,
+        "entity": "The subspecies",
+        "kind": "source_description",
+        "source_id": "29fd0e09dd462d83bf2bef6efafedf28eb9fbc4c71f6aecdeb6c68fc68b43abf"
+      },
+      {
+        "question": "Find the source statement about This antelope: features long neck and limbs.",
+        "target": "features long neck and limbs",
+        "category": null,
+        "entity": "This antelope",
+        "kind": "source_description",
+        "source_id": "2a3ff442dd671b167ab693dba8923aa6eabf8c867cdbb6140ebcdd69bb633f1d"
+      },
+      {
+        "question": "Find the source statement about much of the northern GGNP: is savannah grassland.",
+        "target": "is savannah grassland",
+        "category": null,
+        "entity": "much of the northern GGNP",
+        "kind": "source_description",
+        "source_id": "2c70203e709b38b107f66a6c152988928dc0ce1887cd13482b8c356d0986e915"
+      },
+      {
+        "question": "Find the source statement about the southern GGNP sector of the park: characterized by very mountainous, steep slopes as well as deep valleys and gorges.",
+        "target": "characterized by very mountainous, steep slopes as well as deep valleys and gorges",
+        "category": null,
+        "entity": "the southern GGNP sector of the park",
+        "kind": "source_description",
+        "source_id": "2df2c929ceadf18c7c58d70f609bca2a2ca7c5ba65247bb4bf43666083d05cc2"
+      },
+      {
+        "question": "Find the source statement about Numbers: have declined due to agricultural expansion.",
+        "target": "have declined due to agricultural expansion",
+        "category": null,
+        "entity": "Numbers",
+        "kind": "source_description",
+        "source_id": "304665e34db0730d9165f5bc243b6145346e39dd2000ac4d63871280abd37a15"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Gashaka Gumti National Park in Nigeria.",
+        "target": "occurs in Gashaka Gumti National Park in Nigeria",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "3155ae017e43eb440729233164646af37e9f39178d37f36eefe6a8a7b758b176"
+      },
+      {
+        "question": "Find the source statement about red sunbird bush: discovery location 8 km Leinde Fadale forest November 2002.",
+        "target": "discovery location 8 km Leinde Fadale forest November 2002",
+        "category": null,
+        "entity": "red sunbird bush",
+        "kind": "source_description",
+        "source_id": "33c8ab1255d092ccb686da8180bd86abf65cf766438b0752b5c291d3aeaa5bf8"
+      },
+      {
+        "question": "Find the source statement about Hunting: is a relatively minor threat.",
+        "target": "is a relatively minor threat",
+        "category": null,
+        "entity": "Hunting",
+        "kind": "source_description",
+        "source_id": "33f119bd2c858071a64f572537acac8a97dc5e892a09cbf4918cdf3912ca0f3e"
+      },
+      {
+        "question": "Find the source statement about the subspecies \"O. o. haggardi\": listed as Vulnerable.",
+        "target": "listed as Vulnerable",
+        "category": null,
+        "entity": "the subspecies \"O. o. haggardi\"",
+        "kind": "source_description",
+        "source_id": "3746f7f09764c3c1f9a382ff63746ba11e06cf34b5cd7c230240f2d709f6c693"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the kob antelope (\"Kobus kob\").",
+        "target": "are also the kob antelope (\"Kobus kob\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "374ccd19d7dec898111ad95bcbc57e4cf4cc2755763e0d754ae51754496b5a16"
+      },
+      {
+        "question": "Find the source statement about This antelope: features long neck and limbs.",
+        "target": "features long neck and limbs",
+        "category": null,
+        "entity": "This antelope",
+        "kind": "source_description",
+        "source_id": "39bdbbc52c9aeb40e492d746cce59d925408d5ab45abc72cec659dc02e76c89f"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Manovo-Gounda St..",
+        "target": "occurs in Manovo-Gounda St.",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "39ebd359d4f7f49ff2514b5f1917a1703073a92c4fb1394e4d3a3c2346b6c90f"
+      },
+      {
+        "question": "Find the source statement about The bushy tail: has white insides.",
+        "target": "has white insides",
+        "category": null,
+        "entity": "The bushy tail",
+        "kind": "source_description",
+        "source_id": "3fe1fb7c0527ce5101ea2924203d0bcf7c3572f8f862f708bb921bb4df4010c0"
+      },
+      {
+        "question": "Find the source statement about The oribi: weighs .",
+        "target": "weighs ",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "434db0c4dc30498f70b553240c585a087c28d0291c3cd7c217d861929f986ad2"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda).",
+        "target": "occurs in Kidepo Valley, Lake Mburo and Murchison Falls National Parks (Uganda)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "454f177831560115d9610a543d8021451dc3ce283904d606dd81733b9d32a181"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\") in larger stocks.",
+        "target": "are also the rare Adamawa mountain reedbuck (\"Redunca fulvorufula\") in larger stocks",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "46338501255eae00499f04a34a0317ed6fb39b78f399740729a8f2f6eeec59ed"
+      },
+      {
+        "question": "Find the source statement about preferred varieties: include \"Loudetia\".",
+        "target": "include \"Loudetia\"",
+        "category": null,
+        "entity": "preferred varieties",
+        "kind": "source_description",
+        "source_id": "467feb6553d3812f97adbab7d7e8ec6c2f088ac32b31bf45009a0f142a0b70e6"
+      },
+      {
+        "question": "Find the source statement about Chappal Waddi: location the park's southern sections.",
+        "target": "location the park's southern sections",
+        "category": null,
+        "entity": "Chappal Waddi",
+        "kind": "source_description",
+        "source_id": "47eca8d1c901f8a8d5d5b863446ac92cecf88a5da27c88e51b16cda6885422be"
+      },
+      {
+        "question": "Find the source statement about The bushy tail: is brown to black on the outside.",
+        "target": "is brown to black on the outside",
+        "category": null,
+        "entity": "The bushy tail",
+        "kind": "source_description",
+        "source_id": "491f47f9ca7562ab3a29e85001db3829c36d1cd7b6a4a1f2682509ae6523d746"
+      },
+      {
+        "question": "Find the source statement about Gashaka-Gumti National Park: location Nigeria.",
+        "target": "location Nigeria",
+        "category": null,
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "source_description",
+        "source_id": "4cf4f8dbe9c6dd86c7bcb6e869305625524030d10e85b9e98c35843ec251b930"
+      },
+      {
+        "question": "Find the source statement about The largest population in Nigeria of chimpanzee (\"Pan troglodytes\"): is found within the boundaries of the national park.",
+        "target": "is found within the boundaries of the national park",
+        "category": null,
+        "entity": "The largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "kind": "source_description",
+        "source_id": "4d350e93a9b05c46124ba594dea83a4698f0cf18861d218c6f98deb03bfbd7a2"
+      },
+      {
+        "question": "Find the source statement about Species: include African golden cat (\"Profelis aurata\").",
+        "target": "include African golden cat (\"Profelis aurata\")",
+        "category": null,
+        "entity": "Species",
+        "kind": "source_description",
+        "source_id": "5163de7db56e31911986d5107b84fe01ff514b2968adeaebe732edf43e67a8aa"
+      },
+      {
+        "question": "Find the source statement about the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire): has been attributed to poaching.",
+        "target": "has been attributed to poaching",
+        "category": null,
+        "entity": "the steep fall of 92% in oribi populations in Comoé National Park (Côte d'Ivoire)",
+        "kind": "source_description",
+        "source_id": "54d220a49c44482aa67e0dcc144b3c776ff5425d25ad624910de656392273f0a"
+      },
+      {
+        "question": "Find the source statement about females: are smaller than males except for \"O. o. ourebi\".",
+        "target": "are smaller than males except for \"O. o. ourebi\"",
+        "category": null,
+        "entity": "females",
+        "kind": "source_description",
+        "source_id": "58618fafd35e67a94dcc50c185a4dc4783f151be5cffa607c5ae1eb7e2a89f5c"
+      },
+      {
+        "question": "Find the source statement about Gashaka-Gumti National Park: gazetted from two game reserves 1991.",
+        "target": "gazetted from two game reserves 1991",
+        "category": null,
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "source_description",
+        "source_id": "58e87fdf7d54aec6de32c8c262b94f2c050bb3c53e5670967a8d671304d4185a"
+      },
+      {
+        "question": "Find the source statement about red sunbird bush: distance from nearest populations some 1,200 km nearest populations in the Afromontane archipelago.",
+        "target": "distance from nearest populations some 1,200 km nearest populations in the Afromontane archipelago",
+        "category": null,
+        "entity": "red sunbird bush",
+        "kind": "source_description",
+        "source_id": "5c8aabc05b24e4f2db511597d377d890e60237d9a0cad211957be85839c3608d"
+      },
+      {
+        "question": "Find the source statement about Gashaka-Gumti National Park: is Nigeria’s largest national park.",
+        "target": "is Nigeria’s largest national park",
+        "category": null,
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "source_description",
+        "source_id": "5d0ba1e3c404061a17768e6a16a0337ae32cf8b3f77fddeeeb872e232b851675"
+      },
+      {
+        "question": "Find the source statement about Altitude: ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi .",
+        "target": "ranges from ranging from about in the northern flatter corner of the park, up to at Chappal Waddi ",
+        "category": null,
+        "entity": "Altitude",
+        "kind": "source_description",
+        "source_id": "5f529439d3bab6165203a69da39503cc4dff36e697a2e6e26685b10f40976e0f"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia).",
+        "target": "occurs in Kafue and Liuwa Plain National Parks and Bangweulu Swamp (Zambia)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "606a9184ddb49459b6847453bd5fa35d0413e9a64ee644eb43f4aeb5ea7e4ae4"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the West African wild dog (\"Lycaon pictus manguensis\").",
+        "target": "are also the West African wild dog (\"Lycaon pictus manguensis\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "62deb5cff7f1aac03c7d05c3d377c51f7222b7cf8eaa8c457374d0d997a6eec5"
+      },
+      {
+        "question": "Find the source statement about Chappal Waddi: is Nigeria’s highest mountain.",
+        "target": "is Nigeria’s highest mountain",
+        "category": null,
+        "entity": "Chappal Waddi",
+        "kind": "source_description",
+        "source_id": "63a094ad7b6d7896878ec0946ea28f96751c8090451204a8aa30534be6871846"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Serengeti National Park (Tanzania).",
+        "target": "occurs in Serengeti National Park (Tanzania)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "65992390ae6e20d1e5ceddb4031656d8844850ddb157cf2bf33561263c250cb1"
+      },
+      {
+        "question": "Find the source statement about the thin, straight horns: are smooth at the tips smooth at the tips.",
+        "target": "are smooth at the tips smooth at the tips",
+        "category": null,
+        "entity": "the thin, straight horns",
+        "kind": "source_description",
+        "source_id": "689e9777ba9d7e2278fcaf4acbe62f6009b48002dda034d6c8c6a6c4eb1c9da6"
+      },
+      {
+        "question": "Find the source statement about The oribi: weighs weighs.",
+        "target": "weighs weighs",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "6a70918864e9c7f55ac3a64b306b5c3c002f754839bd1441461b18d0e9d0f599"
+      },
+      {
+        "question": "Find the source statement about The glossy, yellowish to rufous brown coat: contrasts with the white chin, throat, underparts and rump.",
+        "target": "contrasts with the white chin, throat, underparts and rump",
+        "category": null,
+        "entity": "The glossy, yellowish to rufous brown coat",
+        "kind": "source_description",
+        "source_id": "72e635e13444f45e2667ab9bf5e4df90e22e8c488f375caa189db2b7c7ebfebb"
+      },
+      {
+        "question": "Find the source statement about Typically diurnal: is active mainly during the day.",
+        "target": "is active mainly during the day",
+        "category": null,
+        "entity": "Typically diurnal",
+        "kind": "source_description",
+        "source_id": "73ae302a77cfd27d138746e023c07a4bc3ef57e579941a76639cf8dd9fb3b1aa"
+      },
+      {
+        "question": "Find the source statement about the southern GGNP sector of the park: has a rugged terrain.",
+        "target": "has a rugged terrain",
+        "category": null,
+        "entity": "the southern GGNP sector of the park",
+        "kind": "source_description",
+        "source_id": "77d41a5d12acb1b04b1486bc14e6f66497f1db8acfb027855d53a12d6433a620"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Floris National Park (Central African Republic).",
+        "target": "occurs in Floris National Park (Central African Republic)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "786326c73b99afb32ad727d45bf1b80376b72c9f17d769838eb5f91445e554b9"
+      },
+      {
+        "question": "Find the source statement about Gashaka-Gumti National Park: located in the eastern provinces of Taraba and Adamawa.",
+        "target": "located in the eastern provinces of Taraba and Adamawa",
+        "category": null,
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "source_description",
+        "source_id": "7e89752b07e8dad0226a8b91c6da2b76256a17feb3438e1c006b9f5b57e634c4"
+      },
+      {
+        "question": "Find the source statement about The oribi: reaches at the shoulder nearly at the shoulder.",
+        "target": "reaches at the shoulder nearly at the shoulder",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "7ebe48ed799b85ccc3037c4d1e3c68e03119d3549bc30e5943431008210949fe"
+      },
+      {
+        "question": "Find the source statement about red sunbird bush: occurrence elevation 1,600 to 1,670 m.a.s.l..",
+        "target": "occurrence elevation 1,600 to 1,670 m.a.s.l.",
+        "category": null,
+        "entity": "red sunbird bush",
+        "kind": "source_description",
+        "source_id": "7fa271c728256dd1e3be35d859b268b9fec591decd8ecb2dfbed4b0ed8d1643f"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the African elephant (\"Loxodonta africana\").",
+        "target": "are also the African elephant (\"Loxodonta africana\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "823f13aa8b572a4c171e1c97cf7f6f11a42b70ab8b8d8f39a6a8e10196ae752c"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Golden Gate Highlands National Park (South Africa).",
+        "target": "occurs in Golden Gate Highlands National Park (South Africa)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "871e383a4de4f94aa0b47668a9005808ed022ec7dd59c493775ca828a25a857a"
+      },
+      {
+        "question": "Find the source statement about Grasses: can constitute up to 90% of the diet.",
+        "target": "can constitute up to 90% of the diet",
+        "category": null,
+        "entity": "Grasses",
+        "kind": "source_description",
+        "source_id": "8d414c7367db509d05318959efe5a5343abc3aa90219697050736557b1039932"
+      },
+      {
+        "question": "Find the source statement about The oribi: found in eastern, southern and western Africa.",
+        "target": "found in eastern, southern and western Africa",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "8f8928a04e1773337497d868ce3232c9fd39c9324ac0f9fa6de635f836b83060"
+      },
+      {
+        "question": "Find the source statement about preferred varieties: include \"Hyparrhenia\".",
+        "target": "include \"Hyparrhenia\"",
+        "category": null,
+        "entity": "preferred varieties",
+        "kind": "source_description",
+        "source_id": "9391774134f5c1ff7c10efe3d78f489d9097123897513fc647c2316972983cc3"
+      },
+      {
+        "question": "Find the source statement about the thin, straight horns: are ringed at the base ringed at the base.",
+        "target": "are ringed at the base ringed at the base",
+        "category": null,
+        "entity": "the thin, straight horns",
+        "kind": "source_description",
+        "source_id": "95b9fccab1b26386dc07d2a4fde5b147f753f960701839869c5e2adfb42b012a"
+      },
+      {
+        "question": "Find the source statement about Gashaka-Gumti National Park: is a national park.",
+        "target": "is a national park",
+        "category": null,
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "source_description",
+        "source_id": "96b70a4c99068dee619c2ba531c66a78d9a013e180d301078433ece401c66780"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Aouk Hunting Zone (Chad).",
+        "target": "occurs in Aouk Hunting Zone (Chad)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "98ab72308c2105d01d7968b625c09db47a275ba254033a4214aee6696e1f24f7"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the hartebeest (\"Alcelaphus buselaphus\").",
+        "target": "are also the hartebeest (\"Alcelaphus buselaphus\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "9a8667e6732298ab4161f67edde93240487a1bd32e23e27eaf277a89768e3049"
+      },
+      {
+        "question": "Find the source statement about preferred varieties: include \"Eulalia\".",
+        "target": "include \"Eulalia\"",
+        "category": null,
+        "entity": "preferred varieties",
+        "kind": "source_description",
+        "source_id": "9d0295d51947f07c855ba39b2416a9b629286a086991fdc5ae7f23275954c27d"
+      },
+      {
+        "question": "Find the source statement about Oribi: have been observed feeding on \"Boletus\" mushrooms.",
+        "target": "have been observed feeding on \"Boletus\" mushrooms",
+        "category": null,
+        "entity": "Oribi",
+        "kind": "source_description",
+        "source_id": "9e81c6f52600ba28e163876dc6f5a93827a848e80c409f92159a506ee1898b18"
+      },
+      {
+        "question": "Find the source statement about males: are slightly smaller than females.",
+        "target": "are slightly smaller than females",
+        "category": null,
+        "entity": "males",
+        "kind": "source_description",
+        "source_id": "9f1cfcb03770d6df5f321c114695a3ac070243d766050da49af4b575656aba6d"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the roan antelope (\"Hippotragus equinus\").",
+        "target": "are also the roan antelope (\"Hippotragus equinus\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "a03dd8cca316d7b531115762e77e0e67b4386ec91a34fe467db073c5fc840fe1"
+      },
+      {
+        "question": "Find the source statement about The oribi: reaches nearly at the shoulder .",
+        "target": "reaches nearly at the shoulder ",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "a2ffea4ff79ec59a292674fde7cd328d343c6816147873bc172399dc648b235d"
+      },
+      {
+        "question": "Find the source statement about oribi: prefers fresh grasses.",
+        "target": "prefers fresh grasses",
+        "category": null,
+        "entity": "oribi",
+        "kind": "source_description",
+        "source_id": "a35f3451af5309708ba56e63bb05fd621a0e70cbe62b82573ad8c28e4099db1b"
+      },
+      {
+        "question": "Find the source statement about The head-and-body length: is typically between .",
+        "target": "is typically between ",
+        "category": null,
+        "entity": "The head-and-body length",
+        "kind": "source_description",
+        "source_id": "a370ca669d749e8a41a5ea5a4fad02cb94bd070e8d7ec5d4147c085771c9c4c9"
+      },
+      {
+        "question": "Find the source statement about preferred varieties: include \"Themeda\" species.",
+        "target": "include \"Themeda\" species",
+        "category": null,
+        "entity": "preferred varieties",
+        "kind": "source_description",
+        "source_id": "ab8175fb5a353d585c6cd107cfa8d9f7eb57caba44ce58107c1da96f2fa7c992"
+      },
+      {
+        "question": "Find the source statement about To protect the animals and the ecosystem: was launched the Gashaka Primate Project.",
+        "target": "was launched the Gashaka Primate Project",
+        "category": null,
+        "entity": "To protect the animals and the ecosystem",
+        "kind": "source_description",
+        "source_id": "ac396450455fe1601f61a83a29345da1c422223dbed75144c69e0f6429e611a4"
+      },
+      {
+        "question": "Find the source statement about oribi: browses occasionally.",
+        "target": "browses occasionally",
+        "category": null,
+        "entity": "oribi",
+        "kind": "source_description",
+        "source_id": "af85d82a967324cd5b743028514d3c6c5698a61e524d4ecccf831e65f5ca26f7"
+      },
+      {
+        "question": "Find the source statement about This antelope: features a slightly raised back.",
+        "target": "features a slightly raised back",
+        "category": null,
+        "entity": "This antelope",
+        "kind": "source_description",
+        "source_id": "b050b9243ed21051ce80f67ee0219284b2db6e3395730b40b247d47c97da96ad"
+      },
+      {
+        "question": "Find the source statement about The total population: estimated at 750,000 as of 2008.",
+        "target": "estimated at 750,000 as of 2008",
+        "category": null,
+        "entity": "The total population",
+        "kind": "source_description",
+        "source_id": "b15ad69af8564d4871db2bdf7cd91584d3a5de7cb682345e3ec71e3f6f12ee97"
+      },
+      {
+        "question": "Find the source statement about The glossy, yellowish to rufous brown coat: contrasts with the white chin, throat, underparts and rump.",
+        "target": "contrasts with the white chin, throat, underparts and rump",
+        "category": null,
+        "entity": "The glossy, yellowish to rufous brown coat",
+        "kind": "source_description",
+        "source_id": "b3b1fcc2f0646fa173c6623c00038f4d4a28e550b1197401adb28f74231f7576"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa).",
+        "target": "occurs in Garamba, Upemba and Kundelungu National Parks (Congo-Kinshasa)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "b6ef3bd704227d5d62f2e0e6a25331dbc42faaea25d2d7be95fcc69a81333a7b"
+      },
+      {
+        "question": "Find the source statement about The oribi: first described by the German zoologist Eberhard August Wilhelm von Zimmermann 1782.",
+        "target": "first described by the German zoologist Eberhard August Wilhelm von Zimmermann 1782",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "bbfc6564fa4a258cc41e2374e5879744bf24008d98223faea08ccc9d1557da38"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Masai Mara Game Reserve and Ruma National Park (Kenya).",
+        "target": "occurs in Masai Mara Game Reserve and Ruma National Park (Kenya)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "bcf176a847bf6e368fe8d785ffbf166fc73d8b1711358269eb05a6b9956dc56c"
+      },
+      {
+        "question": "Find the source statement about oribi: is grazer.",
+        "target": "is grazer",
+        "category": null,
+        "entity": "oribi",
+        "kind": "source_description",
+        "source_id": "bee638d0b27a8399513d4895e6c158ae1638ff165af3bb0e295d40dd8d355290"
+      },
+      {
+        "question": "Find the source statement about The oribi: has subspecies identified Eight subspecies.",
+        "target": "has subspecies identified Eight subspecies",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "c7d5a99c6e9b4fce2a417ea319de3f4b2a29708672ccb6823823119a41d32a65"
+      },
+      {
+        "question": "Find the source statement about The bushy tail: has completely black tail except in \"O. o. hastata\".",
+        "target": "has completely black tail except in \"O. o. hastata\"",
+        "category": null,
+        "entity": "The bushy tail",
+        "kind": "source_description",
+        "source_id": "c8114494db652882af6696fac589c1c7eab9d5289f981352f22ec4d623f9f7ac"
+      },
+      {
+        "question": "Find the source statement about Living in the national park: are also the klipspringer (\"Oreotragus oreotragus\").",
+        "target": "are also the klipspringer (\"Oreotragus oreotragus\")",
+        "category": null,
+        "entity": "Living in the national park",
+        "kind": "source_description",
+        "source_id": "cc89aa81e368f5aa42af8339cce59a19301954970d30b673c88a92e0ffd913c0"
+      },
+      {
+        "question": "Find the source statement about This antelope: features a slightly raised back.",
+        "target": "features a slightly raised back",
+        "category": null,
+        "entity": "This antelope",
+        "kind": "source_description",
+        "source_id": "cd72eb64aef707bf04a3d54a08e001aafb3ae87023f0fc03b6c301fd0eb8c147"
+      },
+      {
+        "question": "Find the source statement about 103 species of mammals: have been recorded at censuses at censuses censuses.",
+        "target": "have been recorded at censuses at censuses censuses",
+        "category": null,
+        "entity": "103 species of mammals",
+        "kind": "source_description",
+        "source_id": "cf23882ea670a0f0040db52caba9f18812e01b0d3204a112cd486bee338df317"
+      },
+      {
+        "question": "Find the source statement about preferred varieties: include \"Andropogon\".",
+        "target": "include \"Andropogon\"",
+        "category": null,
+        "entity": "preferred varieties",
+        "kind": "source_description",
+        "source_id": "d111861e4717231ac2727953ad6e80895ca6176f11e1bf58466991766f5b8cb3"
+      },
+      {
+        "question": "Find the source statement about The oribi: scientific name \"Ourebia ourebi\".",
+        "target": "scientific name \"Ourebia ourebi\"",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "d26cb7867611cea5687e4c0444f85bdda2bde5c1f9308902a05711149846bbd5"
+      },
+      {
+        "question": "Find the source statement about red sunbird bush: is a ornate species of the acanthus family.",
+        "target": "is a ornate species of the acanthus family",
+        "category": null,
+        "entity": "red sunbird bush",
+        "kind": "source_description",
+        "source_id": "d4953eef3cdc8e57bdfc70458a978332916babe2629daea4ee93a34a03b9337d"
+      },
+      {
+        "question": "Find the source statement about Species: include yellow-backed duiker.",
+        "target": "include yellow-backed duiker",
+        "category": null,
+        "entity": "Species",
+        "kind": "source_description",
+        "source_id": "d7e31aeeeba9b3f6b15bb0151dcd5c24f9d78df4aa5297fff559d34fbb5c7b0b"
+      },
+      {
+        "question": "Find the source statement about the oribi: shows some tolerance to hunting.",
+        "target": "shows some tolerance to hunting",
+        "category": null,
+        "entity": "the oribi",
+        "kind": "source_description",
+        "source_id": "d7edf15b44b213176a1eb24bfa58efeeea9b559c6a9fd97505d089fb26b5ec82"
+      },
+      {
+        "question": "Find the source statement about the southern GGNP sector of the park: is home to montane forests.",
+        "target": "is home to montane forests",
+        "category": null,
+        "entity": "the southern GGNP sector of the park",
+        "kind": "source_description",
+        "source_id": "deed673a95211ffa6a70223cf7651067903bc64a8ad6da7dd743d510f0023d9e"
+      },
+      {
+        "question": "Find the source statement about The oribi: is member of genus sole member of its genus.",
+        "target": "is member of genus sole member of its genus",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "ebe6056b5067646a1a555ad923d41c67addbc7cb84e8b4ade7af31cb2d977e3b"
+      },
+      {
+        "question": "Find the source statement about the total population: feared to be declining.",
+        "target": "feared to be declining",
+        "category": null,
+        "entity": "the total population",
+        "kind": "source_description",
+        "source_id": "ec5903e2f78d341d999ad56fd73b55778f4cc4b385b1b74e513642313e543748"
+      },
+      {
+        "question": "Find the source statement about The oribi: occurs in Omo National Park (Ethiopia).",
+        "target": "occurs in Omo National Park (Ethiopia)",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "ed556405a58c7f216119d4aa1c86e5fd89d1f2255bfa874575d1cca8308c5a20"
+      },
+      {
+        "question": "Find the source statement about park boundary: suggested action extended to protect the forest.",
+        "target": "suggested action extended to protect the forest",
+        "category": null,
+        "entity": "park boundary",
+        "kind": "source_description",
+        "source_id": "f3eb586967f5739dbadae4a4ad067f1dfc47ce1fca08a0b29565b32454b3049e"
+      },
+      {
+        "question": "Find the source statement about The oribi: is Sexually dimorphic.",
+        "target": "is Sexually dimorphic",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "f794b13566e4ee37cd56c4589b2280ec230f452c6ca621031d76f4a0a1fac957"
+      },
+      {
+        "question": "Find the source statement about The oribi: classified as Least Concern IUCN.",
+        "target": "classified as Least Concern IUCN",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "f7d5988e56dd703b607164a2a0fe86486262c9e3ee925871c45aab1728f18c22"
+      },
+      {
+        "question": "Find the source statement about Gashaka-Gumti National Park: location relative to the border with Cameroon.",
+        "target": "location relative to the border with Cameroon",
+        "category": null,
+        "entity": "Gashaka-Gumti National Park",
+        "kind": "source_description",
+        "source_id": "f87f71cf74b4496299dd970073075f9f5b16f4ad696d2f9b8b4c19b594fd73c9"
+      },
+      {
+        "question": "Find the source statement about Only males: possess horns.",
+        "target": "possess horns",
+        "category": null,
+        "entity": "Only males",
+        "kind": "source_description",
+        "source_id": "fad4ff396fd06e795f00f541e74ad1451582d8530b7be8bd7fdaa164222eac35"
+      },
+      {
+        "question": "Find the source statement about The oribi: type of animal small antelope.",
+        "target": "type of animal small antelope",
+        "category": null,
+        "entity": "The oribi",
+        "kind": "source_description",
+        "source_id": "fadcfded7c6014945a4a2679b20907dea8d1bd7d91353c0647c87f56ad61a481"
+      },
+      {
+        "question": "Find the source statement about red sunbird bush: population type isolated population.",
+        "target": "population type isolated population",
+        "category": null,
+        "entity": "red sunbird bush",
+        "kind": "source_description",
+        "source_id": "fbae72ae2ef0086dc04751e93a4609bb807edab3be9bff322bf704d20b4490f2"
+      },
+      {
+        "question": "Find the source statement about preferred varieties: include \"Pennisetum\".",
+        "target": "include \"Pennisetum\"",
+        "category": null,
+        "entity": "preferred varieties",
+        "kind": "source_description",
+        "source_id": "fda719277487858602c12de8bcb4467941a53cd17e6cbcef64637214bd9a7394"
+      },
+      {
+        "question": "Find the source statement about the total population: estimated at less than 10,000 mature individuals as of 2008.",
+        "target": "estimated at less than 10,000 mature individuals as of 2008",
+        "category": null,
+        "entity": "the total population",
+        "kind": "source_description",
+        "source_id": "ff76a3657f4b18d914d0ef2f47c8ae8d894748811b974e9d7f71094a73b8275e"
+      },
+      {
+        "question": "Find the source statement about The African buffalo: is the largest population in Nigeria of chimpanzee (\"Pan troglodytes\").",
+        "target": "is the largest population in Nigeria of chimpanzee (\"Pan troglodytes\")",
+        "category": null,
+        "entity": "The African buffalo",
+        "kind": "source_description",
+        "source_id": "ffd67664ec7575609ba9154aa9dc6a688056cd1e0c847ec868e81362b1beceb8"
+      },
+      {
+        "question": "Which color does The oribi have?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "In which place does The oribi reside?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Does The oribi share a home with others?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "At what time did this occur for The oribi?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the identity of The oribi?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the number associated with The oribi?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "To whom does The oribi belong?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Who is related to The oribi?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What caused this for The oribi?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which action did The oribi take?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What does The oribi look like?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which words did The oribi speak?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "The oribi",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which color does Living in the national park have?",
+        "target": "color of something",
+        "category": "color",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "In which place does Living in the national park reside?",
+        "target": "where someone lives place residence location",
+        "category": "location",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Does Living in the national park share a home with others?",
+        "target": "live alone or share a home with others",
+        "category": "companions",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "At what time did this occur for Living in the national park?",
+        "target": "date time when an event occurred",
+        "category": "time",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the identity of Living in the national park?",
+        "target": "identity type kind of person or thing",
+        "category": "identity",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What is the number associated with Living in the national park?",
+        "target": "number count how many",
+        "category": "quantity",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "To whom does Living in the national park belong?",
+        "target": "ownership belonging owner",
+        "category": "owner",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Who is related to Living in the national park?",
+        "target": "family mother father sisters siblings relationship",
+        "category": "family",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What caused this for Living in the national park?",
+        "target": "cause reason why",
+        "category": "cause",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which action did Living in the national park take?",
+        "target": "action activity did",
+        "category": "action",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "What does Living in the national park look like?",
+        "target": "appearance description physical characteristics",
+        "category": "appearance",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      },
+      {
+        "question": "Which words did Living in the national park speak?",
+        "target": "words said statement",
+        "category": "speech",
+        "entity": "Living in the national park",
+        "kind": "held_out_wording"
+      }
+    ],
+    "calibration_seconds": 535.5205978999147
+  },
+  "graph_reindex_note": "仅图关联变化；事实、原文与校准样本不变，未重新拟合权重。"
+}

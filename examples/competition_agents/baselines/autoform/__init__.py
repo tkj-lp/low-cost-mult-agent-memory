@@ -1,3 +1,3 @@
-from .autoform_adapter import autoform_enabled, generate_autoform_message
+from .autoform_adapter import build_autoform_instruction
 
-__all__ = ["autoform_enabled", "generate_autoform_message"]
+__all__ = ["build_autoform_instruction"]

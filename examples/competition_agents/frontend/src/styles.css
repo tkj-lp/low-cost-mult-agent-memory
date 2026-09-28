@@ -2688,9 +2688,12 @@ button {
 
 /* 指标评估 */
 .metrics-page {
-  grid-template-rows: auto minmax(0, 1fr);
+  height: auto;
+  min-height: 100%;
+  grid-template-rows: auto auto;
+  align-content: start;
   gap: 10px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .metrics-filter-bar {
@@ -2737,6 +2740,7 @@ button {
 }
 
 .metrics-status-line {
+  flex: none;
   min-width: 0;
   padding: 7px 12px;
   overflow: hidden;
@@ -8137,3 +8141,31 @@ button {
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 12px;
 }
+
+/* 运行与回放明确分开；任务卡片保留等待、失败和停止状态。 */
+.run-view-switch { display:flex; gap:8px; margin:8px 0; }
+.run-view-switch button { border:1px solid #d4deeb; padding:7px 14px; border-radius:8px; background:#fff; color:#4d617c; cursor:pointer; }
+.run-view-switch button.active { background:#eaf2ff; border-color:#4c86dc; color:#205eb5; }
+.run-view-switch button:disabled, .choice-button:disabled { opacity:.45; cursor:not-allowed; }
+.task-strip-item.failed { border-color:#ef9c99; background:#fff5f4; }
+.task-strip-item.failed b { color:#b43d35; }
+.task-strip-item.stopped { border-color:#d7b775; background:#fffaf0; }
+.task-strip-list { max-height:620px; overflow-y:auto; }
+.state-measurement-note { grid-column:1 / -1; padding:18px 22px; border:1px solid #d9e2ed; border-radius:14px; background:#f8fafc; line-height:1.8; color:#4b6078; }
+.metrics-definition { padding:10px 16px; color:#6c7d91; font-size:12px; line-height:1.7; }
+.metrics-chart-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media (max-width:900px) { .metrics-chart-grid { grid-template-columns:1fr; } }
+
+/* 内容决定高度，避免小屏或新增字段把进度条裁掉。 */
+.app-main { overflow-y:auto; }
+.console-layout { display:flex; flex-direction:column; height:auto; min-height:100%; }
+.top-grid { flex:none; align-items:start; }
+.run-stack { display:flex; flex-direction:column; height:auto; overflow:visible; }
+.run-card .status-panel { flex:none; height:auto; min-height:0; max-height:none; overflow:visible; }
+.run-card .estimate-section { flex:none; }
+.console-layout .matrix-card { min-height:260px; flex:1; }
+.dataset-row .dataset-note { white-space:normal; overflow:visible; text-overflow:clip; line-height:1.6; }
+.metrics-content { display:flex; flex-direction:column; height:auto; overflow:visible; }
+.metrics-content .metrics-chart-grid { min-height:280px; flex:none; }
+.metrics-content .metrics-lower-grid { min-height:180px; flex:none; }
+.metrics-kpi-grid { overflow:visible; flex:none; }

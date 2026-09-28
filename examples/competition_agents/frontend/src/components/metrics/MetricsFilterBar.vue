@@ -43,7 +43,7 @@ const fields = computed(() => {
   const items = [
     { key: 'dataset', label: '数据集', options: datasets.map(({ label, value }) => ({ label, value })) },
     { key: 'collaborationMode', label: '协作方式', options: collaborationModes.map(({ label, value }) => ({ label, value })) },
-    { key: 'memoryMode', label: '记忆组织', options: memoryModes.map(({ label, value }) => ({ label, value })) },
+    { key: 'memoryMode', label: '记忆组织', options: memoryModes.filter((item) => item.value === collaborationModes.find((method) => method.value === props.modelValue.collaborationMode)?.memory).map(({ label, value }) => ({ label, value })) },
     {
       key: 'retrievalMode',
       label: '检索方式',
@@ -54,8 +54,8 @@ const fields = computed(() => {
       key: 'baselineMode',
       label: '对比基线',
       options: [
-        { label: '不对比', value: 'none' },
-        { label: '对比', value: 'compare' }
+        { label: '自动同条件对比', value: 'none' },
+        { label: '指定基线记录', value: 'compare' }
       ]
     }
   ]
@@ -73,6 +73,9 @@ const fields = computed(() => {
 })
 
 function updateField(key, value) {
-  emit('update:modelValue', { ...props.modelValue, [key]: value })
+  const next = { ...props.modelValue, [key]: value }
+  const method = collaborationModes.find((item) => item.value === next.collaborationMode)
+  if (method) Object.assign(next, { memoryMode: method.memory, retrievalMode: method.retrieval })
+  emit('update:modelValue', next)
 }
 </script>

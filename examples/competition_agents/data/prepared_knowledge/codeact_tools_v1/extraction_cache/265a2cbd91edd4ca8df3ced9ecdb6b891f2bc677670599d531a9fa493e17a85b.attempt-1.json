@@ -1,0 +1,143 @@
+{
+  "document_id": "b7a63b311cab0d66467c2c6a736001ad1a48ef6de5c0e52070da46d35e328938",
+  "requested_model": "qwen3.7-flash-2026-07-15",
+  "response_model": "qwen3.7-flash-2026-07-15",
+  "result": {
+    "facts": [
+      {
+        "subject": "The execution environment",
+        "relation": "supplies",
+        "object": "task data",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "task data",
+        "relation": "is supplied in",
+        "object": "the inputs dictionary",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The program",
+        "relation": "must assign",
+        "object": "a JSON-compatible dictionary",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The task",
+        "relation": "declares",
+        "object": "output_fields",
+        "polarity": "positive",
+        "qualifiers": [
+          {
+            "kind": "attribute",
+            "value": "as the required result keys"
+          }
+        ],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Only the modules in allowed_imports",
+        "relation": "are available",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "Python sum, len, min, max, sorted, list, dict and range",
+        "relation": "are available",
+        "object": "",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The statistics module",
+        "relation": "provides",
+        "object": "mean, median, pvariance and pstdev",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "pvariance and pstdev",
+        "relation": "compute",
+        "object": "population statistics",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The math module",
+        "relation": "provides",
+        "object": "sqrt",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "File access",
+        "relation": "are unavailable",
+        "object": "",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "network access",
+        "relation": "are unavailable",
+        "object": "",
+        "polarity": "negative",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      },
+      {
+        "subject": "The executor",
+        "relation": "returns",
+        "object": "the actual result or an error",
+        "polarity": "positive",
+        "qualifiers": [],
+        "sentences": [
+          0
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "completion_tokens": 824,
+    "prompt_tokens": 497,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 497
+    },
+    "total_tokens": 1321
+  }
+}

@@ -1,0 +1,131 @@
+--- frozen/competition_agents/field_collaboration.py
++++ current/competition_agents/field_collaboration.py
+@@ -8,6 +8,9 @@
+ 
+ from .plain_text_collaboration import COMMON_TEXT, TEXT_ROLES
+ from hypergraph_memory_method.source_context import evidence_packet
++
++
++PROTOCOL_PARSER_VERSION = 'field-types-v3'
+ 
+ 
+ # 与文本链路共用来源、历史答案和完整性要求，只改变信息表示与交接方式。
+@@ -72,11 +75,92 @@
+         self.outputs[role] = content
+         if role == 'summarizer':
+             return content.strip()
+-        fenced = re.fullmatch(r'\s*```(?:json)?\s*(\{.*\})\s*```\s*', content, re.S | re.I)
+-        value = json.loads(fenced.group(1) if fenced else content)
++        # 共用读取方法的其他运行器也可以独立初始化每题审计。
++        if 'protocol_parse_ms' not in self.metrics:
++            self.protocol_parsing = []
++            self.metrics.update(protocol_parse_ms=0., field_normalization_ms=0.)
++        started = time.perf_counter_ns()
++        audit = {'role': role, 'raw_content': content, 'normalizations': [],
++                 'normalization_ms': 0.}
++        try:
++            fenced = re.fullmatch(r'\s*```(?:json)?\s*(\{.*\})\s*```\s*', content, re.S | re.I)
++            value = json.loads(fenced.group(1) if fenced else content)
++            conversion_started = time.perf_counter_ns()
++            try:
++                value = self._normalize_fields(role, value, audit['normalizations'], payload)
++            finally:
++                audit['normalization_ms'] = (time.perf_counter_ns() - conversion_started) / 1e6
++            audit['parsed_value'] = value
++            return value
++        finally:
++            audit['parse_ms'] = (time.perf_counter_ns() - started) / 1e6
++            self.protocol_parsing.append(audit)
++            self.metrics['protocol_parse_ms'] += audit['parse_ms']
++            self.metrics['field_normalization_ms'] += audit['normalization_ms']
++
++    def _normalize_fields(self, role, value, changes, payload=None):
++        """统一字段表示；不修补缺失事实、不猜测来源、不改变检索决定。"""
++        from .prepared_collaboration import source_label
++        if role == 'retriever' and isinstance(value, list):
++            changes.append({'field': 'root', 'before': value, 'after': {'facts': value}})
++            value = {'facts': value}
+         if not isinstance(value, dict):
+             raise ValueError('协议输出必须是字段对象。')
+-        return value
++        if role == 'planner':
++            original = value.get('lookup')
++            if isinstance(original, str) and original in ('true', 'false'):
++                value['lookup'] = original == 'true'
++                changes.append({'field': 'lookup', 'before': original, 'after': value['lookup']})
++        if role == 'reasoner' and isinstance(value.get('support'), list):
++            support = []
++            for index, item in enumerate(value['support']):
++                if isinstance(item, list) and len(item) in (4, 5):
++                    # 只把与实际收到的字段一致的整行引用转成编号；下游仍转交完整原行。
++                    if not any(item == row[:len(item)] for row in (payload or {}).get('facts', [])):
++                        raise ValueError('支持事实整行与已收到的字段不一致。')
++                    changes.append({'field': 'support.' + str(index), 'before': item, 'after': item[0]})
++                    item = item[0]
++                support.append(item)
++            value = {**value, 'support': support}
++        if role != 'retriever' or not isinstance(value.get('facts'), list):
++            return value
++        rows, packet = [], None
++        for index, original in enumerate(value['facts']):
++            row = original
++            if isinstance(row, dict):
++                required = {'id', 'subject', 'relation', 'value'}
++                if not required <= row.keys() or row.keys() - required - {'qualifiers', 'document'}:
++                    raise ValueError('命名事实字段不完整或包含无法归一化的字段。')
++                row = [row[k] for k in ('id', 'subject', 'relation', 'value')]
++                if 'qualifiers' in original or 'document' in original:
++                    row.append(original.get('qualifiers'))
++                if 'document' in original:
++                    row.append(original['document'])
++            if isinstance(row, list) and len(row) in (4, 5, 6):
++                row = list(row)
++                if (isinstance(row[0], str) and re.fullmatch(r'[1-9][0-9]*', row[0])
++                        and 's' + row[0] in self.evidence):
++                    row[0] = 's' + row[0]
++                if type(row[3]) in (bool, int) or (type(row[3]) is float and math.isfinite(row[3])):
++                    row[3] = encode(row[3])
++                if len(row) >= 5 and (row[4] is None or row[4] == []):
++                    row[4] = ''
++                if len(row) == 6:
++                    packet = self._packet() if packet is None else packet
++                    documents = {r[0]: r[5] for r in packet['facts']}
++                    if (not isinstance(row[0], str) or not isinstance(row[5], str)
++                            or documents.get(source_label(row[0])) != row[5]):
++                        raise ValueError('交接文档与所引用来源不一致。')
++                    if not isinstance(row[4], str):
++                        raise ValueError('事实限定必须为文本。')
++                    # 六列输入式记录转换成五列交接式，仍保留文档标题，不丢掉来源语义。
++                    row[4] = '; '.join(filter(None, [row[4], 'document=' + row[5],
++                                                   'title=' + packet['sources'][row[5]]]))
++                    row = row[:5]
++            if row != original:
++                changes.append({'field': 'facts.' + str(index), 'before': original, 'after': row})
++            rows.append(row)
++        return {**value, 'facts': rows}
+ 
+     def _facts(self, rows, allowed):
+         from .prepared_collaboration import source_label
+@@ -178,10 +262,11 @@
+         self.messages, self.outputs, self.searches, self.evidence = [], {}, [], {}
+         self.observed = {}
+         self.retrieval_decisions, self.reasoning_decisions = [], []
++        self.protocol_parsing = []
+         self.metrics = {'memory_search_ms': 0., 'memory_write_ms': 0., 'knowledge_search_ms': 0.,
+                         'knowledge_searches': 0, 'memory_bindings_used': 0, 'memory_evidence_used': 0,
+                         'memory_facts_observed': 0, 'memory_facts_added': 0,
+-                        'memory_only_tasks': 0}
++                        'memory_only_tasks': 0, 'protocol_parse_ms': 0., 'field_normalization_ms': 0.}
+         self.task = question
+         start_call = len(self.client.calls)
+         started = time.perf_counter()
+@@ -270,7 +355,8 @@
+                 role_metrics[role + '_' + key] = sum(c[key] for c in selected)
+             role_metrics[role + '_calls'] = len(selected)
+         return {'question': question, 'prediction': prediction, 'error': error,
+-                'implementation': 'native-field-collaboration-v3', 'history_scope': history_scope,
++                'implementation': 'native-field-collaboration-v4', 'history_scope': history_scope,
++                'protocol_parser_version': PROTOCOL_PARSER_VERSION, 'protocol_parsing': self.protocol_parsing,
+                 'resolved_question': self.task, 'planning_decision': plan,
+                 'planning_control': planning_control,
+                 'memory_read': memory_read, 'memory_written': retained,

@@ -24,6 +24,10 @@ def _conditions(record: dict[str, Any]) -> tuple[Any, ...]:
         ),
         _canonical(record.get("failure_pattern")),
         _canonical(record.get("task_type")),
+        str(record.get("namespace") or ""),
+        str(record.get("task_family") or ""),
+        str(record.get("experience_scope") or ""),
+        str(record.get("experience_scope_key") or ""),
     )
 
 
@@ -187,6 +191,8 @@ def plan_maintenance(
             for item in compatible:
                 item["problem_pattern"] = left["problem_pattern"]
                 item["solution_pattern"] = left["solution_pattern"]
+                item["trigger_conditions"] = left.get("trigger_conditions", [])
+                item["failure_pattern"] = left.get("failure_pattern", "")
             merged = merge_experience_records(compatible)
             for field in (
                 "memory_id",

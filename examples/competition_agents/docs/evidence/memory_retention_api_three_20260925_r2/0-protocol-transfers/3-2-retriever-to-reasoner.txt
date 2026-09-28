@@ -1,0 +1,1 @@
+{"task":"Did Cotton live alone?","facts":[["s4","Cotton","NOT lived","alone"]]}
