@@ -1,0 +1,20 @@
+{
+  "baseline_version": "competition-v8.16-bounded-role-fields-20261002",
+  "server_project": "/root/autodl-tmp/project/competition-v816-bounded-fields-20261002",
+  "methods": [
+    "latent"
+  ],
+  "datasets": [
+    "topiocqa-ranked-153"
+  ],
+  "models": [
+    "Qwen/Qwen3.5-9B"
+  ],
+  "task_count": 10,
+  "max_tokens": 1024,
+  "max_searches": 2,
+  "output_repeat_ngram_size": 32,
+  "latent_steps": 40,
+  "memory_policy": "release_transients",
+  "wait_for_queue": "/root/autodl-tmp/experiments/v816-qwen35-lifecycle-ablation-20261002/queue.json"
+}

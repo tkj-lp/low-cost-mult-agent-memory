@@ -26,7 +26,7 @@ class Tokenizer:
 
     def decode(self, ids, **kwargs):
         assert kwargs == {'skip_special_tokens': True}
-        return self.response if self.response is not None else str(ids.tolist())
+        return self.response if self.response is not None else str(ids.tolist() if hasattr(ids, 'tolist') else ids)
 
 
 def test_native_call_preserves_messages_and_invalid_raw_output_without_cache_or_repair(monkeypatch):
@@ -44,9 +44,10 @@ def test_native_call_preserves_messages_and_invalid_raw_output_without_cache_or_
 
         def generate(self, **kwargs):
             self.received.append(kwargs)
-            assert set(kwargs) == {'input_ids', 'attention_mask', 'do_sample', 'max_new_tokens'}
+            assert set(kwargs) == {'input_ids', 'attention_mask', 'do_sample', 'max_new_tokens',
+                                   'use_cache', 'return_dict_in_generate', 'eos_token_id'}
             assert kwargs['do_sample'] is False and kwargs['max_new_tokens'] == 1024
-            return torch.cat((kwargs['input_ids'], torch.tensor([[7, 9]])), dim=1)
+            return SimpleNamespace(sequences=torch.cat((kwargs['input_ids'], torch.tensor([[7, 9]])), dim=1))
 
     model = Model()
     client = NativeLocalChat(SimpleNamespace(model=model, tokenizer=tokenizer, torch=torch,
@@ -64,7 +65,8 @@ def test_native_call_preserves_messages_and_invalid_raw_output_without_cache_or_
     assert not hasattr(client, 'past') and not hasattr(client, 'delta')
 
 
-def test_native_outputs_match_direct_standard_generation_and_model_stays_unchanged():
+@pytest.mark.parametrize('guard_size', [0, 32])
+def test_native_outputs_match_direct_standard_generation_and_model_stays_unchanged(guard_size):
     import torch
     from transformers import Qwen2Config, Qwen2ForCausalLM
     torch.manual_seed(17)
@@ -73,7 +75,8 @@ def test_native_outputs_match_direct_standard_generation_and_model_stays_unchang
         num_attention_heads=2, num_key_value_heads=1, eos_token_id=2, pad_token_id=0)).eval()
     tokenizer = Tokenizer(torch)
     client = NativeLocalChat(SimpleNamespace(model=model, tokenizer=tokenizer, torch=torch,
-                                             model_name='tiny', device='cpu'), max_tokens=5)
+                                             model_name='tiny', device='cpu'), max_tokens=5,
+                             output_repeat_ngram_size=guard_size)
     messages = [{'role': 'user', 'content': 'A new fact'}]
     weights = {name: value.clone() for name, value in model.state_dict().items()}
     configuration = copy.deepcopy(model.generation_config.to_dict())

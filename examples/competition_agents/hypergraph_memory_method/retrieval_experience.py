@@ -13,25 +13,30 @@ from .store import SQLiteHypergraphMemoryStore
 class RetrievalExperienceMemory:
     """策略只建议先搜索哪些关系；证据充分性由调用者重新验证。"""
 
-    def __init__(self, path, namespace, *, capacity=64):
+    def __init__(self, path, namespace, *, capacity=64, policy='score_bound'):
         if capacity < 1 or not namespace:
             raise ValueError('经验容量必须为正，且需要知识库及查询版本作用域。')
+        if policy not in ('score_bound', 'hint_only'):
+            raise ValueError('未知经验使用方式。')
+        self.policy = policy
+        self.strategy_version = 2 if policy == 'hint_only' else 1
         if str(path) != ':memory:':
             Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.store = SQLiteHypergraphMemoryStore(path)
         self.namespace, self.capacity = namespace, capacity
         self.records = {
             r['memory_id']: r for r in self.store.list(memory_types=['experience'])
-            if r.get('namespace') == namespace and r.get('strategy_version') == 1
+            if r.get('namespace') == namespace and r.get('strategy_version') == self.strategy_version
             and r.get('lifecycle_stage') != 'deprecated'
         }
 
     def lookup(self, category):
         """最多尝试一条策略；跨题型只作候选提示，不能绕过运行时校验。"""
-        if not self.records:
+        matches = [r for r in self.records.values() if category in r['observed_categories']]
+        if not matches:
             return None
-        return max(self.records.values(), key=lambda r: (
-            category in r['observed_categories'], r.get('observation_order', 0),
+        return max(matches, key=lambda r: (
+            r.get('observation_order', 0),
             r['updated_at'], r['memory_id']))
 
     def commit(self, *, task_key, category, relation_paths, source_ids,
@@ -65,7 +70,7 @@ class RetrievalExperienceMemory:
             'memory_id': key, 'global_memory_id': key,
             'memory_type': 'experience', 'memory_layer': 'experience',
             'source_agent': 'RetrieverAgent', 'namespace': self.namespace,
-            'strategy_version': 1, 'created_at': timestamp,
+            'strategy_version': self.strategy_version, 'created_at': timestamp,
             'task_topic': '关系检索候选选择',
             'summary': '先检索过去实际采用过的关系路径；通过遗漏候选上界检查后才缩小检索范围。',
             'problem_pattern': 'relation-search-' + digest(json.dumps(paths)),
@@ -79,6 +84,12 @@ class RetrievalExperienceMemory:
             'validation_target': 'retrieval_selection_equivalence_only',
             'answer_correctness_verified': False,
         })
+        if self.policy == 'hint_only':
+            record.update(summary='曾实际检索到的关系路径；仅供角色规划，不判断答案充分性。',
+                          solution_pattern='suggest-observed-relation-paths',
+                          trigger_conditions=['same-knowledge-version', 'role-decides-applicability'],
+                          failure_pattern='role-requested-knowledge-lookup',
+                          validation_target='observed_retrieval_trace_only')
         record['observed_categories'] = sorted(set(record['observed_categories']) | {category})
         record['source_memory_ids'] = list(dict.fromkeys([*record['source_memory_ids'], episode_id]))[-8:]
         record['observations'] += 1

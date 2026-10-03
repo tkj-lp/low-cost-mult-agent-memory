@@ -1,0 +1,34 @@
+{
+  "completed_groups_retained": [
+    "memory-off-plain",
+    "memory-off-structured",
+    "memory-off-latent",
+    "codeact-plain"
+  ],
+  "remaining_jobs": [
+    {
+      "name": "codeact-structured",
+      "method": "structured",
+      "dataset": "codeact"
+    },
+    {
+      "name": "codeact-latent",
+      "method": "latent",
+      "dataset": "codeact"
+    },
+    {
+      "name": "cache-deferred-latent",
+      "method": "latent",
+      "dataset": "topiocqa-ranked-153",
+      "deferred_reclamation": true
+    }
+  ],
+  "interrupted_groups_preserved": [
+    {
+      "group": "codeact-structured",
+      "saved_tasks": 2
+    }
+  ],
+  "backup": "/root/autodl-tmp/experiments/report-full-20261002-203926/interrupted-qwen27-20261002-144133",
+  "reason": "fresh independent memory for interrupted group; completed groups are not rerun"
+}

@@ -9,9 +9,11 @@ LOCK = BASE/'config/baselines.lock.json'
 
 
 def source_files():
-    paths = [BASE/'run_competition.py', BASE/'runner_server.py', BASE/'config/methods.json']
+    paths = [BASE/'run_competition.py', BASE/'runner_server.py', BASE/'config/methods.json', BASE/'requirements.txt']
     for folder in ('competition_agents', 'hypergraph_memory_method', 'baselines', 'tools'):
         paths.extend(p for p in (BASE/folder).rglob('*.py') if 'tests' not in p.parts)
+    vendor = BASE/'competition_agents/vendor/latentmas'
+    paths.extend([vendor/'LICENSE', vendor/'provenance.json'])
     for folder in ('data/continuous_coqa_v1', 'data/continuous_topiocqa_119_v1', 'data/codeact_tool_sources', 'data/prepared_knowledge'):
         paths.extend(p for p in (BASE/folder).rglob('*') if p.is_file() and 'extraction_cache' not in p.parts)
     paths.extend([BASE/'data/codeact_tasks.json', BASE/'data/official_topiocqa_001_10turns.json'])

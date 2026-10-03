@@ -1,0 +1,41 @@
+{
+  "status": "finished",
+  "jobs": [
+    {
+      "model_key": "qwen27",
+      "kind": "qa",
+      "status": "finished",
+      "mean_task_bytes": 593.5
+    },
+    {
+      "model_key": "qwen27",
+      "kind": "codeact",
+      "status": "finished",
+      "mean_task_bytes": 593.5
+    },
+    {
+      "model_key": "qwen9",
+      "kind": "qa",
+      "status": "finished",
+      "mean_task_bytes": 593.5
+    },
+    {
+      "model_key": "qwen9",
+      "kind": "codeact",
+      "status": "finished",
+      "mean_task_bytes": 592.0
+    },
+    {
+      "model_key": "glm",
+      "kind": "qa",
+      "status": "finished",
+      "mean_task_bytes": 593.5
+    },
+    {
+      "model_key": "glm",
+      "kind": "codeact",
+      "status": "finished",
+      "mean_task_bytes": 592.0
+    }
+  ]
+}

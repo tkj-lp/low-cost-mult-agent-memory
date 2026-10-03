@@ -1,0 +1,95 @@
+{
+  "model": "zai-org/GLM-4.7-Flash",
+  "task_count": 3,
+  "policy": "consumed_controls",
+  "delivery_positions_per_internal_call": 8,
+  "scope": "仅隐状态，真实连续问答前三题；角色提示、已消费内部步骤与重复控制信息的独立回收试验",
+  "compaction": "逐个张量替换，计入复制临时空间，保留绝对位置和所有递归状态",
+  "internal_step_retirement_is_approximate": true,
+  "weights_unchanged": true,
+  "formal_baseline_changed": false,
+  "all_workflows_complete": true,
+  "tasks": [
+    {
+      "task_id": "topiocqa-153-1",
+      "prediction": "The music and lyrics for the song \"Kinky Boots\" were written by Cyndi Lauper.",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "original_answer": "Cyndi Lauper wrote the music and lyrics for the song \"Kinky Boots.\"",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": true,
+      "cache_peak_bytes_including_compaction": 1512939520,
+      "cache_boundary_peak_bytes": 1479454720,
+      "original_cache_boundary_peak_bytes": 2545971200,
+      "seconds_including_audit": 23.171605547890067
+    },
+    {
+      "task_id": "topiocqa-153-2",
+      "prediction": "The singer is Cyndi Lauper.",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "original_answer": "Cyndi Lauper.",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": true,
+      "cache_peak_bytes_including_compaction": 1523640320,
+      "cache_boundary_peak_bytes": 1472716800,
+      "original_cache_boundary_peak_bytes": 2366935040,
+      "seconds_including_audit": 19.9246539613232
+    },
+    {
+      "task_id": "topiocqa-153-3",
+      "prediction": "The musical \"Kinky Boots\" conveys the story of Charlie Price.",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Charlie Price.",
+        "contradiction": false
+      },
+      "original_answer": "The musical conveys the story of Charlie Price.",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Charlie Price.",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": true,
+      "cache_peak_bytes_including_compaction": 1599518720,
+      "cache_boundary_peak_bytes": 1555496960,
+      "original_cache_boundary_peak_bytes": 2505543680,
+      "seconds_including_audit": 20.584056036546826
+    }
+  ]
+}

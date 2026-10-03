@@ -1,8 +1,6 @@
 """纯文本入口：整段记忆相似度检索，完整文本交接，不加载隐状态代码。"""
 import numpy as np
 
-from competition_agents.plain_text_collaboration import PlainTextCollaboration, PlainTextKnowledge
-
 
 class SimilarityTextMemory:
     method = 'semantic similarity over complete turn text; no passage segmentation'
@@ -34,18 +32,23 @@ class SimilarityTextMemory:
         selected = [records[i] for i in chosen]
         self.last_retrieval = {'candidates': len(records), 'selected': chosen,
                                'scores': [scores[i] for i in chosen], 'unit': 'complete_turn_text'}
-        return ''.join(r['text'] for r in selected), next(
+        return '\n\n'.join(r['text'] for r in selected), next(
             (r['corpus_version'] for r in reversed(selected) if r['corpus_version']), None), len(records)
 
     def read_all(self, scope):
         records = self.sessions.get(scope, [])
-        return ''.join(r['text'] for r in records), next(
+        return '\n\n'.join(r['text'] for r in records), next(
             (r['corpus_version'] for r in reversed(records) if r['corpus_version']), None), len(records)
+
+    def read_units(self, scope, indices):
+        """返回已选中的完整记忆单元，重查合并时不切段或再次筛选。"""
+        records = self.sessions.get(scope, [])
+        return [{'id': index, 'text': records[index]['text']} for index in indices]
 
     def close(self):
         pass
 
 
 def create(client, resources):
-    return PlainTextCollaboration(PlainTextKnowledge(resources['knowledge']), client,
-                                  memory=SimilarityTextMemory(resources['encode']))
+    from competition_agents.unified_collaboration import create_collaboration
+    return create_collaboration(client, resources, method='plain')

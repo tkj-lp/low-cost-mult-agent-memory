@@ -1,0 +1,22 @@
+{
+  "baseline_version": "competition-v8.16-bounded-role-fields-20261002",
+  "server_project": "/root/autodl-tmp/project/competition-v816-final-20261002",
+  "methods": [
+    "plain",
+    "structured",
+    "latent"
+  ],
+  "datasets": [
+    "topiocqa-ranked-153"
+  ],
+  "models": [
+    "zai-org/GLM-4.7-Flash"
+  ],
+  "task_count": 10,
+  "max_tokens": 1024,
+  "max_searches": 2,
+  "output_repeat_ngram_size": 32,
+  "latent_steps": 40,
+  "memory_policy": "release_transients",
+  "purpose": "complete_report_main_qa_fixed_ten_turns"
+}

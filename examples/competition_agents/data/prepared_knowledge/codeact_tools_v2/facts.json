@@ -1,0 +1,204 @@
+[
+  {
+    "subject": "The executor",
+    "relation": "returns",
+    "polarity": "positive",
+    "object": "the actual result or an error",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "0870ea363ef6c074f54acf875fdb5e479d24e8444975d8a238c8a4973021ab9b"
+  },
+  {
+    "subject": "pvariance and pstdev",
+    "relation": "compute",
+    "polarity": "positive",
+    "object": "population statistics",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "13554bcb9fc964195a1ba81bb3352579eebfa690cd9b6e10ac57d2d99214080f"
+  },
+  {
+    "subject": "task data",
+    "relation": "is supplied in",
+    "polarity": "positive",
+    "object": "the inputs dictionary",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "14de2e7e6ed35c0bacafe6673e70496ade3848b052ea123cf6a62e7da16025d5"
+  },
+  {
+    "subject": "result",
+    "relation": "contains for arrays",
+    "polarity": "positive",
+    "object": "the requested values in task order",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "1aaa28991446e80aeba84edbf3d9141f2921b3648d4bd120820f63efd7281688"
+  },
+  {
+    "subject": "Printed output",
+    "relation": "does not replace",
+    "polarity": "positive",
+    "object": "result",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "1b2ce2097da096454992754a951a1a596f430c2a097ab4fa750c21a02b96c644"
+  },
+  {
+    "subject": "The task",
+    "relation": "declares",
+    "polarity": "positive",
+    "object": "output_fields",
+    "qualifiers": [
+      {
+        "kind": "attribute",
+        "value": "as the required result keys for objects"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "5a3a344b21430fa9079d619ec28440c76fbc99a1a7e92ec3734b4fd835a56181"
+  },
+  {
+    "subject": "File access",
+    "relation": "are unavailable",
+    "polarity": "negative",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "5d5ca0278db31ac55877640fa3333f0db01c4ded0acf1dcd961e12ed7012a972"
+  },
+  {
+    "subject": "Python sum, len, min, max, sorted, list, dict and range",
+    "relation": "are available",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "65fc2c4f083aa50c83c612657725878519921a5d19db80f29733ee7725bdf7db"
+  },
+  {
+    "subject": "network access",
+    "relation": "are unavailable",
+    "polarity": "negative",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "73e3f4f137b0f5ffa0de0890c6a6f234bc054b73c0aabbfd65f505acf40a7a20"
+  },
+  {
+    "subject": "Printed output",
+    "relation": "is captured in",
+    "polarity": "positive",
+    "object": "a bounded log",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "792cb3be038f76b785372a3f180a787dcb58b7884f437038ee1d08d60bb2d8c3"
+  },
+  {
+    "subject": "output_schema",
+    "relation": "declares",
+    "polarity": "positive",
+    "object": "the result type",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "8892e5c0c5e582d232b08afe93ce421bf09e1ffe4b2e1a44a6a4f345a743d0b4"
+  },
+  {
+    "subject": "Only the modules in allowed_imports",
+    "relation": "are available",
+    "polarity": "positive",
+    "object": "",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "9021237640ea804c795c825658023b2ee8afad34d47a1de3c1efbaf05b0296e0"
+  },
+  {
+    "subject": "The math module",
+    "relation": "provides",
+    "polarity": "positive",
+    "object": "sqrt",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "9b771216f225405e921270162ff60d30adf5b768b0a567795192c3c0e98b563e"
+  },
+  {
+    "subject": "The execution environment",
+    "relation": "supplies",
+    "polarity": "positive",
+    "object": "task data",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "a815c88b6d699ecb6d20ee8b4fc98bb4fc72b75cb3171ec9d8aacb1073b6a612"
+  },
+  {
+    "subject": "The program",
+    "relation": "must assign",
+    "polarity": "positive",
+    "object": "a JSON-compatible value",
+    "qualifiers": [
+      {
+        "kind": "destination",
+        "value": "result"
+      }
+    ],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "b2737fee9aef014f9c5b35d3c2b4fcd1fe27a6efeb42054622d39a61a65f2cdd"
+  },
+  {
+    "subject": "The statistics module",
+    "relation": "provides",
+    "polarity": "positive",
+    "object": "mean, median, pvariance and pstdev",
+    "qualifiers": [],
+    "sentences": [
+      0
+    ],
+    "document_id": "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5",
+    "id": "db52f65f9d33e149d61c5b01dd260b6554672021ad3aeb86002852d0db2c3b5d"
+  }
+]

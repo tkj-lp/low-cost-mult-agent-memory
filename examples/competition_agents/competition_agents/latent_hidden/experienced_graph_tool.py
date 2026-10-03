@@ -63,10 +63,15 @@ class ExperiencedGraphTool(CalibratedGraphTool):
                     for pattern, (_, center, radius) in self._groups.items() if pattern not in patterns)
         selected, _ = self._select(scores, paths)
         complete = bool(selected) and all(k in self.records for k in selected)
-        certified = (complete and top >= self.thresholds[category] and upper < top-.08-1e-5)
+        # 扩大候选后，旧的最高分减固定差值不再代表选择边界。
+        # 只有预算已满、目录补充也已计入，才能按最后入选分数跳过剩余计算。
+        inventory = set((self.coverage_plan or {}).get('required', ()))
+        cutoff = min((scores[k] for k in selected if k in scores), default=-1.)
+        certified = (complete and len(selected) >= self.max_facts and inventory <= set(scores)
+                     and upper < cutoff-1e-5)
         audit['experience_certificate'] = {
             'kind': 'omitted_similarity_upper_bound', 'top_score': top,
-            'omitted_upper_bound': upper, 'selection_cutoff': top-.08,
+            'omitted_upper_bound': upper, 'selection_cutoff': cutoff,
             'complete_resident_bundle': complete, 'passed': certified,
             'validation_target': 'retrieval_selection_equivalence_only',
         }

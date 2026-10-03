@@ -1,0 +1,40 @@
+{
+  "project": "/root/autodl-tmp/project/competition-v816-final-20261002",
+  "reference_root": "/root/autodl-tmp/experiments/task-buffer-final-20261003",
+  "task_count": 3,
+  "models": [
+    {
+      "key": "qwen9",
+      "model": "Qwen/Qwen3.5-9B"
+    },
+    {
+      "key": "qwen27",
+      "model": "Qwen/Qwen3.8-27B"
+    },
+    {
+      "key": "glm",
+      "model": "zai-org/GLM-4.7-Flash"
+    }
+  ],
+  "frozen_sources": {
+    "competition_agents/llm/latentmas_chat.py": "4f06cb77d014f99d0375b5963eb522272fed65eb2c7acb452b482fba57930dcc",
+    "competition_agents/vendor/latentmas/models.py": "72f107da6d09c1926bd2f7471805f2322e867eeee7d9d0710dbecadd2456d234",
+    "competition_agents/llm/native_local_chat.py": "15c4991c89d5ee8df354f4bd25d30663e941f9a240e77da2dbd65296745a2458",
+    "competition_agents/llm/continuous_state_chat.py": "9cc69486f54237a367292f43dd7b1270154088cb72410c309ea80282c6277d4e",
+    "competition_agents/llm/resident_chat.py": "c0a711bcf772be073495ff5e67a8164bc34304e89be8e1fdbaa7dc8310a1784c",
+    "competition_agents/llm/generation.py": "c1fb0bd09195d3b722a8120b3a72a5f7c864a277b3ace24e6b1e0e186a3f4427",
+    "competition_agents/unified_collaboration.py": "2dbbf1d344900393ccf0c1d90737e6b4a346d8e7c61bf809022112f5293d6096",
+    "competition_agents/role_prompts.py": "555c7983f2fa3644caec10c94a3bcb6d40393ea4ae80cf1364f18bc46b537c01",
+    "competition_agents/collaboration_transport.py": "9515c724a790ce796cffef866cc79391ad4c9ae8a173bb0339e9fdd3ba52fa81",
+    "competition_agents/collaboration_memory.py": "6c3a10e5146e228b8069b2f5fbfa063d92bd4131c15ad5dcde457bd1a24f65ed",
+    "hypergraph_memory_method/prepared_knowledge.py": "a79cadf6d8946f40409bb5697b9ae41c8e993fe72bda974f53f0eb754f646805",
+    "config/methods.json": "75c407f10dd28c0a9d467eb7dc5966f27d51fd757b4ad5daf47169455502ca61",
+    "data/prepared_knowledge/topiocqa_153_v4/manifest.json": "f0d54264498f4ad4db0f3f1db3d301ae1cdd8595597d93e16e5700a711642f7a"
+  },
+  "policy": "原始证据、历史问答正文、真实查询和递归状态完整保留；按消费时点回收角色职责、重复原题、重复来源编号、已消费工具控制及检索路径建议；每次内部计算40步，保留8个末端状态；原有前32步回收仍属近似方案。复制按单个键或值执行，计入临时占用。",
+  "max_tokens": 1024,
+  "latent_steps": 40,
+  "policy_key": "consumed_controls",
+  "experimental_target": "各模型前三题平均工作缓存峰值下降约30%，不以目标覆盖实测。",
+  "new_task_runs_allowed": 9
+}

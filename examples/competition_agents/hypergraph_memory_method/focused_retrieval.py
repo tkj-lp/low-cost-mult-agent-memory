@@ -38,7 +38,7 @@ class FocusedGraphSearch:
                 self.names[form.strip()].add(node)
         for alias, canonical in getattr(knowledge, 'alias_index', {}).items():
             node = 'entity:' + normalized_name(canonical)
-            if node in knowledge._graph_neighbors:
+            if node in knowledge._graph_named_nodes:
                 self.names[normalized_name(alias)].add(node)
         vectors = []
         providers = set()
@@ -86,9 +86,10 @@ class FocusedGraphSearch:
         if roots is None:
             roots, intent = self.anchors(query)
         else:
-            roots, intent = set(roots), query
-            if not roots <= library._graph_named_nodes:
-                raise ValueError('指代绑定包含未知实体节点。')
+            # 历史入口只接受图中正式节点；旧记忆含非入口关系值时回退到查询定位。
+            roots, intent = set(roots) & library._graph_named_nodes, query
+            if not roots:
+                roots, intent = self.anchors(query)
         if not roots:
             return library.search_graph(query, max_facts, constraints=constraints)
         encoded = self.embed(intent)
@@ -137,30 +138,27 @@ class FocusedGraphSearch:
         scores = {key: float(self.vectors[self.positions[key]] @ vector) - .12 * (len(path) - 1)
                   for key, path in paths.items()}
         ranked = sorted(paths, key=lambda key: (-scores[key], len(paths[key]), key))
-        best = scores[ranked[0]]
         selected, used_paths = [], {}
-        terminals = 0
         for key in ranked:
-            # 有明显相关性落差时停止；不为凑足预算继续追加无关事实。
-            if terminals and (scores[key] < best - .10 or terminals >= 3):
+            # 检索预算约束候选规模，不用相似度微小落差提前排除相关关系。
+            if len(selected) >= max_facts:
                 break
             bundle = list(paths[key])
             for peer in self.action_peers.get(key, ()):
                 if peer not in bundle and eligible(peer):
                     bundle.append(peer)
             additions = [item for item in bundle if item not in selected]
-            if len(selected) + len(additions) > max_facts:
-                # 首组允许超出软预算，不能截断关系链或并列值，也不能重新排序丢失它。
-                if selected:
-                    continue
+            # 预算只控制新增检索入口；已经命中的路径和同动作关系必须完整返回。
             for item in additions:
                 selected.append(item)
                 used_paths[item] = list(paths[key])
-            terminals += 1
         plan = library.relation_index.plan(query, roots)
         if plan['verifiable']:
-            selected = library.relation_index.select(plan, scores, max_facts=max(24, max_facts))
-            used_paths = {key: plan['paths'].get(key, (key,)) for key in selected}
+            # 目录只补充关联路径，不能覆盖并删掉多跳检索已经选出的候选。
+            for key in library.relation_index.select(plan, scores, max_facts=max(24, max_facts)):
+                if key not in selected:
+                    selected.append(key)
+                    used_paths[key] = plan['paths'].get(key, (key,))
         return [library._hit(key, library._graph_rows[key][1], library._graph_rows[key][2],
                              scores.get(key, scores[ranked[0]]), 'focused_hypergraph',
                              fact_fields=copy.deepcopy(library._graph_rows[key][3]),

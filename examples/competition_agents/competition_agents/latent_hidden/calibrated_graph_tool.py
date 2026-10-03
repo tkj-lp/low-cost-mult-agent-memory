@@ -1,4 +1,4 @@
-"""校准后的数值检索：先检索来源记忆，覆盖或置信度不足时查询完整超图。"""
+"""数值查询与完整关系交接；按来源是否已驻留决定是否查库，不裁决答案充分性。"""
 from __future__ import annotations
 
 import copy
@@ -11,23 +11,24 @@ import torch
 from .graph_state_tool import GraphStateTool
 from .calibrated_query import INTENTS
 from hypergraph_memory_method.source_context import identity_qualifiers
+from hypergraph_memory_method.discourse_reference import SourceReferenceHistory
 
 
 class CalibratedGraphTool(GraphStateTool):
     def __init__(self, knowledge, bundle, teacher):
         self.teacher = teacher
-        super().__init__(knowledge, bundle)
+        super().__init__(knowledge, bundle, terminals=24, max_facts=24)
         # 使用与离线教师一致的语义空间；不再对查询任意混合或恢复幅度。
         self.vectors = self.semantic_vectors
         self.intent_vectors = torch.as_tensor(teacher.encode([row[1] for row in INTENTS], normalize_embeddings=True),
                                               dtype=torch.float32, device=bundle.device)
-        self.thresholds = {row[0]: 1.01 for row in INTENTS}
-        self.alignment_threshold = 1.01
-        self.require_topic_alignment = True
         self.resident_paths = {}
         self.constrained_question = False
         self.coverage_plan = None
         self.directory_ms = 0.
+        self.reference_history = SourceReferenceHistory(knowledge)
+        self.reference_binding = None
+        self.current_question = None
 
     def _encode_index(self):
         texts = []
@@ -42,13 +43,26 @@ class CalibratedGraphTool(GraphStateTool):
     def begin_question(self, question, scope):
         if scope != self.scope:
             self.resident_paths = {}
+            self.reference_history.reset()
         super().begin_question(question, scope)
+        self.current_question = question
+        self.roots, self.reference_binding = self.reference_history.resolve(question, self.roots)
         # 新数值或时序条件不依据普通属性命中擅自省略补查。
         self.constrained_question = bool(re.search(r'\d|\b(before|after|between|earlier|later|except)\b', question, re.I))
         index = getattr(self.knowledge, 'relation_index', None)
         started = time.perf_counter()
         self.coverage_plan = index.plan(question, self.roots) if index is not None else None
+        # 只建立可达来源编号目录，不读取未知事实正文，也不判断答案充分性。
+        # 路径根据当前实体重建，不能依赖上次查询的实体集合是否完全相同。
+        self.candidate_paths = dict(self._paths())
+        if self.coverage_plan:
+            for key in self.coverage_plan.get('unbound_source_ids', ()):
+                self.candidate_paths.setdefault(key, (key,))
         self.directory_ms = (time.perf_counter() - started) * 1000 if index is not None else 0.
+
+    def remember_answer(self, answer):
+        if self.events:
+            self.reference_history.remember(self.current_question, answer, self.events[-1]['source_ids'], self.roots)
 
     def _scores(self, query, paths):
         keys = sorted(paths)
@@ -59,74 +73,28 @@ class CalibratedGraphTool(GraphStateTool):
         return {key: score-.12*(len(paths[key])-1) for key, score in zip(keys, scores)}
 
     def _select(self, scores, paths):
-        if self.coverage_plan and self.coverage_plan['verifiable']:
-            # 缓存检索不能借用尚未驻留的正文或桥接来源。
-            plan = {**self.coverage_plan, 'terminals': [k for k in self.coverage_plan['terminals']
-                    if k in paths and all(p in scores for p in self.coverage_plan['paths'][k])]}
-            selected = self.knowledge.relation_index.select(plan, scores, max_facts=24)
-            return selected, sorted(scores, key=lambda key: (-scores[key], key))
         ranked = sorted(scores, key=lambda key: (-scores[key], len(paths[key]), key))
         selected, terminals = [], 0
         for key in ranked:
             if key in selected:
                 continue
-            if terminals and (scores[key] < scores[ranked[0]]-.08 or terminals >= self.terminals):
+            if len(selected) >= self.max_facts:
                 break
             group = list(paths[key])
-            group.extend(k for k in self.action_peers.get(key, ()) if k not in group)
+            group.extend(k for k in self.action_peers.get(key, ()) if k not in group and k in scores)
+            if not all(k in scores for k in group):
+                continue
             # 记忆路径只能使用实际已存事实；不得从外部目录补出正文冒充命中。
             additions = [k for k in group if k not in selected]
-            if selected and len(selected)+len(additions) > self.max_facts:
-                continue
             selected.extend(additions)
             terminals += 1
+        if self.coverage_plan and self.coverage_plan['verifiable']:
+            plan = {**self.coverage_plan, 'terminals': [k for k in self.coverage_plan['terminals']
+                    if k in paths and all(p in scores for p in self.coverage_plan['paths'][k])]}
+            for key in self.knowledge.relation_index.select(plan, scores, max_facts=self.max_facts):
+                if key not in selected:
+                    selected.append(key)
         return selected, ranked
-
-    def calibrate_gate(self, samples, projected):
-        wrong_max = {row[0]: -1. for row in INTENTS}
-        alignment_errors, correct_alignments, audits = [], [], []
-        for sample, query in zip(samples, projected):
-            self.begin_question(sample['question'], 'gate-calibration')
-            paths = self._paths()
-            if not paths:
-                continue
-            true_category = sample['category']
-            target = self.intent_vectors[[row[0] for row in INTENTS].index(true_category)]
-            expected, _ = self._select(self._scores(target, paths), paths)
-            predicted_scores = self._scores(query, paths)
-            similarities = self.intent_vectors @ query.reshape(-1)
-            category_index = int(similarities.argmax())
-            category = INTENTS[category_index][0]
-            alignment = float(similarities[category_index])
-            (correct_alignments if category == true_category else alignment_errors).append(alignment)
-            negative = [score for key, score in predicted_scores.items() if key not in expected]
-            wrong_max[category] = max(wrong_max[category], max(negative, default=-1.))
-            audits.append({'expected_category': true_category, 'predicted_category': category,
-                           'alignment': alignment, 'teacher_relevant_source_ids': expected,
-                           'best_relevant_score': max((predicted_scores[k] for k in expected if k in predicted_scores), default=-1.),
-                           'best_irrelevant_score': max(negative, default=-1.)})
-        self.thresholds = {k: (v+.02 if v > -1 else 1.01) for k, v in wrong_max.items()}
-        self.alignment_threshold = max(.7, max(alignment_errors, default=.0)+.02)
-        # 用校准集的完整/缺失关系两种记忆条件选择门控，不根据正式三题放宽门限。
-        # 来源关系强匹配时，额外要求它与宽泛题型向量接近可能误拒绝有效记忆。
-        policies = []
-        for require_alignment in (True, False):
-            positive, false_positive = 0, 0
-            for audit in audits:
-                allowed = not require_alignment or audit['alignment'] >= self.alignment_threshold
-                threshold = self.thresholds[audit['predicted_category']]
-                positive += int(allowed and audit['best_relevant_score'] >= threshold)
-                false_positive += int(allowed and audit['best_irrelevant_score'] >= threshold)
-            policies.append({'require_topic_alignment': require_alignment, 'accepted_complete_memory_cases': positive,
-                             'accepted_missing_relation_cases': false_positive})
-        selected = max(policies, key=lambda p: (-p['accepted_missing_relation_cases'], p['accepted_complete_memory_cases']))
-        self.require_topic_alignment = selected['require_topic_alignment']
-        self.scope, self.roots, self.records, self.resident_paths = None, set(), {}, {}
-        return {'thresholds': self.thresholds, 'alignment_threshold': self.alignment_threshold,
-                'require_topic_alignment': self.require_topic_alignment, 'gate_calibration_policies': policies,
-                'calibration_category_correct': sum(a['expected_category']==a['predicted_category'] for a in audits),
-                'samples': len(audits), 'audits': audits,
-                'limits': 'thresholds selected on calibration data, not a guarantee on unseen questions'}
 
     def _memory_scores(self, query, paths, category):
         return self._scores(query, paths)
@@ -139,40 +107,46 @@ class CalibratedGraphTool(GraphStateTool):
         similarity = self.intent_vectors @ query.reshape(-1)
         category_index = int(similarity.argmax())
         category, alignment = INTENTS[category_index][0], float(similarity[category_index])
+        category = (self.coverage_plan or {}).get('facet') or category
         # 只搜索已驻留且来源路径完整的事实，不读取知识库正文或执行全图排序。
-        memory_paths = {key: item['path'] for key, item in self.resident_paths.items()
-                        if item['roots'] == tuple(sorted(self.roots))
-                        and all(k in self.records for k in item['path'])}
+        paths_inventory = self.candidate_paths
+        memory_paths = {key: path for key, path in paths_inventory.items()
+                        if all(k in self.records for k in path)}
+        missing_resident = bool(set(paths_inventory) - self.records.keys())
         memory_scores = self._memory_scores(query, memory_paths, category)
         memory_selected, memory_ranked = self._select(memory_scores, memory_paths)
         best_memory = memory_scores[memory_ranked[0]] if memory_ranked else -1.
-        complete = bool(memory_selected) and all(k in self.records for k in memory_selected)
-        sufficient = (complete and not self.constrained_question
-                      and (not self.require_topic_alignment or alignment >= self.alignment_threshold)
-                      and best_memory >= self.thresholds[category])
+        # 仅核验来源关系驻留情况；不以相似度或目录判断答案是否正确。
+        sufficient = bool(paths_inventory) and not missing_resident
         coverage = None
         if self.coverage_plan is not None:
             coverage = self.knowledge.relation_index.certificate(self.coverage_plan, self.records)
-            sufficient = coverage['sufficient'] and not self.constrained_question
-            if sufficient:
-                # 对目录中的每条必要来源逐项验证；单个最高相似度不能充当覆盖证明。
-                selected_keys = self.knowledge.relation_index.select(self.coverage_plan, memory_scores, max_facts=24)
-                sufficient = all(k in self.records for k in selected_keys)
-                memory_selected = selected_keys if sufficient else memory_selected
+            if self.coverage_plan.get('verifiable') and not self.constrained_question:
+                sufficient = sufficient or bool(coverage.get('relations_present', coverage['sufficient']))
         memory_ms = (time.perf_counter()-started)*1000
         graph_ms = 0.
+        source_scope = 'graph_relations'
         if sufficient:
             selected, ranked, scores, paths = memory_selected, memory_ranked, memory_scores, memory_paths
-            reason = 'calibrated_relation_match_with_complete_resident_bundle'
+            reason = 'requested_source_relations_resident' if coverage and coverage['sufficient'] else 'all_reachable_source_candidates_resident'
         else:
             stamp = time.perf_counter()
-            paths = self.coverage_plan['paths'] if self.coverage_plan and self.coverage_plan['verifiable'] else self._paths()
+            paths = dict(paths_inventory)
             scores = self._scores(query, paths)
             selected, ranked = self._select(scores, paths)
             graph_ms = (time.perf_counter()-stamp)*1000
-            reason = ('no_resident_evidence' if not memory_selected else
-                      'new_explicit_constraint' if self.constrained_question else
-                      'incomplete_resident_bundle' if not complete else 'insufficient_relation_confidence')
+            reason = 'no_resident_evidence' if not memory_selected else 'incomplete_resident_bundle'
+            # 补查增加新关系，不能丢弃记忆检索已经交出的事实。
+            selected = list(dict.fromkeys([*memory_selected, *selected]))
+            for key in memory_selected:
+                paths.setdefault(key, memory_paths[key])
+            # 与全文链路的首次完整来源读取对齐；这些事实实际送入模型后才驻留。
+            complete = getattr(self.knowledge, 'read_graph_sources', None)
+            if not self.records and complete:
+                source_scope = 'complete_source_corpus_first_read'
+                selected = [hit['context_id'] for hit in complete()]
+                for key in selected:
+                    paths.setdefault(key, (key,))
         stamp = time.perf_counter()
         fresh, reused, facts = [], [], []
         for key in selected:
@@ -193,17 +167,30 @@ class CalibratedGraphTool(GraphStateTool):
             relation = fact['relation']
             if fact['polarity'] == 'negative' and not relation.casefold().startswith('not '):
                 relation = 'NOT ' + relation
-            row = {'id': 'f'+str(self.positions[key]), 'subject': fact['subject'], 'relation': relation,
-                   'object': fact['object'], 'polarity': fact['polarity']}
+            aliases = getattr(self.knowledge, 'graph_aliases', {})
+            from hypergraph_memory_method.source_context import normalized_name
+            def identity(role):
+                value = fact[role]
+                return aliases.get((fact['document_id'], normalized_name(value)),
+                                   aliases.get(normalized_name(value), value))
+            row = {'id': 'f'+str(self.positions[key]), 'subject': identity('subject'), 'relation': relation,
+                   'object': identity('object'), 'polarity': fact['polarity']}
             qualifiers = identity_qualifiers(fact, getattr(self.knowledge, 'graph_aliases', {}))
+            title = self.knowledge._graph_rows[key][1]
+            if title:
+                qualifiers.append({'kind': 'source_title', 'value': title})
             if qualifiers:
                 row['qualifiers'] = qualifiers
             facts.append(row)
         read_ms = (time.perf_counter()-stamp)*1000
         audit = {'query_kind': 'calibrated_model_representation', 'query_text': None,
                  'query_bytes': query.numel()*query.element_size(), 'roots': sorted(self.roots),
-                 'category': category, 'alignment': alignment, 'memory_threshold': self.thresholds[category],
-                 'require_topic_alignment': self.require_topic_alignment,
+                 'reference_binding': self.reference_binding,
+                 'category': category, 'alignment': alignment,
+                 'source_read_scope': source_scope,
+                 'memory_gate_basis': 'requested_relation_membership_not_answer_correctness',
+                 'reachable_source_count': len(paths_inventory),
+                 'unread_reachable_source_count': len(set(paths_inventory) - set(memory_paths)),
                  'memory_best_score': best_memory, 'memory_sufficient': sufficient, 'decision_reason': reason,
                  'memory_search_ms': memory_ms, 'index_search_ms': graph_ms + self.directory_ms,
                  'knowledge_directory_ms': self.directory_ms, 'knowledge_searches': int(not sufficient),

@@ -1,0 +1,174 @@
+{
+  "9fca5c8807ba9e6bd1e822b850faa0a4fffe9379483fe8905273efd85eb755b5": [
+    {
+      "subject": "The statistics module",
+      "relation": "provides",
+      "polarity": "positive",
+      "object": "mean, median, pvariance and pstdev",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "pvariance and pstdev",
+      "relation": "compute",
+      "polarity": "positive",
+      "object": "population statistics",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "The program",
+      "relation": "must assign",
+      "polarity": "positive",
+      "object": "a JSON-compatible value",
+      "qualifiers": [
+        {
+          "kind": "destination",
+          "value": "result"
+        }
+      ],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "The execution environment",
+      "relation": "supplies",
+      "polarity": "positive",
+      "object": "task data",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "The executor",
+      "relation": "returns",
+      "polarity": "positive",
+      "object": "the actual result or an error",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Only the modules in allowed_imports",
+      "relation": "are available",
+      "polarity": "positive",
+      "object": "",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "The task",
+      "relation": "declares",
+      "polarity": "positive",
+      "object": "output_fields",
+      "qualifiers": [
+        {
+          "kind": "attribute",
+          "value": "as the required result keys for objects"
+        }
+      ],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "File access",
+      "relation": "are unavailable",
+      "polarity": "negative",
+      "object": "",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "The math module",
+      "relation": "provides",
+      "polarity": "positive",
+      "object": "sqrt",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "task data",
+      "relation": "is supplied in",
+      "polarity": "positive",
+      "object": "the inputs dictionary",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "network access",
+      "relation": "are unavailable",
+      "polarity": "negative",
+      "object": "",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Python sum, len, min, max, sorted, list, dict and range",
+      "relation": "are available",
+      "polarity": "positive",
+      "object": "",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "output_schema",
+      "relation": "declares",
+      "object": "the result type",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "result",
+      "relation": "contains for arrays",
+      "object": "the requested values in task order",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Printed output",
+      "relation": "is captured in",
+      "object": "a bounded log",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    },
+    {
+      "subject": "Printed output",
+      "relation": "does not replace",
+      "object": "result",
+      "polarity": "positive",
+      "qualifiers": [],
+      "sentences": [
+        0
+      ]
+    }
+  ]
+}

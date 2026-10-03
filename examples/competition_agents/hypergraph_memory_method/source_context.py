@@ -9,10 +9,29 @@ def normalized_name(value):
 def derive_source_aliases(documents):
     """仅接受标题姓名在首句定义全名中按顺序完整出现的保守规则。"""
     rows = []
+    people = {}
+    for document in documents:
+        topic = document['title'].split('[SEP]', 1)[0].strip()
+        opening = document['sentences'][0].strip()
+        person = re.match(r'^([A-Z][\w\-]+(?:\s+[A-Z][\w\-]+){1,5})\s*\([^)]*\bborn\b', opening)
+        if person and len(topic.split()) >= 2 and topic.split()[-1] == person.group(1).split()[-1]:
+            people[topic] = person.group(1)
     for document in documents:
         topic = document['title'].split('[SEP]', 1)[0].strip()
         opening = document['sentences'][0].strip()
         base_topic = re.sub(r'\s*\([^)]*\)\s*$', '', topic).strip()
+        if topic in people:
+            surname = topic.split()[-1]
+            source = ' '.join(document['sentences'])
+            mentions = set(re.findall(r'\b[A-Z][\w-]+(?:\s+[A-Z][\w-]+){0,4}\s+' + re.escape(surname) + r'\b', source))
+            # 同一人物文章内的独立姓氏；出现另一同姓全名时拒绝自动合并。
+            unambiguous = all(people[topic].endswith(name) or topic.endswith(name) for name in mentions)
+            independent = source.replace(people[topic], '').replace(topic, '')
+            if unambiguous and re.search(r'\b' + re.escape(surname) + r'\b', independent):
+                rows.append({'alias': topic, 'name': surname, 'document_id': document['id'],
+                             'sentences': [0], 'scoped': True,
+                             'basis': 'person article section and unambiguous surname; no cross-article surname merge',
+                             'quote': source})
         primary = re.match(r'^(?:the\s+)?' + re.escape(base_topic) + r'(?=\W|$)', opening, re.I)
         if primary:
             if normalized_name(primary.group()) != normalized_name(topic):
@@ -70,12 +89,51 @@ def derive_source_aliases(documents):
         if all(any(word == candidate for candidate in remaining) for word in left):
             rows.append({'alias': title, 'name': name, 'document_id': document['id'],
                          'sentences': [0], 'basis': 'document title and introductory subject', 'quote': first})
+    # 作品文章也会先明确介绍作者全名、再使用其姓氏；身份绑定限于该来源。
+    for document in documents:
+        source = ' '.join(document['sentences'])
+        for topic, full_name in people.items():
+            if not any(re.search(r'(?<!\w)' + re.escape(name) + r'(?!\w)', source)
+                       for name in (topic, full_name)):
+                continue
+            surname = topic.split()[-1]
+            independent = source.replace(full_name, '').replace(topic, '')
+            if not re.search(r'\b' + re.escape(surname) + r'\b', independent):
+                continue
+            mentions = re.findall(r'\b([A-Z][\w-]+(?:\s+[A-Z][\w-]+){0,4})\s+'
+                                  + re.escape(surname) + r'\b', source)
+            introductions = {'The', 'In', 'When', 'After', 'Before', 'While', 'By', 'As', 'And'}
+            mentions = [' '.join(w for w in m.split() if w not in introductions) + ' ' + surname for m in mentions]
+            if any(not (full_name.endswith(m.strip()) or topic.endswith(m.strip())) for m in mentions):
+                continue
+            rows.append({'alias': topic, 'name': surname, 'document_id': document['id'],
+                         'sentences': [0], 'scoped': True,
+                         'basis': 'explicit full name and unambiguous surname within this source', 'quote': source})
+        topic = document['title'].split('[SEP]', 1)[0].strip()
+        base_topic = re.sub(r'\s*\([^)]*\)\s*$', '', topic).strip()
+        definition = re.match(r'^' + re.escape(base_topic) + r'\s+is\s+(?:a|an|the)\s+([^.;]+)',
+                              document['sentences'][0], re.I)
+        if definition:
+            head = re.split(r'\b(?:by|with|of|from|who|which|that|directed|written)\b', definition[1], 1, flags=re.I)[0]
+            kinds = re.findall(r'\b(album|film|musical|song|book|novel|play|series)\b', head, re.I)
+            if kinds:
+                for determiner in ('the ', 'this '):
+                    name = determiner + kinds[-1].lower()
+                    if re.search(r'\b' + re.escape(name) + r'\b', source, re.I):
+                        rows.append({'alias': topic, 'name': name, 'document_id': document['id'],
+                                     'sentences': [0], 'scoped': True,
+                                     'basis': 'primary work definition and source-scoped definite description', 'quote': source})
     # 同一名字对应不同标题时不自动建立身份等价。
     targets = {}
     for row in rows:
         key = (row.get('document_id') if row.get('scoped') else None, normalized_name(row['name']))
         targets.setdefault(key, set()).add(normalized_name(row['alias']))
-    return [row for row in rows if len(targets[(row.get('document_id') if row.get('scoped') else None, normalized_name(row['name']))]) == 1]
+    unique = {}
+    for row in rows:
+        key = (row.get('document_id') if row.get('scoped') else None, normalized_name(row['name']))
+        if len(targets[key]) == 1:
+            unique.setdefault((key, normalized_name(row['alias'])), row)
+    return list(unique.values())
 
 
 def bind_source_parts(document, result):
@@ -117,7 +175,14 @@ def evidence_packet(evidence, aliases=()):
     """展开真实事实载荷；短来源标签仅去重，不替代正文计量。"""
     sources, facts, document_keys = {}, [], {}
     alias_map = source_alias_index(aliases)
-    for source_id, hit in evidence.items():
+    # 按来源分组、原文句序排列；只改变已召回事实的展示顺序，所有记录保持。
+    items = list(evidence.items())
+    document_order = {doc: index for index, doc in enumerate(dict.fromkeys(
+        hit['fact_fields']['document_id'] for _, hit in items))}
+    ordered = sorted(enumerate(items), key=lambda item: (
+        document_order[item[1][1]['fact_fields']['document_id']],
+        min(item[1][1]['fact_fields'].get('sentences') or [float('inf')]), item[0]))
+    for _, (source_id, hit) in ordered:
         fact = hit['fact_fields']
         doc = fact['document_id']
         if doc not in document_keys:
@@ -140,8 +205,15 @@ def evidence_packet(evidence, aliases=()):
                     expressed.add('count')
                 value = next(iter(owners)) + "'s " + noun
                 expressed.add(role + '_owner')
-            values[role] = value
+            canonical = alias_map.get((doc, normalized_name(fact[role])),
+                                      alias_map.get(normalized_name(fact[role])))
+            values[role] = canonical or value
         # 所属实体和数量直接进入其对应字段，不让接收方重新解析指代或重复读取限定。
+        for role in ('subject', 'object'):
+            canonical = alias_map.get((doc, normalized_name(fact[role])),
+                                      alias_map.get(normalized_name(fact[role])))
+            if canonical and normalized_name(values[role]) == normalized_name(canonical):
+                expressed.add(role + '_identity')
         qualifiers = '; '.join(q['kind'] + '=' + q['value'] for q in identity_qualifiers(fact, alias_map) if q['kind'] not in expressed)
         facts.append([source_id, values['subject'], relation, values['object'], qualifiers, document_keys[doc]])
     packet = {'sources': sources, 'facts': facts}

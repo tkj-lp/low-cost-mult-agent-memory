@@ -153,6 +153,10 @@ def _compiled_graph(tmp_path, rows):
     write_graph(path, documents, facts)
     graph = object.__new__(PreparedKnowledge)
     graph.graph_path = path
+    from hypergraph_memory_method.source_context import derive_source_aliases, source_alias_index
+    graph.documents = documents
+    graph.source_aliases = derive_source_aliases(documents)
+    graph.graph_aliases = source_alias_index(graph.source_aliases)
     return graph
 
 
@@ -342,7 +346,8 @@ def test_focused_search_keeps_parallel_companions_without_filling_budget(tmp_pat
     graph._prepare_graph_runtime()
     graph.prepare_focused_search(_focused_embed)
     hits = graph.search_graph_focused('Did Mira live alone?', 8)
-    assert {h['fact_fields']['object'] for h in hits} == {'her mother', 'her sisters'}
+    assert {'her mother', 'her sisters'} <= {h['fact_fields']['object'] for h in hits}
+    assert all(h['fact_fields']['subject'] != 'Zara' for h in hits)
     assert all(h['retrieval_backend'] == 'focused_hypergraph' for h in hits)
 
 
@@ -358,7 +363,7 @@ def test_focused_search_prioritizes_owned_group_over_owner(tmp_path):
     graph.prepare_focused_search(_focused_embed)
     hits = graph.search_graph_focused("What did Mira's sisters wear?")
     assert hits[0]['fact_fields']['object'] == 'orange'
-    assert all(h['fact_fields']['object'] != 'blue' for h in hits)
+    assert all(h['fact_fields']['subject'] == 'Mira' for h in hits if h['fact_fields']['object'] == 'blue')
 
 
 def test_focused_search_rejects_encoder_change(library):

@@ -29,6 +29,89 @@ def bundle_with_tokenizer():
     return bundle
 
 
+def test_linear_feedback_does_not_select_candidate_tokens_or_change_weights(monkeypatch):
+    import competition_agents.llm.latent_only_chat as module
+    bundle = bundle_with_tokenizer()
+    before = {k: v.clone() for k, v in bundle.model.state_dict().items()}
+    monkeypatch.setattr(module, 'align_posterior_hidden', lambda *a, **k: pytest.fail('线性反馈不得调用候选词混合'))
+    client = LatentOnlyChat(bundle, feedback_mode='linear', cache_policy='consumer_lifetime')
+    client.call('planner', question='Where is the package?', scope='one')
+    client.call('retriever', tool=lambda q: {'facts': [{'id': 'source', 'subject': 'Package',
+        'relation': 'is in', 'object': 'Depot', 'polarity': 'positive'}], 'audit': {}})
+    assert client.calls[-1]['lifetime']['removed_positions'] > 0
+    assert client.lifecycle.next_position > client.past.get_seq_length()
+    assert client.encoded_facts.keys() == {'source'}
+    assert bundle.tokenizer.decode_calls == 0
+    assert all(bundle.torch.equal(v, before[k]) for k, v in bundle.model.state_dict().items())
+    old_position = client.lifecycle.next_position
+    client.call('reasoner')
+    assert client.lifecycle.next_position > old_position
+    assert sum(b.length for b in client.lifecycle.blocks) == client.past.get_seq_length()
+
+
+def test_lifetime_preserves_retained_keys_and_values_exactly():
+    from transformers.cache_utils import DynamicCache
+    from competition_agents.latent_hidden.state_lifecycle import StateLifecycle
+    bundle = bundle_with_tokenizer()
+    torch = bundle.torch
+    cache = DynamicCache()
+    for i in range(2):
+        key = torch.arange(24, dtype=torch.float32).reshape(1, 2, 3, 4) + 100*i
+        cache.update(key, key + 50, i)
+    saved = [(layer.keys.clone(), layer.values.clone()) for layer in cache.layers]
+    state = StateLifecycle()
+    state.turn = 1
+    state.append(1, 'external_facts', 'planner')
+    state.append(1, 'role_instruction', 'planner')
+    state.append(1, 'external_question', 'planner')
+    result = state.reclaim(cache, 'retriever', torch)
+    assert result['removed_positions'] == 1
+    assert state.next_position == 3 and cache.get_seq_length() == 2
+    for layer, (keys, values) in zip(cache.layers, saved):
+        assert torch.equal(layer.keys, keys[:, :, [0, 2], :])
+        assert torch.equal(layer.values, values[:, :, [0, 2], :])
+    assert result['peak_bytes'] >= result['before_bytes']
+
+
+def test_compacted_cache_matches_masked_full_cache_at_original_position():
+    from competition_agents.latent_hidden.state_lifecycle import StateLifecycle
+    bundle = bundle_with_tokenizer()
+    torch, model = bundle.torch, bundle.model.model
+    with torch.inference_mode():
+        past = model(input_ids=torch.tensor([[3, 4, 5]]), use_cache=True).past_key_values
+        reference = copy.deepcopy(past)
+        state = StateLifecycle()
+        state.append(1, 'external_facts', 'planner')
+        state.append(1, 'role_instruction', 'planner')
+        state.append(1, 'external_question', 'planner')
+        state.reclaim(past, 'retriever', torch)
+        expected = model(input_ids=torch.tensor([[6]]), past_key_values=reference,
+                         attention_mask=torch.tensor([[1, 0, 1, 1]]),
+                         cache_position=torch.tensor([3]), position_ids=torch.tensor([[3]]),
+                         use_cache=True).last_hidden_state
+        actual = model(input_ids=torch.tensor([[6]]), past_key_values=past,
+                       attention_mask=torch.ones((1, 3), dtype=torch.long),
+                       cache_position=torch.tensor([2]), position_ids=torch.tensor([[state.next_position]]),
+                       use_cache=True).last_hidden_state
+    assert torch.allclose(actual, expected, atol=1e-5, rtol=1e-5)
+
+
+def test_cache_only_continuation_never_maps_hidden_state_to_candidate_input(monkeypatch):
+    import competition_agents.llm.latent_only_chat as module
+    monkeypatch.setattr(module, 'align_posterior_hidden', lambda *a, **k: pytest.fail('完整缓存续接不执行额外适配'))
+    bundle = bundle_with_tokenizer()
+    client = LatentOnlyChat(bundle, feedback_mode='cache_only', latent_steps=0, cache_policy='consumer_lifetime')
+    client.call('planner', question='Where is the parcel?', scope='one')
+    client.call('retriever', tool=lambda q: {'facts': [{'id': 'f1', 'subject': 'Parcel',
+        'relation': 'is in', 'object': 'Depot', 'polarity': 'positive'}], 'audit': {}})
+    client.call('reasoner')
+    assert all(c['latent_steps'] == c['output_tokens'] == 0 for c in client.calls)
+    assert all(c['cached_prefix_positions'] > 0 for c in client.calls[1:])
+    assert client.calls[-1]['state_after_bytes'] > 0
+    assert client.alignment is None and bundle.tokenizer.decode_calls == 0
+    assert client.encoded_facts.keys() == {'f1'}
+
+
 @pytest.mark.parametrize('steps', [0, 2])
 def test_only_final_decodes_text_and_every_role_consumes_real_cache(steps):
     bundle = bundle_with_tokenizer()

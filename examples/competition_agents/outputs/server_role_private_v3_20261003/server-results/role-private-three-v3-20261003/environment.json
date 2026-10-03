@@ -1,0 +1,6 @@
+{
+  "python": "3.12.3 | packaged by Anaconda, Inc. | (main, May  6 2024, 19:46:43) [GCC 11.2.0]",
+  "gpu": "NVIDIA RTX 6000D, 85651 MiB, 595.71.05",
+  "project": "/root/autodl-tmp/project/competition-v816-final-20261002",
+  "task_count": 3
+}

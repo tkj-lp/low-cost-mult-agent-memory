@@ -1,0 +1,68 @@
+{
+  "review_basis": "Only source paragraphs, no questions or reference answers",
+  "changes": [
+    {
+      "source_id": "015113f7e5fd95c06370ab6abfe5245f4f6e1b3d3329be37debe10f5395af5e1",
+      "subject": "critics",
+      "relation": "decried",
+      "object": "\"formulaic Britcom plot\"",
+      "old_polarity": "negative",
+      "new_polarity": "positive",
+      "reason": "原文是在肯定陈述不利事件或负面评价，没有语法否定。"
+    },
+    {
+      "source_id": "3133fd3efd2b242650987ab2e4195dc6cb9f749d19e8e33b6e72c03744616ad9",
+      "subject": "The members of Blue Angel",
+      "relation": "had a falling-out with",
+      "object": "Massarsky",
+      "old_polarity": "negative",
+      "new_polarity": "positive",
+      "reason": "原文是在肯定陈述不利事件或负面评价，没有语法否定。"
+    },
+    {
+      "source_id": "4dbc650a3b22986e0706651750762385fa084c68176a1fa27c61172fe3bce02b",
+      "subject": "the album",
+      "relation": "sold poorly",
+      "object": "",
+      "old_polarity": "negative",
+      "new_polarity": "positive",
+      "reason": "原文是在肯定陈述不利事件或负面评价，没有语法否定。"
+    },
+    {
+      "source_id": "7deab33ba9d3adadc6c03dc94d6b05eb2af7f29e02e5c7be5c7092d7ca9ffa36",
+      "subject": "Lauper",
+      "relation": "temporarily lost",
+      "object": "her voice",
+      "old_polarity": "negative",
+      "new_polarity": "positive",
+      "reason": "原文是在肯定陈述不利事件或负面评价，没有语法否定。"
+    },
+    {
+      "source_id": "9036c8db08782d0b3e4906717bf1a64b674ca717639bd87857f854152e56dc5e",
+      "subject": "Lauper",
+      "relation": "hated",
+      "object": "the album cover",
+      "old_polarity": "negative",
+      "new_polarity": "positive",
+      "reason": "原文是在肯定陈述不利事件或负面评价，没有语法否定。"
+    },
+    {
+      "source_id": "9670e41389f65ef72fa80a8687c095de81d2e67c66b0c1b0f23e4b8d2daf9567",
+      "subject": "Kinky Boots",
+      "relation": "initially been less well received by theatre critics and at the box office than",
+      "object": "another 2013 Broadway production, Matilda the Musical",
+      "old_polarity": "negative",
+      "new_polarity": "positive",
+      "reason": "原文是在肯定陈述不利事件或负面评价，没有语法否定。"
+    },
+    {
+      "source_id": "ee82692db6cdf5ff767f46b766620533050c7ef796290a601580370deb15847b",
+      "subject": "their debut album, Blue Angel",
+      "relation": "was",
+      "object": "a commercial failure",
+      "old_polarity": "negative",
+      "new_polarity": "positive",
+      "reason": "原文是在肯定陈述不利事件或负面评价，没有语法否定。"
+    }
+  ]
+}

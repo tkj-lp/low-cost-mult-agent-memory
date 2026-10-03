@@ -1,0 +1,8 @@
+{
+  "server_project": "/root/autodl-tmp/project/competition-v816-final-20261002",
+  "model_directories": [
+    "glm-supplement",
+    "qwen9-supplement",
+    "qwen27-supplement"
+  ]
+}

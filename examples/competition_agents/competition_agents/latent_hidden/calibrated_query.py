@@ -26,6 +26,12 @@ INTENTS = [
     ('action', 'action activity did', 'What did {name} do?', 'Which action did {name} take?'),
     ('appearance', 'appearance description physical characteristics', 'How is the appearance of {name} described?', 'What does {name} look like?'),
     ('speech', 'words said statement', 'What did {name} say?', 'Which words did {name} speak?'),
+    ('statistics', 'mean median variance standard deviation population statistics', 'How can {name} calculate population statistics?', 'Which operations compute descriptive statistics using {name}?'),
+    ('aggregation', 'sum group count aggregate dictionary records', 'How can {name} aggregate grouped records?', 'Which grouping and summation operations does {name} provide?'),
+    ('filtering', 'filter select sort records according to constraints', 'How can {name} filter and sort records?', 'How can records be selected by conditions using {name}?'),
+    ('text', 'text split words regular expression frequency counter', 'How can {name} count words in text?', 'Which text frequency operations does {name} provide?'),
+    ('dates', 'date time duration parse timedelta', 'How can {name} calculate elapsed days?', 'Which operations parse and subtract dates using {name}?'),
+    ('execution', 'Python result dictionary inputs allowed_imports execution', 'How must a Python program use {name}?', 'What is the execution interface for {name}?'),
 ]
 
 
@@ -102,13 +108,16 @@ def fit_ridge_readout(x, targets, validation_x, validation_targets):
     return QueryReadout(mean, best[2], bias, report)
 
 
-def calibrate(knowledge, bundle, teacher, *, latent_steps=2, progress=None):
+def calibrate(knowledge, bundle, teacher, *, latent_steps=0, progress=None, task_kind='continuous',
+              feedback_mode='cache_only', cache_policy='consumer_lifetime'):
     train, validation = calibration_samples(knowledge)
     samples = train+validation
     outputs = []
     started = time.perf_counter()
     # 上文来源不同于当前问题；让校准同时看到冷启动和有来源缓存的情形。
-    prefix_client = LatentOnlyChat(bundle, latent_steps=latent_steps, query_mode='features')
+    settings = dict(latent_steps=latent_steps, query_mode='features', task_kind=task_kind,
+                    feedback_mode=feedback_mode, cache_policy=cache_policy)
+    prefix_client = LatentOnlyChat(bundle, **settings)
     prefix_client.call('planner', question='Prepare to consult the original sources.', scope='calibration')
     seed_facts = []
     for i, (_key, row) in enumerate(sorted(knowledge._graph_rows.items())[:8]):
@@ -117,12 +126,14 @@ def calibrate(knowledge, bundle, teacher, *, latent_steps=2, progress=None):
                            'object': fact['object'], 'polarity': fact['polarity']})
     prefix_client.call('retriever', tool=lambda _q: {'facts': seed_facts, 'audit': {}})
     for index, sample in enumerate(samples):
-        client = LatentOnlyChat(bundle, latent_steps=latent_steps, query_mode='features')
+        client = LatentOnlyChat(bundle, **settings)
         if index % 2:
             client.scope = 'calibration'
             client.past = copy.deepcopy(prefix_client.past)
             client.last_hidden = prefix_client.last_hidden.clone()
             client.seen_ids = list(prefix_client.seen_ids)
+            client.lifecycle = copy.deepcopy(prefix_client.lifecycle)
+            client.encoded_facts = dict(prefix_client.encoded_facts)
         client.call('planner', question=sample['question'], scope='calibration')
         captured = []
         def capture(query):
@@ -141,6 +152,7 @@ def calibrate(knowledge, bundle, teacher, *, latent_steps=2, progress=None):
         vx = features[len(train):].clone()
         readout = fit_ridge_readout(x, targets[:len(train)].clone(), vx, targets[len(train):].clone())
     readout.report.update({'feature_parts': ['question_input_embedding', 'question_content_last_layer', 'current_role_last_layer'],
+                           'feedback_mode': feedback_mode, 'cache_policy': cache_policy,
                            'corpus_sha256': knowledge.manifest['corpus_sha256'],
                            'sample_sha256': hashlib.sha256(json.dumps(samples,sort_keys=True).encode()).hexdigest(),
                            'teacher': 'sentence-transformers/all-MiniLM-L6-v2',

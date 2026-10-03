@@ -1,0 +1,95 @@
+{
+  "model": "Qwen/Qwen3.5-9B",
+  "task_count": 3,
+  "policy": "consumed_controls",
+  "delivery_positions_per_internal_call": 8,
+  "scope": "仅隐状态，真实连续问答前三题；角色提示、已消费内部步骤与重复控制信息的独立回收试验",
+  "compaction": "逐个张量替换，计入复制临时空间，保留绝对位置和所有递归状态",
+  "internal_step_retirement_is_approximate": true,
+  "weights_unchanged": true,
+  "formal_baseline_changed": false,
+  "all_workflows_complete": true,
+  "tasks": [
+    {
+      "task_id": "topiocqa-153-1",
+      "prediction": "Cyndi Lauper wrote the music and lyrics to the song \"Kinky Boots.\"",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "original_answer": "Based on the evidence provided, the music and lyrics to the song \"Kinky Boots\" were written by Cyndi Lauper. The evidence explicitly states that Lauper \"composed\" the Broadway musical Kinky Boots and that the \"music and lyrics\" were \"by\" Cyndi Lauper for the musical. While other individuals like Harvey Fierstein, Tim Firth, and Geoff Deane are mentioned in relation to the musical or film, the specific credit for the music and lyrics is attributed to Lauper.",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": false,
+      "cache_peak_bytes_including_compaction": 84918272,
+      "cache_boundary_peak_bytes": 80871424,
+      "original_cache_boundary_peak_bytes": 121798656,
+      "seconds_including_audit": 9.595180865377188
+    },
+    {
+      "task_id": "topiocqa-153-2",
+      "prediction": "Based on the provided evidence, the singer is **Cyndi Lauper** (also referred to as Cynthia Ann Stephanie Lauper). The documents confirm she is an American singer, songwriter, and actress who composed the Broadway musical *Kinky Boots* and wrote the music and lyrics for the song \"Kinky Boots.\" She has also earned several awards and accolades, including two Grammy Awards.",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "original_answer": "Based on the provided evidence, the singer is **Cyndi Lauper**. The evidence explicitly identifies her as an \"American singer, songwriter and actress\" (E21) and states that the music and lyrics for the musical *Kinky Boots* were \"by Cyndi Lauper\" (E8). While other individuals like Harvey Fierstein and Tim Firth are credited with writing the book or the film adaptation, the specific credit for the music and lyrics, which defines the role of the singer/composer in this context, is attributed to Lauper.",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": true,
+      "cache_peak_bytes_including_compaction": 84535296,
+      "cache_boundary_peak_bytes": 82313216,
+      "original_cache_boundary_peak_bytes": 118390784,
+      "seconds_including_audit": 8.46761912945658
+    },
+    {
+      "task_id": "topiocqa-153-3",
+      "prediction": "The musical *Kinky Boots* conveys the story of Charlie Price, a struggling shoe factory owner who inherits his father's factory in England. The narrative follows his efforts to save the failing business by hiring a group of drag performers to work in the factory, blending themes of acceptance, diversity, and the challenges of the modern workplace.",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Charlie Price.",
+        "contradiction": false
+      },
+      "original_answer": "The musical conveys the story of Charlie Price, a struggling shoe factory owner who inherited the business from his father.",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Charlie Price.",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": true,
+      "cache_peak_bytes_including_compaction": 89722880,
+      "cache_boundary_peak_bytes": 86867968,
+      "original_cache_boundary_peak_bytes": 124223488,
+      "seconds_including_audit": 8.08694857172668
+    }
+  ]
+}

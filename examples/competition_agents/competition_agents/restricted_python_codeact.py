@@ -59,7 +59,6 @@ BLOCKED_CALLS = {
     "input",
     "locals",
     "open",
-    "print",
     "quit",
     "setattr",
     "vars",
@@ -69,34 +68,54 @@ BLOCKED_NODES = (
     ast.ClassDef,
     ast.Delete,
     ast.Global,
-    ast.Lambda,
     ast.Nonlocal,
     ast.While,
     ast.With,
 )
 
 
-WORKER_SOURCE = r"""
+EXECUTION_SOURCE = r"""
+import contextlib
 import json
 import traceback
 
-while True:
-    line = input()
-    request = json.loads(line)
+class BoundedOutput:
+    def __init__(self):
+        self.parts, self.remaining = [], 4000
+    def write(self, text):
+        if self.remaining:
+            self.parts.append(text[:self.remaining])
+        self.remaining = max(0, self.remaining-len(text))
+        return len(text)
+    def flush(self):
+        pass
+    def value(self):
+        return ''.join(self.parts)
+
+def execute_request(request):
     code = request.get("code", "")
     inputs = request.get("inputs", {})
     memory = request.get("memory", {})
     namespace = {"inputs": inputs, "memory": memory}
+    captured = BoundedOutput()
     try:
-        exec(code, namespace, namespace)
+        with contextlib.redirect_stdout(captured), contextlib.redirect_stderr(captured):
+            exec(code, namespace, namespace)
         result = namespace.get("result", {})
-        print(json.dumps({"ok": True, "result": result}, ensure_ascii=False, sort_keys=True), flush=True)
+        return {"ok": True, "result": result, "program_stdout": captured.value()}
     except Exception as exc:
-        print(json.dumps({
+        return {
             "ok": False,
             "error": str(exc),
             "traceback": traceback.format_exc(limit=3),
-        }, ensure_ascii=False, sort_keys=True), flush=True)
+            "program_stdout": captured.value(),
+        }
+"""
+
+WORKER_SOURCE = EXECUTION_SOURCE + r"""
+while True:
+    request = json.loads(input())
+    print(json.dumps(execute_request(request), ensure_ascii=False, sort_keys=True), flush=True)
 """
 
 
@@ -250,15 +269,8 @@ def check_code_safety(code: str, *, allowed_imports: list[str] | None = None) ->
 
 
 def _runner_source(code: str, *, inputs: dict[str, Any], memory: dict[str, Any]) -> str:
-    inputs_json = json.dumps(inputs, ensure_ascii=False)
-    memory_json = json.dumps(memory, ensure_ascii=False)
-    return (
-        "import json\n"
-        f"inputs = json.loads({inputs_json!r})\n"
-        f"memory = json.loads({memory_json!r})\n"
-        f"{code}\n"
-        "print(json.dumps(result, ensure_ascii=False, sort_keys=True))\n"
-    )
+    request = json.dumps({'code': code, 'inputs': inputs, 'memory': memory}, ensure_ascii=False)
+    return EXECUTION_SOURCE + f'\nprint(json.dumps(execute_request(json.loads({request!r})), ensure_ascii=False, sort_keys=True))\n'
 
 
 def _safe_env() -> dict[str, str]:
@@ -296,11 +308,14 @@ def _run_subprocess_once(
             stdout = completed.stdout[:stdout_limit]
             stderr = completed.stderr[:stderr_limit]
             try:
-                result = json.loads(stdout.strip()) if completed.returncode == 0 else {}
+                response = json.loads(completed.stdout.strip()) if completed.returncode == 0 else {}
             except json.JSONDecodeError:
-                result = {}
-            status = "ok" if completed.returncode == 0 and result != {} else "error"
-            exit_code = completed.returncode
+                response = {}
+            result = response.get('result', {})
+            stdout = (response.get('program_stdout') or json.dumps(result, ensure_ascii=False))[:stdout_limit]
+            status = 'ok' if completed.returncode == 0 and response.get('ok') else 'error'
+            stderr = (stderr or response.get('error', ''))[:stderr_limit]
+            exit_code = 0 if status == 'ok' else (completed.returncode or 1)
         except subprocess.TimeoutExpired as exc:
             stdout = (exc.stdout or "")[:stdout_limit]
             stderr = "timeout"[:stderr_limit]
@@ -320,7 +335,7 @@ def _run_persistent_worker(
     stderr_limit: int,
 ) -> tuple[str, str, dict[str, Any], str, int]:
     response = _WORKER.run(code=code, inputs=inputs, memory=memory, timeout_ms=timeout_ms)
-    stdout = json.dumps(response.get("result", {}), ensure_ascii=False, sort_keys=True)[:stdout_limit]
+    stdout = (response.get('program_stdout') or json.dumps(response.get("result", {}), ensure_ascii=False, sort_keys=True))[:stdout_limit]
     if response.get("ok"):
         return stdout, "", response.get("result", {}), "ok", 0
     stderr = (response.get("error") or response.get("traceback") or "worker error")[:stderr_limit]

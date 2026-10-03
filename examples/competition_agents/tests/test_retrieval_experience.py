@@ -35,21 +35,22 @@ def test_latest_strategy_is_stable_when_clock_timestamps_tie(experience, monkeyp
     monkeypatch.setattr(module, 'datetime', FrozenClock)
     tool = fake_tool(ExperiencedGraphTool, experience=experience)
     learn_two(tool)
-    chosen = experience.lookup('companions')
-    assert chosen['observed_categories'] == ['location']
+    chosen = experience.lookup('location')
+    assert chosen['observed_categories'] == ['color', 'location']
     assert chosen['observation_order'] == 2
     restored = RetrievalExperienceMemory(experience.store.path, experience.namespace)
     try:
-        assert restored.lookup('companions')['memory_id'] == chosen['memory_id']
+        assert restored.lookup('location')['memory_id'] == chosen['memory_id']
+        assert restored.lookup('companions') is None
     finally:
         restored.close()
 
 
-def test_experience_changes_candidate_search_without_changing_evidence(experience, monkeypatch):
+def test_unmatched_experience_does_not_change_evidence_or_claim_reuse(experience, monkeypatch):
     tool = fake_tool(ExperiencedGraphTool, experience=experience)
     assert not experience.records
     learn_two(tool)
-    assert len(experience.records) == 2
+    assert len(experience.records) == 1
     tool.begin_question('Does Alice live alone?', 'session')
     scored = []
     original = tool._scores
@@ -59,17 +60,17 @@ def test_experience_changes_candidate_search_without_changing_evidence(experienc
     monkeypatch.setattr(tool, '_scores', capture)
     result = tool(torch.tensor([[0., 0., 1., 0.]]))
     audit = result['audit']
-    assert audit['experience_reads'] == audit['experience_applied'] == 1
-    assert audit['experience_candidates_skipped'] == 1
-    assert 'color' not in scored
-    assert set(audit['source_ids']) == {'location', 'companions'}
+    assert audit['experience_reads'] == 0 and audit['experience_applied'] == 0
+    assert audit['experience_candidates_skipped'] == 0
+    assert set(scored) == {'color', 'location', 'companions'}
+    assert set(audit['source_ids']) == {'color', 'location', 'companions'}
     assert audit['knowledge_searches'] == 0
-    assert audit['experience_certificate']['passed']
+    assert 'experience_id' not in audit
     tool.finish_task('task-3', completed=True)
-    used = experience.records[audit['experience_id']]
-    assert used['reuse_count'] == used['reuse_success_count'] == 1
+    used = experience.records[audit['experience_written_id']]
+    assert used['reuse_success_count'] == 0
     assert used['answer_correctness_verified'] is False
-    assert used['observed_categories'] == ['companions', 'location']
+    assert used['observed_categories'] == ['color', 'companions', 'location']
     serialized = json.dumps(list(experience.records.values()))
     assert 'Alice' not in serialized and 'North' not in serialized
     assert all(experience.store.get(ref) for r in experience.records.values() for ref in r['source_memory_ids'])
@@ -83,9 +84,9 @@ def test_uncertain_bound_falls_back_without_losing_competing_relation(experience
     query = torch.nn.functional.normalize(torch.tensor([[.75, .7, .2, 0.]]), dim=-1)
     paths = {k: v['path'] for k, v in tool.resident_paths.items()}
     expected = tool._scores(query, paths)
-    actual = tool._memory_scores(query, paths, 'companions')
+    actual = tool._memory_scores(query, paths, 'location')
     assert actual == expected
-    assert tool._experience_audit['experience_rejection'] == 'bound_or_evidence_not_sufficient'
+    assert tool._experience_audit['experience_rejection'] == 'no_candidate_reduction'
 
 
 def test_random_queries_preserve_full_search_selection(experience):
@@ -114,7 +115,7 @@ def test_group_radius_does_not_hide_a_strong_competing_fact(experience):
     query = torch.tensor([[0., 0., 1., 0.]])
     tool._experience_audit = {}
     expected = tool._select(tool._scores(query, paths), paths)[0]
-    actual = tool._select(tool._memory_scores(query, paths, 'companions'), paths)[0]
+    actual = tool._select(tool._memory_scores(query, paths, 'location'), paths)[0]
     assert actual == expected and 'other-high' in actual
     assert not tool._experience_audit['experience_certificate']['passed']
 
@@ -125,7 +126,8 @@ def test_constraints_missing_evidence_and_failed_tasks_do_not_become_success(exp
     tool.begin_question('Where did Alice live before 2020?', 'session')
     result = tool(torch.tensor([[0., 1., 0., 0.]]))
     assert result['audit']['experience_applied'] == 0
-    assert result['audit']['knowledge_searches'] == 1
+    # 新数值条件不能凭空增加知识库内容；所有可达来源已存时不强制重复查库。
+    assert result['audit']['knowledge_searches'] == 0
     count = sum(r['observations'] for r in experience.records.values())
     tool.finish_task('failed', completed=False)
     assert sum(r['observations'] for r in experience.records.values()) == count

@@ -80,6 +80,11 @@ def normalize_config(raw: dict[str, Any]) -> dict[str, Any]:
         'baseUrl': str(raw.get('baseUrl') or ''),
         'remoteModel': str(raw.get('remoteModel') or CATALOG['defaultRemoteModel']),
         'apiKey': str(raw.get('apiKey') or ''),
+        'maxTokens': raw.get('maxTokens', 1024),
+        'maxSearches': raw.get('maxSearches', CATALOG.get('defaultMaxSearches', 2)),
+        'memoryEnabled': raw.get('memoryEnabled', True),
+        'outputRepeatNgramSize': raw.get('outputRepeatNgramSize',
+            CATALOG.get('defaultOutputRepeatNgramSize', 0) if str(raw.get('backend') or 'local') == 'local' else 0),
     }
     validate(config)
     return config
@@ -87,11 +92,18 @@ def normalize_config(raw: dict[str, Any]) -> dict[str, Any]:
 
 def build_command(config: dict[str, Any]) -> list[str]:
     validate(config)
-    return [sys.executable, 'examples/competition_agents/run_competition.py',
+    command = [sys.executable, 'examples/competition_agents/run_competition.py',
             '--method', config['collaborationMode'], '--dataset', config['dataset'],
             '--backend', config['backend'], '--local-model', config['localModel'],
             '--remote-model', config['remoteModel'], '--limit', str(config['taskCount']),
+            '--max-tokens', str(config.get('maxTokens', 1024)),
+            '--max-searches', str(config.get('maxSearches', CATALOG.get('defaultMaxSearches', 2))),
+            '--output-repeat-ngram-size', str(config.get('outputRepeatNgramSize',
+                CATALOG.get('defaultOutputRepeatNgramSize', 0) if config['backend'] == 'local' else 0)),
             '--event-log-file', str(EVENT_LOG_FILE)]
+    if not config.get('memoryEnabled', True):
+        command.append('--disable-memory')
+    return command
 
 
 def build_env(config: dict[str, Any]) -> dict[str, str]:

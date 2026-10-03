@@ -7,6 +7,7 @@ import time
 from collections import defaultdict
 
 from hypergraph_memory_method.source_context import normalized_name
+from hypergraph_memory_method.relation_coverage import global_anchor, PRONOUNS
 
 
 class GraphStateTool:
@@ -23,7 +24,7 @@ class GraphStateTool:
             fact = knowledge._graph_rows[key][3]
             for part in ('subject', 'object'):
                 node = knowledge._graph_nodes[key][part]
-                if node in knowledge._graph_named_nodes:
+                if node in knowledge._graph_named_nodes and global_anchor(node, fact[part]):
                     self.names[normalized_name(fact[part])].add(node)
             # 保留同一主体同一动作的地点、并列对象及否定，不扩大系词属性。
             words = [w for w in normalized_name(fact['relation']).split() if w not in {
@@ -33,7 +34,8 @@ class GraphStateTool:
         self.action_peers = {key: tuple(group) for group in self.peers.values() for key in group}
         for node, forms in knowledge._graph_owned_names.items():
             for form in forms:
-                self.names[form.strip()].add(node)
+                if node.startswith('entity:') and normalized_name(form).split() and normalized_name(form).split()[0] not in PRONOUNS:
+                    self.names[form.strip()].add(node)
         for alias, canonical in getattr(knowledge, 'alias_index', {}).items():
             node = 'entity:' + normalized_name(canonical)
             if node in knowledge._graph_neighbors:

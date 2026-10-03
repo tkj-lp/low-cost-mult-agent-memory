@@ -74,7 +74,7 @@ def test_codeact_public_input_excludes_reference_code_and_values():
     tasks = load_tasks(DATASETS['codeact'], 3)
     assert len(tasks) == 3
     for row in tasks:
-        assert set(row['public_task']) == {'task', 'inputs', 'allowed_imports', 'output_fields'}
+        assert set(row['public_task']) == {'task', 'inputs', 'allowed_imports', 'output_fields', 'output_schema'}
         assert 'expected' not in row['public_task'] and 'reference_code' not in row['public_task']
 
 

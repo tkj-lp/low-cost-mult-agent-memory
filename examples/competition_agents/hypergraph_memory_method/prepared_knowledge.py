@@ -139,6 +139,11 @@ def incidence_key(value, role, fact, aliases=None):
     # 未解析指称只属于当前断言，不将同篇中不同的“他们”自动合并。
     canonical = (aliases or {}).get((fact['document_id'], normalized_name(value)),
                                    (aliases or {}).get(normalized_name(value), value))
+    named = re.match(r'^(?i:the|this)\s+((?i:band|film|musical|album|song|book|novel|play))\s+([A-Z].*)$', canonical)
+    if named:
+        canonical = named[2]
+        if named[1].lower() != 'band' and '(' not in canonical:
+            canonical += ' (' + named[1].lower() + ')'
     types = {q['value'].casefold() for q in fact.get('qualifiers', []) if q['kind'] == role + '_type'}
     if len(types) == 1 and '(' not in canonical:
         kind = next(iter(types))
@@ -222,6 +227,16 @@ class PreparedKnowledge:
             raise ValueError('未知的文本读取方式。')
         self.graph_path = self.root / 'hypergraph.sqlite'
         self._prepare_graph_runtime()
+
+    def read_graph_sources(self):
+        """完整来源首次读入；事实实际进入角色后才可记作会话记忆。"""
+        rows = ([row for doc in self.documents for row in self._graph_documents[doc['id']]]
+                if self.documents else list(self._graph_rows.values()))
+        return [{'context_id': key, 'title': title, 'text': body,
+                 'kind': 'prepared_knowledge', 'memory_layer': 'knowledge',
+                 'retrieval_backend': 'complete_graph_sources',
+                 'fact_fields': fact, 'metadata': {'prepared_knowledge': True}}
+                for key, title, body, fact in rows]
 
     def _prepare_graph_runtime(self):
         """启动时加载静态事实与关联；不缓存问题、答案或查询结果。"""
@@ -315,12 +330,34 @@ class PreparedKnowledge:
         for key in rows:
             for role in ('subject', 'object'):
                 names[key].extend(sorted(owned_names.get(nodes[key][role], ())))
+        scoped_mentions = defaultdict(list)
+        for alias in getattr(self, 'source_aliases', []):
+            if not alias.get('scoped'):
+                continue
+            node = 'entity:' + entity_key(alias['alias'])
+            if node in neighbors:
+                scoped_mentions[alias['document_id']].append((alias['name'],
+                    (node, re.compile(r'(?<!\w)' + re.escape(alias['name']) + r'(?!\w)'))))
         for key, row in rows.items():
             fact = row[3]
             for role in ('subject', 'object'):
                 value = fact[role]
-                for name, (node, pattern) in catalog.items():
+                # 显式作品类型优先于当前文章的简称：改编自某电影不能连回同名音乐剧。
+                typed_mentions = {}
+                for base, matching_nodes in base_candidates.items():
+                    for candidate in matching_nodes:
+                        kind = re.search(r'\((film|musical|album|song|book|novel|play)\)$', candidate)
+                        if kind and re.search(r'\b' + kind[1] + r'\s+' + re.escape(base) + r'(?!\w)|'
+                                              + re.escape(base) + r'\s*\(' + kind[1] + r'\)', value, re.I):
+                            typed_mentions[normalized_name(base)] = candidate
+                            if candidate != nodes[key][role]:
+                                neighbors[candidate].append((*row, role + '_mention'))
+                                links[key].append((role, candidate, base, 'typed_entity_mention'))
+                for name, (node, pattern) in [*catalog.items(), *scoped_mentions[fact['document_id']]]:
                     if nodes[key][role] == node:
+                        continue
+                    base = normalized_name(re.sub(r'\s*\([^)]*\)\s*$', '', name))
+                    if base in typed_mentions and typed_mentions[base] != node:
                         continue
                     match = pattern.search(value)
                     if match and (match.group() == name or match.group().isupper()):

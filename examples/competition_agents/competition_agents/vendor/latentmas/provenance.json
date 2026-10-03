@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/Gen-Verse/LatentMAS",
+  "commit": "9a9e4d331eb11430bd9e64754c6b252b06d73031",
+  "license": "Apache-2.0",
+  "upstream_models_sha256": "020e68c1c6a42eb113bc526ddb93171e6fd1c74768ac5d57a9af813bea8bd3be",
+  "modifications": [
+    "兼容新版缓存的 get_seq_length；不修改对齐矩阵公式或隐式推理循环。",
+    "删除核心计算未使用的绘图库导入，避免引入额外依赖。"
+  ],
+  "scope": "复用官方模型计算核心；检索工具、连续任务记忆、共用角色职责由本项目提供，不能称完整复现其九项基准。"
+}

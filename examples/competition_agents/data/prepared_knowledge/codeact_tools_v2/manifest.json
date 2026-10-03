@@ -1,0 +1,31 @@
+{
+  "schema": "prepared-knowledge-v3",
+  "status": "ready",
+  "corpus_sha256": "743d09295d9565a61f43b5e3204527e552fcbde4b1aec8de22eef8288da1cc80",
+  "documents": 1,
+  "sentences": 1,
+  "text_retrieval": "full-context",
+  "embedding_model": null,
+  "embedding_provider": null,
+  "dataset_sha256": "4bf3bd471d67f70db504c2979c0c72ecdab508d8871caeebbaa987384e983fde",
+  "source_policy": "context.title and context.sentences only; shared across all queries",
+  "facts": 16,
+  "extractor_model": "manual-import",
+  "prompt_sha256": "e2c9369d8f606c0e6a805be9ceed64fbfc5c173ee23e4afbd15b4e2b1f683cba",
+  "text_index": {
+    "mode": "none",
+    "document_splitting": false,
+    "online_read": "all complete source documents"
+  },
+  "source_review_corrections": 0,
+  "corrections_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "sentence_coverage": 1.0,
+  "semantic_verification": "model-extracted; structural/provenance checks only",
+  "offline_seconds": 0.04209179989993572,
+  "reported_extraction_usage": [],
+  "files": {
+    "text_documents.json": "56f1dc54ad6cccaec65a86e1690d2145fc60c5b6cb0071fcf153aaaa67f8e4df",
+    "facts.json": "d41920038631aa5934f0d987978ecc2018174a22fe915f3a90ec9d6c275a4ab6",
+    "hypergraph.sqlite": "fd55033a12cb958df06694eeb570394724934ad1ee0159ec3f4ddfec55553215"
+  }
+}

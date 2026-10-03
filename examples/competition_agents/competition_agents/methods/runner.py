@@ -39,7 +39,8 @@ def load_tasks(dataset, count):
     if dataset['datasetType'] == 'codeact':
         return [{'id': row['id'], 'question': row['task'], 'scope': 'codeact',
                  'answer': row['expected'], 'public_task': {**{k: row[k] for k in ('task', 'inputs', 'allowed_imports')},
-                                                          'output_fields': list(row['expected'])}}
+                                                          'output_fields': list(row['expected']) if isinstance(row['expected'], dict) else [],
+                                                          'output_schema': {'type': 'object' if isinstance(row['expected'], dict) else 'array'}}}
                 for row in rows[:count]]
     if [row['turn_id'] for row in rows] != list(range(1, len(rows) + 1)) or len({row['group_id'] for row in rows}) != 1:
         raise ValueError('连续数据必须是同一会话从第一轮开始的完整顺序。')
@@ -79,7 +80,7 @@ def frontend_task(task, result, index, method):
     messages = [{**m, 'sender': AGENTS.get(m['from'], m['from']), 'receiver': AGENTS.get(m['to'], m['to']),
                  'payload': m['content'], 'char_cost': len(m['content']), 'actual_message_bytes': m['wire_bytes']}
                 for m in result.get('messages', [])]
-    metrics['text_chars'] = sum(len(m['content']) for m in messages)
+    metrics['text_chars'] = sum(len(m['content']) for m in messages if m.get('kind') != 'external_tool')
     metrics['actual_message_bytes'] = metrics.get('communication_bytes')
     metrics.setdefault('handoff_payload_bytes', metrics.get('communication_bytes'))
     metrics.setdefault('handoff_measurement', 'serialized_message')
@@ -88,12 +89,13 @@ def frontend_task(task, result, index, method):
     if result.get('experience_written'):
         writes.append(result['experience_written'])
     return {**result, 'task_id': task['id'], 'task_index': index, 'turn_id': task.get('turn_id'),
-            'status': 'failed' if result['error'] else 'completed',
+            'status': ('failed' if not result['prediction'] else 'completed_with_issues'
+                       if result['error'] or result.get('workflow_issues') or not result.get('workflow_complete', True) else 'completed'),
             'final_answer': result['prediction'], 'expected_answer': task['answer'], 'answer_coverage': coverage,
-            'answer_correct': coverage['correct'] if not result['error'] else False,
-            'answer_accuracy': coverage['score'] if not result['error'] else 0,
+            'answer_correct': coverage['correct'],
+            'answer_accuracy': coverage['score'],
             'elapsed_ms': metrics['elapsed_ms'], 'elapsed_seconds': metrics['elapsed_ms']/1000,
-            'model_calls': len(calls), 'text_chars': sum(len(m['content']) for m in messages),
+            'model_calls': len(calls), 'text_chars': metrics['text_chars'],
             'actual_message_bytes': metrics.get('communication_bytes'), 'messages': messages,
             'memory_hits': hits, 'memory_hit_ids': [row['memory_id'] for row in hits],
             'memory_hit_count': len(hits), 'memory_writes': writes,
@@ -104,6 +106,9 @@ def frontend_task(task, result, index, method):
 
 
 def run(config, output_dir, event_log, *, client=None, resources=None):
+    config = {**config,
+              'latentSteps': config.get('latentSteps', CATALOG.get('defaultLatentSteps', 40)),
+              'latentMemoryPolicy': config.get('latentMemoryPolicy', CATALOG.get('defaultLatentMemoryPolicy', 'release_transients'))}
     method = validate(config)
     dataset = DATASETS[config['dataset']]
     output = Path(output_dir)
@@ -121,10 +126,11 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
     if client is None:
         if config['backend'] == 'local':
             from competition_agents.llm.native_local_chat import NativeLocalChat
-            client = NativeLocalChat.from_pretrained(config['localModel'], max_tokens=1024, seed=42, threads=4)
+            client = NativeLocalChat.from_pretrained(config['localModel'], max_tokens=config.get('maxTokens', 1024), seed=42, threads=4,
+                                                    output_repeat_ngram_size=config.get('outputRepeatNgramSize', CATALOG.get('defaultOutputRepeatNgramSize', 0)))
         else:
             from competition_agents.llm.audited_chat import AuditedChat
-            client = AuditedChat(config['remoteModel'], max_tokens=1024, seed=42)
+            client = AuditedChat(config['remoteModel'], max_tokens=config.get('maxTokens', 1024), seed=42)
     if resources is None:
         from types import SimpleNamespace
         from sentence_transformers import SentenceTransformer
@@ -133,8 +139,13 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
         resources = {'encoder': encoder, 'encode': encode,
                      'embed': lambda text: SimpleNamespace(vector=encode(text), provider='local', model='sentence-transformers/all-MiniLM-L6-v2')}
     resources = {**resources, 'knowledge': BASE/dataset['knowledge'],
-                 'calibration': BASE/dataset['calibration'] if dataset.get('calibration') else None,
-                 'experience_db': os.environ.get('HYPERGRAPH_MEMORY_DB') or output/'experience.sqlite'}
+                  'task_kind': dataset['datasetType'],
+                  'memory_enabled': config.get('memoryEnabled', True),
+                  'max_searches': config.get('maxSearches', 2),
+                  'latent_steps': config['latentSteps'],
+                  'latent_memory_policy': config['latentMemoryPolicy'],
+                 'experience_db': (output/'experience.sqlite' if config.get('isolatedMemory') else
+                                   os.environ.get('HYPERGRAPH_MEMORY_DB') or output/'experience.sqlite')}
     task_context = dict(context)
     def latent_event(event):
         if event.get('event') == 'start':
@@ -145,6 +156,7 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
                             'from_agent': AGENTS.get(event['role'], event['role']),
                             'elapsed_ms': event['seconds']*1000,
                             'return_result': {'content': event.get('answer') or '',
+                                              'lookup_query': event.get('lookup_query'),
                                               'representation': 'final_text' if event.get('answer') else 'hidden_state'}})
         following = {'planner': 'Retriever', 'retriever': 'Reasoner', 'reasoner': 'Summarizer'}
         if event['role'] in following:
@@ -158,6 +170,11 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
                                     'summary': '续接同进程计算状态；跨机器传输量未测量。'}})
     resources['latent_event_sink'] = latent_event
     runtime = create_runtime(config, ObservedClient(client, task_context), resources)
+    if config.get('warmup') and config['backend'] == 'local':
+        from competition_agents.llm.native_local_chat import NativeLocalChat
+        warm = NativeLocalChat(client.bundle, max_tokens=1, output_repeat_ngram_size=client.output_repeat_ngram_size)
+        warm.call('summarizer', [{'role': 'user', 'content': 'Say ready.'}])
+        del warm
     setup_ms = (time.perf_counter()-started)*1000
     rows = []
     try:
@@ -167,12 +184,14 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
             raw = (runtime.run_task(task['public_task'], history_scope=task['scope']) if 'public_task' in task
                    else runtime.run(task['question'], history_scope=task['scope']))
             row = frontend_task(task, raw, index, method)
+            from .experiment_metrics import task_metrics
+            task_metrics(row, method['value'])
             rows.append(row)
             audit = row.get('retrieval_audit', {})
             memory_read = row.get('memory_read')
             query = audit.get('query_kind') or (memory_read.get('query') if isinstance(memory_read, dict) else None) or task['question']
             emit_runtime_event({**task_context, 'event_type': 'memory_query',
-                                'from_agent': 'Retriever' if method['value'] == 'latent' else 'Planner',
+                                'from_agent': 'Retriever',
                                 'to_agent': 'memory', 'recorded_after_task': True,
                                 'elapsed_ms': row['metrics'].get('memory_search_ms', 0),
                                 'input_params': {'query': query},
@@ -181,7 +200,7 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
                 for record in records:
                     emit_runtime_event({**task_context, 'event_type': event_type,
                                         'from_agent': 'memory' if event_type == 'memory_hit' else 'Summarizer',
-                                        'to_agent': ('Retriever' if method['value'] == 'latent' else 'Planner') if event_type == 'memory_hit' else 'memory',
+                                        'to_agent': 'Retriever' if event_type == 'memory_hit' else 'memory',
                                         'memory_refs': [record['memory_id']], 'return_result': record,
                                         'recorded_after_task': True})
             for message in row['messages']:
@@ -193,16 +212,20 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
             if row.get('execution_result'):
                 emit_runtime_event({**task_context, 'event_type': 'execution_result', 'from_agent': 'Executor',
                                     'return_result': row['execution_result'], 'recorded_after_task': True})
-            emit_runtime_event({**task_context, 'event_type': 'task_failed' if row['error'] else 'task_done',
+            emit_runtime_event({**task_context, 'event_type': 'task_failed' if not row.get('workflow_complete', True) else 'task_done',
                                 'status': row['status'], 'from_agent': 'Summarizer',
                                 'elapsed_ms': row['elapsed_ms'], 'text_chars': row['text_chars'],
                                 'return_result': {'answer': row['prediction'], 'final_answer': row['prediction'], 'error': row['error']}})
             (output/'tasks.json').write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding='utf-8')
     finally:
-        runtime.memory.close()
+        runtime.close()
     metrics = {key: sum(r['metrics'].get(key, 0) or 0 for r in rows) for key in (
         'input_tokens', 'output_tokens', 'elapsed_ms', 'model_service_ms', 'knowledge_search_ms',
         'knowledge_searches', 'memory_search_ms', 'memory_write_ms', 'experience_reads', 'experience_applied', 'experience_writes')}
+    for key in ('input_tokens', 'output_tokens'):
+        values = [row['metrics'].get(key) for row in rows]
+        metrics[key] = sum(values) if all(value is not None for value in values) else None
+    metrics['token_usage_complete'] = all(row['metrics'].get('token_usage_complete', True) for row in rows)
     metrics.update(actual_message_bytes=(sum(r['actual_message_bytes'] for r in rows)
                                         if all(r['actual_message_bytes'] is not None for r in rows) else None),
                    text_chars=sum(r['text_chars'] for r in rows), task_count=len(rows),
@@ -211,20 +234,25 @@ def run(config, output_dir, event_log, *, client=None, resources=None):
     metrics['state_reuse_count'] = sum(r['metrics'].get('state_reuse_count', 0) for r in rows)
     metrics['message_count'] = sum(len(r['messages']) for r in rows)
     metrics['handoff_payload_bytes'] = sum(r['metrics'].get('handoff_payload_bytes') or 0 for r in rows)
-    metrics['handoff_measurement'] = 'state_snapshot' if method['value'] == 'latent' else 'serialized_message'
+    metrics['handoff_measurement'] = 'resident_state' if method['value'] == 'latent' else 'serialized_message'
     metrics['execution_ms'] = sum(r['metrics'].get('execution_ms', 0) for r in rows)
-    metrics['failed_tasks'] = sum(bool(r['error']) for r in rows)
+    metrics['failed_tasks'] = sum(not r.get('workflow_complete', True) for r in rows)
     metrics['completed_tasks'] = len(rows) - metrics['failed_tasks']
+    metrics['tasks_with_issues'] = sum(r['status'] == 'completed_with_issues' for r in rows)
     metrics['memory_hit_rate'] = sum(bool(r['memory_hits']) for r in rows)/len(rows)
+    from .experiment_metrics import aggregate
+    metrics.update(aggregate(rows))
     from hashlib import sha256
     result = {**context, 'schema_version': 3, 'baseline_version': CATALOG['version'],
               'backend': config['backend'],
               'dataset_sha256': sha256((BASE/dataset['file']).read_bytes()).hexdigest(),
               'knowledge_corpus_sha256': json.loads((BASE/dataset['knowledge']/'manifest.json').read_text(encoding='utf-8'))['corpus_sha256'],
               'evaluation_metric': 'execution_value_coverage' if dataset['datasetType'] == 'codeact' else 'reference_coverage',
-              'status': 'failed' if metrics['failed_tasks'] else 'completed',
-              'model': client.model, 'setup_ms_excluded': setup_ms,
-              'full_workflow_timing_valid': all(not r['error'] for r in rows),
+              'status': ('failed' if metrics['failed_tasks'] else 'completed_with_issues'
+                         if metrics['tasks_with_issues'] else 'completed'),
+              'model': client.model, 'setup_ms_excluded': setup_ms, 'run_config': config,
+              'full_workflow_timing_valid': all(r.get('workflow_complete', True) for r in rows),
+              'role_prompt_hashes': rows[0].get('role_prompt_hashes', {}) if rows else {},
               'extractive_fallback_enabled': False,
               'runs': [{**context, 'mode': method['value'], 'metrics': metrics, 'task_results': rows,
                         'answer_accuracy': sum(r['answer_accuracy'] for r in rows)/len(rows),

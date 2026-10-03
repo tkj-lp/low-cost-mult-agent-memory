@@ -26,6 +26,7 @@ class SessionEvidenceMemory:
         self.mode, self.embed, self.knowledge = mode, embed, knowledge
         self.document_vectors = {} if knowledge is None else {doc['id']: vector for doc, vector in zip(knowledge.documents, knowledge.text_vectors)}
         self.records, self.vectors, self.episodes = {}, {}, []
+        self.neighbors, self.record_nodes = {}, {}
         self.scopes = {}
         self.db = sqlite3.connect(':memory:')
         self.db.executescript('''CREATE VIRTUAL TABLE facts USING fts5(id UNINDEXED, terms);
@@ -34,7 +35,7 @@ class SessionEvidenceMemory:
             CREATE TABLE task_facts(task TEXT, fact_id TEXT, UNIQUE(task,fact_id));
             CREATE TABLE session_facts(scope TEXT, fact_id TEXT, UNIQUE(scope,fact_id));''')
 
-    def recall(self, query, limit=6, *, scope=None):
+    def recall(self, query, limit=6, *, scope=None, roots=None):
         eligible = self.scopes.get(scope, set()) if scope is not None else set(self.records)
         if not eligible:
             return []
@@ -45,37 +46,55 @@ class SessionEvidenceMemory:
             ids = [key for score, key in ranked[:limit] if score >= .35]
         else:
             terms = sorted(set(indexed_tokens(query)) - {'what', 'which', 'where', 'who', 'when', 'how'})
-            if not terms:
+            index = getattr(self.knowledge, 'relation_index', None)
+            roots = roots or (index.anchors(query) if index is not None else set())
+            if not terms and not roots:
                 return []
             match = ' OR '.join('"' + t + '"' for t in terms)
             scope_filter = ' AND id IN (SELECT fact_id FROM session_facts WHERE scope=?)' if scope is not None else ''
-            params = [match, *([scope] if scope is not None else []), max(16, limit * 4)]
-            ids = [r[0] for r in self.db.execute('SELECT id FROM facts WHERE facts MATCH ?' + scope_filter + ' ORDER BY bm25(facts) LIMIT ?', params)]
+            params = [match, *([scope] if scope is not None else [])]
+            ids = ([r[0] for r in self.db.execute('SELECT id FROM facts WHERE facts MATCH ?' + scope_filter + ' ORDER BY bm25(facts)', params)]
+                   if terms and not roots else [])
             chains = [(key,) for key in ids]
             candidates = {key: (0, self.records[key]['title'], self.records[key]['text'], self.records[key]['fact_fields']) for key in ids}
-            for key in ids[:4]:
-                fact = self.records[key].get('fact_fields', {})
-                for role in ('subject', 'object'):
-                    entity = fact.get(role, '')
-                    if not entity:
-                        continue
-                    node = incidence_key(entity, role, fact, getattr(self.knowledge, 'graph_aliases', {}))
+            frontier = [(key, (key,)) for key in ids]
+            if roots:
+                frontier = []
+                for root in sorted(roots):
+                    for key in sorted(self.neighbors.get(root, ())):
+                        if key in eligible:
+                            frontier.append((key, (key,)))
+                # 精确实体入口不受关键词命中顺序限制。
+                ids, chains, candidates = [], [], {}
+            seen = set()
+            scheduled = {key for key, _ in frontier}
+            for key, path in frontier:
+                if key in seen:
+                    continue
+                seen.add(key)
+                hit = self.records[key]
+                candidates[key] = (0, hit['title'], hit['text'], hit['fact_fields'])
+                chains.append(path)
+                if len(path) >= 3:
+                    continue
+                nodes = self.record_nodes.get(key, set())
+                for node in sorted(nodes):
                     if not node.startswith('entity:'):
                         continue
-                    for row in self.db.execute("SELECT fact_id FROM incidence WHERE entity=? AND role IN ('subject','object') ORDER BY fact_id LIMIT 64", (node,)):
-                        neighbor = row[0]
+                    if hasattr(self.knowledge, '_graph_named_nodes') and node not in self.knowledge._graph_named_nodes:
+                        continue
+                    for neighbor in sorted(self.neighbors.get(node, ())):
                         if neighbor == key or neighbor not in eligible:
                             continue
                         hit = self.records[neighbor]
                         candidates[neighbor] = (0, hit['title'], hit['text'], hit['fact_fields'])
-                        chains.append((key, neighbor))
+                        if neighbor not in scheduled:
+                            scheduled.add(neighbor)
+                            frontier.append((neighbor, (*path, neighbor)))
             ids = []
             for chain in sorted(chains, key=lambda c: (-PreparedKnowledge._chain_score(c, candidates, set(terms)), len(c), c)):
                 new = [key for key in chain if key not in ids]
-                if len(ids) + len(new) <= limit:
-                    ids.extend(new)
-                if len(ids) == limit:
-                    break
+                ids.extend(new)
         return [dict(copy.deepcopy(self.records[k]), from_memory=True,
                      memory_turns=[e['turn'] for e in self.episodes if e['scope'] == scope
                                    and k in e.get('observed_evidence_ids', e['evidence_ids'])]) for k in ids]
@@ -104,6 +123,12 @@ class SessionEvidenceMemory:
             else:
                 self.db.execute('INSERT INTO facts VALUES (?,?)', (key, ' '.join(indexed_tokens(hit['title'] + ' ' + hit['text']))))
                 fact = hit['fact_fields']
+                nodes = {incidence_key(fact[role], role, fact, getattr(self.knowledge, 'graph_aliases', {}))
+                         for role in ('subject', 'object') if fact.get(role)}
+                nodes.update(link[1] for link in getattr(self.knowledge, '_graph_links', {}).get(fact.get('id', key), ()))
+                self.record_nodes[key] = nodes
+                for node in nodes:
+                    self.neighbors.setdefault(node, set()).add(key)
                 for role in ('subject', 'object', 'relation'):
                     if fact[role]:
                         self.db.execute('INSERT OR IGNORE INTO incidence VALUES (?,?,?)', (incidence_key(fact[role], role, {**fact, 'id': key}, getattr(self.knowledge, 'graph_aliases', {})), key, role))
@@ -129,16 +154,22 @@ class SessionEvidenceMemory:
         return [{k: e[k] for k in ('turn', 'question', 'resolved_question', 'answer', 'verified')}
                 for e in self.episodes if e['scope'] == scope][-2:]
 
-    def context(self, question, scope):
+    def context(self, question, scope, *, roots=None):
         history = self.history(scope)
-        query = question + '\n' + '\n'.join(e['resolved_question'] + ' ' + e['answer'] for e in history)
-        hits = self.recall(query, scope=scope)
+        # 协议按当前问题找关系；历史单独提供给规划角色承接实体，
+        # 不把上一轮长答案混进排序，挤掉本轮已存但尚未用过的事实。
+        query = (question if self.mode != 'text' else
+                 question + '\n' + '\n'.join(e['resolved_question'] + ' ' + e['answer'] for e in history))
+        hits = self.recall(query, scope=scope, roots=roots)
         # 最近两轮实际使用的来源帮助承接指代；其余已知事实按本题需要检索。
         selected = {h['context_id']: h for h in hits}
-        for episode in [e for e in self.episodes if e['scope'] == scope][-2:]:
-            for key in episode['evidence_ids']:
-                selected.setdefault(key, dict(copy.deepcopy(self.records[key]), from_memory=True,
-                                               memory_turns=[episode['turn']]))
+        if not roots and not hits:
+            # 指代尚未绑定时提供前轮来源；已绑定时以完整多跳召回为准，
+            # 不把历史观察过的整库无条件反复追加到每个问题。
+            for episode in [e for e in self.episodes if e['scope'] == scope][-2:]:
+                for key in episode.get('observed_evidence_ids', episode['evidence_ids']):
+                    selected.setdefault(key, dict(copy.deepcopy(self.records[key]), from_memory=True,
+                                                  memory_turns=[episode['turn']]))
         return history, list(selected.values()), query
 
     def close(self):

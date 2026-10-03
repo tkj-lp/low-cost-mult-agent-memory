@@ -1,0 +1,96 @@
+{
+  "schema": "prepared-knowledge-v3",
+  "status": "ready",
+  "corpus_sha256": "ef2a5a207e99ed4f1f537987ba0561ca4ef8cecb46099e039f3c8017fa0dbf76",
+  "documents": 7,
+  "sentences": 7,
+  "text_retrieval": "full-context",
+  "embedding_model": null,
+  "embedding_provider": null,
+  "dataset_sha256": "ef8dbc8632c4ec57ea4d35a785355f3fe6f3c80c1b63aa3b941f0ef26745ca20",
+  "source_policy": "context.title and context.sentences only; shared across all queries",
+  "facts": 252,
+  "extractor_model": "qwen3.7-flash-2026-07-15",
+  "prompt_sha256": "e2c9369d8f606c0e6a805be9ceed64fbfc5c173ee23e4afbd15b4e2b1f683cba",
+  "text_index": {
+    "mode": "none",
+    "document_splitting": false,
+    "online_read": "all complete source documents"
+  },
+  "source_review_corrections": 1,
+  "corrections_sha256": "b005d03a387a665e0f9890cf2c537dc64e5d7e086097dc5e6abd507acdca3cf4",
+  "sentence_coverage": 1.0,
+  "semantic_verification": "source-reviewed adverse-event polarity; other fields structurally validated, not a semantic completeness guarantee",
+  "offline_seconds": 0.10241399996448308,
+  "reported_extraction_usage": [
+    {
+      "completion_tokens": 3079,
+      "prompt_tokens": 992,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "text_tokens": 992
+      },
+      "total_tokens": 4071
+    },
+    {
+      "completion_tokens": 2630,
+      "prompt_tokens": 1013,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "text_tokens": 1013
+      },
+      "total_tokens": 3643
+    },
+    {
+      "source_review_correction": true
+    },
+    {
+      "completion_tokens": 3283,
+      "prompt_tokens": 1150,
+      "prompt_tokens_details": {
+        "cached_tokens": 896,
+        "text_tokens": 1150
+      },
+      "total_tokens": 4433
+    },
+    {
+      "completion_tokens": 4613,
+      "prompt_tokens": 1295,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "text_tokens": 1295
+      },
+      "total_tokens": 5908
+    },
+    {
+      "completion_tokens": 3894,
+      "prompt_tokens": 1234,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "text_tokens": 1234
+      },
+      "total_tokens": 5128
+    },
+    {
+      "completion_tokens": 841,
+      "prompt_tokens": 702,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "text_tokens": 702
+      },
+      "total_tokens": 1543
+    }
+  ],
+  "files": {
+    "text_documents.json": "920ba7e69e9d03f37372d4400b34b4b06be5864ed8f18a425ff0a4c265cfe380",
+    "facts.json": "4e53c82f11adcf176c3f052689772ae642f9b9f67249a0792dc971cb6227006d",
+    "hypergraph.sqlite": "057176038711541213da0376cf4e19ae0fcbde92becec23d49e4fba9e228e707"
+  },
+  "reviewed_from": "data\\prepared_knowledge\\topiocqa_153_v1",
+  "graph_organization": "scoped-identity-explicit-owner-relation-coverage-v1",
+  "reindex": {
+    "source": "data/prepared_knowledge/topiocqa_153_v2",
+    "seconds": 0.053596299956552684,
+    "policy": "same documents and facts; scoped person surname identities"
+  }
+}

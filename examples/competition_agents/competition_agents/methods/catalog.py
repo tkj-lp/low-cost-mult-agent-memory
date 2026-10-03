@@ -17,13 +17,26 @@ def validate(config):
         raise ValueError('协作方案与记忆检索固定搭配，当前选择不匹配。')
     if config.get('backend') not in method['backends']:
         raise ValueError('隐状态需要本地模型的内部表示，不能使用在线文字接口。')
-    if method.get('models') and config.get('localModel') not in method['models']:
-        raise ValueError('当前隐状态映射只校准了本地千问十五亿参数模型；其他模型需要先离线校准。')
     if config.get('dataset') not in DATASETS:
         raise ValueError('所选数据集没有绑定已准备好的知识库。')
     dataset = DATASETS[config['dataset']]
+    for key, default in (('maxTokens', 1024), ('maxSearches', 2)):
+        if type(config.get(key, default)) is not int or config.get(key, default) < 1:
+            raise ValueError('生成和检索预算必须为正整数。')
+    if type(config.get('memoryEnabled', True)) is not bool:
+        raise ValueError('记忆开关必须为布尔值。')
+    steps = config.get('latentSteps', CATALOG.get('defaultLatentSteps', 40))
+    if type(steps) is not int or steps < 1:
+        raise ValueError('隐式推理步数必须为正整数。')
+    if config.get('latentMemoryPolicy', CATALOG.get('defaultLatentMemoryPolicy', 'release_transients')) not in ('full', 'release_transients'):
+        raise ValueError('未知隐状态生命周期策略。')
+    repeat = config.get('outputRepeatNgramSize', 0)
+    if type(repeat) is not int or (repeat != 0 and repeat < 2):
+        raise ValueError('输出重复保护长度应为零或至少二。')
+    if repeat and config['backend'] != 'local':
+        raise ValueError('输出重复保护仅支持本地后端。')
     if dataset.get('methods') and method['value'] not in dataset['methods']:
-        raise ValueError('代码执行目前支持纯文本和协议字段；隐状态的代码工具边界尚未适配。')
+        raise ValueError('所选数据集尚未支持该协作方式。')
     limit = config.get('taskCount')
     if type(limit) is not int or not 1 <= limit <= DATASETS[config['dataset']]['taskCount']:
         raise ValueError(f"该数据集支持一至{dataset['taskCount']}题，必须从第一题按顺序执行。")
@@ -33,7 +46,10 @@ def validate(config):
 def create_runtime(config, client, resources):
     method = validate(config)
     if DATASETS[config['dataset']]['datasetType'] == 'codeact':
+        if method['value'] == 'latent':
+            from .latent_codeact import LatentCodeActCollaboration
+            return LatentCodeActCollaboration(client, resources)
         from .codeact import CodeActCollaboration
-        return CodeActCollaboration(client, resources, structured=method['value'] == 'structured')
+        return CodeActCollaboration(client, resources, structured=method['value'] == 'structured', method=method['value'])
     module, function = method['entry'].split(':')
     return getattr(importlib.import_module(module), function)(client, resources)

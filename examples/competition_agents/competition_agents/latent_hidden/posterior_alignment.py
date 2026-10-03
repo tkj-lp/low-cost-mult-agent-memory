@@ -2,10 +2,15 @@
 from __future__ import annotations
 
 
-def align_posterior_hidden(model, hidden, *, top_k=8, temperature=1.0):
+def align_posterior_hidden(model, hidden, *, top_k=8, temperature=1.0, excluded_token_ids=()):
     if top_k < 2 or temperature <= 0:
         raise ValueError('连续映射至少需要两个分量，温度必须为正数。')
     logits = model.get_output_embeddings()(hidden).float()
+    excluded = sorted({int(i) for i in excluded_token_ids if 0 <= int(i) < logits.shape[-1]})
+    if excluded:
+        if len(excluded) >= logits.shape[-1] - 1:
+            raise ValueError('连续表示至少需要两个有效内容分量。')
+        logits[..., excluded] = float('-inf')
     scores, indices = logits.topk(min(top_k, logits.shape[-1]), dim=-1)
     weights = (scores / temperature).softmax(dim=-1)
     embeddings = model.get_input_embeddings()(indices).float()
@@ -14,6 +19,7 @@ def align_posterior_hidden(model, hidden, *, top_k=8, temperature=1.0):
     target_norm = (weights * embeddings.norm(dim=-1)).sum(dim=-1, keepdim=True)
     mixed = mixed * target_norm / mixed.norm(dim=-1, keepdim=True).clamp_min(1e-6)
     info = {'method': 'posterior_embedding_mixture', 'top_k': top_k, 'temperature': temperature,
+            'excluded_control_tokens': len(excluded),
             'max_component_weight': float(weights.max().item()),
             'entropy': float(-(weights * weights.clamp_min(1e-12).log()).sum(dim=-1).mean().item())}
     return mixed.to(dtype=model.get_input_embeddings().weight.dtype), info

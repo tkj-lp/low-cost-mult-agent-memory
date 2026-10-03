@@ -1,0 +1,39 @@
+{
+  "status": "finished",
+  "started": "2026-10-03T09:16:24.702103+00:00",
+  "task_count_per_model": 3,
+  "total_new_task_runs_allowed": 9,
+  "jobs": [
+    {
+      "key": "qwen9",
+      "model": "Qwen/Qwen3.5-9B",
+      "status": "finished",
+      "started": "2026-10-03T09:16:24.702225+00:00",
+      "exit_code": 0,
+      "finished": "2026-10-03T09:17:08.100295+00:00",
+      "task_count": 3,
+      "all_workflows_complete": true
+    },
+    {
+      "key": "qwen27",
+      "model": "Qwen/Qwen3.8-27B",
+      "status": "finished",
+      "started": "2026-10-03T09:17:08.101179+00:00",
+      "exit_code": 0,
+      "finished": "2026-10-03T09:18:38.629616+00:00",
+      "task_count": 3,
+      "all_workflows_complete": true
+    },
+    {
+      "key": "glm",
+      "model": "zai-org/GLM-4.7-Flash",
+      "status": "finished",
+      "started": "2026-10-03T09:18:38.630722+00:00",
+      "exit_code": 0,
+      "finished": "2026-10-03T09:20:10.827601+00:00",
+      "task_count": 3,
+      "all_workflows_complete": true
+    }
+  ],
+  "finished": "2026-10-03T09:20:10.828741+00:00"
+}

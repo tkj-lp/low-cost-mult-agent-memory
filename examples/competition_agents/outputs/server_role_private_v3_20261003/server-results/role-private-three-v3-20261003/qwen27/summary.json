@@ -1,0 +1,95 @@
+{
+  "model": "Qwen/Qwen3.8-27B",
+  "task_count": 3,
+  "policy": "consumed_controls",
+  "delivery_positions_per_internal_call": 8,
+  "scope": "仅隐状态，真实连续问答前三题；角色提示、已消费内部步骤与重复控制信息的独立回收试验",
+  "compaction": "逐个张量替换，计入复制临时空间，保留绝对位置和所有递归状态",
+  "internal_step_retirement_is_approximate": true,
+  "weights_unchanged": true,
+  "formal_baseline_changed": false,
+  "all_workflows_complete": true,
+  "tasks": [
+    {
+      "task_id": "topiocqa-153-1",
+      "prediction": "Cyndi Lauper wrote the music and lyrics to the song “Kinky Boots,” from the Broadway musical of the same name.",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "original_answer": "Cyndi Lauper wrote the music and lyrics for the song \"Kinky Boots,\" which is part of the Broadway musical *Kinky Boots*.",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": false,
+      "cache_peak_bytes_including_compaction": 190038016,
+      "cache_boundary_peak_bytes": 186187776,
+      "original_cache_boundary_peak_bytes": 262275072,
+      "seconds_including_audit": 17.99064852949232
+    },
+    {
+      "task_id": "topiocqa-153-2",
+      "prediction": "Cyndi Lauper is the singer. She is an American singer, songwriter, and actress who composed the music and lyrics for the Broadway musical *Kinky Boots*.",
+      "answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "original_answer": "Cyndi Lauper is the singer.",
+      "original_answer_coverage": {
+        "coverage": 1.0,
+        "score": 1.0,
+        "correct": true,
+        "status": "full",
+        "matched_reference": "Cyndi Lauper",
+        "contradiction": false
+      },
+      "same_final_answer": false,
+      "same_queries_and_facts": false,
+      "cache_peak_bytes_including_compaction": 306214912,
+      "cache_boundary_peak_bytes": 298909696,
+      "original_cache_boundary_peak_bytes": 248905728,
+      "seconds_including_audit": 30.267896512523293
+    },
+    {
+      "task_id": "topiocqa-153-3",
+      "prediction": "The musical *Kinky Boots* conveys the story of Charlie, a struggling shoe factory owner.",
+      "answer_coverage": {
+        "coverage": 0.5,
+        "score": 0.5,
+        "correct": false,
+        "status": "partial",
+        "matched_reference": "It tells the story of Charlie Price",
+        "contradiction": false
+      },
+      "original_answer": "The musical *Kinky Boots* conveys the story of Charlie, a struggling shoe factory owner.",
+      "original_answer_coverage": {
+        "coverage": 0.5,
+        "score": 0.5,
+        "correct": false,
+        "status": "partial",
+        "matched_reference": "It tells the story of Charlie Price",
+        "contradiction": false
+      },
+      "same_final_answer": true,
+      "same_queries_and_facts": true,
+      "cache_peak_bytes_including_compaction": 268275712,
+      "cache_boundary_peak_bytes": 253558784,
+      "original_cache_boundary_peak_bytes": 260374528,
+      "seconds_including_audit": 14.231533225625753
+    }
+  ]
+}

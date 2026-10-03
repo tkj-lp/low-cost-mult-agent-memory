@@ -1,0 +1,19 @@
+{
+  "status": "running",
+  "jobs": [
+    {
+      "directory": "glm-supplement",
+      "status": "finished",
+      "exit_code": 0
+    },
+    {
+      "directory": "qwen9-supplement",
+      "status": "finished",
+      "exit_code": 0
+    },
+    {
+      "directory": "qwen27-supplement",
+      "status": "running"
+    }
+  ]
+}
